@@ -1,0 +1,30 @@
+formatting:
+- ONE CLASS PER FILE RULE (including interfaces)
+- normalize formatting
+- separate functions by a newline
+- put stl, boost, and prl includes into blocks, separated by a newline
+- documentation rules
+- good-looking function signature? 
+  example: prl/model/free_functions.hpp/fm2pairwise_markov_network
+- superfluous dependencies?
+  annoying when refactoring code
+
+math:
+- we should not overload std::log
+  instead, bring std::log into prl namespace and use log(x) everywhere
+
+stl_util.hpp
+- include stl_io
+- include constructors
+- make_assignment
+
+dataset
+- get rid of the constructor that uses forward_range<vector_variable*>
+- kill the dataset concepts in favor of runtime polymorphism?
+- dataset_view is really complicated (try to do too much?)
+
+general:
+- move functions in free_functions.hpp to a file with a more descriptive name
+- release only code that is clean
+- remove operator std::string
+

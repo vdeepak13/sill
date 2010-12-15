@@ -1,0 +1,8 @@
+add_executable(assignment_dataset_test assignment_dataset_test.cpp)
+add_executable(dataset_converter dataset_converter.cpp)
+add_executable(ds_oracle_test ds_oracle_test.cpp)
+add_executable(statistics_test statistics_test.cpp)
+add_executable(symbolic_oracle_test symbolic_oracle_test.cpp)
+add_executable(syn_oracles_test syn_oracles_test.cpp)
+add_executable(syn_oracle_bayes_net_test syn_oracle_bayes_net_test.cpp)
+add_executable(vector_dataset_test vector_dataset_test.cpp)

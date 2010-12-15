@@ -1,0 +1,7 @@
+add_executable(constrained_triangulation constrained_triangulation.cpp)
+add_executable(directed_graph directed_graph.cpp)
+add_executable(directed_multigraph directed_multigraph.cpp)
+add_executable(graph_serialization graph_serialization.cpp)
+add_executable(undirected_graph undirected_graph.cpp)
+#add_executable(graph_traversal graph_traversal)
+add_executable(graph_memory graph_memory)

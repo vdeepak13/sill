@@ -1,0 +1,183 @@
+<html>
+<head>
+<title>PRL Coding Conventions</title>
+</head>
+<body>
+
+<h1>Warning This document is old. Please follow the new guidelines in the code.</h1>
+
+<h1>PRL Coding Conventions</h1>
+
+
+<h2>Line format</h2>
+
+Lines are no longer than 80 characters to make the files easily
+readable in editors that wrap lines (and to eliminate the need for
+horizontal scrolling).
+
+<h2>Preprocessor macros</h2>
+
+Preprocessor macros are not used, with one exception.  Each header
+file has a <tt>#define</tt> macro which prevents multiple-inclusion.
+The name of this macro is <TT>PRL_<I>file_name</I>_HPP</TT>,
+e.g., <tt>PRL_JUNCTION_TREE_HPP</TT>.
+
+<h2>Tokens</h2>
+
+All tokens are lower case, with underscores used to separate words.
+Numbers should be used only sparingly to distinguish otherwise
+indistinguishable objects.  Examples:
+<blockquote>
+<pre>
+clique_t
+junction_tree
+c1
+c2
+</pre>
+</blockquote>
+
+<h2>Names</h2>
+
+<p>Type and variable names should be as descriptive as possible,
+subject to the constraint that they are not too long.  Names should
+exceed 20 characters only when they are used rarely, or are types that
+can be easily <tt>typedef</tt>ed.</p>
+
+<p>Standardized suffixes are used to make it as easy as possible to guess
+the referent of a token.  These are listed below:
+<blockquote>
+<table cellspacing="10">
+<tr><th>Token Type</th><th>Suffix</th><th>Examples</th></tr>
+<tr><td>type name</td><td><tt>_t</tt></td><td><tt>clique_t, junction_tree_ptr_t, elt_t</tt></td></tr>
+<tr><td>pointer variable name</td><td><tt>_ptr</tt></td><td><tt>clique_ptr, junction_tree_ptr, elt_ptr</tt></td></tr>
+<tr><td>iterator variable name</td><td><tt>_it</tt></td><td><tt>clique_it, elt_ptr_it</tt></td></tr>
+<tr><td>handle variable name</td><td><tt>_h</tt></td><td><tt>var_info_h</tt></td></tr>
+<tr><td>constant</td><td><tt>_c</tt></td><td><tt>invalid_variable_id_c</tt></td></tr>
+</table>
+</blockquote>
+These suffixes can be combined, as in <tt>junction_tree_ptr_t</tt>,
+which identifies the type of a pointer to a junction tree object,
+or <tt>variable_info_h_t</tt>, which identifies the type of a handle
+to a variable information object.</p>
+
+<h2>Indentation</h2>
+
+All code elements must be indented two spaces from their parent
+elements:
+<blockquote>
+<pre>
+if (i > 0) {
+  std::cout << "good";
+  std::cout << " bye";
+}
+if (i > 3) 
+  std::cout << "hello";
+</pre>
+</blockquote>
+In particular, the following example is incorrect:
+<blockquote>
+<font color="red">
+<pre>
+if (i > 3) std::cout << "hello";
+</pre>
+</font>
+</blockquote>
+
+<h2>Statements</h2>
+
+<p>Opening curly braces should be placed on the same line as the
+control statement, and they are optional if the block is a single
+statement:
+<blockquote>
+<pre>
+if (i > 0) {
+  std::cout << "good";
+  std::cout << " bye";
+}
+if (i > 3) 
+  std::cout << "hello";
+</pre>
+</blockquote>
+Some loop examples:
+<blockquote>
+<pre>
+for (int i = 0; i < 10; ++i) 
+  std::cout << i;
+while (j < k) {
+  if (j % 3 == 2)
+    j *= 2;
+  j += 10;
+}
+</pre>
+</blockquote>
+
+<h2>Namespaces</h2>
+
+<p>All core library code is defined within the <tt>prl</tt> namespace.
+Inner namespaces are used sparingly, and their names are short.</p>
+
+<p>Namespaces are not imported to make it easier to identify where a
+type is declared.  For example, we prefer
+<blockquote>
+<pre>
+boost::copy_graph(orig_graph, graph_copy)
+</pre>
+</blockquote>
+to
+<blockquote>
+<pre>
+using namespace boost;
+...
+...
+...
+copy_graph(orig_graph, graph_copy)
+</pre>
+</blockquote>
+because the first example makes it easier to find out
+about <tt>copy_graph</tt>.</p>
+
+<h2>Documenting code</h2>
+
+<p>All code must be well-documented: aim for as much documentation as
+there is code.</p>
+
+<p>We use Doxygen-compatible conventions to document our code.  Every
+function, struct, class, data member, and method must be explicitly
+documented.  For long documentation, the following format should be
+used:
+<blockquote>
+<pre>
+/**
+ * Short description.  Longer description, including the 
+ * computational complexity of the method and other details. 
+ *
+ * @param  parameter_1_name
+ *         A description of the requirements that parameter_1_name
+ *         must satisfy.  Note that this paragraph starts on the 
+ *         next line, and that its indentation starts two spaces 
+ *         after the keyword @param (or nine space after the 
+ *         asterisk)
+ * @param  parameter_2_name
+ *         A description of the requirements that parameter_2_name
+ *         must satisfy.  If there are other parameters, they will
+ *         follow this one.
+ * @return A description of the return value, if the method 
+ *         has a non-void return value.  This description starts
+ *         on the same line as the @return keyword, and is indented
+ *         one space after it.
+ */
+int function(int parameter_1_name, float parameter_2_name) { ...
+</pre>
+</blockquote>
+For items that can be documented by a single sentence, the following
+form is used:
+<blockquote>
+<pre>
+//! Returns the size of the set.
+std::size_t size() const { return num_elts; }
+</pre>
+</blockquote>
+</p>
+
+</body>
+</html>

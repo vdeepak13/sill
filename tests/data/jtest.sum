@@ -1,0 +1,16 @@
+jtest
+7
+7
+2
+2
+3
+3
+2
+2
+2
+jtest.txt.symbolic
+PREFIX=a
+INDEX_BASE=1
+SKIPLINES=1
+WEIGHTED=1
+| Test of the dataset (data_t) structure.

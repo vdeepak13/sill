@@ -1,0 +1,866 @@
+
+#ifndef PRL_DENSE_TABLE_HPP
+#define PRL_DENSE_TABLE_HPP
+
+#include <algorithm>
+#include <numeric>
+#include <iterator>
+#include <iosfwd>
+
+#include <boost/optional.hpp>
+
+#include <prl/global.hpp>
+#include <prl/functional.hpp>
+#include <prl/range/algorithm.hpp>
+#include <prl/range/numeric.hpp>
+#include <prl/stl_concepts.hpp>
+#include <prl/serialization/serialize.hpp>
+#include <prl/serialization/vector.hpp>
+
+#include <prl/macros_def.hpp>
+
+// #define EXPERIMENTAL
+
+namespace prl {
+
+  /**
+   * A dense table with an arbitrary number of dimensions, each with a
+   * finite number of values.
+   *
+   * @see Table
+   *
+   * \ingroup datastructure
+   */
+  template <typename T>
+  class dense_table {
+
+    // Public type declarations
+    //==========================================================================
+  public:
+    // Typedefs required to satisfy the Container concept
+    typedef typename std::vector<T>::value_type value_type;
+    typedef typename std::vector<T>::difference_type difference_type;
+    typedef typename std::vector<T>::size_type size_type;
+    typedef typename std::vector<T>::reference reference;
+    typedef typename std::vector<T>::pointer pointer;
+    typedef typename std::vector<T>::iterator iterator;
+    typedef typename std::vector<T>::const_reference const_reference;
+    typedef typename std::vector<T>::const_pointer const_pointer;
+    typedef typename std::vector<T>::const_iterator const_iterator;
+
+    //! The type used to represent the shape and indices.
+    typedef std::vector<size_t> shape_type;
+
+    // Forward declaration
+    class index_iterator;
+    
+    // Private data members
+    //==========================================================================
+  private:
+    class offset_functor;
+
+    //! The dimensions of this table
+    shape_type shape_;
+
+    //! Pre-computed number of elements
+    size_t size_;
+
+    //! The elements of this table, stored in a linear sequence.
+    std::vector<T> elts;
+
+  public: // temporary hack by Anton
+    //! The offset calculator which maps indices for this table's
+    //! geometry into offsets for the #elts sequence.
+    offset_functor offset;
+
+  public:
+    void save(oarchive & ar) const {
+      ar << shape_;
+      ar << elts;
+    }
+
+    void load(iarchive & ar) {
+      ar >> shape_;
+      size_ = prl::accumulate(shape_, 1, std::multiplies<size_t>());
+      ar >> elts;
+      offset = offset_functor(shape_);
+    }
+
+    // Constructors
+    //==========================================================================
+  public:
+    //! Constructs a table with the given dimensions and default element
+    dense_table(const shape_type& extents, T init_elt = T())
+      : shape_(extents), 
+        size_(prl::accumulate(shape_, 1, std::multiplies<size_t>())),
+        elts(size_, init_elt),
+        offset(extents) {
+      // Check to make sure the size value did not overflow.
+      double logsize(0.);
+      foreach(size_t s, extents)
+        logsize += std::log(s);
+      if (logsize > std::log(std::numeric_limits<size_t>::max())) {
+        throw std::overflow_error("Argument \"extents\" defined a table size larger than size_t max value.");
+      }
+    }
+
+    //! Constructs a table with a single element
+    explicit dense_table(T init_elt = T()) 
+      : size_(1),
+        elts(1, init_elt),
+        offset(shape_) { }
+
+    // Simple public functions
+    //==========================================================================
+    //! Swaps the contents of these two tables
+    void swap(dense_table& other) {
+      shape_.swap(other.shape_);
+      std::swap(size_, other.size_);
+      std::swap(offset, other.offset);
+      elts.swap(other.elts);
+    }
+
+    bool operator==(const dense_table& other) const {
+      return shape_ == other.shape_ && elts == other.elts;
+    }
+
+    bool operator!=(const dense_table& other) const {
+      return !(*this == other);
+    }
+
+    //! Returns the number of dimensions of this table.
+    size_t arity() const {
+      return shape_.size();
+    }
+
+    //! Returns the dimensions of this table.
+    const shape_type& shape() const {
+      return shape_;
+    }
+
+    //! Total number of elements in the table (including the default ones)
+    size_t size() const {
+      return size_;
+    }
+
+    //! Returns the size of the given dimension of this table
+    //! @param dim index from 0 to k-1
+    size_t size(const size_t dim) const {
+      assert(dim < arity());
+      return shape_[dim];
+    }
+
+    //! The maximum number of elements in the table (requirement of Container)
+    size_t max_size() const {
+      return size_;
+    }
+
+    //! Returns true if one of the dimensions of the table is 0.
+    bool empty() const {
+      return size_ == 0;
+    }
+
+    //! Returns the iterator pointing to the first element.
+    iterator begin() {
+      return elts.begin();
+    }
+    
+    //! Returns the iterator pointing to the first element.
+    const_iterator begin() const {
+      return elts.begin();
+    }
+
+    //! Returns the iterator pointing to the one past the last element.
+    iterator end() {
+      return elts.end();
+    }
+
+    //! Returns the iterator pointing to the one past the last element.
+    const_iterator end() const {
+      return elts.end();
+    }
+
+    /**
+     * Returns a const iterator range over the elements of this table.
+     *
+     * @param permit_skipping
+     *        if this flag is set to true, then the iterator range
+     *        is permitted (but not required) to skip all instances of
+     *        a designated skip element     * @param skip_elt
+     *        if skipping is enabled, then the returned iterator range
+     *        is permitted (but not required) to skip all instances of
+     *        this element
+     */
+     std::pair<const_iterator, const_iterator>
+     elements() const {
+      return std::make_pair(elts.begin(), elts.end());
+    }
+
+    /**
+     * Returns a mutable iterator range over the elements of this table.
+     *
+     * @param permit_skipping
+     *        if this flag is set to true, then the iterator range
+     *        is permitted (but not required) to skip all instances of
+     *        a designated skip element
+     * @param skip_elt
+     *        if skipping is enabled, then the returned iterator range
+     *        is permitted (but not required) to skip all instances of
+     *        this element
+     */
+    std::pair<iterator, iterator>
+    elements() {
+      return std::make_pair(elts.begin(), elts.end());
+    }
+
+  #ifndef SWIG
+    //! Returns the index associated with an iterator position
+    shape_type index(const_iterator it) const {
+      assert(it >= begin() && it < end());
+      return offset.index(it - begin());
+    }
+
+    /**
+     * Returns an iterator range over indices into this table.
+     * The ordering used is determined by the geometry of the table: the first
+     * element in the geometry is the least significant bit of the index.
+     */
+    std::pair<index_iterator, index_iterator>
+    indices() const {
+      return std::make_pair(index_iterator(&shape_), index_iterator());
+    }
+
+    /**
+     * Returns an iterator range over a subspace of indices into this table.
+     * The ordering used is determined by the geometry of the table: the first
+     * element in the geometry is the least significant bit of the index.
+     */
+    std::pair<index_iterator, index_iterator>
+    indices(const shape_type& restrict_map) const {
+      return std::make_pair(index_iterator(&shape_, &restrict_map),
+                            index_iterator());
+    }
+    #endif
+
+    //! implements Table::operator()
+    const T& operator()(const shape_type& i) const {
+      return elts[offset(i)];
+    }
+
+    //! implements Table::operator()
+    T& operator()(const shape_type& i) {
+      return elts[offset(i)];
+    }
+
+    //! operator with direct indexing
+    T& operator()(size_t i) {
+      return elts[i];
+    }
+
+    //! operator with direct indexing
+    const T& operator()(size_t i) const {
+      return elts[i];
+    }
+
+    //! implements Table::apply
+    template <typename Function>
+    void apply(Function f) {
+      prl::for_each(elts, f);
+    }
+
+    //! implements Table::update
+    template <typename Function>
+    void update(Function f) {
+      concept_assert((UnaryFunction<Function, T, T>));
+      foreach(T& x, elts) x = f(x);
+    }
+    
+    // Table joins and aggregations
+    //==========================================================================
+    //! implements Table::join
+    template <typename JoinOp>
+    void join(const dense_table& x, const dense_table& y,
+              const shape_type& x_dim_map, const shape_type& y_dim_map,
+              JoinOp op) {
+      concept_assert((BinaryFunction<JoinOp,T,T,T>));
+      #ifdef EXPERIMENTAL
+            // Get offset calculators for the two input tables.
+      offset_iterator x_offset(x.shape(), this->arity(), x_dim_map);
+      offset_iterator y_offset(y.shape(), this->arity(), y_dim_map);
+
+      // Iterate over the cells of this table, computing the value
+      // using the corresponding cells of the input tables.
+      foreach(const shape_type& index, indices()) {
+        (*this)(index) = op(x.elts[x_offset()],
+                            y.elts[y_offset()]);
+        ++x_offset;
+        ++y_offset;
+      }
+      #else
+      // Get offset calculators for the two input tables.
+      offset_functor x_offset(x.shape(), this->arity(), x_dim_map);
+      offset_functor y_offset(y.shape(), this->arity(), y_dim_map);
+
+      // Iterate over the cells of this table, computing the value
+      // using the corresponding cells of the input tables.
+      foreach(const shape_type& index, indices())
+        (*this)(index) = op(x.elts[x_offset(index)],
+                            y.elts[y_offset(index)]);
+      #endif
+    }
+
+    //! implements Table::join_with
+    template <typename JoinOp>
+    void join_with(const dense_table& y, const shape_type& y_dim_map,
+                   JoinOp op) {
+      concept_assert((BinaryFunction<JoinOp,T,T,T>));
+
+      #ifdef EXPERIMENTAL
+      // Get an offset calculator for y.
+      offset_iterator y_offset(y.shape(), this->arity(), y_dim_map);
+      offset_iterator this_offset(base::shape());
+      // Iterate over the cells of this table, computing the value
+      // using the corresponding cell of y.
+
+      while(!this_offset.end()) {
+        elts[this_offset()] = op(elts[this_offset()], y.elts[y_offset()]);
+        ++y_offset;
+        ++this_offset;
+      }
+      #else
+
+      // Get an offset calculator for y.
+      offset_functor y_offset(y.shape(), this->arity(), y_dim_map);
+      // Iterate over the cells of this table, computing the value
+      // using the corresponding cell of y.
+
+      foreach(const shape_type& index, indices()) {
+        (*this)(index) = op((*this)(index), y.elts[y_offset(index)]);
+      }
+      #endif
+    }
+
+    //! implements Table::aggregate
+    //! \todo Do we require that the table is initialized to op.left_identity()?
+    template <typename AggOp>
+    void aggregate(const dense_table& x, const shape_type& dim_map, AggOp op) {
+      concept_assert((BinaryFunction<AggOp,T,T,T>));
+      #ifdef EXPERIMENTAL
+      // Get an offset calculator that maps x indexes to z offsets.
+      offset_iterator z_offset(this->shape(), x.arity(), dim_map);
+      // Iterate over the cells of the input table, computing the
+      // aggregate.
+      foreach(const shape_type& x_index, x.indices()) {
+        size_t offset = z_offset();
+        elts[offset] = op(elts[offset], x(x_index));
+        ++z_offset;
+      }
+
+      #else
+      // Get an offset calculator that maps x indexes to z offsets.
+      offset_functor z_offset(this->shape(), x.arity(), dim_map);
+      // Iterate over the cells of the input table, computing the
+      // aggregate.
+      foreach(const shape_type& x_index, x.indices()) {
+        size_t offset = z_offset(x_index);
+        elts[offset] = op(elts[offset], x(x_index));
+      }
+      #endif
+    }
+
+    //! Aggregates all dimensions of the table and returns the result
+    template <typename AggOp>
+    T aggregate(AggOp op, T initialvalue) const {
+      concept_assert((BinaryFunction<AggOp,T,T,T>));
+      T result = initialvalue;
+      foreach(T value, elts){
+        result = op(result, value);
+      }
+      return result;
+    }
+
+    //! Aggregates all dimensions of the table and returns the result
+    template <typename AggOp, typename U>
+    U foldr(AggOp op, U leftval) const {
+      concept_assert((BinaryFunction<AggOp,T,U,T>));
+      U result = leftval;
+      foreach(T value, elts) result = op(result, value);
+      return result;
+    }
+
+    //! implements Table::join_aggregate
+    template <typename JoinOp, typename AggOp>
+    static typename AggOp::result_type
+    join_aggregate(const dense_table& x,
+                   const dense_table& y,
+                   const shape_type& x_dim_map,
+                   const shape_type& y_dim_map,
+                   JoinOp join_op, AggOp agg_op, T initialvalue) {
+      concept_assert((BinaryFunction<JoinOp,T,T,T>));
+      concept_assert((BinaryFunction<AggOp,T,T,T>));
+
+      // Initialize the aggregate with the identity of the aggregation op.
+      typename AggOp::result_type aggregate = initialvalue;
+
+      // Compute the shape of the joined table.
+      size_t z_arity =
+        1 + std::max(prl::accumulate(x_dim_map, 0, maximum<size_t>()),
+                     prl::accumulate(y_dim_map, 0, maximum<size_t>()));
+      shape_type z_shape(z_arity);
+
+      // could simplify the following as:
+      // boost::copy(x.shape(), boost::subrange(x, x_dim_map));
+      for (size_t d = 0; d < x.arity(); ++d)
+        z_shape[x_dim_map[d]] = x.shape()[d];
+      for (size_t d = 0; d < y.arity(); ++d)
+        z_shape[y_dim_map[d]] = y.shape()[d];
+
+      // Get offset calculators for the two input tables.
+      offset_functor x_offset(x.shape(), z_arity, x_dim_map);
+      offset_functor y_offset(y.shape(), z_arity, y_dim_map);
+
+      // Iterate over the cells of the result table, computing the value
+      // using the corresponding cells of the input tables.
+      index_iterator it(&z_shape), end;
+      for (; it != end; ++it)
+        aggregate = agg_op(aggregate, join_op(x.elts[x_offset(*it)],
+                                              y.elts[y_offset(*it)]));
+      return aggregate;
+    }
+
+    //! implements Table::join_find
+    template <typename Pred>
+    static boost::optional< std::pair<T,T> >
+    join_find(const dense_table& x,
+              const dense_table& y,
+              const shape_type& x_dim_map,
+              const shape_type& y_dim_map,
+              Pred p) {
+      concept_assert((BinaryPredicate<Pred, T, T>));
+
+      // Compute the shape of the joined table.
+      size_t z_arity =
+        1 + std::max(prl::accumulate(x_dim_map, 0, maximum<size_t>()),
+                     prl::accumulate(x_dim_map, 0, maximum<size_t>()));
+      shape_type z_shape(z_arity);
+
+      // could simplify the following as:
+      // boost::copy(x.shape(), boost::subrange(x, x_dim_map));
+      for (size_t d = 0; d < x.arity(); ++d)
+        z_shape[x_dim_map[d]] = x.shape()[d];
+      for (size_t d = 0; d < y.arity(); ++d)
+        z_shape[y_dim_map[d]] = y.shape()[d];
+
+      // Get offset calculators for the two input tables.
+      offset_functor x_offset(x.shape(), z_arity, x_dim_map);
+      offset_functor y_offset(y.shape(), z_arity, y_dim_map);
+
+      index_iterator it(&z_shape), end;
+      for (; it != end; ++it) {
+        T xi = x.elts[x_offset(*it)];
+        T yi = y.elts[y_offset(*it)];
+        if (p(xi,yi)) return std::make_pair(xi,yi);
+      }
+
+      return boost::none;
+    }
+
+    //! implements Table::restrict
+    void restrict(const dense_table& x,
+                  const shape_type& restrict_map,
+                  const shape_type& dim_map) {
+      // Get an offset calculator that maps x indexes to offsets of this table
+      offset_functor z_offset(this->shape(), x.arity(), dim_map);
+      // Iterate over a subspace of the input table, copying to this table.
+      foreach(const shape_type& x_index, x.indices(restrict_map)) {
+        size_t offset = z_offset(x_index);
+        elts[offset] = x(x_index); ;
+      }
+    }
+
+    // Iterators
+    //==========================================================================
+  public:
+    /**
+     * An iterator over the indices to a table.
+     * The ordering used is determined by the geometry of the table: the first
+     * element in the geometry is the least significant bit of the index.
+     */
+    class index_iterator :
+      public std::iterator<std::forward_iterator_tag, const shape_type> {
+
+      //! The geometry of the table.
+      const shape_type* geometry;
+
+      //! The current index into the table.
+      shape_type index;
+
+      //! A flag indicating whether the index has wrapped around.
+      bool done;
+
+      //! Restrictions to a certain subspace of the table.
+      const shape_type* restrict_map;
+
+    public:
+      //! End iterator constructor.
+      index_iterator()
+        : geometry(NULL), index(), done(true), restrict_map(NULL) { }
+
+      //! Begin iterator constructor with no restrictions.
+      index_iterator(const shape_type* geometry)
+        : geometry(geometry),
+          index(geometry->size(), 0),
+          done(false),
+          restrict_map(NULL)
+      {
+        // If table is of size 0, then mark iterator as done.
+        for (size_t i = 0; i < geometry->size(); i++)
+          if ((*geometry)[i] == 0) {
+            done = true;
+            return;
+          }
+      }
+
+      //! Begin iterator constructor with restrictions.
+      //! \todo test
+      index_iterator(const shape_type* geometry,
+                     const shape_type* restrict_map)
+        : geometry(geometry),
+          index(geometry->size(), 0),
+          done(false), 
+          restrict_map(restrict_map)
+      {
+        // If table is of size 0, then mark iterator as done.
+        for (size_t i = 0; i < geometry->size(); i++)
+          if ((*geometry)[i] == 0) {
+            done = true;
+            return;
+          }
+        // initialize the dimensions that have been restricted
+        // transform(map, geometry, index.begin(), if_else(arg1<arg2, arg1, 0));
+        for(size_t i=0; i < restrict_map->size(); i++)
+          if ((*restrict_map)[i] < (*geometry)[i])
+            index[i] = (*restrict_map)[i];
+      }
+
+      /**
+       * Advances a table index to the next cell of the table. The ordering
+       * used is determined by the geometry of the table: the first element
+       * in the geometry is the least significant bit of the index.
+       * If the supplied index pointed to the last cell, this function returns
+       * true and the index is reset to point to the first cell.
+       */
+      bool increment(shape_type& index, const shape_type& geometry) {
+        for(size_t i = 0; i<index.size(); i++)
+          if (index[i] == geometry[i] - 1)
+            index[i] = 0;
+          else {
+            ++index[i];
+            return false;
+          }
+        return true;
+      }
+
+      /**
+       * Advances a table index to the next cell of the table. The ordering
+       * used is determined by the geometry of the table: the first element
+       * in the geometry is the least significant bit of the index.
+       * If the supplied index pointed to the last cell, this function returns
+       * true and the index is reset to point to the first cell.
+       * This version of the increment function keeps the increments restricted
+       * to a subspace of the table specified by restrict_map.
+       *
+       * @param index
+       *        current table index
+       * @param geometry
+       *        geometry of the table with which index is associated
+       * @param restrict_map
+       *        restriction map of same length as index;
+       *        restrict_map[i] = v in [0, geometry[i] - 1] indicates
+       *        dimension i is restricted to value v, and larger values
+       *        indicate no restriction
+       *
+       */
+      bool increment(shape_type& index,
+                     const shape_type& geometry,
+                     const shape_type& restrict_map) {
+        assert(index.size() == geometry.size());
+        assert(index.size() == restrict_map.size());
+
+        for (size_t i = 0; i < index.size(); i++) {
+          // Check to see if we're not skipping this dimension
+          if (restrict_map[i] >= geometry[i]) {
+            // If we've reached the end of this dimension, reset to zero
+            // and continue to the next dimension.  Otherwise, increment
+            // the index in this dimension and quit.
+            if (index[i] == geometry[i] - 1)
+              index[i] = 0;
+            else {
+              ++index[i];
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      //! Prefix increment.
+      index_iterator& operator++() {
+        if (restrict_map == NULL)
+          done = increment(index, *geometry);
+        else
+          done = increment(index, *geometry, *restrict_map);
+        return *this;
+      }
+
+      //! Postfix increment.
+      index_iterator operator++(int) {
+        index_iterator tmp = *this;
+        ++(*this);
+        return tmp;
+      }
+
+      //! Returns a const reference to the current index.
+      const shape_type& operator*() {
+        return index;
+      }
+
+      //! Returns a const pointer to the current index.
+      const shape_type* operator->() {
+        return &index;
+      }
+
+      //! Returns truth if the two table indexes are the same.
+      bool operator==(const index_iterator& it) const {
+        if (done)
+          return it.done;
+        else
+          return !it.done && (index == it.index);
+      }
+
+      //! Returns truth if the two table indexes are different.
+      bool operator!=(const index_iterator& it) const {
+        return !(*this == it);
+      }
+
+    }; // class index_iterator
+
+  private:
+    //  public: //temporary hack -anton
+
+    /**
+     * An offset calculator is an object that translates table indices
+     * into linear offsets suitable for storage.  This may be used
+     * to map a table's indices to its offsets, to map one table's indices
+     * to the offsets of another table of corresponding size, or
+     * to map indices from one table to offsets of another of smaller size
+     * such that the smaller table represents a subspace of the larger.
+     */
+    class offset_functor {
+
+      //! The multiplier associated with the index in each dimension.
+      shape_type multiplier;
+
+    public:
+
+      /**
+       * Constructs an offset calculator for the default indices
+       * associated with a table with the supplied geometry.
+       */
+      offset_functor(const shape_type& geometry)
+        : multiplier(geometry.size(), 1) {
+        // Calculate the multipliers.
+        for (size_t i = 1; i < multiplier.size(); ++i)
+          multiplier[i] = multiplier[i - 1] * geometry[i - 1];
+      }
+
+      /**
+       * Constructs an offset calculator for a table with the supplied
+       * geometry and indices for a different table, given a
+       * mapping from the dimensions of this table to the
+       * dimensions of the other table.  If this mapping is a one-to-one
+       * correspondence, then these tables' dimensions must obey the same
+       * one-to-one correspondence.  If this mapping is a partial injective
+       * mapping, then the table with the supplied geometry must represent
+       * a subspace of the other table.
+       *
+       * Example use: table1 is a subspace (restriction of) of table2
+       * table1.var[i] = table2.var[pos[i]]
+       *
+       * @param  geometry
+       *         the geometry of the table for which offsets
+       *         are calculated
+       * @param  index_dim
+       *         the size of the indices that will be
+       *         supplied to this object's operator()
+       * @param  pos_map
+       *         pos_map[i] gives
+       *         the tuple position of the table indices
+       *         supplied to this object's operator() that
+       *         is associated with dimension i of the geometry.
+       *         The values in this map must be in the range
+       *         [0, index_dim).
+       */
+    offset_functor(const shape_type& geometry,
+                   size_t index_dim,
+                   const shape_type& pos_map)
+      : multiplier(index_dim, 0) {
+      // Calculate the multipliers, one per tuple position.
+      if (geometry.empty()) return;
+      const size_t size = geometry.size();
+      multiplier[pos_map[0]] = 1;
+      for (size_t i = 1; i < size; ++i)
+        multiplier[pos_map[i]] = multiplier[pos_map[i - 1]] * geometry[i - 1];
+    }
+
+    /**
+     * Calculates the offset associated with the supplied table index.
+     *
+     * \todo This code is often used in the context of repeatedly
+     * incrementing an index and computing its offset.  This code does
+     * not take into account the fact that when a table index is
+     * incremented, most of the positions may not change.  To approach
+     * the optimal overhead of native nested loops we should exploit
+     * this.
+     */
+      size_t operator()(const shape_type& index) const {
+        size_t offset = 0;
+        for (size_t d = 0; d < multiplier.size(); ++d)
+          offset += multiplier[d] * index[d];
+        return offset;
+      }
+
+      size_t get_multiplier(size_t d) const{
+        return multiplier[d];
+      }
+
+      //! Calculates the index associated with the supplied offset.
+      shape_type index(size_t offset) const {
+        shape_type ind(multiplier.size());
+        // must use int here to avoid wrap-around
+        for(int d = multiplier.size()-1; d >= 0; --d) {
+          assert(multiplier[d] != 0);
+          ind[d] = offset / multiplier[d];
+          offset = offset % multiplier[d];
+        }
+        return ind;
+      }
+
+    }; // class offset_functor
+
+#ifdef EXPERIMENTAL
+    class offset_iterator {
+     private:
+      //! current 'linear' position of the iterator
+      size_t offset;
+
+      //! The multiplier associated with the index in each dimension.
+      shape_type multiplier;
+
+      //! max values of each table entry
+      const shape_type& geometry;
+
+      //! Current 'index' position of the iterator
+      shape_type indices;
+
+      //! number of dimensions
+      size_t numdims;
+
+     public:
+      offset_iterator(const shape_type& geometry)
+        : multiplier(geometry.size(), 1),
+          geometry(geometry),
+          indices(geometry.size(), 0),
+          numdims(geometry.size()) {
+        // Calculate the multipliers.
+        offset = 0;
+        for (size_t i = 1; i < multiplier.size(); ++i)
+          multiplier[i] = multiplier[i - 1] * geometry[i - 1];
+      }
+
+      offset_iterator(const shape_type& geometry,
+                      size_t index_dim,
+                      const shape_type& pos_map)
+        : multiplier(index_dim, 0),
+          geometry(geometry),
+          indices(index_dim, 0),
+          numdims(index_dim) {
+        // Calculate the multipliers, one per tuple position.
+        if (geometry.empty()) return;
+        const size_t size = geometry.size();
+        multiplier[pos_map[0]] = 1;
+        offset = 0;
+        for (size_t i = 1; i < size; ++i)
+          multiplier[pos_map[i]] = multiplier[pos_map[i - 1]] * geometry[i - 1];
+      }
+
+      /**
+       * Calculates the offset associated with the supplied table index.
+       *
+       * \todo This code is often used in the context of repeatedly
+       * incrementing an index and computing its offset.  This code does
+       * not take into account the fact that when a table index is
+       * incremented, most of the positions may not change.  To approach
+       * the optimal overhead of native nested loops we should exploit
+       * this.
+       */
+      size_t operator()() const {
+        return offset;
+      }
+
+      //! Calculates the index associated with the supplied offset.
+      shape_type index(size_t offset) const {
+        shape_type ind(multiplier.size());
+        // must use int here to avoid wrap-around
+        for(int d = multiplier.size()-1; d >= 0; --d) {
+          assert(multiplier[d] != 0);
+          ind[d] = offset / multiplier[d];
+          offset = offset % multiplier[d];
+        }
+        return ind;
+      }
+
+
+      offset_iterator& operator++() {
+        indices[0] = indices[0] + 1;
+        offset = offset + multiplier[0];
+        for (size_t i = 0; i < numdims - 1; ++i) {
+          if (__builtin_expect((indices[i] >= geometry[i]), 0)) {
+            offset = offset - indices[i] * multiplier[i];
+            offset = offset + multiplier[i+1];
+            indices[i] = 0;
+            indices[i+1]++;
+          }
+          else {
+            break;
+          }
+        }
+        return *this;
+      }
+
+      bool end() {
+        return indices[numdims-1] >= geometry[numdims-1];
+      }
+    }; // class offset_iterator
+
+#endif
+
+  }; // class dense_table
+
+  //! Writes a human-readable representation of the table.
+  //! \relates dense_table
+  template <typename T>
+  std::ostream& operator<<(std::ostream& out, const dense_table<T>& table) {
+    typedef typename dense_table<T>::shape_type shape_type;
+    foreach(const shape_type& index, table.indices()) {
+      prl::copy(index, std::ostream_iterator<T, char>(out, " "));
+      out << table(index) << std::endl;
+    }
+    return out;
+  }
+
+} // namespace prl
+
+#include <prl/macros_undef.hpp>
+
+#endif // #ifndef PRL_DENSE_TABLE_HPP

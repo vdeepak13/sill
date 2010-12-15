@@ -1,0 +1,14 @@
+add_library(prl-factor
+  approx/integration_points
+  approx/hybrid_conditional
+  canonical_gaussian
+  gaussian_crf_factor
+  log_reg_crf_factor
+  log_table_factor
+  moment_gaussian
+  mixture
+  nonlinear_gaussian
+  random
+  table_crf_factor
+  table_factor
+  )

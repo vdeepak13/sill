@@ -1,0 +1,4 @@
+This directory contains some files from the reference Chord implementation
+that are needed by our library and are not by default copied to /usr/local
+by Chord's installation scripts. The use of these files is governed by 
+

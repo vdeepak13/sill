@@ -1,0 +1,339 @@
+
+#ifndef PRL_RECORD_HPP
+#define PRL_RECORD_HPP
+#include <map>
+#include <prl/base/assignment.hpp>
+#include <prl/copy_ptr.hpp>
+#include <prl/math/vector.hpp>
+#include <prl/base/stl_util.hpp>
+#include <prl/base/assignment.hpp>
+#include <prl/macros_def.hpp>
+
+namespace prl {
+
+  /**
+   * A type that provides a mutable view of a single datapoint.
+   * Records can store their own data but can also hold pointers into data
+   * stored in other structures.
+   * When a record is copied, the copy will store its own data.
+   * \author Joseph Bradley, Stanislav Funiak
+   * \todo Allow records to be restricted to a set of variables.
+   * @todo Change assignment(), finite_assignment(), etc. to allow efficient
+   *       access for datasets whose native type is assignment.
+   * \ingroup learning_dataset
+   */
+  class record {
+
+    // Public types and data members
+    //==========================================================================
+  public:
+
+    //! Type of map value from a finite variable to its index
+    typedef std::pair<finite_variable*, size_t> finite_var_index_pair;
+
+    //! Type of map value from a vector variable to the first index in the
+    //! space allocated for it
+    typedef std::pair<vector_variable*, size_t> vector_var_index_pair;
+
+    //! Map from finite variables to their indices.
+    copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr;
+    //! Map from vector variables to their indices.
+    copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr;
+
+    //! True if record owns its data
+    bool own;
+
+    //! Handle for finite variable values for record
+    std::vector<size_t>* fin_ptr;
+
+    //! Handle for vector variable values for record
+    vec* vec_ptr;
+
+    /*
+// TODO: FINISH RECORD VIEWS
+    //! Indicates if this is a view.
+    bool is_view;
+    //! Indices of finite variables (elements in fin_ptr) in view.
+    std::vector<size_t> fin_view;
+    //! Indices of vector variable components (elements of vec_ptr) in view.
+    std::vector<size_t> vec_view;
+    */
+
+    // Constructors
+    //==========================================================================
+
+    //! Constructor for a record which owns its findata, vecdata
+    record(copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr,
+           copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
+           size_t vector_dim)
+      : finite_numbering_ptr(finite_numbering_ptr),
+        vector_numbering_ptr(vector_numbering_ptr),
+        own(true),
+        fin_ptr(new std::vector<size_t>(finite_numbering_ptr->size())),
+        vec_ptr(new vec(vector_dim)) {
+    }
+
+    //! Constructor for a record which uses findata, vecdata from its creator
+    record(copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr,
+           copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
+           std::vector<size_t>* fin_ptr, vec* vec_ptr)
+      : finite_numbering_ptr(finite_numbering_ptr),
+        vector_numbering_ptr(vector_numbering_ptr),
+        own(false), fin_ptr(fin_ptr), vec_ptr(vec_ptr) {
+    }
+
+    //! Constructs an empty record.
+    record()
+      : finite_numbering_ptr(new std::map<finite_variable*, size_t>()),
+        vector_numbering_ptr(new std::map<vector_variable*, size_t>()),
+        own(true),
+        fin_ptr(new std::vector<size_t>()), vec_ptr(new vec()) {
+    }
+
+    //! Copy constructor.
+    //! The new record owns its data since a record does not know whether
+    //! or not it's OK to rely on the outside handle.
+    record(const record& rec)
+      : finite_numbering_ptr(rec.finite_numbering_ptr),
+        vector_numbering_ptr(rec.vector_numbering_ptr), own(true),
+        fin_ptr(new std::vector<size_t>(*(rec.fin_ptr))),
+        vec_ptr(new vec(*(rec.vec_ptr))) {
+    }
+
+    ~record() {
+      if (own) {
+        delete(fin_ptr);
+        delete(vec_ptr);
+      }
+    }
+
+
+    // Getters and helpers
+    //==========================================================================
+
+
+    //! Returns the finite part of this record as an assignment.
+    prl::finite_assignment finite_assignment() const;
+
+    //! Returns the vector part of this record as an assignment.
+    prl::vector_assignment vector_assignment() const;
+
+    //! Returns this record as an assignment.
+    prl::assignment assignment() const {
+      prl::assignment a(finite_assignment());
+      a.vector() = vector_assignment();
+      return a;
+    }
+
+    //! Converts this record to a finite assignment.
+    operator prl::finite_assignment() const {
+      return this->finite_assignment();
+    }
+
+    //! Converts this record to a vector assignment.
+    operator prl::vector_assignment() const {
+      return this->vector_assignment();
+    }
+
+    //! Converts this record to an assignment.
+    operator prl::assignment() const {
+      return this->assignment();
+    }
+
+    //! Returns list of finite variables in the natural order.
+    //! NOTE: This is not stored and must be computed from finite_numbering!
+    finite_var_vector finite_list() const;
+    
+    
+    //! Returns list of vector variables in the natural order.
+    //! NOTE: This is not stored and must be computed from vector_numbering!
+    vector_var_vector vector_list() const;
+
+    //! Returns the finite component of this record as a vector
+    std::vector<size_t>& finite() {
+      return *fin_ptr;
+    }
+
+    //! Returns the finite component of this record as a vector
+    const std::vector<size_t>& finite() const {
+      return *fin_ptr;
+    }
+
+    //! Returns the vector component of this record as one continuous vector
+    vec& vector() {
+      return *vec_ptr;
+    }
+
+    //! Returns the vector component of this record as one continuous vector
+    const vec& vector() const {
+      return *vec_ptr;
+    }
+
+    //! Returns element i of the finite component of this record
+    //! Warning: The bounds are not checked!
+    size_t& finite(size_t i) {
+      return fin_ptr->operator[](i);
+    }
+
+    //! Returns element i of the finite component of this record
+    //! Warning: The bounds are not checked!
+    size_t finite(size_t i) const {
+      return fin_ptr->operator[](i);
+    }
+
+    //! Returns element i of the vector component of this record (when
+    //!  represented as one continuous vector)
+    //! Warning: The bounds are not checked!
+    double& vector(size_t i) {
+      return vec_ptr->operator[](i);
+    }
+
+    //! Returns element i of the vector component of this record (when
+    //!  represented as one continuous vector)
+    //! Warning: The bounds are not checked!
+    double vector(size_t i) const {
+      return vec_ptr->operator[](i);
+    }
+
+    //! Returns the value of variable v in this record.
+    size_t& finite(finite_variable* v) {
+      size_t i(safe_get(*finite_numbering_ptr, v));
+      return fin_ptr->operator[](i);
+    }
+
+    //! Returns the value of variable v in this record.
+    size_t finite(finite_variable* v) const {
+      size_t i(safe_get(*finite_numbering_ptr, v));
+      return fin_ptr->operator[](i);
+    }
+
+    //! Returns element j of the value of variable v in this record.
+    //! Warning: The bounds are not checked!
+    double& vector(vector_variable* v, size_t j) {
+      size_t i(safe_get(*vector_numbering_ptr, v));
+      return vec_ptr->operator[](i + j);
+    }
+
+    //! Returns the value of variable v in this record.
+    //! Warning: The bounds are not checked!
+    double vector(vector_variable* v, size_t j) const {
+      size_t i(safe_get(*vector_numbering_ptr, v));
+      return vec_ptr->operator[](i + j);
+    }
+
+    //! Write the record to the given output stream.
+    template <typename CharT, typename Traits>
+    void write(std::basic_ostream<CharT, Traits>& out) const {
+      out << this->assignment();
+    }
+
+    //! The new copy owns its data since a record does not know whether
+    //! or not it's OK to rely on the outside reference.
+    record& operator=(const record& rec);
+
+    /*
+    //! Copies another record r into this record.
+    //! WARNING: This record owns its data iff r does, so it can provide
+    //!  mutable access to datasets which should be constant.
+    //!  This function should really only be used by oracles and datasets.
+    void copy_record(record& r) {
+      finite_numbering = r.finite_numbering;
+      vector_numbering = r.vector_numbering;
+      own = r.own;
+      if (own) {
+        findata = r.findata; fin_ptr = &findata;
+        vecdata = r.vecdata; vec_ptr = &vecdata;
+      } else
+        fin_ptr = r.fin_ptr; vec_ptr = r.vec_ptr;
+    }
+    */
+
+    /*
+     * Set this record's view.
+     * @param fin_vars  finite variables to be included in view
+     * @param vec_vars  vector variables to be included in view
+     * @param vec_components  vec_components[i] = components of i^th variable
+     *                        in vec_vars to include in view; if none given,
+     *                        then includes all
+     */
+    /*
+    void set_view(var_vector fin_vars, var_vector vec_vars,
+                  std::vector<std::vector<size_t> > vec_components
+                  = std::vector<std::vector<size_t> >()) {
+      fin_view.clear();
+      foreach(variable_h v, fin_vars)
+        fin_view.push_back(finite_numbering_ptr_->operator[v]);
+      vec_view.clear();
+      for (size_t j = 0; j < vec_vars.size(); ++j) {
+        size_t start = vector_numbering_ptr_->operator[vec_vars[j]];
+        if (vec_components.empty() || vec_components[j].empty())
+          for (size_t k = 0; k < vec_vars[j].size(); ++k)
+            vec_view.push_back(start + k);
+        else
+          foreach(size_t k, vec_components[j])
+            vec_view.push_back(start + k);
+      }
+      is_view = true;
+    }
+    //! Resets the record's view to be complete.
+    void reset_view() { is_view = false; }
+    */
+
+    // Mutating operations
+    //==========================================================================
+
+    //! Clears the stored data (if it is owned by the record)
+    //! and resets the record (like a constructor).
+    void
+    reset(copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr,
+          copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
+          size_t vector_dim);
+
+    //! Set finite data to be this value (stored in the record itself).
+    void set_finite_val(const std::vector<size_t>& val) {
+      assert(own);
+      fin_ptr->operator=(val);
+    }
+
+    //! Set vector data to be this value (stored in the record itself).
+    void set_vector_val(const vec& val) {
+      assert(own);
+      vec_ptr->operator=(val);
+    }
+
+    //! Set finite data to reference this value (stored outside of the record).
+    void set_finite_ptr(std::vector<size_t>* val) {
+      assert(!own);
+      fin_ptr = val;
+    }
+
+    //! Set vector data to reference this value (stored outside of the record).
+    void set_vector_ptr(vec* val) {
+      assert(!own);
+      vec_ptr = val;
+    }
+
+    //! Copies the given assignment into this record. The assignment
+    //! must have at least all of the variables used in the record.
+    //! After this operation, the record owns its own data.
+    void copy_assignment(const prl::assignment& a);
+
+  }; // class record
+
+  // Free functions
+  //==========================================================================
+
+  // @todo Fix this! (See symbolic_oracle.cpp)
+  template <typename V, typename CharT, typename Traits>
+  std::basic_ostream<CharT, Traits>&
+  operator<<(std::basic_ostream<CharT, Traits>& out,
+             const record& r) {
+    r.write(out);
+    return out;
+  }
+
+} // namespace prl
+
+#include <prl/macros_undef.hpp>
+
+#endif // #ifndef PRL_RECORD_HPP

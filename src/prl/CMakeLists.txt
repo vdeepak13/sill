@@ -1,0 +1,16 @@
+subdirs(base
+        datastructure 
+        distributed
+        factor 
+        geometry 
+        graph 
+        inference 
+        iterator 
+        learning 
+        math
+        model
+        mpi
+        optimization
+        parallel
+        random
+        serialization)

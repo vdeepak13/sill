@@ -1,0 +1,209 @@
+Probabilistic Reasoning Library (or whatever the new name ends up being)
+See LICENSE.txt for license information and AUTHORS.txt for a list of
+contributors.
+
+Table of Contents
+=================
+1. Introduction
+2. Installation instructions
+3. Writing your own application
+
+1. Introduction
+===============
+This library provides datastructures and algorithms for working with 
+distributions, graphs, and probabilistic graphical models.
+
+Directory structure:
+
+cmake/
+  Scripts to support the cmake build generator.
+
+doc/
+  Automatically generated documentation (also contains the coding conventions).
+
+examples/
+  Examples that illustrate key functionality of the library.
+
+ide/
+  Scripts that generate configuration files for various IDEs.
+
+projects/
+  Place for storing the projects.
+
+src/
+  Source files and include files.
+
+tests/
+  Unit tests (for now, these must be executed from command-line).
+
+timings/
+  Timings tests.    
+  
+2. Installation
+===============
+Installation of PRL consists of two steps: installation of the required
+libraries and building of the PRL's sources.
+
+2.1 Installing the required libraries
+--------------------------------------
+PRL depends on the following libraries:
+* cmake >= 2.4, 
+  http://www.cmake.org/
+
+* Boost 1.36,
+  http://www.boost.org/  
+
+* IT++ (tested on >= 4.0.6)
+  http://itpp.sourceforge.net/
+  We provide a patched version with bugfixes.
+
+* libxml++ (for XML serialization, tested on version >= 2.20)
+  http://libxmlplusplus.sourceforge.net/
+
+We provide detailed instructions for the following platforms.
+For recent Linux distributions, you can use the binary packages
+provided by your distribution.  Note, however, that Boost 1.36 is
+very new and needs to be installed separately.
+
+On Ubuntu 8.04:
+* Go to
+    http://www.boost.org/doc/libs/1_36_0/more/getting_started/unix-variants.html
+  and follow steps 1 and 5.1. If you install Boost to the default location
+  (/usr/local/), it will be automatically detected by our scripts. 
+
+  Boost takes a while to compile.
+
+* Type
+    sudo apt-get install cmake libxml++2.6-dev libblas3gf liblapack3gf libfftw3-dev
+  to install the required libraries.
+
+* Download IT++ from the Google groups website. 
+  Unzip the file, and in the unzipped directory, type
+    ./configure --enable-shared --disable-static --enable-debug
+  followed by "make" and "sudo make install"
+
+On Mac OS X:
+* Go to
+    http://www.boost.org/doc/libs/1_36_0/more/getting_started/unix-variants.html
+  and follow steps 1 and 5.1. If you install Boost to the default location
+  (/usr/local/), it will be automatically detected by our scripts.
+
+  Boost takes a while to compile.
+
+* Install CMake by running 'fink install cmake'
+
+* Download IT++ from the Google groups website. 
+  Unzip the file, and in the unzipped directory, type
+    ./configure --enable-shared --disable-static --enable-debug --without-fft
+  followed by "make" and "sudo make install"
+
+* There are not stable versions of libxml++ (and glibmm-2.4, which is
+  a prerequisite for libxml++) available from fink.  You can download unstable
+  versions and install them if you want to, or you can use MacPorts, which
+  does have a version of libxml++ available.  You do not need to install
+  libxml++ to use most of PRL; only the XML serialization depends upon it.
+
+On Windows / Visual C++ 9.0 (32-bit edition):
+* Download and install cmake:
+    http://www.cmake.org/cmake/resources/software.html
+  Make sure that the bin/ directory 
+
+* Download the binary release of Boost:
+    http://www.boostpro.com/boost_1_36_0_setup.exe
+  Select the desired compiler and Multithread Debug, DLL and
+  Multithread, DLL targets, and install Boost to the default directory.
+
+* Download the gtkmm-win32-devel installer 
+    http://ftp.gnome.org/pub/GNOME/binaries/win32/gtkmm/2.14/
+  and install glibmm and libxml++ to the default directories.
+
+* By default, IT++ for Windows requires either Intel MKL or the ACML.
+  Follow the instructions on the IT++ website, and copy the generated
+  libraries into 
+    C:/Program Files/itpp/lib/
+  and put the source & header files (located in the itpp/ directory
+  of the distribution) into
+    C:/Program Files/itpp/itpp
+
+  If there is sufficientinterest, we may provide pre-built binaries for 
+  Visual C++ 9.0, with free version of BLAS+LAPACK.
+
+2.2 Building PRL
+----------------
+PRL uses cmake http://www.cmake.org/ for its build process.
+Cmake generates native Unix Makefiles and solution files for integrated
+development environments (IDEs). Cmake supports out-of-place builds,
+that is, the built libraries and object files are stored outside the
+original directories. For more information on cmake, see
+http://www.cmake.org/cmake/help/documentation.html
+
+To build PRL from the command-line (Linux and Mac OS X):
+Go to the installation directory and type "./configure". This script
+creates two directories, debug/ and release/, which will contain the
+compiled executables. You can customize the properties of the build
+(such as the location of the Boost directories) by going to the debug/
+or release/ directory, and typing "ccmake ."  Then, change to the
+debug/ or release/ directory, and type "make".
+
+To build PRL from an Integrated Development Environment (any platform):
+Go to the subdirectory ide/{IDE_name}, and execute the configure script
+in that directory. This will create a solution named PRL.{ide_extension}
+in ide/{IDE_name} that contains all build and test targets for the library.
+In addition, the scripts will create solutions for the following parts
+of the library:
+examples, tests, timings, and projects
+in the corresponding subdirectories of ide/{IDE_name}. Open the desired
+solution and run the build.
+
+If the configuration scripts fail, check the following:
+* If the scripts output an error that the cmake command cannot be found, 
+  please make sure that cmake command is in the search path.
+
+* If the scripts fail, saying that a library could not be found, and you
+  installed the required libraries, please let us know.
+
+2.3 Testing the installation
+----------------------------
+Assuming that the build succeeded without errors, it should create
+executables in the build directories.  Run some tests and examples,
+such as examples/grid_motion/grid_motion or tests/base/assignment.
+
+2.4 API documentation
+---------------------
+To generate the API documentation, run doxygen in the main installation
+directory. The binaries for Doxygen are provided by most Linux distributions,
+Cygwin, or can be found at http://www.stack.nl/~dimitri/doxygen/ (you may
+also need LaTeX and Graphviz for some formulas and diagrams). The generated
+documentation is located in doc/html/index.html. Pre-generated documentation
+is available at the download site.
+
+In the documentation, click on the Modules tab. This provides a structured
+view of PRL's functionality (similar to packages in Java). However, note 
+that all classes are located in one namespace, prl.
+
+3. Writing your own application
+===============================
+The simplest way to use the library is to create a new directory in the 
+projects/ directory, and add the directory to projects/CMakeLists.txt file:
+
+# projects/CMakeLists.txt
+link_libraries(${PRL_LIBRARIES})
+subdirs(my_project)
+
+Then add source to projects/my_project/ (or subdirectories) and create
+the file projects/my_project/CMakeLists.txt:
+
+# projects/my_project/CMakeLists.txt
+project(my_project)
+add_executable(cool_algorithm cool_algorithm.cpp)
+
+At this point, the target cool_algorithm has been entered to the CMake
+configuration files, but the change is not reflected in the native
+Unix Makefiles or the IDE projects.  The Makefiles are updated
+automatically if you type "make" in the build directory (debug/,
+release/) or if you invoke the "Build solution" command in your IDE.
+Alternatively, you can update the Makefiles or the IDE solutions
+manually, by typing "cmake ." in the build directory.
+
+To understand how the library works, take a look at the source files
+in the examples/ directory.

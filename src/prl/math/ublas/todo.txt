@@ -1,0 +1,1 @@
+Add variants of functions that store the result in output arguments.

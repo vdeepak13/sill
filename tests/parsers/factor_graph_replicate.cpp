@@ -1,0 +1,78 @@
+#include <iostream>
+#include <stdlib.h>
+#include <string>
+#include <fstream>
+#include <map>
+#include <prl/parsers/detect_file_format.hpp>
+#include <prl/factor/table_factor.hpp>
+#include <prl/factor/log_table_factor.hpp>
+#include <prl/parsers/alchemy.hpp>
+#include <prl/macros_def.hpp>
+
+using namespace std;
+using namespace prl;
+
+typedef factor_graph_model<log_table_factor> factor_graph_model_type;
+typedef factor_graph_model_type::factor_type factor_type;
+
+const double SPLITPROB = 0.3;
+int main(int argc, const char* argv[]) {
+  assert(argc == 3);
+  universe u;
+  factor_graph_model_type fg;
+  string filename(argv[1]);
+ 
+  cout << "Filename: " << filename << endl
+       << "=========================================================="
+       << endl;
+  
+  // Do the actual parsing.
+  parse_alchemy(u, fg, filename);
+
+  // read the input data
+  if (parse_factor_graph(filename, u, fg) == false) {
+    std::cout << "Unable to read factor graph\n";
+  }
+  
+  cout << fg.arguments().size() << " variables" << endl;
+
+  // now we need to replicate the factor graph how do we do this?
+  // get all the variables and randomly decide whether to split or merge
+  
+  finite_var_map vmap;
+  foreach(finite_variable* v, fg.arguments()) {
+    if (double(rand())/RAND_MAX < SPLITPROB) {
+      // if we are splitting, create a new finite variable of the same size
+      vmap[v] = u.new_finite_variable(std::string(*v)+"p",v->size());
+    }
+    else {
+      vmap[v] = v;
+    }
+  }
+  
+  std::vector<log_table_factor> new_factors;
+  foreach(const log_table_factor &f, fg.factors()) {
+    // check if there are any changes to this factor
+    bool changes = false;
+    foreach(finite_variable* v, f.arguments()) {
+      if (vmap[v] != v) {
+        changes = true;
+        break;
+      }
+    }
+    if (changes) {
+      log_table_factor newf = f;
+      newf.subst_args(vmap);
+      new_factors.push_back(newf);
+    }
+  }
+  for (size_t i = 0; i < new_factors.size(); ++i) {
+    fg.add_factor(new_factors[i]);
+  }
+  // write out
+  ofstream fout;
+  fout.open(argv[2]);
+  print_alchemy(fg, fout);
+  fout.close();
+  return EXIT_SUCCESS;
+}
