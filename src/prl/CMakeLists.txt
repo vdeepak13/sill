@@ -1,8 +1,6 @@
 subdirs(base
         datastructure 
-        distributed
         factor 
-        geometry 
         graph 
         inference 
         iterator 

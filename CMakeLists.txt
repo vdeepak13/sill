@@ -14,16 +14,11 @@ endif(COMMAND cmake_policy)
 set(PRL_MATLAB false CACHE BOOL "Set to true if the prl-matlab
 	       interface is to be built (requires Java).")
 
-# prl-Matlab is not currently supported
-# if(PRL_MATLAB)
-#   subdirs(swig)
-# endif(PRL_MATLAB)
-
 # Specify the subdirectories for this root directory This will be
 # used for the class branch, not the lab branch: subdirs(src examples
 # EXCLUDE_FROM_ALL tests timings projects) (Remove EXCLUDE_FROM_ALL
 # for lab branch.)
-subdirs(src examples tests timings projects extern)
+subdirs(src examples tests timings)
 
 # This would make the if statements easier to read
 # set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
@@ -58,12 +53,10 @@ if(MSVC)
   add_definitions(-DBOOST_ALL_NO_LIB=1)
 else(MSVC)
   set(Boost_USE_STATIC_LIBS ON)
-  set(Boost_USE_MULTITHREADED OFF)
-#  set(Boost_USE_STATIC_LIBS OFF)
-#  set(Boost_USE_MULTITHREAD ON)
+  set(Boost_USE_MULTITHREADED ON)
 endif(MSVC)
 
-find_package(Boost 1.36 COMPONENTS 
+find_package(Boost 1.40 COMPONENTS 
               program_options 
               iostreams
               date_time
@@ -118,13 +111,8 @@ endif(CUDA_FOUND)
 # If OpenCV is not found, projects/qsgm/vision/ compiles to throw an error.
 find_package(OpenCV)
 
-# Chord configuration
-# Defines a variable to enable Chord functionality (e.g. in src/prl/distributed)
-include(${PRL_SOURCE_DIR}/cmake/Chord.cmake)
-
 # set include path for this and all subdirs
 include_directories(
-  ${PRL_SOURCE_DIR}
   ${PRL_SOURCE_DIR}/src
   ${ITPP_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}

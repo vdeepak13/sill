@@ -35,7 +35,7 @@
    discriminative/tree_sampler
    em_mog
    error_measures
-   learn_crf_factor
+   #learn_crf_factor
    learn_factor
    object_detection/image
    object_detection/image_oracle
