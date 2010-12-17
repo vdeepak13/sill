@@ -10,9 +10,20 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-# Build the Matlab interface?
-set(PRL_MATLAB false CACHE BOOL "Set to true if the prl-matlab
-	       interface is to be built (requires Java).")
+
+# add a prefix to each element of a list
+function(add_prefix list_name prefix)
+  # create empty list - necessary?
+  SET(${list_name}_TMP)
+ 
+  # prefix and suffix elements
+  foreach(l ${${list_name}})
+    list(APPEND ${list_name}_TMP ${prefix}${l})
+  endforeach()
+ 
+  # replace list by tmp list
+  SET(${list_name} "${${list_name}_TMP}" PARENT_SCOPE)
+endfunction(add_prefix)
 
 # Specify the subdirectories for this root directory This will be
 # used for the class branch, not the lab branch: subdirs(src examples
@@ -149,24 +160,6 @@ endif(MPI_FOUND)
 if (${CMAKE_SYSTEM} MATCHES Darwin)
   link_libraries(blas)
 endif (${CMAKE_SYSTEM} MATCHES Darwin)
-
-# Here, the ordering is important, since older GCC compilers (e.g., 4.1) 
-# require that if a library implements the dependency of another library,
-# the implementing library is listed later (this applies only to static 
-# linking).
-set(PRL_LIBRARIES 
-  prl-base
-  prl-learning
-  prl-model
-  prl-factor
-  prl-optimization
-  prl-random
-  prl-math
-  prl-mpi
-  prl-distributed
-  prl-base #repeat to fix static linking dependencies problem
-  prl-learning
-)
 
 # Add posix threads on non-windows sytems
 if(NOT ${CMAKE_SYSTEM} MATCHES Windows)

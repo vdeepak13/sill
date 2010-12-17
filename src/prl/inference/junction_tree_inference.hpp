@@ -226,7 +226,7 @@ namespace prl {
 
       // Try to find a separator that covers vars
       edge e = jt.find_separator_cover(vars);
-      if(e) return belief(e).marginal(vars);
+      if(e != edge()) return belief(e).marginal(vars);
 
       // Otherwise, look for a clique cover
       vertex v = jt.find_clique_cover(vars);

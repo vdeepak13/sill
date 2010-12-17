@@ -1,6 +1,6 @@
 project(tests)
 
-link_libraries(${PRL_LIBRARIES} ${Boost_LIBRARIES})
+link_libraries(prl ${Boost_LIBRARIES})
 
 # Disable unused variable warnings in tests
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -11,7 +11,6 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 subdirs(
   base
   datastructure
-  distributed
   factor
   graph
   inference
@@ -25,7 +24,6 @@ subdirs(
   random
   synthetic_data
   threading
-  extern
   serialization
   )
 

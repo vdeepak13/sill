@@ -11,5 +11,5 @@
 
 #add_executable(basic_update_rule basic_update_rule.cpp)
 
-add_executable(parallel_bp parallel_bp.cpp)
-target_link_libraries(parallel_bp metis tcmalloc)
+#add_executable(parallel_bp parallel_bp.cpp)
+#target_link_libraries(parallel_bp metis tcmalloc)

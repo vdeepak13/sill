@@ -1,54 +1,26 @@
- add_library(prl-learning
-   crf/crf_parameter_learner
-   crf/crf_parameter_learner_builder
-   crossval_builder
-   dataset/assignment_dataset
-   dataset/data_loader
-   dataset/dataset
-   dataset/dataset_view
-   dataset/datasource
-   dataset/datasource_info_type
-   dataset/ds_oracle
-   dataset/finite_record
-   dataset/finite_record_iterator
-   dataset/record
-   dataset/record_conversions
-   dataset/statistics
-   dataset/symbolic
-   dataset/symbolic_oracle
-   dataset/syn_oracle_knorm
-   dataset/syn_oracle_majority
-   dataset/vector_assignment_dataset
-   dataset/vector_dataset
-   dataset/vector_record
-   decomposable_parameter_learner
-   discriminative/all_pairs_batch
-   discriminative/classifier_cascade
-   discriminative/free_functions
-   discriminative/load_functions
-   discriminative/logistic_regression
-   discriminative/multiclass2multilabel
-   discriminative/multiclass_classifier
-   discriminative/multiclass_logistic_regression
-   discriminative/multilabel_classifier
-   discriminative/linear_regression
-   discriminative/tree_sampler
-   em_mog
-   error_measures
-   #learn_crf_factor
-   learn_factor
-   object_detection/image
-   object_detection/image_oracle
-   object_detection/random_windows_oracle
-   object_detection/sliding_windows
-   object_detection/sliding_windows_oracle
-   parameter_grid
-   parameter/gaussian
+add_subdirectory(crf)
+add_subdirectory(dataset)
+add_subdirectory(discriminative)
+add_subdirectory(object_detection)
+add_subdirectory(parameter)
 
- )
+add_prefix(PRL_CRF_SOURCES "crf/")
+add_prefix(PRL_DATASET_SOURCES "dataset/")
+add_prefix(PRL_DISCRIMINATIVE_SOURCES "discriminative/")
+add_prefix(PRL_OBJECT_DETECTION_SOURCES "object_detection/")
+add_prefix(PRL_PARAMETER_SOURCES "parameter/")
 
- subdirs(dataset
-         discriminative
-         object_detection
-         order_based_search
-         structure_search)
+set(PRL_LEARNING_SOURCES
+  ${PRL_CRF_SOURCES}
+  ${PRL_DATASET_SOURCES}
+  ${PRL_DISCRIMINATIVE_SOURCES}
+  ${PRL_OBJECT_DETECTION_SOURCES}
+  ${PRL_PARAMETER_SOURCES}
+  crossval_builder
+  decomposable_parameter_learner
+  em_mog
+  error_measures
+  #learn_crf_factor
+  learn_factor
+  parameter_grid
+  PARENT_SCOPE)

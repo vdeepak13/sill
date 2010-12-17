@@ -1,4 +1,4 @@
-add_library(prl-base
+set(PRL_BASE_SOURCES
   process
   universe
   variable
@@ -9,6 +9,4 @@ add_library(prl-base
   string_functions
   vector_variable
   vector_assignment
-  ../serialization/iarchive #Base needs reorganization!!!
-  ../serialization/oarchive #Base needs reorganization!!!
-  )
+  PARENT_SCOPE)

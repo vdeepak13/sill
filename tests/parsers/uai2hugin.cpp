@@ -5,7 +5,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <src/prl/parsers/string_functions.hpp>
+#include <prl/parsers/string_functions.hpp>
 using namespace prl;
 
 

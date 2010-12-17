@@ -1,4 +1,3 @@
-link_libraries(prl-factor prl-math)
 add_executable(constant_factor constant_factor.cpp)
 add_executable(decomposable_fragment decomposable_fragment.cpp)
 add_executable(gaussian_crf_factor_test gaussian_crf_factor_test.cpp)

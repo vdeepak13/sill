@@ -53,8 +53,8 @@ namespace prl {
     while(line.empty() && in.good()) getline(in, line);
     
     // load the potentials
-    finite_domain vars(variables);
-    mn.add_nodes(variables);
+    finite_domain vars = make_domain(variables);
+    mn.add_nodes(vars);
     // prl::pairwise_markov_network<F> mn(vars);
     
     assert(line == "@Potentials");

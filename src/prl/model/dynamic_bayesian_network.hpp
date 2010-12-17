@@ -145,8 +145,8 @@ namespace prl {
 
       // Check the prior and the transition model
       assert(prior.arguments() == vars_t);
-      assert(supserset(transition.arguments(),vars_t1));
-      assert(subset(transition.arguments(), set_union(vars_t, vars_t1)));
+      assert(is_superset(transition.arguments(),vars_t1));
+      assert(is_subset(transition.arguments(), set_union(vars_t, vars_t1)));
     }
     
     // Modifiers

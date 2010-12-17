@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
   finite_domain pos_t;
   pos_t.insert(x_t);
   pos_t.insert(y_t);
-  tablef location(pos_t, 0.0);
+  table_factor location(pos_t, 0.0);
   finite_assignment a;
   a[x_t] = width / 2;
   a[y_t] = height / 2;
@@ -43,8 +43,8 @@ int main(int argc, char** argv) {
   finite_domain pos_tp;
   pos_tp.insert(x_tp);
   pos_tp.insert(y_tp);
-  finite_domain pos_ttp = pos_t.plus(pos_tp);
-  tablef motion_model(pos_ttp, 0.0);
+  finite_domain pos_ttp = set_union(pos_t, pos_tp);
+  table_factor motion_model(pos_ttp, 0.0);
   int x, y;
   for (a[x_t]=x=0; x<width; ++a[x_t], ++x) {
     for (a[y_t]=y=0; y<height; ++a[y_t], ++y) {
@@ -69,8 +69,8 @@ int main(int argc, char** argv) {
   // Evolve the location distribution.
   for (int t = 1; t < 50; ++t) {
     cout << "time: " << t << endl;
-    tablef prediction = location * motion_model;
-    tablef roll_up = sum(prediction, pos_t);
+    table_factor prediction = location * motion_model;
+    table_factor roll_up = sum(prediction, pos_t);
     location = roll_up.subst_args(var_map);
   }
 

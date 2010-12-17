@@ -8,7 +8,7 @@
 #include <boost/timer.hpp>
 #include <boost/program_options.hpp>
 
-#include <prl/variable.hpp>
+#include <prl/base/variable.hpp>
 #include <prl/datastructure/dense_table.hpp>
 #include <prl/factor/table_factor.hpp>
 #include <prl/model/markov_network.hpp>
@@ -65,7 +65,7 @@ int main(int ac, char* av[])
 
   // Load the network and create the inference engine
   using namespace prl;
-  typedef prl::pairwise_markov_network<tablef> network_type;
+  typedef prl::pairwise_markov_network<table_factor> network_type;
 
   universe u;
   cout << "Loading the model" << endl;

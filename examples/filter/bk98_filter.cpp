@@ -18,7 +18,7 @@ int main(int argc, char** argv) {
 
   // create the DBN
   std::vector<finite_timed_process*> procs;
-  dynamic_bayesian_network< tablef > dbn;
+  dynamic_bayesian_network< table_factor > dbn;
   highway_dbn(nsegs, dbn, procs);
   dbn.check_valid();
   cout << dbn << endl;
@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
   junction_tree<finite_variable*> jt(cliques);
   cout << "Approximation structure: " << jt << endl;
 
-  bk98_filter< tablef > filter(dbn, jt, false);
+  bk98_filter< table_factor > filter(dbn, jt, false);
   
   cout << "t=0: " << filter.belief() << endl;
   for(size_t t = 1; t <= nsteps; t++) {
@@ -48,6 +48,6 @@ int main(int argc, char** argv) {
   // TODO:
   // Test the result of flat_filter against variable elimination 
   // on the unrolled network
-//   bayesian_network< tablef > bn = dbn.unroll(nsteps);
+//   bayesian_network< table_factor > bn = dbn.unroll(nsteps);
 //   cout << bn << endl;
 }

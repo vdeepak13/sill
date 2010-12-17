@@ -49,7 +49,7 @@ boost::array<double, 9> observation_values = // tail: vars_t[i]
     0.1, 0.8, 0.1,   // medium
     0.0, 0.2, 0.8}}; // fast
 
-typedef prl::dynamic_bayesian_network<prl::tablef > dbn_type;
+typedef prl::dynamic_bayesian_network<prl::table_factor> dbn_type;
 
 void highway_dbn(std::size_t n, 
                  dbn_type& dbn,
@@ -74,13 +74,13 @@ void highway_dbn(std::size_t n,
   
   // Setup the prior model
   for(size_t i = 0; i < n; i++) {
-    tablef f = make_dense_table_factor(make_vector(vars_t[i]), prior_values);
+    table_factor f = make_dense_table_factor(make_vector(vars_t[i]), prior_values);
     dbn.add_factor(vars_t[i], f);
   }
 
   // Setup the transition model
   for(size_t i = 0; i < n; i++) {
-    tablef f;
+    table_factor f;
     if (i == n - 1) {
       finite_var_vector args = make_vector(vars_t1[i],vars_t[i]);
       // last lane only depends upon its previous speed

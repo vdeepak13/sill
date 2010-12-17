@@ -1,3 +1,10 @@
+- rename prl to sill
+- deprecated factors
+- remove factor_ops or combine_result
+- ordering of factor_ops, output arguments
+- decide which math library to use
+- factoring out projects
+
 formatting:
 - ONE CLASS PER FILE RULE (including interfaces)
 - normalize formatting

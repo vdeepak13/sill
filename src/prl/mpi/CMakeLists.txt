@@ -1,7 +1,6 @@
-
 if (MPI_FOUND AND MPI_CXX)
-  add_library(prl-mpi
-    mpi_wrapper mpilogger mpi_single_tag_handler mpi_consensus)
+  set(PRL_MPI_SOURCES
+    mpi_wrapper mpilogger mpi_single_tag_handler mpi_consensus PARENT_SCOPE)
 else (MPI_FOUND AND MPI_CXX)
-  add_library(prl-mpi dummy.cpp)
+  set(PRL_MPI_SOURCES PARENT_SCOPE)
 endif (MPI_FOUND AND MPI_CXX)

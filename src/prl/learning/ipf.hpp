@@ -1,6 +1,8 @@
 #ifndef PRL_IPF_HPP
 #define PRL_IPF_HPP
 
+#include <boost/unordered_map.hpp>
+
 #include <prl/global.hpp>
 #include <prl/factor/concepts.hpp>
 #include <prl/factor/norms.hpp>
@@ -37,7 +39,7 @@ namespace prl {
     hugin<F> jt_engine;
 
     //! Node to marginals
-    map< vertex, std::vector<F> > marginals;
+    boost::unordered_map< vertex, std::vector<F> > marginals;
 
     // Constructors and destructors
     // =========================================================================

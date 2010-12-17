@@ -1,4 +1,4 @@
-add_library(prl-factor
+set(PRL_FACTOR_SOURCES
   approx/integration_points
   approx/hybrid_conditional
   canonical_gaussian
@@ -11,4 +11,4 @@ add_library(prl-factor
   random
   table_crf_factor
   table_factor
-  )
+  PARENT_SCOPE)

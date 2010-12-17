@@ -1,3 +1,5 @@
-add_library(prl-random
+set(PRL_RANDOM_SOURCES
    bernoulli_distribution
-   multinomial_distribution)
+   multinomial_distribution
+   PARENT_SCOPE)
+
