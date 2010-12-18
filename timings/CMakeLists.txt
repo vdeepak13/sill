@@ -1,4 +1,4 @@
-link_libraries(prl ${Boost_LIBRARIES})
+link_libraries(sill ${Boost_LIBRARIES})
 
 add_executable(array array.cpp)
 add_executable(array_vs_vector array_vs_vector.cpp)

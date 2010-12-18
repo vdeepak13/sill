@@ -1,8 +1,8 @@
 #include <sstream>
 #include <string>
 #include <iostream>
-#include "prl/mpi/mpi_wrapper.hpp"
-#include "prl/mpi/mpi_protocols.hpp"
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/mpi/mpi_protocols.hpp>
 namespace sill {
 
 class mpilogger {

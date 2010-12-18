@@ -17,7 +17,7 @@ add_prefix(PRL_MPI_SOURCES "mpi/")
 add_prefix(PRL_OPTIMIZATION_SOURCES "optimization/")
 add_prefix(PRL_RANDOM_SOURCES "random/")
 add_prefix(PRL_SERIALIZATION_SOURCES "serialization/")
-add_library(prl
+add_library(sill
   ${PRL_BASE_SOURCES}
   ${PRL_FACTOR_SOURCES}
   ${PRL_LEARNING_SOURCES}

@@ -1,8 +1,8 @@
-## Main PRL project file The cmake documentation is available online
+## Main SILL project file The cmake documentation is available online
 ## or in your installation cmake e.g. "C:\Program Files\CMake
 ## 2.6\doc\cmake-2.6"
 
-project(PRL)
+project(SILL)
 
 cmake_minimum_required(VERSION 2.6)
 
@@ -52,11 +52,11 @@ endif(MSVC)
 # add_definitions(-DTRACE_OFF)
 
 ## Here we use our cmake tools
-set(CMAKE_MODULE_PATH ${PRL_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${SILL_SOURCE_DIR}/cmake)
 
 #set(BUILD_SHARED_LIBS ON)
 
-# set(FindBoost_DIR ${PRL_SOURCE_DIR}/cmake)
+# set(FindBoost_DIR ${SILL_SOURCE_DIR}/cmake)
 # find_package(FindBoost)
 if(MSVC)
   set(Boost_USE_STATIC_LIBS OFF)
@@ -124,10 +124,9 @@ find_package(OpenCV)
 
 # set include path for this and all subdirs
 include_directories(
-  ${PRL_SOURCE_DIR}/src
+  ${SILL_SOURCE_DIR}/src
   ${ITPP_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
-#  ${PRL_SOURCE_DIR}/extern
   )
 
 link_directories(

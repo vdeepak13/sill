@@ -244,7 +244,7 @@ IF(NOT OpenCV_FOUND)
         "OpenCV required but some headers or libs not found. Please specify it's location with OpenCV_ROOT_DIR env. variable.")
     ELSE(OpenCV_FIND_REQUIRED)
       MESSAGE(STATUS 
-        "OpenCV was not found. It must be installed to use PRL vision.")
+        "OpenCV was not found. It must be installed to use SILL vision.")
     ENDIF(OpenCV_FIND_REQUIRED)
   ENDIF(NOT OpenCV_FIND_QUIETLY)
 ENDIF(NOT OpenCV_FOUND)

@@ -1,6 +1,6 @@
 project(tests)
 
-link_libraries(prl ${Boost_LIBRARIES})
+link_libraries(sill ${Boost_LIBRARIES})
 
 # Disable unused variable warnings in tests
 if(CMAKE_COMPILER_IS_GNUCXX)

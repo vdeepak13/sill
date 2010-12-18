@@ -1,4 +1,4 @@
-#include "prl/mpi/mpilogger.hpp"
+#include <sill/mpi/mpilogger.hpp>
 
 namespace sill {
 mpilogger mpilog;
