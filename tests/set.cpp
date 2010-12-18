@@ -1,11 +1,11 @@
 #include <iostream>
 #include <assert.h>
-#include <prl/set.hpp>
+#include <sill/set.hpp>
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
 
-  typedef prl::set<int> set_type;
+  typedef sill::set<int> set_type;
 
   set_type s1, s2, s3;
   for (int i = 1; i < 5; i++)

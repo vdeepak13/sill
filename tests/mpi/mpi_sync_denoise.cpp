@@ -21,28 +21,28 @@
 
 #include <boost/program_options.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
 
-#include <prl/factor/random.hpp>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/parallel/timer.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/parallel/timer.hpp>
 
 
-#include <prl/mpi/sync/mpi_sync_engine.hpp>
+#include <sill/mpi/sync/mpi_sync_engine.hpp>
 
 
 // Denoising image tools
-#include <prl/synthetic_data/denoise_image.hpp>
+#include <sill/synthetic_data/denoise_image.hpp>
 
 
 // This should come last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 using namespace std;
 using namespace boost::gil;
-using namespace prl;
+using namespace sill;
 
 // Declare typedefs 
 typedef tablef factor_type;

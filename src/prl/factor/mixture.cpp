@@ -1,8 +1,8 @@
-#include <prl/factor/mixture.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/factor/mixture.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-namespace prl {
+namespace sill {
 
   moment_gaussian project(const mixture_gaussian& mixture) {
     // Do moment matching
@@ -30,5 +30,5 @@ namespace prl {
     return moment_gaussian(args, mean, cov, norm);
   }
 
-} // namespace prl
+} // namespace sill
 

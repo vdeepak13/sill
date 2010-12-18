@@ -1,11 +1,11 @@
-#ifndef PRL_MPI_TREE_AGGREGATE_HPP
-#define PRL_MPI_TREE_AGGREGATE_HPP
+#ifndef SILL_MPI_TREE_AGGREGATE_HPP
+#define SILL_MPI_TREE_AGGREGATE_HPP
 
-#include <prl/mpi/mpi_send_recv.hpp>
+#include <sill/mpi/mpi_send_recv.hpp>
 
-#include <prl/functional/aggregate_op.hpp>
+#include <sill/functional/aggregate_op.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Aggregates the values from all the processes and disseminates the value.
@@ -50,6 +50,6 @@ namespace prl {
       mpi_send(2*myid + 1, 0, aggregate);
   }
   
-} // namespace prl
+} // namespace sill
 
 #endif

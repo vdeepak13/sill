@@ -1,13 +1,13 @@
 
-#ifndef PRL_CROSSVAL_BUILDER_HPP
-#define PRL_CROSSVAL_BUILDER_HPP
+#ifndef SILL_CROSSVAL_BUILDER_HPP
+#define SILL_CROSSVAL_BUILDER_HPP
 
 #include <boost/program_options.hpp>
 
-#include <prl/base/string_functions.hpp>
-#include <prl/learning/crossval_parameters.hpp>
+#include <sill/base/string_functions.hpp>
+#include <sill/learning/crossval_parameters.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for parsing command-line options for cross validation.
@@ -77,6 +77,6 @@ namespace prl {
 
   }; // class crossval_builder
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_CROSSVAL_BUILDER_HPP
+#endif // #ifndef SILL_CROSSVAL_BUILDER_HPP

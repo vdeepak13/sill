@@ -1,12 +1,12 @@
-#ifndef PRL_UNDIRECTED_EDGE_HPP
-#define PRL_UNDIRECTED_EDGE_HPP
+#ifndef SILL_UNDIRECTED_EDGE_HPP
+#define SILL_UNDIRECTED_EDGE_HPP
 
 #include <boost/algorithm/minmax.hpp>
 #include <boost/functional/hash.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-namespace prl {
+namespace sill {
 
   template<typename V, typename VP, typename EP> 
   class undirected_graph;
@@ -99,6 +99,6 @@ namespace prl {
     return boost::hash_value(boost::minmax(e.source(), e.target()));
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

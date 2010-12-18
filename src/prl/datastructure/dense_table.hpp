@@ -1,6 +1,6 @@
 
-#ifndef PRL_DENSE_TABLE_HPP
-#define PRL_DENSE_TABLE_HPP
+#ifndef SILL_DENSE_TABLE_HPP
+#define SILL_DENSE_TABLE_HPP
 
 #include <algorithm>
 #include <numeric>
@@ -9,19 +9,19 @@
 
 #include <boost/optional.hpp>
 
-#include <prl/global.hpp>
-#include <prl/functional.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/range/numeric.hpp>
-#include <prl/stl_concepts.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/vector.hpp>
+#include <sill/global.hpp>
+#include <sill/functional.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/range/numeric.hpp>
+#include <sill/stl_concepts.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // #define EXPERIMENTAL
 
-namespace prl {
+namespace sill {
 
   /**
    * A dense table with an arbitrary number of dimensions, each with a
@@ -81,7 +81,7 @@ namespace prl {
 
     void load(iarchive & ar) {
       ar >> shape_;
-      size_ = prl::accumulate(shape_, 1, std::multiplies<size_t>());
+      size_ = sill::accumulate(shape_, 1, std::multiplies<size_t>());
       ar >> elts;
       offset = offset_functor(shape_);
     }
@@ -92,7 +92,7 @@ namespace prl {
     //! Constructs a table with the given dimensions and default element
     dense_table(const shape_type& extents, T init_elt = T())
       : shape_(extents), 
-        size_(prl::accumulate(shape_, 1, std::multiplies<size_t>())),
+        size_(sill::accumulate(shape_, 1, std::multiplies<size_t>())),
         elts(size_, init_elt),
         offset(extents) {
       // Check to make sure the size value did not overflow.
@@ -265,7 +265,7 @@ namespace prl {
     //! implements Table::apply
     template <typename Function>
     void apply(Function f) {
-      prl::for_each(elts, f);
+      sill::for_each(elts, f);
     }
 
     //! implements Table::update
@@ -404,8 +404,8 @@ namespace prl {
 
       // Compute the shape of the joined table.
       size_t z_arity =
-        1 + std::max(prl::accumulate(x_dim_map, 0, maximum<size_t>()),
-                     prl::accumulate(y_dim_map, 0, maximum<size_t>()));
+        1 + std::max(sill::accumulate(x_dim_map, 0, maximum<size_t>()),
+                     sill::accumulate(y_dim_map, 0, maximum<size_t>()));
       shape_type z_shape(z_arity);
 
       // could simplify the following as:
@@ -440,8 +440,8 @@ namespace prl {
 
       // Compute the shape of the joined table.
       size_t z_arity =
-        1 + std::max(prl::accumulate(x_dim_map, 0, maximum<size_t>()),
-                     prl::accumulate(x_dim_map, 0, maximum<size_t>()));
+        1 + std::max(sill::accumulate(x_dim_map, 0, maximum<size_t>()),
+                     sill::accumulate(x_dim_map, 0, maximum<size_t>()));
       shape_type z_shape(z_arity);
 
       // could simplify the following as:
@@ -853,14 +853,14 @@ namespace prl {
   std::ostream& operator<<(std::ostream& out, const dense_table<T>& table) {
     typedef typename dense_table<T>::shape_type shape_type;
     foreach(const shape_type& index, table.indices()) {
-      prl::copy(index, std::ostream_iterator<T, char>(out, " "));
+      sill::copy(index, std::ostream_iterator<T, char>(out, " "));
       out << table(index) << std::endl;
     }
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_DENSE_TABLE_HPP
+#endif // #ifndef SILL_DENSE_TABLE_HPP

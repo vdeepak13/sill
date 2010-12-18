@@ -1,6 +1,6 @@
 
-#ifndef PRL_OPTIMIZATION_INTERPOLATION_HPP
-#define PRL_OPTIMIZATION_INTERPOLATION_HPP
+#ifndef SILL_OPTIMIZATION_INTERPOLATION_HPP
+#define SILL_OPTIMIZATION_INTERPOLATION_HPP
 
 #include <cassert>
 #include <cmath>
@@ -8,9 +8,9 @@
 #include <limits>
 #include <stdexcept>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup optimization
   //! @{
@@ -38,6 +38,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_OPTIMIZATION_INTERPOLATION_HPP
+#endif // #ifndef SILL_OPTIMIZATION_INTERPOLATION_HPP

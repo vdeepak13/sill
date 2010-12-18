@@ -1,12 +1,12 @@
 
-#ifndef PRL_OPTIMIZATION_LINE_SEARCH_BUILDER_HPP
-#define PRL_OPTIMIZATION_LINE_SEARCH_BUILDER_HPP
+#ifndef SILL_OPTIMIZATION_LINE_SEARCH_BUILDER_HPP
+#define SILL_OPTIMIZATION_LINE_SEARCH_BUILDER_HPP
 
 #include <boost/program_options.hpp>
 
-#include <prl/optimization/line_search.hpp>
+#include <sill/optimization/line_search.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for parsing command-line options which specify
@@ -37,4 +37,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#endif // #ifndef PRL_OPTIMIZATION_LINE_SEARCH_BUILDER_HPP
+#endif // #ifndef SILL_OPTIMIZATION_LINE_SEARCH_BUILDER_HPP

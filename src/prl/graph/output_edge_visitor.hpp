@@ -1,9 +1,9 @@
-#ifndef PRL_OUTPUT_EDGE_VISITOR
-#define PRL_OUTPUT_EDGE_VISITOR
+#ifndef SILL_OUTPUT_EDGE_VISITOR
+#define SILL_OUTPUT_EDGE_VISITOR
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-namespace prl {
+namespace sill {
 
   //! A simple edge visitor that writes edges to an output iterator.
   //! \ingroup graph_types

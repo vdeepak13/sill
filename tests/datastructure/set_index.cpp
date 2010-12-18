@@ -6,15 +6,15 @@
 // #include <boost/graph/random.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/datastructure/set_index.hpp>
-using namespace prl;
+#include <sill/base/stl_util.hpp>
+#include <sill/datastructure/set_index.hpp>
+using namespace sill;
 int main(int argc, char** argv) {
   using std::size_t;
   boost::mt19937 rng;
 
   typedef std::set<int> set_type;
-  prl::set_index<set_type, int> set_index;
+  sill::set_index<set_type, int> set_index;
 
   // Make some random sets.
   std::vector<set_type> sets;

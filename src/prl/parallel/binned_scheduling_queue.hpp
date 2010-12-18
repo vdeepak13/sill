@@ -6,14 +6,14 @@
 #include <cassert>
 #include <cfloat>
 
-#include <prl/parallel/binned_mutable_queue.hpp>
+#include <sill/parallel/binned_mutable_queue.hpp>
 // #include <boost/unordered_map.hpp>
 
 
 // This should come last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * \file binned_scheduling_queue.hpp
@@ -299,5 +299,5 @@ namespace prl {
 
 } // end of namespace
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

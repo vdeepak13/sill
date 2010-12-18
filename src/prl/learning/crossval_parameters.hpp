@@ -1,12 +1,12 @@
 
-#ifndef PRL_CROSSVAL_PARAMETERS_HPP
-#define PRL_CROSSVAL_PARAMETERS_HPP
+#ifndef SILL_CROSSVAL_PARAMETERS_HPP
+#define SILL_CROSSVAL_PARAMETERS_HPP
 
-#include <prl/math/vector.hpp>
+#include <sill/math/vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Struct which holds options for a function which chooses a vector
@@ -74,8 +74,8 @@ namespace prl {
 
   }; // struct crossval_parameters
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_CROSSVAL_PARAMETERS_HPP
+#endif // #ifndef SILL_CROSSVAL_PARAMETERS_HPP

@@ -1,14 +1,14 @@
 
-#ifndef PRL_REAL_OPT_STEP_FUNCTOR_HPP
-#define PRL_REAL_OPT_STEP_FUNCTOR_HPP
+#ifndef SILL_REAL_OPT_STEP_FUNCTOR_HPP
+#define SILL_REAL_OPT_STEP_FUNCTOR_HPP
 
 #include <limits>
 
-//#include <prl/optimization/concepts.hpp>
+//#include <sill/optimization/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Interface for functors used by real_opt_step to translate step
@@ -53,6 +53,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_REAL_OPT_STEP_FUNCTOR_HPP
+#endif // #ifndef SILL_REAL_OPT_STEP_FUNCTOR_HPP

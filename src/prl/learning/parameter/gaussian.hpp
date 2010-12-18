@@ -1,9 +1,9 @@
-#ifndef PRL_LEARNING_GAUSSIAN_HPP
-#define PRL_LEARNING_GAUSSIAN_HPP
+#ifndef SILL_LEARNING_GAUSSIAN_HPP
+#define SILL_LEARNING_GAUSSIAN_HPP
 
-#include <prl/factor/moment_gaussian.hpp>
+#include <sill/factor/moment_gaussian.hpp>
 
-namespace prl {
+namespace sill {
 
   // forward declaration
   class dataset;
@@ -24,6 +24,6 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
 #endif

@@ -1,11 +1,11 @@
-#ifndef PRL_MODEL_RANDOM_CRF_BUILDER
-#define PRL_MODEL_RANDOM_CRF_BUILDER
+#ifndef SILL_MODEL_RANDOM_CRF_BUILDER
+#define SILL_MODEL_RANDOM_CRF_BUILDER
 
 #include <boost/program_options.hpp>
 
-#include <prl/model/random.hpp>
+#include <sill/model/random.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup model
   //! @{
@@ -151,6 +151,6 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_MODEL_RANDOM_CRF_BUILDER
+#endif // #ifndef SILL_MODEL_RANDOM_CRF_BUILDER

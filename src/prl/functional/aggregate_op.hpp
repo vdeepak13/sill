@@ -1,7 +1,7 @@
-#ifndef PRL_AGGREGATE_OP_HPP
-#define PRL_AGGREGATE_OP_HPP
+#ifndef SILL_AGGREGATE_OP_HPP
+#define SILL_AGGREGATE_OP_HPP
 
-namespace prl {
+namespace sill {
 
   template <typename T>
   struct aggregate_op {

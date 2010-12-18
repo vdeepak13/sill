@@ -1,17 +1,17 @@
-#ifndef PRL_XML_OARCHIVE_HPP
-#define PRL_XML_OARCHIVE_HPP
+#ifndef SILL_XML_OARCHIVE_HPP
+#define SILL_XML_OARCHIVE_HPP
 
 #include <iosfwd>
 #include <stack>
 #include <string>
 
-#include <prl/map.hpp>
-#include <prl/base/variable.hpp>
-#include <prl/base/process.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
+#include <sill/map.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/base/process.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An archive that can store PRL models in an XML format.
@@ -122,6 +122,6 @@ namespace prl {
 
   }; // class xml_oarchive
   
-} // namespace prl
+} // namespace sill
 
 #endif

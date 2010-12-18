@@ -1,13 +1,13 @@
 #include <iostream>
 #include <set>
-#include <prl/iterator/subset_iterator.hpp>
-#include <prl/base/stl_util.hpp>
+#include <sill/iterator/subset_iterator.hpp>
+#include <sill/base/stl_util.hpp>
 /**
  * Test of the subset_iterator.
  */
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
 
   typedef std::set<char> char_set_t;
 

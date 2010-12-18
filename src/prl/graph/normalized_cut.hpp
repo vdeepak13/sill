@@ -1,12 +1,12 @@
-#ifndef PRL_GRAPH_NORMALIZED_CUT_HPP
-#define PRL_GRAPH_NORMALIZED_CUT_HPP
+#ifndef SILL_GRAPH_NORMALIZED_CUT_HPP
+#define SILL_GRAPH_NORMALIZED_CUT_HPP
 
-#include <prl/global.hpp>
-#include <prl/map.hpp>
+#include <sill/global.hpp>
+#include <sill/map.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl { 
+namespace sill { 
   
   // using namespace boost::graph;
 
@@ -19,7 +19,7 @@ namespace prl {
     // typedef typename G::index_type index_type
     typedef typename G::vertex_descriptor vertex_type;
     typedef typename G::edge_descriptor edge_type;
-    // PRL_TYPEDEFS(G,(vertex_type)(index_type));
+    // SILL_TYPEDEFS(G,(vertex_type)(index_type));
     
     // compute the adjacency matrix
     size_type n = num_vertices(M);
@@ -64,8 +64,8 @@ namespace prl {
     return prod(diag(sqrt(d)), column(r, 1));
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,6 +1,6 @@
 
-#ifndef PRL_BSP_TREE_HPP
-#define PRL_BSP_TREE_HPP
+#ifndef SILL_BSP_TREE_HPP
+#define SILL_BSP_TREE_HPP
 
 #include <assert.h>
 #include <limits>
@@ -17,7 +17,7 @@
 // Needs clean-up
 ///////////////////////////////////////////////////////////////////
 
-namespace prl {
+namespace sill {
 
   /**
    * Describes the relationship between a set and a Boolean predicate
@@ -1424,7 +1424,7 @@ namespace prl {
     return (this->parent != NULL) && (this == this->parent->true_child);
   }
 
-} // namespace prl 
+} // namespace sill 
 
 
-#endif // PRL_BSP_TREE_HPP
+#endif // SILL_BSP_TREE_HPP

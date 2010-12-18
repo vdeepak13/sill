@@ -1,17 +1,17 @@
 
-#ifndef PRL_FINITE_RECORD_HPP
-#define PRL_FINITE_RECORD_HPP
+#ifndef SILL_FINITE_RECORD_HPP
+#define SILL_FINITE_RECORD_HPP
 
 #include <map>
 
-#include <prl/base/finite_assignment.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/learning/dataset/finite_record_iterator.hpp>
+#include <sill/base/finite_assignment.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/learning/dataset/finite_record_iterator.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Pre-declaration
   class finite_record_iterator;
@@ -116,17 +116,17 @@ namespace prl {
     bool has_variable(finite_variable* v) const;
 
     //! Returns the finite part of this record as an assignment.
-    prl::finite_assignment finite_assignment() const;
+    sill::finite_assignment finite_assignment() const;
 
     //! Converts this record to a finite assignment.
-    operator prl::finite_assignment() const {
+    operator sill::finite_assignment() const {
       return this->finite_assignment();
     }
 
     //! Returns the finite part of this record as an assignment,
     //! but only for the given variables X.
     //! @param X  All of these variables must be in this record.
-    prl::finite_assignment assignment(const finite_domain& X) const;
+    sill::finite_assignment assignment(const finite_domain& X) const;
 
     //! Returns the number of finite variables.
     size_t num_finite() const {
@@ -233,7 +233,7 @@ namespace prl {
     //! NOTE: The assignment must give values to all variables in this record.
     //! The new copy owns its data since a record does not know whether
     //! or not it's OK to rely on the outside reference.
-    finite_record& operator=(const prl::finite_assignment& a);
+    finite_record& operator=(const sill::finite_assignment& a);
 
     //! Clear the record.
     void clear();
@@ -269,8 +269,8 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_FINITE_RECORD_HPP
+#endif // #ifndef SILL_FINITE_RECORD_HPP

@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-namespace prl {
+namespace sill {
   /**
    *   \class timer A simple class that can be used for
    *   benchmarking/timing up to microsecond resolution.
@@ -42,7 +42,7 @@ namespace prl {
    */
   template<typename Char, typename Traits>
   std::basic_ostream<Char, Traits>&
-  operator<<(std::basic_ostream<Char, Traits>& out, const prl::timer& t) {
+  operator<<(std::basic_ostream<Char, Traits>& out, const sill::timer& t) {
     out << t.current_time();
     return out;
   }

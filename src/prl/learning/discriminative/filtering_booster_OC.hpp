@@ -1,17 +1,17 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_OC_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_OC_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_OC_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_OC_HPP
 
-#include <prl/learning/dataset/ds_oracle.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/multiclass_booster_OC.hpp>
+#include <sill/learning/dataset/ds_oracle.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/multiclass_booster_OC.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to 1 to print debugging info
 #define DEBUG_FILTERING_BOOSTER_OC 0
 
-namespace prl {
+namespace sill {
 
   /**
    * FILTERING_BOOSTER_OC_PARAMETERS
@@ -708,10 +708,10 @@ namespace prl {
 
   }; // class filtering_booster_OC
 
-} // namespace prl
+} // namespace sill
 
 #undef DEBUG_FILTERING_BOOSTER_OC
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_OC_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_OC_HPP

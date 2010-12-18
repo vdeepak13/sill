@@ -1,11 +1,11 @@
 
-#ifndef PRL_VARIABLE_TYPE_UNION_HPP
-#define PRL_VARIABLE_TYPE_UNION_HPP
+#ifndef SILL_VARIABLE_TYPE_UNION_HPP
+#define SILL_VARIABLE_TYPE_UNION_HPP
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Struct which, given two variable types as template parameters, specifies
@@ -52,6 +52,6 @@ namespace prl {
     typedef variable union_type;
   };
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_VARIABLE_TYPE_UNION_HPP
+#endif // #ifndef SILL_VARIABLE_TYPE_UNION_HPP

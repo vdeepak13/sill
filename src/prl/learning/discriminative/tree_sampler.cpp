@@ -1,8 +1,8 @@
-#include <prl/learning/discriminative/tree_sampler.hpp>
+#include <sill/learning/discriminative/tree_sampler.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Private methods
     //==========================================================================
@@ -167,6 +167,6 @@ namespace prl {
       uniform_prob = boost::uniform_real<double>(0,1);
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

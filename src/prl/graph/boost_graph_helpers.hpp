@@ -9,9 +9,9 @@
 
 #include <utility>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   // Not much magic here.. it's all pretty repetitive
 
@@ -191,8 +191,8 @@ namespace prl {
 //     // static_assert(sizeof(G)==0); // not implemented yet
 //   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

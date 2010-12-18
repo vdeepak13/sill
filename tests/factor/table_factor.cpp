@@ -7,17 +7,17 @@
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/math/gdl_enum.hpp>
-#include <prl/variable.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/sparse_table.hpp>
-#include <prl/map.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/factor/random.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/variable.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/sparse_table.hpp>
+#include <sill/map.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/factor/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-using namespace prl;
+using namespace sill;
 
 boost::mt19937 rng;
 
@@ -182,9 +182,9 @@ int main(int argc, char** argv) {
 //     // Create two sparse factors.  The first's default is zero, and
 //     // the second's default is one.  Choose their explicit elements so
 //     // that they do not overlap.
-//     prl::copy_ptr<sparse_factor>
+//     sill::copy_ptr<sparse_factor>
 //       a_ptr(new sparse_factor(xy, 0.0));
-//     prl::copy_ptr<sparse_factor>
+//     sill::copy_ptr<sparse_factor>
 //       b_ptr(new sparse_factor(xy, 1.0));
 //     for (a[x_v] = x = 0; x < 100; a[x_v] = ++x)
 //       for (a[y_v] = y = 0; y < 100; a[y_v] = ++y)
@@ -194,12 +194,12 @@ int main(int argc, char** argv) {
 //      b_ptr->set(a, unif01());
 //     // Combine b into (a copy of) a.  This should notice that there is
 //     // no overlap in the explicit elements and do no work.
-//     prl::copy_ptr<sparse_factor> a_copy_ptr(new sparse_factor(*a_ptr));
+//     sill::copy_ptr<sparse_factor> a_copy_ptr(new sparse_factor(*a_ptr));
 //     a_copy_ptr->combine_in(b_ptr, product_op);
 //
 //     // Create another sparse factor like b, but with a smaller number
 //     // of explicit elements that overlap.
-//     prl::copy_ptr<sparse_factor>
+//     sill::copy_ptr<sparse_factor>
 //       c_ptr(new sparse_factor(xy, 1.0));
 //     for (a[x_v] = x = 0; x < 50; a[x_v] = ++x)
 //       for (a[y_v] = y = 0; y < 50; a[y_v] = ++y)
@@ -208,12 +208,12 @@ int main(int argc, char** argv) {
 //     // over the explicit elements of c, joining each element into its
 //     // corresponding element of a.
 //     a_copy_ptr =
-//       prl::copy_ptr<sparse_factor>(new sparse_factor(*a_ptr));
+//       sill::copy_ptr<sparse_factor>(new sparse_factor(*a_ptr));
 //     a_copy_ptr->combine_in(c_ptr, product_op);
 //
 //     // Create another sparse factor like c, but with a larger number
 //     // of explicit elements that overlap.
-//     prl::copy_ptr<sparse_factor>
+//     sill::copy_ptr<sparse_factor>
 //       d_ptr(new sparse_factor(xy, 1.0));
 //     for (a[x_v] = x = 0; x < 150; a[x_v] = ++x)
 //       for (a[y_v] = y = 0; y < 150; a[y_v] = ++y)
@@ -222,13 +222,13 @@ int main(int argc, char** argv) {
 //     // over the explicit elements of d, joining each element into its
 //     // corresponding element of a.
 //     a_copy_ptr =
-//       prl::copy_ptr<sparse_factor>(new sparse_factor(*a_ptr));
+//       sill::copy_ptr<sparse_factor>(new sparse_factor(*a_ptr));
 //     a_copy_ptr->combine_in(d_ptr, product_op);
 //
 //     // Create a sparse factor over just the variable x, whose explicit
 //     // elements join with more elements of a than are specified
 //     // explicitly.
-//     prl::copy_ptr<sparse_factor>
+//     sill::copy_ptr<sparse_factor>
 //       e_ptr(new sparse_factor(domain(x_v), 1.0));
 //     for (a[x_v] = x = 0; x < 150; a[x_v] = ++x)
 //       e_ptr->set(a, 0.0);
@@ -236,16 +236,16 @@ int main(int argc, char** argv) {
 //     // over the explicit elements of e, joining each element into its
 //     // corresponding elements (plural) of a.
 //     a_copy_ptr =
-//       prl::copy_ptr<sparse_factor>(new sparse_factor(*a_ptr));
+//       sill::copy_ptr<sparse_factor>(new sparse_factor(*a_ptr));
 //     a_copy_ptr->combine_in(e_ptr, product_op);
 //
 //     // Create two sparse factors whose default elements are neither
 //     // zero nor one.
-//     prl::copy_ptr<sparse_factor>
+//     sill::copy_ptr<sparse_factor>
 //       f_ptr(new sparse_factor(domain(x_v), 2.0));
 //     for (a[x_v] = x = 0; x < 100; a[x_v] = ++x)
 //       f_ptr->set(a, unif01());
-//     prl::copy_ptr<sparse_factor>
+//     sill::copy_ptr<sparse_factor>
 //       g_ptr(new sparse_factor(domain(x_v), -1.0));
 //     for (a[x_v] = 100; x < 200; a[x_v] = ++x)
 //       g_ptr->set(a, unif01());

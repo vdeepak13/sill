@@ -1,9 +1,9 @@
 
-#include <prl/learning/crf/crf_parameter_learner.hpp>
+#include <sill/learning/crf/crf_parameter_learner.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   bool crf_parameter_learner_parameters::valid(bool print_warnings) const {
     // TO DO: print_warnings
@@ -14,6 +14,6 @@ namespace prl {
     return true;
   } // crf_parameter_learner_parameters::valid
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

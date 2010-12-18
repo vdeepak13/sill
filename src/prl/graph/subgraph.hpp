@@ -1,14 +1,14 @@
-#ifndef PRL_SUBGRAPH_HPP
-#define PRL_SUBGRAPH_HPP
+#ifndef SILL_SUBGRAPH_HPP
+#define SILL_SUBGRAPH_HPP
 
 #include <queue>
 #include <set>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   //! Collect all vertices within a certain count from a start vertex
   //! \ingroup graph_algorithms
@@ -73,8 +73,8 @@ namespace prl {
     subgraph(graph, connected_component(graph, root, nhops), new_graph);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

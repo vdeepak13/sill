@@ -1,24 +1,24 @@
 
 #include <iostream>
 
-#include <prl/math/vector.hpp>
-#include <prl/optimization/gradient_descent.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/optimization/gradient_descent.hpp>
 
 // minimize -5 + (val - <1,1>)^2
 struct obj_grad_functor1 {
-  double objective(prl::vec val) const {
-    const prl::vec v1("1 1");
-    return -5. + prl::inner_prod<double>(val - v1, val - v1);
+  double objective(sill::vec val) const {
+    const sill::vec v1("1 1");
+    return -5. + sill::inner_prod<double>(val - v1, val - v1);
   }
-  void gradient(prl::vec& grad, const prl::vec& val) const {
-    const prl::vec v1("1 1");
+  void gradient(sill::vec& grad, const sill::vec& val) const {
+    const sill::vec v1("1 1");
     grad = 2. * (val - v1);
   }
 };
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
 
   size_t niter = 5;
 

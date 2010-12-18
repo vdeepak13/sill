@@ -1,30 +1,30 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_ALL_PAIRS_BATCH_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_ALL_PAIRS_BATCH_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_ALL_PAIRS_BATCH_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_ALL_PAIRS_BATCH_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/bernoulli_distribution.hpp>
 
-#include <prl/datastructure/concepts.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/learning/discriminative/load_functions.hpp>
-#include <prl/learning/discriminative/multiclass_classifier.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/math/statistics.hpp>
+#include <sill/datastructure/concepts.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/learning/discriminative/load_functions.hpp>
+#include <sill/learning/discriminative/multiclass_classifier.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/math/statistics.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to true to print debugging information.
 #define DEBUG_ALL_PAIRS_BATCH 0
 
-namespace prl {
+namespace sill {
 
   //! @todo Add parameter NO_TRAIN_ACCURACY (for faster training).
   struct all_pairs_batch_parameters {
@@ -263,8 +263,8 @@ namespace prl {
 
   };  // all_pairs_batch
   
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_ALL_PAIRS_BATCH_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_ALL_PAIRS_BATCH_HPP

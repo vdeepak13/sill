@@ -6,19 +6,19 @@
 #include <boost/random/uniform_int.hpp>
 
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/random.hpp>
-#include <prl/inference/parallel/message_manager.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/inference/parallel/message_manager.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
 
 // This should come last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
-using namespace prl;
+using namespace sill;
 
 
 class writetest:public runnable {

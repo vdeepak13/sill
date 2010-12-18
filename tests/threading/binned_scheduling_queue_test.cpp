@@ -1,11 +1,11 @@
-#include <prl/parallel/binned_scheduling_queue.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/parallel/binned_scheduling_queue.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 #include <cassert>
 #include <map>
 #include <vector>
 
 
-using namespace prl;
+using namespace sill;
 
 void ShortCorrectnessTest(){
   binned_scheduling_queue<int> q(2);

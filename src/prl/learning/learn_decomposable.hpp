@@ -1,13 +1,13 @@
-#ifndef PRL_LEARN_DECOMPOSABLE
-#define PRL_LEARN_DECOMPOSABLE
+#ifndef SILL_LEARN_DECOMPOSABLE
+#define SILL_LEARN_DECOMPOSABLE
 
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/learn_factor.hpp>
-#include <prl/model/decomposable.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/learn_factor.hpp>
+#include <sill/model/decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Given a junction tree structure, learn a decomposable model by estimating
@@ -28,8 +28,8 @@ namespace prl {
 
   } // learn_decomposable
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_LEARN_DECOMPOSABLE
+#endif // SILL_LEARN_DECOMPOSABLE

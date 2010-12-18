@@ -1,13 +1,13 @@
 #include <iostream>
 #include <sstream>
 
-#include <prl/factor/soft_max.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/gaussian_factors.hpp>
+#include <sill/factor/soft_max.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/gaussian_factors.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   // Constructors and conversion operators
   //============================================================================
@@ -50,5 +50,5 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 

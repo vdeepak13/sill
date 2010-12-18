@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <iostream>
 
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/mpi/mpilogger.hpp>
-using namespace prl;
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/mpi/mpilogger.hpp>
+using namespace sill;
 using namespace std;
 
 

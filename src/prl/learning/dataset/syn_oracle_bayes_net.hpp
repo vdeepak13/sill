@@ -1,16 +1,16 @@
 
-#ifndef PRL_SYN_ORACLE_BAYES_NET_HPP
-#define PRL_SYN_ORACLE_BAYES_NET_HPP
+#ifndef SILL_SYN_ORACLE_BAYES_NET_HPP
+#define SILL_SYN_ORACLE_BAYES_NET_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/model/bayesian_network.hpp>
-#include <prl/learning/dataset/oracle.hpp>
+#include <sill/model/bayesian_network.hpp>
+#include <sill/learning/dataset/oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for generating synthetic data from a Bayesian network.
@@ -119,8 +119,8 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_SYN_ORACLE_BAYES_NET_HPP
+#endif // #ifndef SILL_SYN_ORACLE_BAYES_NET_HPP

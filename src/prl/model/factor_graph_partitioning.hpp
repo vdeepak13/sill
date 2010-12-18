@@ -1,13 +1,13 @@
-#ifndef PRL_MODEL_FACTOR_GRAPH_PARTITIONING_HPP
-#define PRL_MODEL_FACTOR_GRAPH_PARTITIONING_HPP
+#ifndef SILL_MODEL_FACTOR_GRAPH_PARTITIONING_HPP
+#define SILL_MODEL_FACTOR_GRAPH_PARTITIONING_HPP
 
 #include <sys/wait.h>
 #include <unistd.h>
 #include <cstdio>
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/model/mooij_kappen_derivatives.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/model/mooij_kappen_derivatives.hpp>
 
 #include <metis/metis.hpp>
 
@@ -19,11 +19,11 @@
 #include <iostream>
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
 
-namespace prl {
+namespace sill {
 
   template <typename F>
   class factor_graph_partition {

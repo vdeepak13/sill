@@ -1,10 +1,10 @@
-#ifndef PRL_SERIALIZE_LIST_HPP
-#define PRL_SERIALIZE_LIST_HPP
-#include <prl/serialization/iarchive.hpp>
-#include <prl/serialization/oarchive.hpp>
-#include <prl/serialization/iterator.hpp>
+#ifndef SILL_SERIALIZE_LIST_HPP
+#define SILL_SERIALIZE_LIST_HPP
+#include <sill/serialization/iarchive.hpp>
+#include <sill/serialization/oarchive.hpp>
+#include <sill/serialization/iterator.hpp>
 #include <list>
-namespace prl {
+namespace sill {
 
   /** Serializes a list
       Returns true on success, false on failure  */
@@ -22,5 +22,5 @@ namespace prl {
     deserialize_iterator<T>(a, std::inserter(vec, vec.end()));
     return a;
   }
-} // namespace prl
+} // namespace sill
 #endif //PRL_SERIALIZE_LIST_HPP

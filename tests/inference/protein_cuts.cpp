@@ -9,20 +9,20 @@
 
 #include <boost/program_options.hpp>
 
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/model/factor_graph_partitioning.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/parsers/protein.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/model/factor_graph_partitioning.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/parsers/protein.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
 // Rename the program options namespace
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 
 typedef factor_graph_model<log_table_factor> factor_graph_model_type;
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
 
 } // End of main
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 //End of file
 
 

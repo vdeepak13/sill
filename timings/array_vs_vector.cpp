@@ -9,7 +9,7 @@
 #include <boost/variant.hpp>
 #include <boost/any.hpp>
 #include <boost/shared_ptr.hpp>
-// #include <prl/allocator.hpp>
+// #include <sill/allocator.hpp>
 
 const int k = 5;
 int d[k];
@@ -64,7 +64,7 @@ int main(int argc, char** argv)
   
 //   t.restart();
 //   for (int i = 0; i < count; i++) {
-//     std::vector<int, prl::pre_allocator<int, k> > a(k);
+//     std::vector<int, sill::pre_allocator<int, k> > a(k);
 //     for (int j = 0; j < k; j++) {
 //       a[j] = d[j];
 //       c+=c+j;
@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 
 //   t.restart();
 //   for (int i = 0; i < count; i++) {
-//     unbounded_array<int, prl::pre_allocator<int, k> > a(k);
+//     unbounded_array<int, sill::pre_allocator<int, k> > a(k);
 //     for (int j = 0; j < k; j++) {
 //       a[j] = d[j];
 //       c+=c+j;

@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include <prl/math/vector.hpp>
+#include <sill/math/vector.hpp>
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   vec a = "1 2 3 4 5";

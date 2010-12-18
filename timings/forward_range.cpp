@@ -5,11 +5,11 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/range/forward_range.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-using prl::forward_range;
+using sill::forward_range;
 
 forward_range<int> getrange(const std::vector<int>& v) {
   return v;

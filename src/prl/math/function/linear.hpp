@@ -1,12 +1,12 @@
-#ifndef PRL_MATH_LINEAR_FUNCTION_HPP
-#define PRL_MATH_LINEAR_FUNCTION_HPP
+#ifndef SILL_MATH_LINEAR_FUNCTION_HPP
+#define SILL_MATH_LINEAR_FUNCTION_HPP
 
-#include <prl/math/function/interfaces.hpp>
-#include <prl/math/matrix.hpp>
-#include <prl/math/vector.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/math/function/interfaces.hpp>
+#include <sill/math/matrix.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-namespace prl {
+namespace sill {
   
   /**
    * A linear vector function, i.e., a function of the form f(x) = Ax + b
@@ -102,6 +102,6 @@ namespace prl {
 
   }; // class linear_real
 
-} // namespace prl
+} // namespace sill
 
 #endif

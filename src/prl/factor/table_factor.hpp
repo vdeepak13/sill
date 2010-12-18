@@ -1,6 +1,6 @@
 
-#ifndef PRL_TABLE_FACTOR_HPP
-#define PRL_TABLE_FACTOR_HPP
+#ifndef SILL_TABLE_FACTOR_HPP
+#define SILL_TABLE_FACTOR_HPP
 
 #include <map>
 #include <algorithm>
@@ -9,34 +9,34 @@
 
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/base/finite_assignment.hpp>
-#include <prl/base/finite_assignment_iterator.hpp>
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/global.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/functional.hpp>
-#include <prl/learning/dataset/finite_record.hpp>
-#include <prl/math/is_finite.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/range/forward_range.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/finite_assignment.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/functional.hpp>
+#include <sill/learning/dataset/finite_record.hpp>
+#include <sill/math/is_finite.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A table factor represents a function of a set of finite variables.
    *
-   * @tparam Table A type that implements the prl::Table concept.
+   * @tparam Table A type that implements the sill::Table concept.
    *
    * \ingroup factor_types
    * \see Factor
    */
   class table_factor : public factor {
-    //    concept_assert((prl::Table));
+    //    concept_assert((sill::Table));
 
     // Public type declarations
     //==========================================================================
@@ -189,7 +189,7 @@ namespace prl {
       : args(arguments.begin(), arguments.end()) {
       initialize(arguments, 0);
       assert(table().size() == values.size());
-      prl::copy(values, table_data.begin());
+      sill::copy(values, table_data.begin());
     }
 
     table_factor(const table_factor& factor) {
@@ -644,27 +644,27 @@ namespace prl {
 
     //! Computes the maximum for each assignment to the given variables
     table_factor maximum(const finite_domain& retain) const {
-      return collapse(prl::maximum<result_type>(), 
+      return collapse(sill::maximum<result_type>(), 
                        -std::numeric_limits<double>::infinity(),
                        retain);
     }
 
     //! Computes the minimum for each assignment to the given variables
     table_factor minimum(const finite_domain& retain) const {
-      return collapse(prl::minimum<result_type>(), 
+      return collapse(sill::minimum<result_type>(), 
                        std::numeric_limits<double>::infinity(),
                        retain);
     }
 
     //! Returns the maximum value in the factor
     result_type maximum() const {
-      return table_data.aggregate(prl::maximum<result_type>(), 
+      return table_data.aggregate(sill::maximum<result_type>(), 
                                   -std::numeric_limits<double>::infinity());
     }
 
     //! Returns the maximum value in the factor
     result_type minimum() const {
-      return table_data.aggregate(prl::minimum<result_type>(), 
+      return table_data.aggregate(sill::minimum<result_type>(), 
                                   std::numeric_limits<double>::infinity());
     }
 
@@ -997,7 +997,7 @@ namespace prl {
                                        const Range& values) {
     table_factor factor(arguments, 0);
     assert(values.size() == factor.size());
-    prl::copy(values, boost::begin(factor.values()));
+    sill::copy(values, boost::begin(factor.values()));
     return factor;
   }
 
@@ -1087,10 +1087,10 @@ namespace prl {
   }
 
   //typedef table_factor tablef;
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#include <prl/factor/operations.hpp>
+#include <sill/factor/operations.hpp>
 
-#endif // #ifndef PRL_TABLE_FACTOR_HPP
+#endif // #ifndef SILL_TABLE_FACTOR_HPP

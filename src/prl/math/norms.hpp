@@ -1,7 +1,7 @@
 #include <itpp/stat/misc_stat.h>
 #include <itpp/base/matfunc.h>
 
-namespace prl {
+namespace sill {
 
   template <typename T>
   double norm_inf(const itpp::Vec<T>& v) {

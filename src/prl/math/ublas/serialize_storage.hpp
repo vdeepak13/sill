@@ -1,9 +1,9 @@
-#ifndef PRL_MATH_UBLAS_SERIALIZE_STORAGE_HPP
-#define PRL_MATH_UBLAS_SERIALIZE_STORAGE_HPP
+#ifndef SILL_MATH_UBLAS_SERIALIZE_STORAGE_HPP
+#define SILL_MATH_UBLAS_SERIALIZE_STORAGE_HPP
 
 #include <boost/numeric/ublas/storage.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // A few additional serialization functions
 namespace boost { namespace numeric { namespace ublas
@@ -23,6 +23,6 @@ namespace boost { namespace numeric { namespace ublas
   
 } } } // namespaces
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

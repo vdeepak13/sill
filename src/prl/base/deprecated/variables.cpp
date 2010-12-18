@@ -8,19 +8,19 @@
 
 #include <iostream>
 
-#include <prl/base/variable.hpp>
-#include <prl/base/variables.hpp>
-#include <prl/base/process.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/finite_assignment_iterator.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/base/variables.hpp>
+#include <sill/base/process.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // All variables are implemented here (in a single file) to cut down 
 // on the compilation time
 
-namespace prl {
+namespace sill {
 
   // Variable
   //============================================================================
@@ -142,9 +142,9 @@ namespace prl {
   void variable::serialize(boost::archive::binary_oarchive&,
                            const unsigned int);
 
-} // namespace prl
+} // namespace sill
 
-BOOST_CLASS_EXPORT(prl::variable);
-BOOST_CLASS_EXPORT(prl::finite_variable);
-BOOST_CLASS_EXPORT(prl::vector_variable);
+BOOST_CLASS_EXPORT(sill::variable);
+BOOST_CLASS_EXPORT(sill::finite_variable);
+BOOST_CLASS_EXPORT(sill::vector_variable);
 

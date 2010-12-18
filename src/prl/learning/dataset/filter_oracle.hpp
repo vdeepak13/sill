@@ -1,15 +1,15 @@
 
-#ifndef PRL_FILTER_ORACLE_HPP
-#define PRL_FILTER_ORACLE_HPP
+#ifndef SILL_FILTER_ORACLE_HPP
+#define SILL_FILTER_ORACLE_HPP
 
-#include <prl/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset/oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // uncomment to print debugging information
-//#define PRL_FILTER_ORACLE_HPP_VERBOSE
+//#define SILL_FILTER_ORACLE_HPP_VERBOSE
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for transforming an oracle by rejection sampling,
@@ -64,8 +64,8 @@ namespace prl {
 
   }; // class filter_oracle
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_FILTER_ORACLE_HPP
+#endif // #ifndef SILL_FILTER_ORACLE_HPP

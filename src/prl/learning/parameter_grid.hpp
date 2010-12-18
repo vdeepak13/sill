@@ -1,8 +1,8 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_PARAMETER_GRID_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_PARAMETER_GRID_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_PARAMETER_GRID_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_PARAMETER_GRID_HPP
 
-#include <prl/math/vector.hpp>
+#include <sill/math/vector.hpp>
 
 /**
  * \file parameter_grid.hpp  This contains helper functions for dealing with
@@ -10,7 +10,7 @@
  *                           sets of regularization parameters.
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Create a grid of parameters to test.
@@ -177,8 +177,8 @@ namespace prl {
   zoom_parameter_grid_alt(const std::vector<vec>& oldgrid, const vec& val,
                           const ivec& k, bool log_scale);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_LEARNING_DISCRIMINATIVE_PARAMETER_GRID_HPP
+#endif // SILL_LEARNING_DISCRIMINATIVE_PARAMETER_GRID_HPP

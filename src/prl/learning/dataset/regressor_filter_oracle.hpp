@@ -1,10 +1,10 @@
 
-#ifndef PRL_REGRESSOR_FILTER_ORACLE_HPP
-#define PRL_REGRESSOR_FILTER_ORACLE_HPP
+#ifndef SILL_REGRESSOR_FILTER_ORACLE_HPP
+#define SILL_REGRESSOR_FILTER_ORACLE_HPP
 
-#include <prl/assignment.hpp>
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/learning/discriminative/binary_regressor.hpp>
+#include <sill/assignment.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/discriminative/binary_regressor.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -12,12 +12,12 @@
 #include <boost/random/uniform_smallint.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // uncomment to print debugging information
-//#define PRL_REGRESSOR_FILTER_ORACLE_HPP_VERBOSE
+//#define SILL_REGRESSOR_FILTER_ORACLE_HPP_VERBOSE
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for transforming an oracle by rejection sampling or
@@ -169,8 +169,8 @@ namespace prl {
 
   }; // class regressor_filter_oracle
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_REGRESSOR_FILTER_ORACLE_HPP
+#endif // #ifndef SILL_REGRESSOR_FILTER_ORACLE_HPP

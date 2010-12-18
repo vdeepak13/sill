@@ -1,11 +1,11 @@
 
-#ifndef PRL_RECORD_CONVERSIONS_HPP
-#define PRL_RECORD_CONVERSIONS_HPP
+#ifndef SILL_RECORD_CONVERSIONS_HPP
+#define SILL_RECORD_CONVERSIONS_HPP
 
-#include <prl/base/assignment.hpp>
-#include <prl/learning/dataset/record.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/learning/dataset/record.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Converts the given finite assignment into finite record data.
@@ -89,7 +89,7 @@ namespace prl {
   void fill_record_with_record(vector_record& to, const vector_record& from,
                                const vector_var_map& vmap);
 
-} // namespace prl
+} // namespace sill
 
-#endif // PRL_RECORD_CONVERSIONS_HPP
+#endif // SILL_RECORD_CONVERSIONS_HPP
 

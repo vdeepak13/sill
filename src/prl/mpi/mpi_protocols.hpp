@@ -2,7 +2,7 @@
 #define MPI_PROTOCOLS_HPP
 #include <climits>
 
-namespace prl{
+namespace sill{
   namespace MPI_WRAPPER_PROTOCOL_FLAGS {   
     // IDs 0-7 are reserved for internal messaging
     const int NUM_PROTOCOL_BITS = 16;

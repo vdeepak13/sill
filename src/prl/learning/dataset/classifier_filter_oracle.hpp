@@ -1,14 +1,14 @@
 
-#ifndef PRL_CLASSIFIER_FILTER_ORACLE_HPP
-#define PRL_CLASSIFIER_FILTER_ORACLE_HPP
+#ifndef SILL_CLASSIFIER_FILTER_ORACLE_HPP
+#define SILL_CLASSIFIER_FILTER_ORACLE_HPP
 
-#include <prl/assignment.hpp>
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
+#include <sill/assignment.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for transforming an oracle by hard thresholding using a classifier.
@@ -160,8 +160,8 @@ namespace prl {
 
   }; // class classifier_filter_oracle
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_CLASSIFIER_FILTER_ORACLE_HPP
+#endif // #ifndef SILL_CLASSIFIER_FILTER_ORACLE_HPP

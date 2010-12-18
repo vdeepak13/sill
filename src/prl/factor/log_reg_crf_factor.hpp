@@ -1,15 +1,15 @@
-#ifndef PRL_LOG_REG_CRF_FACTOR_HPP
-#define PRL_LOG_REG_CRF_FACTOR_HPP
+#ifndef SILL_LOG_REG_CRF_FACTOR_HPP
+#define SILL_LOG_REG_CRF_FACTOR_HPP
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/learnable_crf_factor.hpp>
-#include <prl/learning/crossval_parameters.hpp>
-#include <prl/learning/discriminative/multiclass2multilabel.hpp>
-#include <prl/learning/discriminative/multiclass_logistic_regression.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/discriminative/multiclass2multilabel.hpp>
+#include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * CRF factor based on multilabel logistic regression.
@@ -314,8 +314,8 @@ namespace prl {
 
   };  // class log_reg_crf_factor
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_LOG_REG_CRF_FACTOR_HPP
+#endif // SILL_LOG_REG_CRF_FACTOR_HPP

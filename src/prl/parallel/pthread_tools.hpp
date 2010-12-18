@@ -13,7 +13,7 @@
 /**
  * \file pthread_tools.hpp A collection of utilities for threading
  */
-namespace prl {
+namespace sill {
   /**
    * \class runnable Base class for defining a threaded function call.
    * A pointer to an instance of this class is passed to

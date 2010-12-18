@@ -1,13 +1,13 @@
 
-#ifndef PRL_LEARNING_DMOVE_MOVE_LEAF_HPP
-#define PRL_LEARNING_DMOVE_MOVE_LEAF_HPP
+#ifndef SILL_LEARNING_DMOVE_MOVE_LEAF_HPP
+#define SILL_LEARNING_DMOVE_MOVE_LEAF_HPP
 #include <set>
-#include <prl/iterator/subset_iterator.hpp>
-#include <prl/learning/structure_search/decomposable_move.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/iterator/subset_iterator.hpp>
+#include <sill/learning/structure_search/decomposable_move.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for representing a possible move in structure search for
@@ -308,6 +308,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DMOVE_MOVE_LEAF_HPP
+#endif // #ifndef SILL_LEARNING_DMOVE_MOVE_LEAF_HPP

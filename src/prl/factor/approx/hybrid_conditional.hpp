@@ -1,13 +1,13 @@
-#ifndef PRL_HYBRID_CONDITIONAL_APPROXIMATOR_HPP
-#define PRL_HYBRID_CONDITIONAL_APPROXIMATOR_HPP
+#ifndef SILL_HYBRID_CONDITIONAL_APPROXIMATOR_HPP
+#define SILL_HYBRID_CONDITIONAL_APPROXIMATOR_HPP
 
 #include <boost/shared_ptr.hpp>
 
-#include <prl/math/constants.hpp>
-#include <prl/factor/approx/interfaces.hpp>
-#include <prl/factor/moment_gaussian.hpp>
+#include <sill/math/constants.hpp>
+#include <sill/factor/approx/interfaces.hpp>
+#include <sill/factor/moment_gaussian.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A Hybrid conditional approximator.
@@ -66,6 +66,6 @@ namespace prl {
 
   }; // class hybrid_conditional_approximator
   
-} // namespace prl
+} // namespace sill
 
 #endif

@@ -15,12 +15,12 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_DENSE_AND_SPARSE_TABLE_HPP
-#define PRL_DENSE_AND_SPARSE_TABLE_HPP
+#ifndef SILL_DENSE_AND_SPARSE_TABLE_HPP
+#define SILL_DENSE_AND_SPARSE_TABLE_HPP
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Constructs a sparse table from a dense one.
   template <typename T>
@@ -55,8 +55,8 @@ namespace prl {
       operator()(it->first) = it->second;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-#endif // #ifndef PRL_DENSE_AND_SPARSE_TABLE_HPP
+#endif // #ifndef SILL_DENSE_AND_SPARSE_TABLE_HPP

@@ -12,22 +12,22 @@
 
 #include <boost/program_options.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
 
-#include <prl/parsers/alchemy.hpp>
+#include <sill/parsers/alchemy.hpp>
 
 // Denoising image tools
-#include <prl/synthetic_data/denoise_image.hpp>
+#include <sill/synthetic_data/denoise_image.hpp>
 
 
 // This should come last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 using namespace std;
 using namespace boost::gil;
-using namespace prl;
+using namespace sill;
 
 // Declare typedefs 
 // typedef table_factor< dense_table<logarithmic<double> > > factor_type;

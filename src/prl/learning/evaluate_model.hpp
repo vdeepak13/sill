@@ -1,15 +1,15 @@
 
-#ifndef PRL_EVALUATE_MODEL_HPP
-#define PRL_EVALUATE_MODEL_HPP
+#ifndef SILL_EVALUATE_MODEL_HPP
+#define SILL_EVALUATE_MODEL_HPP
 
-//#include <prl/factor/log_table_factor.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/crf/crf_X_mapping.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/math/statistics.hpp>
-#include <prl/model/decomposable.hpp>
+//#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/crf/crf_X_mapping.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/math/statistics.hpp>
+#include <sill/model/decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file evaluate_model.hpp  Set of methods for analyzing graphical models.
@@ -20,7 +20,7 @@
  *     - Score Decay Assumption
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for evaluating a generative model over finite variables.
@@ -461,8 +461,8 @@ namespace prl {
 
   }; // struct evaluate_SDA_on_CRF
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

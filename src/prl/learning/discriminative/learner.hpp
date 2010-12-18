@@ -1,18 +1,18 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_LEARNER_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_LEARNER_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_LEARNER_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_LEARNER_HPP
 
 #include <fstream>
 #include <sstream>
 #include <string>
 
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // forward declarations
   class learner;
@@ -264,6 +264,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_LEARNER_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_LEARNER_HPP

@@ -1,14 +1,14 @@
-#ifndef PRL_PRIOR_LIKELIHOOD_HPP
-#define PRL_PRIOR_LIKELIHOOD_HPP
+#ifndef SILL_PRIOR_LIKELIHOOD_HPP
+#define SILL_PRIOR_LIKELIHOOD_HPP
 
-#include <prl/global.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl
+namespace sill
 {
 
   /**
@@ -277,7 +277,7 @@ namespace prl
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

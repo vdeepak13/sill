@@ -1,11 +1,11 @@
 
 #include <iostream>
 #include <vector>
-#include <prl/range/concepts.hpp>
-#include <prl/copy_ptr.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/copy_ptr.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file virtual_functions_timing.cpp
@@ -27,7 +27,7 @@
  *   - actual datasets and views inherited from it
  */
 
-using namespace prl;
+using namespace sill;
 
 /**
  * - (if virtual functions are expensive)

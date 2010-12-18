@@ -1,9 +1,9 @@
 
-#include <prl/learning/learn_factor.hpp>
+#include <sill/learning/learn_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template <>
   table_factor
@@ -115,6 +115,6 @@ namespace prl {
     return canonical_gaussian(X, lambda, lambda * mu);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

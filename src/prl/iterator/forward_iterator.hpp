@@ -1,5 +1,5 @@
-#ifndef PRL_FORWARD_ITERATOR_HPP
-#define PRL_FORWARD_ITERATOR_HPP
+#ifndef SILL_FORWARD_ITERATOR_HPP
+#define SILL_FORWARD_ITERATOR_HPP
 
 #include <iterator>
 #include <typeinfo>
@@ -7,9 +7,9 @@
 #include <boost/type_traits/remove_reference.hpp>
 #include <boost/type_traits/remove_const.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-namespace prl {
+namespace sill {
   
   /**
    * A polymorphic forward iterator.
@@ -119,7 +119,7 @@ namespace prl {
     
   }; // class forward_iterator
 
-} // namespace prl
+} // namespace sill
 
 
 #endif

@@ -1,9 +1,9 @@
 #include <iostream>
-#include <prl/math/ublas/quaternion.hpp>
-#include <prl/math/ublas/fixed.hpp>
+#include <sill/math/ublas/quaternion.hpp>
+#include <sill/math/ublas/fixed.hpp>
 
 typedef boost::numeric::ublas::fixed_vector<double,3> vector3;
-typedef prl::quaternion<double> quaternion;
+typedef sill::quaternion<double> quaternion;
 
 int main()
 {

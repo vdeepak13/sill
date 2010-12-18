@@ -1,13 +1,13 @@
-#ifndef PRL_CRF_FACTOR_HPP
-#define PRL_CRF_FACTOR_HPP
+#ifndef SILL_CRF_FACTOR_HPP
+#define SILL_CRF_FACTOR_HPP
 
-#include <prl/base/variable_type_group.hpp>
-#include <prl/base/variable_type_union.hpp>
-#include <prl/learning/dataset/dataset.hpp>
+#include <sill/base/variable_type_group.hpp>
+#include <sill/base/variable_type_union.hpp>
+#include <sill/learning/dataset/dataset.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A virtual base class for a CRF factor/potential.
@@ -58,7 +58,7 @@ namespace prl {
 
     /**
      * The type of input variables used by the factor.
-     * Typically, this type is either prl::variable or its descendant.
+     * Typically, this type is either sill::variable or its descendant.
      */
     typedef InputVar input_variable_type;
 
@@ -82,7 +82,7 @@ namespace prl {
 
     /**
      * The type of output variables used by the factor.
-     * Typically, this type is either prl::variable or its descendant.
+     * Typically, this type is either sill::variable or its descendant.
      */
     typedef typename OutputFactor::variable_type output_variable_type;
 
@@ -104,7 +104,7 @@ namespace prl {
 
     /**
      * Both input_variable_type and output_variable_type inherit from this type.
-     * Typically, this type is either prl::variable or its descendant.
+     * Typically, this type is either sill::variable or its descendant.
      */
     typedef typename
     variable_type_union<input_variable_type,output_variable_type>::union_type
@@ -314,8 +314,8 @@ namespace prl {
     return out;
   }
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_CRF_FACTOR_HPP
+#endif // SILL_CRF_FACTOR_HPP

@@ -1,15 +1,15 @@
 
-#ifndef PRL_FACTOR_HPP
-#define PRL_FACTOR_HPP
+#ifndef SILL_FACTOR_HPP
+#define SILL_FACTOR_HPP
 
-#include <prl/base/string_functions.hpp>
-#include <prl/global.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/traits.hpp>
+#include <sill/base/string_functions.hpp>
+#include <sill/global.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/traits.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * The base class of all factors.  
@@ -54,10 +54,10 @@ namespace prl {
     }
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_FACTOR_HPP
+#endif // #ifndef SILL_FACTOR_HPP
 
 

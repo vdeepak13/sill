@@ -1,13 +1,13 @@
-#ifndef PRL_VERTEX_INDEX_HPP
-#define PRL_VERTEX_INDEX_HPP
+#ifndef SILL_VERTEX_INDEX_HPP
+#define SILL_VERTEX_INDEX_HPP
 
 #include <boost/unordered_map.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename Graph>
   void vertex_index(const Graph& g, 
@@ -19,6 +19,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

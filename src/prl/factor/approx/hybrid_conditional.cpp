@@ -1,15 +1,15 @@
 #include <boost/math/distributions/normal.hpp>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/factor/approx/hybrid_conditional.hpp>
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/mixture.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/nonlinear_gaussian.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/factor/approx/hybrid_conditional.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/mixture.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/nonlinear_gaussian.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-namespace prl {
+namespace sill {
 
   hybrid_conditional_approximator::
   hybrid_conditional_approximator(const gaussian_approximator& base,
@@ -80,5 +80,5 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 

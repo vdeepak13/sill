@@ -1,8 +1,8 @@
-#include <prl/learning/object_detection/random_windows_oracle.hpp>
+#include <sill/learning/object_detection/random_windows_oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Protected data members and methods
     //==========================================================================
@@ -76,6 +76,6 @@ namespace prl {
       return true;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

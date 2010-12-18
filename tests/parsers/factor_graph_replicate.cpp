@@ -3,14 +3,14 @@
 #include <string>
 #include <fstream>
 #include <map>
-#include <prl/parsers/detect_file_format.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/parsers/alchemy.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/parsers/detect_file_format.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/parsers/alchemy.hpp>
+#include <sill/macros_def.hpp>
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 typedef factor_graph_model<log_table_factor> factor_graph_model_type;
 typedef factor_graph_model_type::factor_type factor_type;

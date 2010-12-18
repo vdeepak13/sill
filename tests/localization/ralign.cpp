@@ -3,18 +3,18 @@
 #include <list>
 #include <algorithm>
 
-#include <prl/global.hpp>
-#include <prl/geometry/alignment.hpp>
-#include <prl/math/bindings/wm4.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/global.hpp>
+#include <sill/geometry/alignment.hpp>
+#include <sill/math/bindings/wm4.hpp>
+#include <sill/stl_io.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random.hpp>
 #include <boost/function.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-typedef prl::math::bindings::wm4_kernel<double,3> kernel;
+typedef sill::math::bindings::wm4_kernel<double,3> kernel;
 typedef Wm4::Quaternion<double> quaternion;
 typedef kernel::matrix matrix_type;
 typedef kernel::vector vector_type;
@@ -28,8 +28,8 @@ make_variate_generator(Engine e, Distribution d) {
 int main(int argc, char* argv[]) {
   using namespace std;
   using namespace boost;
-  using namespace prl;
-  using namespace prl::geometry;
+  using namespace sill;
+  using namespace sill::geometry;
   
   assert(argc==3);
   size_t count = lexical_cast<size_t>(argv[1]);
@@ -50,8 +50,8 @@ int main(int argc, char* argv[]) {
   list<kernel::vector> source, target;
   for(size_t i=0;i<count;i++) {
     vector_type v, w;
-    prl::generate(v, uniform);
-    prl::generate(w, uniform); 
+    sill::generate(v, uniform);
+    sill::generate(w, uniform); 
     source.push_back(v);
     //target.push_back(v);
     target.push_back(prod(r,v) + t + w*noise - noise/2);

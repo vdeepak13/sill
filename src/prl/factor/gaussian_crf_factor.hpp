@@ -1,19 +1,19 @@
-#ifndef PRL_GAUSSIAN_CRF_FACTOR_HPP
-#define PRL_GAUSSIAN_CRF_FACTOR_HPP
+#ifndef SILL_GAUSSIAN_CRF_FACTOR_HPP
+#define SILL_GAUSSIAN_CRF_FACTOR_HPP
 
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/learnable_crf_factor.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/learning/crossval_parameters.hpp>
-#include <prl/learning/discriminative/linear_regression.hpp>
-#include <prl/math/linear_algebra_errors.hpp>
-#include <prl/optimization/gaussian_opt_vector.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/discriminative/linear_regression.hpp>
+#include <sill/math/linear_algebra_errors.hpp>
+#include <sill/optimization/gaussian_opt_vector.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Forward declarations
   class canonical_gaussian;
@@ -611,8 +611,8 @@ namespace prl {
 
   };  // class gaussian_crf_factor
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_GAUSSIAN_CRF_FACTOR_HPP
+#endif // SILL_GAUSSIAN_CRF_FACTOR_HPP

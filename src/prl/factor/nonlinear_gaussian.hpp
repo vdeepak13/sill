@@ -1,16 +1,16 @@
-#ifndef PRL_NONLINEAR_GAUSSIAN_HPP
-#define PRL_NONLINEAR_GAUSSIAN_HPP
+#ifndef SILL_NONLINEAR_GAUSSIAN_HPP
+#define SILL_NONLINEAR_GAUSSIAN_HPP
 
 #include <boost/shared_ptr.hpp>
 
-#include <prl/factor/factor.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/approx/interfaces.hpp>
-#include <prl/math/function/interfaces.hpp>
-#include <prl/math/matrix.hpp>
-#include <prl/math/vector.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/approx/interfaces.hpp>
+#include <sill/math/function/interfaces.hpp>
+#include <sill/math/matrix.hpp>
+#include <sill/math/vector.hpp>
 
-namespace prl {
+namespace sill {
 
   class gaussian_approximator;
   class moment_gaussian;
@@ -240,6 +240,6 @@ namespace prl {
     typedef moment_gaussian type;
   };
 
-} // namespace prl
+} // namespace sill
 
 #endif

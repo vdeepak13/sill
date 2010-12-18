@@ -1,9 +1,9 @@
-#ifndef PRL_MAP_VALUE_ITERATOR_HPP
-#define PRL_MAP_VALUE_ITERATOR_HPP
+#ifndef SILL_MAP_VALUE_ITERATOR_HPP
+#define SILL_MAP_VALUE_ITERATOR_HPP
 
 #include <iterator>
 
-namespace prl {
+namespace sill {
 
   /**
    * This iterator is used to iterate over the values in an associative
@@ -70,6 +70,6 @@ namespace prl {
 
   }; // class map_value_iterator
 
-} // namespace prl
+} // namespace sill
 
 #endif 

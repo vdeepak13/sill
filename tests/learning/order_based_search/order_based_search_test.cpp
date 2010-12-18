@@ -12,22 +12,22 @@
 #include <iostream>
 
 #include <cmath>
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/bayesian_network.hpp>
-#include <prl/model/free_functions.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/inference/belief_propagation.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/learning/order_based_search/Classes.hpp>
-#include <prl/learning/order_based_search/Liste.hpp>
-#include <prl/learning/order_based_search/constants.hpp>
-#include <prl/learning/order_based_search/Bayesian.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/bayesian_network.hpp>
+#include <sill/model/free_functions.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/inference/belief_propagation.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/learning/order_based_search/Classes.hpp>
+#include <sill/learning/order_based_search/Liste.hpp>
+#include <sill/learning/order_based_search/constants.hpp>
+#include <sill/learning/order_based_search/Bayesian.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-using namespace prl;
+using namespace sill;
 
 int main(int argc, char* argv[]) {
 
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
   std::cout << "Now, convert to pairwise Markov net:" << std::endl;
   typedef pairwise_markov_network<tablef> pmn_type;
   pmn_type pmn;
-  std::map<variable_h, std::vector<prl::variable_h> > var_mapping;
+  std::map<variable_h, std::vector<sill::variable_h> > var_mapping;
   boost::tie(pmn, var_mapping) = fm2pairwise_markov_network(bn, u);
   std::cout << pmn << std::endl;
 /*

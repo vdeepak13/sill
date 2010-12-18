@@ -1,5 +1,5 @@
-#ifndef PRL_FACTOR_CONCEPTS_HPP
-#define PRL_FACTOR_CONCEPTS_HPP
+#ifndef SILL_FACTOR_CONCEPTS_HPP
+#define SILL_FACTOR_CONCEPTS_HPP
 
 #include <iostream>
 #include <map>
@@ -7,16 +7,16 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <prl/global.hpp>
-#include <prl/learning/crossval_parameters.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/range/concepts.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/global.hpp>
+#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //============================================================================
   // MARGINAL FACTORS
@@ -65,7 +65,7 @@ namespace prl {
 
     /**
      * The type of variables, used by the factor. Typically, this type is
-     * either prl::variable or its descendant.
+     * either sill::variable or its descendant.
      */
     typedef typename F::variable_type variable_type;
     
@@ -124,12 +124,12 @@ namespace prl {
       domain_type d;
 
       // member functions
-      prl::same_type(cf.arguments(), d);
-      prl::same_type(f.combine_in(f, product_op), f);
-      prl::same_type(f.subst_args(vm), f);
+      sill::same_type(cf.arguments(), d);
+      sill::same_type(f.combine_in(f, product_op), f);
+      sill::same_type(f.subst_args(vm), f);
 
       // static functions
-      prl::same_type(combine(cf, cf, product_op), f);
+      sill::same_type(combine(cf, cf, product_op), f);
       f.restrict(a);
     }
 
@@ -179,11 +179,11 @@ namespace prl {
       const F& cf = f;
 
       // factor operations
-//      prl::same_type(f, f*=f); // TO DO: THESE ARE DISABLED B/C THESE OPERATIONS NEED TO BE PART OF THE FACTOR INTERFACE, NOT FREE FUNCTIONS; GET RID OF THE FREE FUNCTIONS IN operations.hpp
-//      prl::same_type(f, f/=f);
-      prl::same_type(f, f.marginal(typename F::domain_type()));
-      prl::same_type(b, f.is_normalizable());
-      prl::same_type(f.normalize(), f);
+//      sill::same_type(f, f*=f); // TO DO: THESE ARE DISABLED B/C THESE OPERATIONS NEED TO BE PART OF THE FACTOR INTERFACE, NOT FREE FUNCTIONS; GET RID OF THE FREE FUNCTIONS IN operations.hpp
+//      sill::same_type(f, f/=f);
+      sill::same_type(f, f.marginal(typename F::domain_type()));
+      sill::same_type(b, f.is_normalizable());
+      sill::same_type(f.normalize(), f);
       r = f.norm_constant();
 
       // entropy computations
@@ -228,8 +228,8 @@ namespace prl {
                       double smoothing);
 
     concept_usage(LearnableDistributionFactor) {
-      prl::same_type(f, F::learn_marginal(dom_constref, ds_constref, d));
-      prl::same_type(f, F::learn_conditional(dom_constref, dom_constref,
+      sill::same_type(f, F::learn_marginal(dom_constref, ds_constref, d));
+      sill::same_type(f, F::learn_conditional(dom_constref, dom_constref,
                                              a_constref, ds_constref, d));
     }
 
@@ -290,19 +290,19 @@ namespace prl {
 
     /**
      * The type of input variables used by the factor.
-     * Typically, this type is either prl::variable or its descendant.
+     * Typically, this type is either sill::variable or its descendant.
      */
     typedef typename F::input_variable_type input_variable_type;
 
     /**
      * The type of output variables used by the factor.
-     * Typically, this type is either prl::variable or its descendant.
+     * Typically, this type is either sill::variable or its descendant.
      */
     typedef typename F::output_variable_type output_variable_type;
 
     /**
      * The type of variables used by the factor.
-     * Typically, this type is either prl::variable or its descendant.
+     * Typically, this type is either sill::variable or its descendant.
      * Both input_variable_type and output_variable_type should inherit
      * from this type.
      */
@@ -438,22 +438,22 @@ namespace prl {
     double log_expected_value(const dataset& ds) const;
 
     concept_usage(CRFfactor) {
-      prl::same_type(f_const_ref.output_arguments(), od_const_ref);
-      prl::same_type(f_const_ref.input_arguments(), id_const_ref);
-      prl::same_type(f_const_ref.input_arguments_ptr(), id_copy_ptr);
-      prl::same_type(f_const_ref.arguments(), dom);
-      prl::same_type(f_const_ref.log_space(), b);
-      prl::same_type(f_ptr->convert_to_log_space(), b);
-      prl::same_type(f_ptr->convert_to_real_space(), b);
-      prl::same_type(f_const_ref.weights(), opt_vec_const_ref);
-      prl::same_type(f_ptr->weights(), opt_vec_ref);
-      prl::same_type(f_const_ref.fixed_value(), b);
-      prl::same_type(f_ref.fixed_value(), b_ref);
+      sill::same_type(f_const_ref.output_arguments(), od_const_ref);
+      sill::same_type(f_const_ref.input_arguments(), id_const_ref);
+      sill::same_type(f_const_ref.input_arguments_ptr(), id_copy_ptr);
+      sill::same_type(f_const_ref.arguments(), dom);
+      sill::same_type(f_const_ref.log_space(), b);
+      sill::same_type(f_ptr->convert_to_log_space(), b);
+      sill::same_type(f_ptr->convert_to_real_space(), b);
+      sill::same_type(f_const_ref.weights(), opt_vec_const_ref);
+      sill::same_type(f_ptr->weights(), opt_vec_ref);
+      sill::same_type(f_const_ref.fixed_value(), b);
+      sill::same_type(f_ref.fixed_value(), b_ref);
       f_const_ref.print(out);
 
-      prl::same_type(f_const_ref.condition(a_const_ref), of_const_ref);
-      prl::same_type(f_const_ref.condition(rec_const_ref), of_const_ref);
-      prl::same_type(f_const_ref.log_expected_value(ds_const_ref), d);
+      sill::same_type(f_const_ref.condition(a_const_ref), of_const_ref);
+      sill::same_type(f_const_ref.condition(rec_const_ref), of_const_ref);
+      sill::same_type(f_const_ref.log_expected_value(ds_const_ref), d);
       out << f_const_ref;
     }
 
@@ -658,12 +658,12 @@ namespace prl {
     */
 
     concept_usage(LearnableCRFfactor) {
-      prl::same_type(params_const_ref.valid(), b);
-      prl::same_type(params_const_ref.reg, reg);
+      sill::same_type(params_const_ref.valid(), b);
+      sill::same_type(params_const_ref.reg, reg);
 
-      prl::same_type(reg.regularization, tmpsize);
-      prl::same_type(reg.nlambdas, tmpsize);
-      prl::same_type(reg.lambdas, tmpvec);
+      sill::same_type(reg.regularization, tmpsize);
+      sill::same_type(reg.nlambdas, tmpsize);
+      sill::same_type(reg.lambdas, tmpvec);
 
       f_const_ref.add_gradient(opt_vec_ref, rec_const_ref, d);
       f_const_ref.add_expected_gradient(opt_vec_ref, rec_const_ref,
@@ -676,14 +676,14 @@ namespace prl {
       f_const_ref.add_expected_squared_gradient(opt_vec_ref, rec_const_ref,
                                                 of_const_ref, d);
 
-      prl::same_type(d, f_const_ref.regularization_penalty(reg));
+      sill::same_type(d, f_const_ref.regularization_penalty(reg));
       f_const_ref.add_regularization_gradient(opt_vec_ref, reg, d);
       f_const_ref.add_regularization_hessian_diag(opt_vec_ref, reg, d);
       /*
-      prl::same_type(learn_crf_factor<F>(ds_shared_ptr, od_const_ref,
+      sill::same_type(learn_crf_factor<F>(ds_shared_ptr, od_const_ref,
                                         id_copy_ptr, uns, params_const_ref),
                      f_ptr);
-      prl::same_type(learn_crf_factor_cv<F>
+      sill::same_type(learn_crf_factor_cv<F>
                      (reg_params, vec_ref, vec_ref, cv_params_const_ref,
                       ds_shared_ptr, od_const_ref, id_copy_ptr, uns,
                       params_const_ref),
@@ -728,9 +728,9 @@ namespace prl {
 
   }; // struct LearnableCRFfactor
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

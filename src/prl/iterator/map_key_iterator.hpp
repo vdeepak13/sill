@@ -1,9 +1,9 @@
-#ifndef PRL_MAP_KEY_ITERATOR_HPP
-#define PRL_MAP_KEY_ITERATOR_HPP
+#ifndef SILL_MAP_KEY_ITERATOR_HPP
+#define SILL_MAP_KEY_ITERATOR_HPP
 
 #include <iterator>
 
-namespace prl {
+namespace sill {
 
   /**
    * This iterator is used to iterate over the key in an associative container.
@@ -69,6 +69,6 @@ namespace prl {
 
   }; // class map_key_iterator
 
-} // namespace prl
+} // namespace sill
 
 #endif 

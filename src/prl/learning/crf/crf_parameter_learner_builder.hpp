@@ -1,9 +1,9 @@
-#ifndef PRL_CRF_PARAMETER_LEARNER_BUILDER_HPP
-#define PRL_CRF_PARAMETER_LEARNER_BUILDER_HPP
+#ifndef SILL_CRF_PARAMETER_LEARNER_BUILDER_HPP
+#define SILL_CRF_PARAMETER_LEARNER_BUILDER_HPP
 
-#include <prl/learning/crf/crf_parameter_learner.hpp>
+#include <sill/learning/crf/crf_parameter_learner.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for parsing command-line options to create a crf_parameter_learner.
@@ -30,6 +30,6 @@ namespace prl {
 
   }; // class crf_parameter_learner_builder
 
-}  // namespace prl
+}  // namespace sill
 
-#endif // PRL_CRF_PARAMETER_LEARNER_BUILDER_HPP
+#endif // SILL_CRF_PARAMETER_LEARNER_BUILDER_HPP

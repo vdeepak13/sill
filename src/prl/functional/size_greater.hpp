@@ -1,9 +1,9 @@
-#ifndef PRL_SIZE_GREATER_HPP
-#define PRL_SIZE_GREATER_HPP
+#ifndef SILL_SIZE_GREATER_HPP
+#define SILL_SIZE_GREATER_HPP
 
 #include <functional>
 
-namespace prl {
+namespace sill {
   
   //! A functor that compares the sizes of two containers
   template <typename Container>

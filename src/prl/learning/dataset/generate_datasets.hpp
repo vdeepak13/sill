@@ -1,17 +1,17 @@
 
-#ifndef PRL_GENERATE_DATASETS_HPP
-#define PRL_GENERATE_DATASETS_HPP
+#ifndef SILL_GENERATE_DATASETS_HPP
+#define SILL_GENERATE_DATASETS_HPP
 
 /**
  * \file generate_datasets.hpp  Free functions for generating synthetic data.
  */
 
-#include <prl/learning/dataset/vector_assignment_dataset.hpp>
-#include <prl/model/crf_model.hpp>
+#include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/model/crf_model.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Generate n samples over X from the given model for P(X),
@@ -45,8 +45,8 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_GENERATE_DATASETS_HPP
+#endif // #ifndef SILL_GENERATE_DATASETS_HPP

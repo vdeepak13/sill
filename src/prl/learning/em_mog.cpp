@@ -1,10 +1,10 @@
-#include <prl/learning/em_mog.hpp>
-#include <prl/learning/parameter/gaussian.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/learning/em_mog.hpp>
+#include <sill/learning/parameter/gaussian.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   em_mog::em_mog(const dataset* data, size_t k)
     : data(data), n(data->size()), k(k), w(zeros(n,k)) {}
@@ -54,5 +54,5 @@ namespace prl {
     return mixture;
   }
 
-} // namespace prl 
+} // namespace sill 
 

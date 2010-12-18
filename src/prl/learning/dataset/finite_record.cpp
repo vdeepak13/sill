@@ -1,8 +1,8 @@
-#include <prl/learning/dataset/finite_record.hpp>
+#include <sill/learning/dataset/finite_record.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Getters and helpers
   //==========================================================================
@@ -11,17 +11,17 @@ namespace prl {
     return (finite_numbering_ptr->count(v) != 0);
   }
 
-  prl::finite_assignment finite_record::finite_assignment() const {
-    prl::finite_assignment a;
+  sill::finite_assignment finite_record::finite_assignment() const {
+    sill::finite_assignment a;
     foreach(const finite_var_index_pair& p, *finite_numbering_ptr) {
       a[p.first] = fin_ptr->operator[](p.second);
     }
     return a;
   }
 
-  prl::finite_assignment
+  sill::finite_assignment
   finite_record::assignment(const finite_domain& X) const {
-    prl::finite_assignment a;
+    sill::finite_assignment a;
     foreach(finite_variable* v, X) {
       size_t v_index(safe_get(*finite_numbering_ptr, v));
       a[v] = fin_ptr->operator[](v_index);
@@ -63,7 +63,7 @@ namespace prl {
     return *this;
   }
 
-  finite_record& finite_record::operator=(const prl::finite_assignment& a) {
+  finite_record& finite_record::operator=(const sill::finite_assignment& a) {
     if (!fin_own) {
       fin_ptr = new std::vector<size_t>(finite_numbering_ptr->size(), 0);
       fin_own = true;
@@ -100,6 +100,6 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

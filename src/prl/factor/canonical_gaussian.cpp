@@ -1,18 +1,18 @@
 #include <algorithm>
 
-#include <prl/base/universe.hpp>
-#include <prl/math/constants.hpp>
-#include <prl/math/linear_algebra.hpp>
-#include <prl/math/norms.hpp>
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/vector.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/math/constants.hpp>
+#include <sill/math/linear_algebra.hpp>
+#include <sill/math/norms.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Serialization
   //============================================================================
@@ -175,7 +175,7 @@ namespace prl {
 
     if (this->arguments() == other.arguments()) {
       vec other_vector = other.inf_vector(arg_list);
-      if (prl::lexicographical_compare(inf_vector(), other_vector))
+      if (sill::lexicographical_compare(inf_vector(), other_vector))
         return true; // inf_vector() < other_vector
 
       if (inf_vector() == other_vector) {
@@ -207,7 +207,7 @@ namespace prl {
   double canonical_gaussian::logv(const vector_assignment& a) const {
     if (eta.size() == 0)
       return 0;
-    vec v = prl::concat(values(a, arg_list));
+    vec v = sill::concat(values(a, arg_list));
     // will assertion if a does not cover the arguments of this
     return - 0.5*inner_prod(v, lambda*v) + inner_prod(v, eta) + log_mult;
   }
@@ -315,7 +315,7 @@ namespace prl {
 
     ivec ix = indices(x);
     ivec iy = indices(y);
-    vec vy = prl::concat(values(a, y));
+    vec vy = sill::concat(values(a, y));
     assert(vy.size()==iy.size());
 
     if (x.size() == 0)
@@ -556,5 +556,5 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 

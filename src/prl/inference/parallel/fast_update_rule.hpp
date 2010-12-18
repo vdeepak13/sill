@@ -3,12 +3,12 @@
 
 #include <limits>
 
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/inference/parallel/basic_state_manager.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/inference/parallel/basic_state_manager.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * The basic update rule satisfies the update rule concept providing
@@ -196,7 +196,7 @@ namespace prl {
 
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif
 
 

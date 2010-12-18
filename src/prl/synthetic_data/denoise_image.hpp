@@ -1,5 +1,5 @@
-#ifndef PRL_DENOISE_IMAGE_HPP
-#define PRL_DENOISE_IMAGE_HPP
+#ifndef SILL_DENOISE_IMAGE_HPP
+#define SILL_DENOISE_IMAGE_HPP
 
 #include <vector>
 #include <string>
@@ -12,15 +12,15 @@
 
 
 
-#include <prl/base/universe.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/base/finite_variable.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/base/finite_variable.hpp>
 
 
 // This must be defined last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Create the distributions
   void create_distributions(std::vector<double>& mu, 
@@ -222,5 +222,5 @@ namespace prl {
   
 } // end of PRL NAMESPACE
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

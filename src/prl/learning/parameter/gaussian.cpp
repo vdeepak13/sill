@@ -1,12 +1,12 @@
 #include <cmath>
 
-#include <prl/learning/parameter/gaussian.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/learning/parameter/gaussian.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   void mle(const dataset& data, const vec& w, double regul, moment_gaussian& mg)
   {
@@ -43,4 +43,4 @@ namespace prl {
     mle(data, ones(data.size()), reg, mg);
   }
 
-} // namespace prl
+} // namespace sill

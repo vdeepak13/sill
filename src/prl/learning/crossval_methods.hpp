@@ -1,18 +1,18 @@
 
-#ifndef PRL_CROSSVAL_METHODS_HPP
-#define PRL_CROSSVAL_METHODS_HPP
+#ifndef SILL_CROSSVAL_METHODS_HPP
+#define SILL_CROSSVAL_METHODS_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/learning/crossval_parameters.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/parameter_grid.hpp>
-#include <prl/math/vector.hpp>
+#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/parameter_grid.hpp>
+#include <sill/math/vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Template for iteratively running cross validation to choose a parameter
@@ -101,6 +101,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_CROSSVAL_METHODS_HPP
+#endif // #ifndef SILL_CROSSVAL_METHODS_HPP

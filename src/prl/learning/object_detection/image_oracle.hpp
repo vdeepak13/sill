@@ -1,5 +1,5 @@
-#ifndef PRL_IMAGE_ORACLE_HPP
-#define PRL_IMAGE_ORACLE_HPP
+#ifndef SILL_IMAGE_ORACLE_HPP
+#define SILL_IMAGE_ORACLE_HPP
 
 #include <map>
 #include <fstream>
@@ -7,15 +7,15 @@
 #include <sstream>
 #include <string>
 
-#include <prl/global.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/learning/object_detection/image.hpp>
-#include <prl/copy_ptr.hpp>
+#include <sill/global.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/object_detection/image.hpp>
+#include <sill/copy_ptr.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for loading variable-size images using the text format below.
@@ -155,8 +155,8 @@ namespace prl {
   boost::shared_ptr<std::vector<record> >
   load_images(const std::string& filename, universe& u);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_IMAGE_ORACLE_HPP
+#endif // #ifndef SILL_IMAGE_ORACLE_HPP

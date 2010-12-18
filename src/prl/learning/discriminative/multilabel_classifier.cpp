@@ -1,8 +1,8 @@
-#include <prl/learning/discriminative/multilabel_classifier.hpp>
+#include <sill/learning/discriminative/multilabel_classifier.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Getters and helpers
     //==========================================================================
@@ -218,6 +218,6 @@ namespace prl {
       return true;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

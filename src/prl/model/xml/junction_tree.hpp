@@ -1,11 +1,11 @@
-#ifndef PRL_JUNCTION_TREE_XML_HPP
-#define PRL_JUNCTION_TREE_XML_HPP
+#ifndef SILL_JUNCTION_TREE_XML_HPP
+#define SILL_JUNCTION_TREE_XML_HPP
 
-#include <prl/model/junction_tree.hpp>
+#include <sill/model/junction_tree.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename Node, typename VP, typename EP>
   void referenced_variables(const junction_tree<Node, VP, EP>& jt, domain& vars)
@@ -42,6 +42,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,12 +1,12 @@
 
-#ifndef PRL_LBFGS_HPP
-#define PRL_LBFGS_HPP
+#ifndef SILL_LBFGS_HPP
+#define SILL_LBFGS_HPP
 
-#include <prl/optimization/gradient_method.hpp>
+#include <sill/optimization/gradient_method.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Parameters for L-BFGS class.
   struct lbfgs_parameters
@@ -200,6 +200,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LBFGS_HPP
+#endif // #ifndef SILL_LBFGS_HPP

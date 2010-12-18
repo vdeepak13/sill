@@ -10,13 +10,13 @@
 // All rights reserved.  See copyright.h for copyright notice and limitation 
 // of liability and disclaimer of warranty provisions.
 
-#ifndef PRL_STRUCTURE_SEARCH_ORDER_BASED_LISTE_HPP
-#define PRL_STRUCTURE_SEARCH_ORDER_BASED_LISTE_HPP
+#ifndef SILL_STRUCTURE_SEARCH_ORDER_BASED_LISTE_HPP
+#define SILL_STRUCTURE_SEARCH_ORDER_BASED_LISTE_HPP
 
 //#include "copyright.h"
 //#include "assert.h"
 #include <cassert>
-#include <prl/learning/order_based_search/constants.hpp>
+#include <sill/learning/order_based_search/constants.hpp>
 
 // The following class defines a "list element" -- which is
 // used to keep track of one item on a list.  It is equivalent to a
@@ -534,5 +534,5 @@ SortedList<T>::SelfTest(T *p, int numEntries)
      delete q;
 };
 
-#endif // PRL_STRUCTURE_SEARCH_ORDER_BASED_LISTE_HPP
+#endif // SILL_STRUCTURE_SEARCH_ORDER_BASED_LISTE_HPP
 

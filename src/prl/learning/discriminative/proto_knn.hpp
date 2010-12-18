@@ -1,27 +1,27 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_PROTO_KNN_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_PROTO_KNN_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_PROTO_KNN_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_PROTO_KNN_HPP
 
 #include <algorithm>
 
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/discriminative.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/learning/discriminative/tree_sampler.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/math/matrix.hpp>
-#include <prl/math/statistics.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/discriminative.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/learning/discriminative/tree_sampler.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/math/matrix.hpp>
+#include <sill/math/statistics.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to true to print debugging information.
 #define DEBUG_PROTO_KNN 0
 
-namespace prl {
+namespace sill {
 
   struct proto_knn_parameters {
 
@@ -95,7 +95,7 @@ namespace prl {
   template <typename Objective = discriminative::objective_accuracy>
   class proto_knn : public binary_classifier {
 
-    concept_assert((prl::DomainPartitioningObjective<Objective>));
+    concept_assert((sill::DomainPartitioningObjective<Objective>));
 
     // Protected data members
     //==========================================================================
@@ -557,6 +557,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_PROTO_KNN_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_PROTO_KNN_HPP

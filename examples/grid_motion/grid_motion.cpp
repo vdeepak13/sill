@@ -1,12 +1,12 @@
 #include <iostream>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/assignment.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   cout << std::log(-0.01) << endl;

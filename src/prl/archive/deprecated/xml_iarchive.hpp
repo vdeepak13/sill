@@ -1,27 +1,27 @@
-#ifndef PRL_XML_IARCHIVE_HPP
-#define PRL_XML_IARCHIVE_HPP
+#ifndef SILL_XML_IARCHIVE_HPP
+#define SILL_XML_IARCHIVE_HPP
 
 #include <string>
 #include <vector>
 
 #include <boost/type_traits/is_base_of.hpp>
 
-#include <prl/base/variable.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/named_universe.hpp>
-#include <prl/serializable.hpp> // for serializable
-#include <prl/map.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/named_universe.hpp>
+#include <sill/serializable.hpp> // for serializable
+#include <sill/map.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // forward declaration
 namespace xmlpp {
   class TextReader;
 }
 
-namespace prl {
+namespace sill {
 
   class universe;  
 
@@ -209,8 +209,8 @@ namespace prl {
     
   }; // class xml_iarchive
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

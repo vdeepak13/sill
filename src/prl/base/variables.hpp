@@ -1,9 +1,9 @@
-#ifndef PRL_VARIABLES_HPP
-#define PRL_VARIABLES_HPP
+#ifndef SILL_VARIABLES_HPP
+#define SILL_VARIABLES_HPP
 
-#include <prl/base/variable_type_group.hpp>
+#include <sill/base/variable_type_group.hpp>
 
-namespace prl {
+namespace sill {
 
   // Domain comparisons
   //============================================================================
@@ -73,6 +73,6 @@ namespace prl {
   //! Extract the vector variables from the given variables.
   vector_var_vector extract_vector_var_vector(const var_vector& vars);
 
-}; // namespace prl
+}; // namespace sill
 
-#endif // #ifndef PRL_VARIABLES_HPP
+#endif // #ifndef SILL_VARIABLES_HPP

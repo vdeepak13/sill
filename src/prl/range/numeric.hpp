@@ -1,16 +1,16 @@
-#ifndef PRL_NUMERIC_HPP
-#define PRL_NUMERIC_HPP
+#ifndef SILL_NUMERIC_HPP
+#define SILL_NUMERIC_HPP
 
 #include <numeric>
 
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup range_numeric
   //! @{
@@ -76,9 +76,9 @@ namespace prl {
 
   //! @} group range_numeric
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 
@@ -99,8 +99,8 @@ namespace prl {
     if (boost::empty(values)) 
       return T();
     else
-      return prl::accumulate(values  | prl::dropped(1),
-			       prl::front(values), std::plus<T>());
+      return sill::accumulate(values  | sill::dropped(1),
+			       sill::front(values), std::plus<T>());
   }
 
   /**
@@ -114,8 +114,8 @@ namespace prl {
     if (values.empty()) 
       return T(1);
     else
-      return prl::accumulate(values  | prl::dropped(1),
-			       prl::front(values), std::multiplies<T>());
+      return sill::accumulate(values  | sill::dropped(1),
+			       sill::front(values), std::multiplies<T>());
   }
 
   //! Computes the mean of a collection of values
@@ -156,8 +156,8 @@ namespace prl {
     assert(!x.empty() && x.size()==y.size());
 
     T sum_squares = 0;
-    //foreach(ref_pair t, make_tuple(x, y) | prl::zipped) t.get(0);
-    foreach_auto(t, make_tuple(ref(x), ref(y)) | prl::zipped) 
+    //foreach(ref_pair t, make_tuple(x, y) | sill::zipped) t.get(0);
+    foreach_auto(t, make_tuple(ref(x), ref(y)) | sill::zipped) 
       // Warning: if we did not use ref() or tuple_xy here, the temporary
       //          R objects could go out of scope & get deleted before
       //          we access them.
@@ -207,8 +207,8 @@ namespace prl {
     M result = zeros(mx.size(), my.size());
     // tuple<const R&, const R&> tuple_xy(x,y);
     // tuple<R,R> would also work but would create a copy
-    // foreach_auto(t, tuple_xy | prl::zipped) {
-    foreach_auto(t, make_tuple(ref(x), ref(y)) | prl::zipped) {
+    // foreach_auto(t, tuple_xy | sill::zipped) {
+    foreach_auto(t, make_tuple(ref(x), ref(y)) | sill::zipped) {
       // Warning: if we did not use ref() or tuple_xy here, the temporary
       //          R objects could go out of scope & get deleted before
       //          we access them.

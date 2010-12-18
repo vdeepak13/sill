@@ -1,9 +1,9 @@
-#ifndef PRL_ADD_HPP
-#define PRL_ADD_HPP
+#ifndef SILL_ADD_HPP
+#define SILL_ADD_HPP
 
-#include <prl/functional/aggregate_op.hpp>
+#include <sill/functional/aggregate_op.hpp>
 
-namespace prl {
+namespace sill {
   
   template <typename T>
   struct add : public aggregate_op<T> {

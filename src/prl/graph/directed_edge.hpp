@@ -1,11 +1,11 @@
-#ifndef PRL_DIRECTED_EDGE_HPP
-#define PRL_DIRECTED_EDGE_HPP
+#ifndef SILL_DIRECTED_EDGE_HPP
+#define SILL_DIRECTED_EDGE_HPP
 
 #include <boost/functional/hash.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-namespace prl {
+namespace sill {
 
   template<typename V, typename VP, typename EP> 
   class directed_graph;
@@ -102,7 +102,7 @@ namespace prl {
     return boost::hash_value(std::make_pair(e.source(), e.target()));
   }
   
-} // namespace prl
+} // namespace sill
 
 #endif
 

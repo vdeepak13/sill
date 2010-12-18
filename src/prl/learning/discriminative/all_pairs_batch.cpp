@@ -1,8 +1,8 @@
-#include <prl/learning/discriminative/all_pairs_batch.hpp>
+#include <sill/learning/discriminative/all_pairs_batch.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Protected methods
     //==========================================================================
@@ -197,6 +197,6 @@ namespace prl {
       return true;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

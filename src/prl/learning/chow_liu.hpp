@@ -1,17 +1,17 @@
 
-#ifndef PRL_CHOW_LIU_HPP
-#define PRL_CHOW_LIU_HPP
+#ifndef SILL_CHOW_LIU_HPP
+#define SILL_CHOW_LIU_HPP
 #include <set>
 
-#include <prl/learning/crossval_parameters.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/learn_factor.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/model/free_functions.hpp>
+#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/learn_factor.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for learning the Chow-Liu tree over variables X in the given dataset.
@@ -138,8 +138,8 @@ namespace prl {
 
   }; // class chow_liu
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

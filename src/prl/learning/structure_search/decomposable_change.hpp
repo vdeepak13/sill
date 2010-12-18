@@ -1,14 +1,14 @@
 
-#ifndef PRL_LEARNING_DECOMPOSABLE_CHANGE_HPP
-#define PRL_LEARNING_DECOMPOSABLE_CHANGE_HPP
+#ifndef SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP
+#define SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP
 
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/structure_search/decomposable_score_functor.hpp>
-#include <prl/model/learnt_decomposable.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/structure_search/decomposable_score_functor.hpp>
+#include <sill/model/learnt_decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Virtual class for representing a change in a decomposable model.
@@ -73,6 +73,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DECOMPOSABLE_CHANGE_HPP
+#endif // #ifndef SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP

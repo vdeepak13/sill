@@ -1,12 +1,12 @@
 
-#ifndef PRL_REAL_OPTIMIZER_HPP
-#define PRL_REAL_OPTIMIZER_HPP
+#ifndef SILL_REAL_OPTIMIZER_HPP
+#define SILL_REAL_OPTIMIZER_HPP
 
-#include <prl/optimization/concepts.hpp>
+#include <sill/optimization/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Interface for real-valued optimization algorithms which are iterative.
@@ -22,7 +22,7 @@ namespace prl {
   template <typename OptVector>
   class real_optimizer {
 
-    concept_assert((prl::OptimizationVector<OptVector>));
+    concept_assert((sill::OptimizationVector<OptVector>));
 
     // Protected data
     //==========================================================================
@@ -84,6 +84,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_REAL_OPTIMIZER_HPP
+#endif // #ifndef SILL_REAL_OPTIMIZER_HPP

@@ -1,15 +1,15 @@
 
-#include <prl/factor/gaussian_crf_factor.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/record_conversions.hpp>
-#include <prl/learning/parameter_grid.hpp>
-#include <prl/math/constants.hpp>
-#include <prl/math/free_functions.hpp>
+#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/record_conversions.hpp>
+#include <sill/learning/parameter_grid.hpp>
+#include <sill/math/constants.hpp>
+#include <sill/math/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Public methods: Constructors, getters, helpers
   // =========================================================================
@@ -749,6 +749,6 @@ namespace prl {
     }
   }
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

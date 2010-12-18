@@ -1,11 +1,11 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_CLASSIFIER_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_CLASSIFIER_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_CLASSIFIER_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_CLASSIFIER_HPP
 
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/discriminative/singlelabel_classifier.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/discriminative/singlelabel_classifier.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file multiclass_classifier.hpp Multiclass Classifier Interface
@@ -101,7 +101,7 @@
  *        : public binary_classifier, public iterative_learner
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Multiclass classifier interface.
@@ -211,6 +211,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_CLASSIFIER_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_CLASSIFIER_HPP

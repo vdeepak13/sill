@@ -4,11 +4,11 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/math/random.hpp>
+#include <sill/math/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-using namespace prl;
+using namespace sill;
 
 /**
  * Pass in parameter '1' in order to print out a bunch of numbers from various

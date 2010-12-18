@@ -1,11 +1,11 @@
-#ifndef PRL_INFERENCE_MK_PROPAGATION_HPP
-#define PRL_INFERENCE_MK_PROPAGATION_HPP
-#include <prl/model/factor_graph_model.hpp>
+#ifndef SILL_INFERENCE_MK_PROPAGATION_HPP
+#define SILL_INFERENCE_MK_PROPAGATION_HPP
+#include <sill/model/factor_graph_model.hpp>
 #include <map>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl{ 
+namespace sill{ 
 //! Propagates the Mooij and Kappen derivative values
 template <typename F>
 class mk_propagation {
@@ -101,5 +101,5 @@ public:
 
 
 }
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

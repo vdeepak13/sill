@@ -1,13 +1,13 @@
-#ifndef PRL_LINEAR_ALGEBRA_PARSER_HPP
-#define PRL_LINEAR_ALGEBRA_PARSER_HPP
+#ifndef SILL_LINEAR_ALGEBRA_PARSER_HPP
+#define SILL_LINEAR_ALGEBRA_PARSER_HPP
 
 #include <algorithm>
 
-#include <prl/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for parsing dense/sparse vector/matrix formats.
@@ -272,8 +272,8 @@ namespace prl {
 
   }; // class linear_algebra_parser
 
-}; // namespace prl
+}; // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_LINEAR_ALGEBRA_PARSER_HPP
+#endif // SILL_LINEAR_ALGEBRA_PARSER_HPP

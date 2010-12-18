@@ -1,12 +1,12 @@
-#ifndef PRL_VECTOR_ASSIGNMENT_HPP
-#define PRL_VECTOR_ASSIGNMENT_HPP
+#ifndef SILL_VECTOR_ASSIGNMENT_HPP
+#define SILL_VECTOR_ASSIGNMENT_HPP
 
 #include <stdexcept>
 
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/stl_util.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/stl_util.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup base_types
   //! @{

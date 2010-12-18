@@ -1,14 +1,14 @@
 
-#ifndef PRL_CONJUGATE_GRADIENT_HPP
-#define PRL_CONJUGATE_GRADIENT_HPP
+#ifndef SILL_CONJUGATE_GRADIENT_HPP
+#define SILL_CONJUGATE_GRADIENT_HPP
 
-#include <prl/optimization/check_functors.hpp>
-#include <prl/optimization/gradient_method.hpp>
-#include <prl/optimization/void_preconditioner.hpp>
+#include <sill/optimization/check_functors.hpp>
+#include <sill/optimization/gradient_method.hpp>
+#include <sill/optimization/void_preconditioner.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Parameters for conjugate gradient class.
   struct conjugate_gradient_parameters
@@ -57,7 +57,7 @@ namespace prl {
   class conjugate_gradient
     : public gradient_method<OptVector, Objective, Gradient> {
 
-    concept_assert((prl::PreconditionerFunctor<Preconditioner, OptVector>));
+    concept_assert((sill::PreconditionerFunctor<Preconditioner, OptVector>));
 
     // Protected data and methods
     //==========================================================================
@@ -225,6 +225,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_CONJUGATE_GRADIENT_HPP
+#endif // #ifndef SILL_CONJUGATE_GRADIENT_HPP

@@ -1,8 +1,8 @@
-#include <prl/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Protected functions
     //==========================================================================
@@ -62,7 +62,7 @@ namespace prl {
       }
     }
 
-    void dataset_view::load_assignment(size_t i, prl::assignment& a) const {
+    void dataset_view::load_assignment(size_t i, sill::assignment& a) const {
       ds.load_assignment(convert_index(i), a);
       convert_assignment_(a);
     }
@@ -829,6 +829,6 @@ namespace prl {
       return val;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

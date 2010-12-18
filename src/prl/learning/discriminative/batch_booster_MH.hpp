@@ -1,17 +1,17 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_MH_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_MH_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_MH_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_MH_HPP
 
-#include <prl/assignment.hpp>
-#include <prl/datastructure/concepts.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
+#include <sill/assignment.hpp>
+#include <sill/datastructure/concepts.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to 1 to print out debugging information
 #define BATCH_BOOSTER_MH_DEBUG 0
 
-namespace prl {
+namespace sill {
 
   /**
    * Batch boosting algorithm for multiclass labels which uses binary weak
@@ -97,10 +97,10 @@ namespace prl {
 
   }; // class batch_booster_mh
 
-} // namespace prl
+} // namespace sill
 
 #undef BATCH_BOOSTER_MH_DEBUG
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_MH_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_MH_HPP

@@ -1,13 +1,13 @@
 
 #include <boost/array.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/inference/gibbs_sampler.hpp>
-#include <prl/model/bayesian_network.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/inference/gibbs_sampler.hpp>
+#include <sill/model/bayesian_network.hpp>
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Create a universe.

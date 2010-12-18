@@ -1,8 +1,8 @@
-#include <prl/learning/object_detection/sliding_windows.hpp>
+#include <sill/learning/object_detection/sliding_windows.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Prediction methods
     //==========================================================================
@@ -121,6 +121,6 @@ namespace prl {
       return pics;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

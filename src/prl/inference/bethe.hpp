@@ -1,15 +1,15 @@
-#ifndef PRL_BETHE_REGION_GRAPH_HPP
-#define PRL_BETHE_REGION_GRAPH_HPP
+#ifndef SILL_BETHE_REGION_GRAPH_HPP
+#define SILL_BETHE_REGION_GRAPH_HPP
 
 #include <vector>
 
 #include <set>
 #include <map>
-#include <prl/model/region_graph.hpp>
+#include <sill/model/region_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   /**
    * Constructs a valid region graph that corresponds to Bethe free energey
@@ -93,6 +93,6 @@ namespace prl {
 }
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

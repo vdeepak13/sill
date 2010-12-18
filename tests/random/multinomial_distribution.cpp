@@ -1,12 +1,12 @@
-#include <prl/random/multinomial_distribution.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/random/multinomial_distribution.hpp>
+#include <sill/math/linear_algebra.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
 
 boost::mt19937 rng;
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   vec count(4);

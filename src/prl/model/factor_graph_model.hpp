@@ -1,20 +1,20 @@
-#ifndef PRL_FACTOR_GRAPH_MODEL_HPP
-#define PRL_FACTOR_GRAPH_MODEL_HPP
+#ifndef SILL_FACTOR_GRAPH_MODEL_HPP
+#define SILL_FACTOR_GRAPH_MODEL_HPP
 
 #include <vector>
 #include <map>
 
-#include <prl/factor/concepts.hpp>
-#include <prl/model/interfaces.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/list.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/list.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
+namespace sill {
 
   /**
    * This represents a factor graph graphical models.  A factor graph
@@ -732,9 +732,9 @@ public:
 //      * in this model
 //      * \todo implement this
 //      */
-//      prl::markov_graph<variable_type*> markov_graph() {
+//      sill::markov_graph<variable_type*> markov_graph() {
 //       assert(false); // TODO
-//       return prl::markov_graph<variable_type*>();
+//       return sill::markov_graph<variable_type*>();
 //     }
 
 //     /**
@@ -1045,6 +1045,6 @@ public:
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_FACTOR_GRAPH_MODEL_HPP
+#endif // SILL_FACTOR_GRAPH_MODEL_HPP

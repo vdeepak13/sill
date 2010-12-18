@@ -1,5 +1,5 @@
-#ifndef PRL_VECTOR_HPP
-#define PRL_VECTOR_HPP
+#ifndef SILL_VECTOR_HPP
+#define SILL_VECTOR_HPP
 
 #include <functional>
 #include <ostream>
@@ -9,13 +9,13 @@
 #include <itpp/base/vec.h>
 #include <itpp/base/mat.h>
 #include <itpp/base/matfunc.h>
-#include <prl/math/irange.hpp>
-#include <prl/stl_concepts.hpp>
-#include <prl/range/forward_range.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/math/irange.hpp>
+#include <sill/stl_concepts.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Pre-declaration
   template <typename Ref> class forward_range;
@@ -670,8 +670,8 @@ namespace prl {
   //! \relates vector
   typedef vector<itpp::bin> bvec;
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

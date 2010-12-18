@@ -1,12 +1,12 @@
-#include <prl/base/universe.hpp>
-#include <prl/factor/approx/hybrid_conditional.hpp>
-#include <prl/factor/approx/integration_points.hpp>
-#include <prl/factor/nonlinear_gaussian.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/math/function/linear.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/approx/hybrid_conditional.hpp>
+#include <sill/factor/approx/integration_points.hpp>
+#include <sill/factor/nonlinear_gaussian.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/math/function/linear.hpp>
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   /*

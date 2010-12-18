@@ -10,7 +10,7 @@
 
 #include <boost/timer.hpp>
 
-namespace prl {
+namespace sill {
 
   class runnable_double_arg{
   public:

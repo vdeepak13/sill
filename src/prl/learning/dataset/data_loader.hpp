@@ -1,23 +1,23 @@
 
-#ifndef PRL_DATASET_DATA_LOADER_HPP
-#define PRL_DATASET_DATA_LOADER_HPP
+#ifndef SILL_DATASET_DATA_LOADER_HPP
+#define SILL_DATASET_DATA_LOADER_HPP
 
 #include <iostream>
 
 #include <boost/serialization/shared_ptr.hpp>
 
-#include <prl/base/variable_type_group.hpp>
-#include <prl/learning/dataset/concepts.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/learning/dataset/symbolic_oracle.hpp>
-#include <prl/learning/dataset/syn_oracle_knorm.hpp>
-#include <prl/learning/dataset/syn_oracle_majority.hpp>
-#include <prl/copy_ptr.hpp>
+#include <sill/base/variable_type_group.hpp>
+#include <sill/learning/dataset/concepts.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset/symbolic_oracle.hpp>
+#include <sill/learning/dataset/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/copy_ptr.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Set of functions for loading datasets and oracles.
@@ -38,8 +38,8 @@ namespace prl {
      * If 'ds_name' is not recognized, this tries to load 'ds_name' as a .sum
      * file.
      */
-    boost::shared_ptr<prl::oracle>
-    load_oracle(prl::universe& u, std::string ds_name, double random_seed);
+    boost::shared_ptr<sill::oracle>
+    load_oracle(sill::universe& u, std::string ds_name, double random_seed);
 
     /**
      * Load default oracles.  This supports synthetic oracles with 'ds_name':
@@ -48,8 +48,8 @@ namespace prl {
      * If 'ds_name' is not recognized, this tries to load 'ds_name' as a .sum
      * file.
      */
-    boost::shared_ptr<prl::oracle>
-    load_oracle(const prl::datasource_info_type& info,
+    boost::shared_ptr<sill::oracle>
+    load_oracle(const sill::datasource_info_type& info,
                 std::string ds_name, double random_seed);
 
     /**
@@ -98,7 +98,7 @@ namespace prl {
                const vector_var_vector& vector_vars,
                const std::vector<variable::variable_typenames>& var_type_order
                = std::vector<variable::variable_typenames>()) {
-      concept_assert((prl::Dataset<Dataset>));
+      concept_assert((sill::Dataset<Dataset>));
       boost::shared_ptr<Dataset>
         data_ptr(new Dataset(finite_vars, vector_vars, var_type_order));
       datasource_info_type ds_info;
@@ -126,7 +126,7 @@ namespace prl {
     load_symbolic_dataset(const std::string& filename, universe& u,
                           size_t max_records
                           = std::numeric_limits<size_t>::max()) {
-      concept_assert((prl::Dataset<Dataset>));
+      concept_assert((sill::Dataset<Dataset>));
       boost::shared_ptr<symbolic_oracle>
         o_ptr(load_symbolic_oracle(filename, u));
       boost::shared_ptr<Dataset>
@@ -153,7 +153,7 @@ namespace prl {
     load_symbolic_dataset
     (const std::string& filename, const datasource_info_type& info,
      size_t max_records = std::numeric_limits<size_t>::max()) {
-      concept_assert((prl::Dataset<Dataset>));
+      concept_assert((sill::Dataset<Dataset>));
       boost::shared_ptr<symbolic_oracle>
         o_ptr(load_symbolic_oracle(filename, info));
       boost::shared_ptr<Dataset>
@@ -225,8 +225,8 @@ namespace prl {
 
   } // namespace data_loader
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_DATASET_DATA_LOADER_HPP
+#endif // SILL_DATASET_DATA_LOADER_HPP

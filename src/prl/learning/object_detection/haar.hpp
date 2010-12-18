@@ -1,22 +1,22 @@
 
-#ifndef PRL_OBJECT_DETECTION_HAAR_HPP
-#define PRL_OBJECT_DETECTION_HAAR_HPP
+#ifndef SILL_OBJECT_DETECTION_HAAR_HPP
+#define SILL_OBJECT_DETECTION_HAAR_HPP
 
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/discriminative.hpp>
-#include <prl/learning/object_detection/image.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/discriminative.hpp>
+#include <sill/learning/object_detection/image.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to true to print debugging information.
 #define DEBUG_HAAR 0
 
-namespace prl {
+namespace sill {
 
   struct haar_parameters {
 
@@ -99,7 +99,7 @@ namespace prl {
   template <typename Objective = discriminative::objective_accuracy>
   class haar : public binary_classifier {
 
-    concept_assert((prl::DomainPartitioningObjective<Objective>));
+    concept_assert((sill::DomainPartitioningObjective<Objective>));
 
     /////////////////////// PROTECTED DATA AND METHODS ////////////////////
 
@@ -731,6 +731,6 @@ namespace prl {
 
 #undef DEBUG_HAAR
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_OBJECT_DETECTION_HAAR_HPP
+#endif // #ifndef SILL_OBJECT_DETECTION_HAAR_HPP

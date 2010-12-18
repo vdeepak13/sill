@@ -11,19 +11,19 @@
 #include <limits>
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
 
 // boost timer include needed for cpu time convergence threshold
 // factor it out to other file in the future?
 #include <boost/timer.hpp>
 
 // This include should always be last
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
   //! interface of classes that determine convergence
   class residual_splash_convergence_measure{
@@ -549,7 +549,7 @@ namespace prl {
 
 
 }; // end of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
 

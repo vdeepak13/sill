@@ -1,24 +1,24 @@
-#ifndef PRL_FACTOR_OPERATORS_HPP
-#define PRL_FACTOR_OPERATORS_HPP
+#ifndef SILL_FACTOR_OPERATORS_HPP
+#define SILL_FACTOR_OPERATORS_HPP
 
 #include <boost/utility/enable_if.hpp>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/combine_iterator.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/constant_factor.hpp>
-//#include <prl/factor/gaussian_crf_factor.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-//#include <prl/factor/table_crf_factor.hpp>
-#include <prl/factor/traits.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/combine_iterator.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/constant_factor.hpp>
+//#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+//#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/traits.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Forward declarations
   class canonical_gaussian;
@@ -76,7 +76,7 @@ namespace prl {
   combine(const Range& factors, op_type op) {
     concept_assert((InputRange<Range>));
     typedef typename Range::value_type factor_type;
-    return prl::copy(factors, combine_iterator<factor_type>(op)).result();
+    return sill::copy(factors, combine_iterator<factor_type>(op)).result();
   }
 
   //! A free function version of a collapse operation
@@ -211,9 +211,9 @@ namespace prl {
  
   //! @} group factor_operations
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

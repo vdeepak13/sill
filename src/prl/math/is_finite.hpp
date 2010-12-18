@@ -1,10 +1,10 @@
-#ifndef PRL_IS_FINITE_HPP
-#define PRL_IS_FINITE_HPP
+#ifndef SILL_IS_FINITE_HPP
+#define SILL_IS_FINITE_HPP
 
 #include <limits>
 #include <cmath>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup math_number
 
@@ -28,7 +28,7 @@ namespace prl {
       return true;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif
 

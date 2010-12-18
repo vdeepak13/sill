@@ -1,9 +1,9 @@
 
-#include <prl/factor/random.hpp>
+#include <sill/factor/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   table_factor
   make_associative_factor(finite_variable* Yi, finite_variable* Yj, double s) {
@@ -19,6 +19,6 @@ namespace prl {
     return f;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

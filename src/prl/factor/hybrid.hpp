@@ -1,17 +1,17 @@
-#ifndef PRL_HYBRID_HPP
-#define PRL_HYBRID_HPP
+#ifndef SILL_HYBRID_HPP
+#define SILL_HYBRID_HPP
 
-#include <prl/variable.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/datastructure/table.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/factor.hpp>
+#include <sill/variable.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/datastructure/table.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // The beginnings of an implementation of a hybrid factor
 
-namespace prl {
+namespace sill {
 
   /**
    * A class that represents a hybrid factor.
@@ -127,7 +127,7 @@ namespace prl {
     //! Returns the component associated with a given finite assignment
     const F& operator()(const finite_assignment& a) const {
       shape_type index(arg_seq.size());
-      prl::copy(a.values(arg_seq), index.begin());
+      sill::copy(a.values(arg_seq), index.begin());
       return table()(index);
     }
 
@@ -158,9 +158,9 @@ namespace prl {
 
   }; // class hybrid
   
-} // namespace prl 
+} // namespace sill 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

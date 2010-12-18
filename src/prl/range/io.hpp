@@ -1,12 +1,12 @@
-#ifndef PRL_RANGE_IO_HPP
-#define PRL_RANGE_IO_HPP
+#ifndef SILL_RANGE_IO_HPP
+#define SILL_RANGE_IO_HPP
 
 #include <iosfwd>
 #include <boost/range/iterator_range.hpp>
 
-#include <prl/stl_io.hpp>
+#include <sill/stl_io.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename It>
   std::ostream& operator<<(std::ostream& out, 

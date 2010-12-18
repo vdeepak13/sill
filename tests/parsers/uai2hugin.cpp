@@ -5,8 +5,8 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <prl/parsers/string_functions.hpp>
-using namespace prl;
+#include <sill/parsers/string_functions.hpp>
+using namespace sill;
 
 
 std::string build_state_list(size_t arity) {

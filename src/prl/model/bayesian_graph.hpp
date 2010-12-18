@@ -1,18 +1,18 @@
 
-#ifndef PRL_BAYESIAN_GRAPH_HPP
-#define PRL_BAYESIAN_GRAPH_HPP
+#ifndef SILL_BAYESIAN_GRAPH_HPP
+#define SILL_BAYESIAN_GRAPH_HPP
 
 #include <iterator>
 #include <set>
 #include <map>
 
-#include <prl/graph/directed_graph.hpp>
-#include <prl/graph/ancestors_descendants.hpp>
-#include <prl/model/markov_graph.hpp>
+#include <sill/graph/directed_graph.hpp>
+#include <sill/graph/ancestors_descendants.hpp>
+#include <sill/model/markov_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Graph for a Bayesian network, 
@@ -93,12 +93,12 @@ namespace prl {
 
     //! Returns the ancestors of a set of node
     node_set ancestors(const node_set& nodes) const {
-      return prl::ancestors(nodes, *this);
+      return sill::ancestors(nodes, *this);
     }
 
     //! Returns the descendants of a set of nodes
     node_set descendants(const node_set& nodes) const {
-      return prl::descendants(nodes, *this);
+      return sill::descendants(nodes, *this);
     }
 
     //! d-separation test
@@ -157,17 +157,17 @@ namespace prl {
     return mg;
   }
 
-}  // namespace prl
+}  // namespace sill
 
 namespace boost {
 
   //! A traits class that lets bayesian_graph work in BGL algorithms
   template <typename Node, typename VP, typename EP>
-  struct graph_traits< prl::bayesian_graph<Node, VP, EP> >
-    : public graph_traits< prl::directed_graph<Node, VP, EP> > { };
+  struct graph_traits< sill::bayesian_graph<Node, VP, EP> >
+    : public graph_traits< sill::directed_graph<Node, VP, EP> > { };
 
 } // namespace boost
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_BAYESIAN_GRAPH_HPP
+#endif // SILL_BAYESIAN_GRAPH_HPP

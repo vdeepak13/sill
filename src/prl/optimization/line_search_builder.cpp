@@ -1,7 +1,7 @@
 
-#include <prl/optimization/line_search_builder.hpp>
+#include <sill/optimization/line_search_builder.hpp>
 
-namespace prl {
+namespace sill {
 
   void line_search_builder::add_options
   (boost::program_options::options_description& desc,

@@ -1,17 +1,17 @@
-#ifndef PRL_MIXTURE_XML_HPP
-#define PRL_MIXTURE_XML_HPP
+#ifndef SILL_MIXTURE_XML_HPP
+#define SILL_MIXTURE_XML_HPP
 
 #include <iosfwd>
 #include <list>
 
-#include <prl/factor/mixture.hpp>
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_tag.hpp>
+#include <sill/factor/mixture.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_tag.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename F>
   const char* xml_tag(mixture<F>*) {
@@ -60,8 +60,8 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

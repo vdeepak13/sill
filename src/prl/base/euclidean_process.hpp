@@ -1,11 +1,11 @@
-#ifndef PRL_EUCLIDEAN_PROCESS_HPP
-#define PRL_EUCLIDEAN_PROCESS_HPP
+#ifndef SILL_EUCLIDEAN_PROCESS_HPP
+#define SILL_EUCLIDEAN_PROCESS_HPP
 
-#include <prl/base/process.hpp>
+#include <sill/base/process.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A process over Euclidean space. Useful for GPs etc.
@@ -35,8 +35,8 @@ namespace prl {
 
   }; // class euclidean_process
   
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

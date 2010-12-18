@@ -3,16 +3,16 @@
 
 #include <list>
 
-#include <prl/range/forward_range.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/inference/parallel/fast_update_rule.hpp>
-#include <prl/inference/parallel/basic_state_manager.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/inference/parallel/fast_update_rule.hpp>
+#include <sill/inference/parallel/basic_state_manager.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
 // This should be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   template<typename F, typename StateManager>
   class mpi_residual_splash_engine {
@@ -188,9 +188,9 @@ namespace prl {
     }; // end of worker
   }; // End of class residual splash
 
-} // End of namespace prl
+} // End of namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif 
 

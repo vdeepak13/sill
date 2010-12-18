@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <string>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/parsers/decomposable_parser.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/parsers/decomposable_parser.hpp>
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 int main(int argc, const char* argv[]) {
   cout << "Testing the decomposable parser." << endl;

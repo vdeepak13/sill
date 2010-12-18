@@ -1,18 +1,18 @@
 #include <iostream>
 #include <string>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/assignment_dataset.hpp>
-#include <prl/learning/dataset/ds_oracle.hpp>
-#include <prl/learning/dataset/concepts.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/factor/table_factor.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/learning/dataset/ds_oracle.hpp>
+#include <sill/learning/dataset/concepts.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/factor/table_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   std::string filename = argc > 1 ? argv[1] : "../../../../tests/data/spam.sum";
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 
   cout << "Dataset:\n" << *data_ptr << endl << endl;
 
-  concept_assert((prl::Oracle<ds_oracle>));
+  concept_assert((sill::Oracle<ds_oracle>));
   ds_oracle o(*data_ptr);
   cout << "Oracle using first 3 records:\n";
   for (size_t i = 0; i < 3; ++i) {

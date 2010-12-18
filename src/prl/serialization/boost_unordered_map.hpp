@@ -1,13 +1,13 @@
-#ifndef PRL_SERIALIZE_BOOST_UNORDERED_MAP_HPP
-#define PRL_SERIALIZE_BOOST_UNORDERED_MAP_HPP
+#ifndef SILL_SERIALIZE_BOOST_UNORDERED_MAP_HPP
+#define SILL_SERIALIZE_BOOST_UNORDERED_MAP_HPP
 
 #include <boost/unordered_map.hpp>
 
-#include <prl/serialization/iarchive.hpp>
-#include <prl/serialization/oarchive.hpp>
-#include <prl/serialization/iterator.hpp>
+#include <sill/serialization/iarchive.hpp>
+#include <sill/serialization/oarchive.hpp>
+#include <sill/serialization/iterator.hpp>
 
-namespace prl {
+namespace sill {
 
   /** Serializes a map
       Returns true on success, false on failure. */
@@ -26,6 +26,6 @@ namespace prl {
     return a;
   }
 
-} // namespace prl
+} // namespace sill
 
-#endif // PRL_SERIALIZE_BOOST_UNORDERED_MAP_HPP
+#endif // SILL_SERIALIZE_BOOST_UNORDERED_MAP_HPP

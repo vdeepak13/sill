@@ -3,13 +3,13 @@
 #include <map>
 #include <boost/array.hpp> 
 
-#include <prl/graph/undirected_graph.hpp>
+#include <sill/graph/undirected_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 typedef size_t V;
 typedef undirected_graph<V, size_t, size_t> graph;

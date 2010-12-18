@@ -1,13 +1,13 @@
 #include <iostream>
 
-#include <prl/math/matrix.hpp>
-#include <prl/math/vector.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/math/matrix.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra.hpp>
 
 // test invert
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   mat a = "1 2 3; 4 5 6; 7 8 9";

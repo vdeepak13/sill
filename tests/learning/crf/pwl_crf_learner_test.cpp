@@ -2,19 +2,19 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/log_reg_crf_factor.hpp>
-#include <prl/factor/table_crf_factor.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/crf/pwl_crf_learner.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <prl/learning/dataset/syn_oracle_majority.hpp>
-#include <prl/learning/dataset/assignment_dataset.hpp>
-#include <prl/model/model_products.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/log_reg_crf_factor.hpp>
+#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/crf/pwl_crf_learner.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/model/model_products.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file pwl_crf_learner_test.cpp  Test the piecewise likelihood-based CRF
@@ -23,7 +23,7 @@
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Dataset parameters

@@ -1,11 +1,11 @@
 
 #include <iostream>
 
-#include <prl/optimization/table_factor_opt_vector.hpp>
+#include <sill/optimization/table_factor_opt_vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   std::ostream& operator<<(std::ostream& out,
                            const table_factor_opt_vector& f) {
@@ -16,6 +16,6 @@ namespace prl {
     return out;
   }
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

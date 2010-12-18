@@ -1,9 +1,9 @@
-#include <prl/learning/discriminative/classifier_cascade.hpp>
-#include <prl/learning/discriminative/load_functions.hpp>
+#include <sill/learning/discriminative/classifier_cascade.hpp>
+#include <sill/learning/discriminative/load_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Parameters: public methods
     //==========================================================================
@@ -259,6 +259,6 @@ namespace prl {
       rng.seed(static_cast<unsigned>(params.random_seed));
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

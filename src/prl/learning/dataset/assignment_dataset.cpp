@@ -1,14 +1,14 @@
-#include <prl/learning/dataset/assignment_dataset.hpp>
-#include <prl/math/norms.hpp>
+#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/math/norms.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Protected methods required by record
   //==========================================================================
 
-  void assignment_dataset::load_assignment(size_t i, prl::assignment& a) const {
+  void assignment_dataset::load_assignment(size_t i, sill::assignment& a) const {
     assert(i < nrecords);
     a = data_vector[i];
   }
@@ -172,6 +172,6 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

@@ -1,12 +1,12 @@
 
-#ifndef PRL_DS_ORACLE_HPP
-#define PRL_DS_ORACLE_HPP
+#ifndef SILL_DS_ORACLE_HPP
+#define SILL_DS_ORACLE_HPP
 
-#include <prl/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset/oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for creating an oracle from a dataset.  The oracle presents the
@@ -108,8 +108,8 @@ namespace prl {
 
   }; // class ds_oracle
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_DS_ORACLE_HPP
+#endif // #ifndef SILL_DS_ORACLE_HPP

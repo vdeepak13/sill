@@ -1,17 +1,17 @@
 #include <iostream>
 #include <boost/tuple/tuple.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
-#include <prl/variable.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/cluster_graph_model.hpp>
-//#include <prl/factor/lazy_factor.hpp>
+#include <sill/variable.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/cluster_graph_model.hpp>
+//#include <sill/factor/lazy_factor.hpp>
 
 //! It would be nice to have a separate file with models
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   ///////////////////////////// VARIABLES ///////////////////////////

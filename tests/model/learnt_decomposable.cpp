@@ -3,13 +3,13 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/iterator/indirect_iterator.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/learnt_decomposable.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/learnt_decomposable.hpp>
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   ///////////////////////////// VARIABLES ///////////////////////////

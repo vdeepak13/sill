@@ -1,11 +1,11 @@
 #include <sstream>
 #include <boost/lexical_cast.hpp>
 
-#include <prl/math/vector.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
 
   // Free functions
@@ -25,5 +25,5 @@ namespace prl {
     return result;
   }
 
-} // namespace prl
+} // namespace sill
 

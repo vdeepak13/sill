@@ -1,9 +1,9 @@
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/syn_oracle_majority.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Private methods
     //==========================================================================
@@ -68,6 +68,6 @@ namespace prl {
     return syn_oracle_majority(var_order, params);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

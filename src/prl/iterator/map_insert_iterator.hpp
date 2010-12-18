@@ -1,9 +1,9 @@
-#ifndef PRL_MAP_INSERT_ITERATOR_HPP
-#define PRL_MAP_INSERT_ITERATOR_HPP
+#ifndef SILL_MAP_INSERT_ITERATOR_HPP
+#define SILL_MAP_INSERT_ITERATOR_HPP
 
 #include <iterator>
 
-namespace prl {
+namespace sill {
 
   /**
    * An output iterator that inserts elements into a map.
@@ -68,6 +68,6 @@ namespace prl {
     return map_insert_iterator<Map>(map); 
   }
 
-} // namespace prl
+} // namespace sill
 
-#endif // PRL_MAP_INSERT_ITERATOR_HPP
+#endif // SILL_MAP_INSERT_ITERATOR_HPP

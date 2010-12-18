@@ -5,17 +5,17 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
-#include <prl/factor/random.hpp>
+#include <sill/factor/random.hpp>
 
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/mpi/mpi_consensus.hpp>
-#include <prl/inference/parallel/mpi_state_adapter.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/mpi/mpi_consensus.hpp>
+#include <sill/inference/parallel/mpi_state_adapter.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 void create_test_graph(universe &u, factor_graph_model<tablef> &fg) {
   boost::mt19937 rng;

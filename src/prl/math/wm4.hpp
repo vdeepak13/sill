@@ -1,5 +1,5 @@
-#ifndef PRL_MATH_BINDINGS_WM4_HPP
-#define PRL_MATH_BINDINGS_WM4_HPP
+#ifndef SILL_MATH_BINDINGS_WM4_HPP
+#define SILL_MATH_BINDINGS_WM4_HPP
 
 #include <boost/numeric/ublas/fixed_container.hpp>
 #include <boost/numeric/ublas/io.hpp>
@@ -9,8 +9,8 @@
 #include <algorithm>
 #include <iosfwd>
 
-#include <prl/detail/tuple.hpp>
-#include <prl/math/bindings/lapack.hpp> // fill in for missing functions
+#include <sill/detail/tuple.hpp>
+#include <sill/math/bindings/lapack.hpp> // fill in for missing functions
 
 #include <Wm4Vector2.h>
 #include <Wm4Vector3.h>
@@ -18,14 +18,14 @@
 #include <Wm4Matrix3.h>
 #include <Wm4Quaternion.h>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // This file may not compile at the moment
 // TODO: kill the namespace soup
 
 // WildMagic4 interface 
 
-namespace prl { namespace math { namespace bindings
+namespace sill { namespace math { namespace bindings
 {
   namespace wm4
   {
@@ -243,6 +243,6 @@ namespace Wm4 {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

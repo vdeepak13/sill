@@ -1,17 +1,17 @@
-#ifndef PRL_DECOMPOSABLE_FRAGMENT_XML_HPP
-#define PRL_DECOMPOSABLE_FRAGMENT_XML_HPP
+#ifndef SILL_DECOMPOSABLE_FRAGMENT_XML_HPP
+#define SILL_DECOMPOSABLE_FRAGMENT_XML_HPP
 
 #include <iosfwd>
 
-#include <prl/factor/decomposable_fragment.hpp>
-#include <prl/factor/xml/prior_likelihood.hpp>
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_tag.hpp>
+#include <sill/factor/decomposable_fragment.hpp>
+#include <sill/factor/xml/prior_likelihood.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_tag.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename F, typename G>
   const char* xml_tag(decomposable_fragment<F,G>*) {
@@ -58,8 +58,8 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

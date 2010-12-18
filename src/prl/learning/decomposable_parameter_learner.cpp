@@ -1,7 +1,7 @@
 
-#include <prl/learning/decomposable_parameter_learner.hpp>
+#include <sill/learning/decomposable_parameter_learner.hpp>
 
-namespace prl {
+namespace sill {
 
   bool decomposable_parameter_learner_parameters::valid(bool verbose) const {
     if (regularization < 0) {
@@ -14,4 +14,4 @@ namespace prl {
     return true;
   } // decomposable_parameter_learner_parameters::valid
 
-}; // namespace prl
+}; // namespace sill

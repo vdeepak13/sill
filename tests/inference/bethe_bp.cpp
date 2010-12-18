@@ -1,17 +1,17 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/inference/asynchronous_bethe_bp.hpp>
-#include <prl/inference/residual_bethe_bp.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/graph/grid_graphs.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/model/random.hpp>
-#include <prl/model/decomposable.hpp>
+#include <sill/inference/asynchronous_bethe_bp.hpp>
+#include <sill/inference/residual_bethe_bp.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/graph/grid_graphs.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/random.hpp>
+#include <sill/model/decomposable.hpp>
 
 int main(int argc, char** argv) {
   using namespace std;
-  using namespace prl;
+  using namespace sill;
   
   if (argc < 4) {
     cout << "Usage: belief_propagation m n niters engine [eta]" << endl;

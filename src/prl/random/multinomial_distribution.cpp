@@ -1,10 +1,10 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
-#include <prl/random/multinomial_distribution.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/random/multinomial_distribution.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-namespace prl {
+namespace sill {
 
   multinomial_distribution::multinomial_distribution(const vec& p) : p_(p) {
     using std::abs;
@@ -30,4 +30,4 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill

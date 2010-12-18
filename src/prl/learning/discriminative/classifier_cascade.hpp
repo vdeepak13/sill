@@ -1,23 +1,23 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_CLASSIFIER_CASCADE_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_CLASSIFIER_CASCADE_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_CLASSIFIER_CASCADE_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_CLASSIFIER_CASCADE_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/learning/dataset/ds_oracle.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/math/statistics.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/learning/dataset/ds_oracle.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/math/statistics.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // set to 1 to print debugging information
 #define DEBUG_CLASSIFIER_CASCADE 1
 
-namespace prl {
+namespace sill {
 
   struct classifier_cascade_parameters {
 
@@ -323,8 +323,8 @@ namespace prl {
 
   }; // class classifier_cascade
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_CLASSIFIER_CASCADE_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_CLASSIFIER_CASCADE_HPP

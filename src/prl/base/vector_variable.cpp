@@ -2,11 +2,11 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/serialization/serialize.hpp>
 
-namespace prl{
+namespace sill{
 
   // Vector variable
   //============================================================================

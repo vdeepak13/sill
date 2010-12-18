@@ -1,11 +1,11 @@
-#ifndef PRL_MATH_COMPOSE_HPP
-#define PRL_MATH_COMPOSE_HPP
+#ifndef SILL_MATH_COMPOSE_HPP
+#define SILL_MATH_COMPOSE_HPP
 
 #include <boost/shared_ptr.hpp>
 
-#include <prl/math/interfaces.hpp>
+#include <sill/math/interfaces.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Represents a composition of two vector function f(g(x))
   //! \ingroup math_functions
@@ -52,6 +52,6 @@ namespace prl {
     return vector_function_composition(f, g);
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

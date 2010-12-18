@@ -1,17 +1,17 @@
 
-#ifndef PRL_STOCHASTIC_GRADIENT_HPP
-#define PRL_STOCHASTIC_GRADIENT_HPP
+#ifndef SILL_STOCHASTIC_GRADIENT_HPP
+#define SILL_STOCHASTIC_GRADIENT_HPP
 
 #include <boost/type_traits/is_same.hpp>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/math/is_finite.hpp>
-#include <prl/math/vector.hpp>
-#include <prl/optimization/concepts.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/math/is_finite.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/optimization/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Parameters for stochastic_gradient subclasses.
   struct stochastic_gradient_parameters {
@@ -78,8 +78,8 @@ namespace prl {
   template <typename OptVector, typename Gradient>
   class stochastic_gradient {
 
-    concept_assert((prl::OptimizationVector<OptVector>));
-    concept_assert((prl::GradientFunctor<Gradient, OptVector>));
+    concept_assert((sill::OptimizationVector<OptVector>));
+    concept_assert((sill::GradientFunctor<Gradient, OptVector>));
 
     // Protected data and methods
     //==========================================================================
@@ -161,6 +161,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_STOCHASTIC_GRADIENT_HPP
+#endif // #ifndef SILL_STOCHASTIC_GRADIENT_HPP

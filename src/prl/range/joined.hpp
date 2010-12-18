@@ -1,11 +1,11 @@
-#ifndef PRL_JOINED_HPP
-#define PRL_JOINED_HPP
+#ifndef SILL_JOINED_HPP
+#define SILL_JOINED_HPP
 
 #include <boost/range/iterator_range.hpp>
 
-#include <prl/iterator/join_iterator.hpp>
+#include <sill/iterator/join_iterator.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \ingroup range_adapters
   template <typename Range1, typename Range2>

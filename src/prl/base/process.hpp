@@ -1,5 +1,5 @@
-#ifndef PRL_PROCESS_HPP
-#define PRL_PROCESS_HPP
+#ifndef SILL_PROCESS_HPP
+#define SILL_PROCESS_HPP
 
 #include <iosfwd>
 #include <string>
@@ -9,12 +9,12 @@
 
 #include <boost/any.hpp>
 
-#include <prl/base/concepts.hpp> 
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/concepts.hpp> 
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // forward declaration
   class variable;
@@ -246,8 +246,8 @@ void dynamic_deep_serialize(oarchive &a, process* i);
 //! datatype of the process.
 void dynamic_deep_deserialize(iarchive &a, process*& i);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

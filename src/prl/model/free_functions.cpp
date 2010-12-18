@@ -1,8 +1,8 @@
-#include <prl/model/free_functions.hpp>
+#include <sill/model/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   std::pair
   <pairwise_markov_network<table_factor >,
@@ -73,6 +73,6 @@ namespace prl {
     return std::make_pair(pmn, var_mapping);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

@@ -1,12 +1,12 @@
 
-#ifndef PRL_LEARNING_DECOMPOSABLE_SCORE_HPP
-#define PRL_LEARNING_DECOMPOSABLE_SCORE_HPP
+#ifndef SILL_LEARNING_DECOMPOSABLE_SCORE_HPP
+#define SILL_LEARNING_DECOMPOSABLE_SCORE_HPP
 
-#include <prl/learning/structure_search/decomposable_change.hpp>
+#include <sill/learning/structure_search/decomposable_change.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Virtual class for computing a score for score-based structure search over
@@ -100,6 +100,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DECOMPOSABLE_SCORE_HPP
+#endif // #ifndef SILL_LEARNING_DECOMPOSABLE_SCORE_HPP

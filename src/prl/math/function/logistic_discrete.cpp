@@ -1,10 +1,10 @@
 #include <iostream>
 #include <cmath>
 
-#include <prl/math/function/logistic_discrete.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/math/function/logistic_discrete.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Evaluates the function on a discrete input
   double logistic_discrete::operator()(const ivec& x) const {

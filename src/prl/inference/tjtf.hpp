@@ -1,13 +1,13 @@
-#ifndef PRL_TJTF_HPP
-#define PRL_TJTF_HPP
+#ifndef SILL_TJTF_HPP
+#define SILL_TJTF_HPP
 
-#include <prl/factor/concepts.hpp>
-#include <prl/inference/interfaces.hpp>
-#include <prl/model/dynamic_bayesian_network.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/inference/interfaces.hpp>
+#include <sill/model/dynamic_bayesian_network.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A class that performs thin junction tree filtering. 
@@ -100,9 +100,9 @@ namespace prl {
     
   }; // class tjtf
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

@@ -1,31 +1,31 @@
 
-#ifndef PRL_DECOMPOSABLE_HPP
-#define PRL_DECOMPOSABLE_HPP
+#ifndef SILL_DECOMPOSABLE_HPP
+#define SILL_DECOMPOSABLE_HPP
 
 #include <vector>
 #include <map>
 
 #include <boost/range/iterator_range.hpp> // this will be removed
 
-#include <prl/range/concepts.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/factor/arguments_functor.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/graph/tree_traversal.hpp>
-#include <prl/graph/min_degree_strategy.hpp>
-#include <prl/learning/error_measures.hpp>
-#include <prl/model/interfaces.hpp>
-#include <prl/model/junction_tree.hpp>
-#include <prl/model/normalization_error.hpp>
-#include <prl/inference/variable_elimination.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/factor/arguments_functor.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/graph/tree_traversal.hpp>
+#include <sill/graph/min_degree_strategy.hpp>
+#include <sill/learning/error_measures.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/model/junction_tree.hpp>
+#include <sill/model/normalization_error.hpp>
+#include <sill/inference/variable_elimination.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
-  // #define PRL_VERBOSE // for debugging
+  // #define SILL_VERBOSE // for debugging
 
   /**
    * A decomposable representation of a probability distribution.
@@ -349,7 +349,7 @@ namespace prl {
     }
 
     //! Returns the markov graph for the model
-    prl::markov_graph<variable_type*> markov_graph() const {
+    sill::markov_graph<variable_type*> markov_graph() const {
       return jt.markov_graph();
     }
 
@@ -387,7 +387,7 @@ namespace prl {
 
     //! Computes a marginal over an arbitrary subset of variables.
     F marginal(const domain_type& vars) const {
-      #ifdef PRL_VERBOSE
+      #ifdef SILL_VERBOSE
         std::cerr << "Computing marginal for: " << vars << std::endl;
       #endif
       assert(includes(args, vars));
@@ -404,7 +404,7 @@ namespace prl {
       // Compute the smallest subtree of the junction tree that
       // covers the variables of the new clique.
       jt.mark_subtree_cover(vars, false);
-      #ifdef PRL_VERBOSE
+      #ifdef SILL_VERBOSE
         std::cerr << "After marking subtree cover: " << std::endl
                   << *this << std::endl;
       #endif
@@ -436,7 +436,7 @@ namespace prl {
     //! Computes a marginal over an arbitrary subset of variables,
     //! storing the result in output.
     void marginal(const domain_type& vars, F& output) const {
-      #ifdef PRL_VERBOSE
+      #ifdef SILL_VERBOSE
         std::cerr << "Computing marginal for: " << vars << std::endl;
       #endif
       assert(includes(args, vars));
@@ -462,7 +462,7 @@ namespace prl {
       // Compute the smallest subtree of the junction tree that
       // covers the variables of the new clique.
       jt.mark_subtree_cover(vars, false);
-      #ifdef PRL_VERBOSE
+      #ifdef SILL_VERBOSE
         std::cerr << "After marking subtree cover: " << std::endl
                   << *this << std::endl;
       #endif
@@ -995,7 +995,7 @@ namespace prl {
       }
 
       // Create a graph with the cliques of this decomposable model.
-      prl::markov_graph<variable_type*> mg(new_args);
+      sill::markov_graph<variable_type*> mg(new_args);
       foreach(vertex v, vertices())
         mg.add_clique(clique(v));
       foreach(const domain_type& clique, cliques)
@@ -1279,7 +1279,7 @@ namespace prl {
      * \todo The implementation somewhat inefficient at the moment.
      */
     void marginalize_out(const domain_type& vars) {
-      #ifdef PRL_VERBOSE
+      #ifdef SILL_VERBOSE
         std::cerr << "Marginalizing out: " << vars << std::endl;
       #endif
       // Marginalize each variable out independently.
@@ -1317,7 +1317,7 @@ namespace prl {
 
       // Update the arguments.
       args = set_difference(args, vars);
-      #ifdef PRL_VERBOSE
+      #ifdef SILL_VERBOSE
         std::cerr << "Result: " << *this << std::endl;
       #endif
     }
@@ -1334,7 +1334,7 @@ namespace prl {
      * \todo At the moment, the implementation is somewhat inefficient.
      */
     void marginalize_out_approx(const domain_type& vars) {
-      #ifdef PRL_VERBOSE
+      #ifdef SILL_VERBOSE
         std::cerr << "Marginalizing out (approx): " << vars << std::endl;
       #endif
       std::vector<vertex> overlapping;
@@ -1361,7 +1361,7 @@ namespace prl {
       }
       // Update the arguments.
       args.remove(vars);
-      #ifdef PRL_VERBOSE
+      #ifdef SILL_VERBOSE
         std::cerr << "Result: " << *this << std::endl;
       #endif
     }
@@ -1720,13 +1720,13 @@ namespace boost {
 
   //! A traits class that lets decomposable_model work in BGL algorithms
   template <typename F>
-  struct graph_traits< prl::decomposable<F> >
-    : public graph_traits<prl::junction_tree<typename F::variable_type*, F, F> >
+  struct graph_traits< sill::decomposable<F> >
+    : public graph_traits<sill::junction_tree<typename F::variable_type*, F, F> >
   { };
 
 } // namespace boost
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_DECOMPOSABLE_HPP
+#endif // #ifndef SILL_DECOMPOSABLE_HPP
 

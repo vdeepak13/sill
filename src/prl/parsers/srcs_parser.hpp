@@ -17,16 +17,16 @@
 #include <cstdlib>
 #include <sstream>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/parsers/string_functions.hpp>
-#include <prl/parsers/alchemy.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/parsers/string_functions.hpp>
+#include <sill/parsers/alchemy.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl{
+namespace sill{
 
   typedef std::pair< std::vector<std::string>, double> weighted_horn_clause_type;
 
@@ -500,7 +500,7 @@ namespace prl{
         // nontrivially satisfying assignment - everything is true
         foreach(finite_variable *v, arguments)
           assignment[v] = 1;
-        factor(assignment) = logarithmic<double>(clause.second, prl::log_tag());
+        factor(assignment) = logarithmic<double>(clause.second, sill::log_tag());
 
         //not satisfying assignment - LHS is all true, RHS is false
         assignment[*arguments.rbegin()] = 0;
@@ -541,8 +541,8 @@ namespace prl{
 
   }
 
-} // End of namespace prl
-#include <prl/macros_undef.hpp>
+} // End of namespace sill
+#include <sill/macros_undef.hpp>
 
 
 #endif /* SRCS_PARSER_HPP_ */

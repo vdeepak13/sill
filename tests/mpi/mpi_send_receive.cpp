@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include <prl/mpi/mpi_send_recv.hpp>
+#include <sill/mpi/mpi_send_recv.hpp>
 
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
 
   int numprocs, myid;  
   MPI_Init(&argc, &argv);

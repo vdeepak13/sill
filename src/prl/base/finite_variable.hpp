@@ -1,17 +1,17 @@
-#ifndef PRL_FINITE_VARIABLE_HPP
-#define PRL_FINITE_VARIABLE_HPP
+#ifndef SILL_FINITE_VARIABLE_HPP
+#define SILL_FINITE_VARIABLE_HPP
 
 #include <vector>
 #include <set>
 #include <map>
 
-#include <prl/base/variable.hpp>
-#include <prl/math/vector.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup base_types
   //! @{
@@ -39,7 +39,7 @@ namespace prl {
 
     //! Constructs a variable with the given name, domain size, and process
     finite_variable(const std::string& name, size_t size,
-                    prl::process* process, const boost::any& index)
+                    sill::process* process, const boost::any& index)
       : variable(name, process, index), size_(size) { }
 
     //! Conversion to human-readable format
@@ -131,8 +131,8 @@ namespace prl {
   iarchive& operator>>(iarchive& ar, finite_variable*& v);
 
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

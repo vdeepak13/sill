@@ -1,15 +1,15 @@
 
-#ifndef PRL_DISCRIMINATIVE_FREE_FUNCTIONS_HPP
-#define PRL_DISCRIMINATIVE_FREE_FUNCTIONS_HPP
+#ifndef SILL_DISCRIMINATIVE_FREE_FUNCTIONS_HPP
+#define SILL_DISCRIMINATIVE_FREE_FUNCTIONS_HPP
 
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/math/matrix.hpp>
-#include <prl/math/vector.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/math/matrix.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
 #ifndef SWIG
   //! Absolute value
@@ -60,9 +60,9 @@ namespace prl {
   void assignment2vector(vec& vals, const vector_var_vector& vars,
                          const vector_assignment& r);
 
-} // namespace prl
+} // namespace sill
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_DISCRIMINATIVE_FREE_FUNCTIONS_HPP
+#endif // #ifndef SILL_DISCRIMINATIVE_FREE_FUNCTIONS_HPP

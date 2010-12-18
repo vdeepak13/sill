@@ -3,21 +3,21 @@
 #include <list>
 #include <algorithm>
 
-#include <prl/global.hpp>
-#include <prl/range/numeric.hpp>
-#include <prl/math/bindings/wm4.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/global.hpp>
+#include <sill/range/numeric.hpp>
+#include <sill/math/bindings/wm4.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-typedef prl::math::bindings::wm4_kernel<double,3> kernel;
+typedef sill::math::bindings::wm4_kernel<double,3> kernel;
 typedef kernel::matrix matrix_type;
 typedef kernel::vector vector_type;
 
 int main(int argc, char* argv[]) {
   using namespace std;
   using namespace boost;
-  using namespace prl;
+  using namespace sill;
   
   assert(argc==2);
   ifstream is(argv[1]);

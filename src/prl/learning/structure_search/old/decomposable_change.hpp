@@ -1,12 +1,12 @@
 
-#ifndef PRL_LEARNING_DECOMPOSABLE_CHANGE_HPP
-#define PRL_LEARNING_DECOMPOSABLE_CHANGE_HPP
+#ifndef SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP
+#define SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP
 
-#include <prl/model/decomposable.hpp>
+#include <sill/model/decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for representing a unit change to a decomposable model.
@@ -123,6 +123,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DECOMPOSABLE_CHANGE_HPP
+#endif // #ifndef SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP

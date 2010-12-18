@@ -1,6 +1,6 @@
 
-#ifndef PRL_MUTABLE_DATASET_HPP
-#define PRL_MUTABLE_DATASET_HPP
+#ifndef SILL_MUTABLE_DATASET_HPP
+#define SILL_MUTABLE_DATASET_HPP
 
 #include <string>
 #include <vector>
@@ -8,15 +8,15 @@
 #include <boost/iterator.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/assignment.hpp>
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/assignment.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A class for mutable datasets.
@@ -98,8 +98,8 @@ namespace prl {
 
   };  // class mutable_dataset
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

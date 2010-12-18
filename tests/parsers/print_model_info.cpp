@@ -23,21 +23,21 @@
 #include <boost/program_options.hpp>
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/log_table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/log_table_factor.hpp>
 
-#include <prl/parsers/detect_file_format.hpp>
+#include <sill/parsers/detect_file_format.hpp>
 
 
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
 // Rename the program options namespace
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 typedef factor_graph_model<log_table_factor>   factor_graph_type;
 typedef factor_graph_type::factor_type         factor_type;
@@ -158,7 +158,7 @@ int main(int argc, char* argv[]) {
 
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 //End of file
 
 

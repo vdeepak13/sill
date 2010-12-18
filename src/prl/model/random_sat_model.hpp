@@ -1,20 +1,20 @@
-#ifndef PRL_RANDOM_SAT_MODEL_HPP
-#define PRL_RANDOM_SAT_MODEL_HPP
+#ifndef SILL_RANDOM_SAT_MODEL_HPP
+#define SILL_RANDOM_SAT_MODEL_HPP
 
 #include <algorithm>
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/base/variable.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/math/random.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/math/random.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
 
 template <typename F>
@@ -129,6 +129,6 @@ void random_satisfiable_k_sat(universe &u, factor_graph_model<F> &model,
     }
   }
 };
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

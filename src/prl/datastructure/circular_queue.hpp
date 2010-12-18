@@ -6,9 +6,9 @@
 #include <list>
 
 
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
-using namespace prl;
+using namespace sill;
 /**
   Provides a circular ordering over a fixed set of elements
 */

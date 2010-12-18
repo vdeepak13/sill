@@ -2,15 +2,15 @@
 #include <iostream>
 #include <vector>
 
-#include <prl/math/gdl_enum.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/range/numeric.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/range/numeric.hpp>
 
 #include <pstade/oven/counting.hpp>
 #include <pstade/oven/copied.hpp>
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace pstade::oven;
   using namespace std;
 
@@ -18,8 +18,8 @@ int main(int argc, char** argv) {
   vector<double> v = counting(0, 5) | copied;
 
   // Compute their sum, product, max, and min explicitly.
-  double sum = prl::sum(v), prod = prl::prod(v);
-  double max = prl::max(v), min = prl::min(v);
+  double sum = sill::sum(v), prod = sill::prod(v);
+  double max = sill::max(v), min = sill::min(v);
 
   cout << sum << " " << prod << " " << max << " " << min << endl;
 

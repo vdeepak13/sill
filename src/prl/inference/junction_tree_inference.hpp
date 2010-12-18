@@ -1,20 +1,20 @@
-#ifndef PRL_JUNCTION_TREE_INFERENCE_HPP
-#define PRL_JUNCTION_TREE_INFERENCE_HPP
+#ifndef SILL_JUNCTION_TREE_INFERENCE_HPP
+#define SILL_JUNCTION_TREE_INFERENCE_HPP
 
 #include <map>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/constant_factor.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/constant_factor.hpp>
 
-#include <prl/graph/bidirectional.hpp>
-#include <prl/graph/min_fill_strategy.hpp>
-#include <prl/model/junction_tree.hpp>
-#include <prl/model/interfaces.hpp>
+#include <sill/graph/bidirectional.hpp>
+#include <sill/graph/min_fill_strategy.hpp>
+#include <sill/model/junction_tree.hpp>
+#include <sill/model/interfaces.hpp>
 
-#include <prl/range/transformed.hpp>
+#include <sill/range/transformed.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /** 
    * An engine that performs the multiplicative sum-product algorithm. 
@@ -419,8 +419,8 @@ namespace prl {
 
   }; // class hugin
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

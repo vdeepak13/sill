@@ -1,9 +1,9 @@
-#ifndef PRL_INVALID_OPERATION_HPP
-#define PRL_INVALID_OPERATION_HPP
+#ifndef SILL_INVALID_OPERATION_HPP
+#define SILL_INVALID_OPERATION_HPP
 
 #include <stdexcept>
 
-namespace prl {
+namespace sill {
 
   /**
    * An exception thrown when an operation cannot be performed on a 

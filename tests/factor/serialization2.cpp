@@ -4,15 +4,15 @@
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/export.hpp>
 
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/base/named_universe.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/base/named_universe.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-#include <prl/process.hpp>
+#include <sill/process.hpp>
 
 int main()
 {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   named_universe u;

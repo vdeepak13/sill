@@ -19,18 +19,18 @@
 
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/inference/bp_convergence_measures.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/inference/bp_convergence_measures.hpp>
 
 
 
 // This include should always be last
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
   template<typename F>
   class gibbs_engine {
@@ -124,7 +124,7 @@ namespace prl {
           bool combined_in = false;
           foreach(factor_type* inner_factor, var2factors[v]){
             if(set_union(inner_factor->arguments(), factor.arguments()).size() < MAX_JOIN_FACTOR_DOMAIN_SIZE_){
-              inner_factor->combine_in(factor, prl::product_op);
+              inner_factor->combine_in(factor, sill::product_op);
               combined_in = true;
               break;
             }
@@ -296,7 +296,7 @@ namespace prl {
 
 
 }; // end of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
 #endif /* GIBBS_ENGINE_HPP */

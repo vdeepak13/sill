@@ -1,19 +1,19 @@
 
-#ifndef PRL_OPTIMIZATION_CONCEPTS_HPP
-#define PRL_OPTIMIZATION_CONCEPTS_HPP
+#ifndef SILL_OPTIMIZATION_CONCEPTS_HPP
+#define SILL_OPTIMIZATION_CONCEPTS_HPP
 
 #include <ostream>
 
-#include <prl/global.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/global.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file concepts.hpp Concepts for convex optimization.
  */
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup optimization_concepts
   //! @{
@@ -121,21 +121,21 @@ namespace prl {
 
     concept_usage(OptimizationVector) {
       V v2(const_vref.size(), 0.);
-      prl::same_type(vref, vref = d);
-      prl::same_type(const_vref.size(), s);
+      sill::same_type(vref, vref = d);
+      sill::same_type(const_vref.size(), s);
       vref.resize(s);
-      prl::same_type(const_vref + const_vref, v);
-      prl::same_type(v += const_vref, vref);
-      prl::same_type(const_vref - const_vref, v);
-      prl::same_type(v -= const_vref, vref);
-      prl::same_type(const_vref * d, v);
-      prl::same_type(v *= d, vref);
-      prl::same_type(d, const_vref.inner_prod(const_vref));
-      prl::same_type(vref, vref.elem_mult(const_vref));
-      prl::same_type(vref, vref.reciprocal());
-      prl::same_type(d, const_vref.L1norm());
-      prl::same_type(d, const_vref.L2norm());
-      prl::same_type(const_vref.sign(), v);
+      sill::same_type(const_vref + const_vref, v);
+      sill::same_type(v += const_vref, vref);
+      sill::same_type(const_vref - const_vref, v);
+      sill::same_type(v -= const_vref, vref);
+      sill::same_type(const_vref * d, v);
+      sill::same_type(v *= d, vref);
+      sill::same_type(d, const_vref.inner_prod(const_vref));
+      sill::same_type(vref, vref.elem_mult(const_vref));
+      sill::same_type(vref, vref.reciprocal());
+      sill::same_type(d, const_vref.L1norm());
+      sill::same_type(d, const_vref.L2norm());
+      sill::same_type(const_vref.sign(), v);
       vref.zeros();
       const_vref.print_info(out);
     }
@@ -164,8 +164,8 @@ namespace prl {
     bool stop_early() const;
 
     concept_usage(LineSearchObjectiveFunctor) {
-      prl::same_type(d, f.objective(d));
-      prl::same_type(b, f.stop_early());
+      sill::same_type(d, f.objective(d));
+      sill::same_type(b, f.stop_early());
     }
 
   private:
@@ -186,7 +186,7 @@ namespace prl {
     double gradient(double eta) const;
 
     concept_usage(LineSearchGradientFunctor) {
-      prl::same_type(d, f.gradient(d));
+      sill::same_type(d, f.gradient(d));
     }
 
   private:
@@ -206,7 +206,7 @@ namespace prl {
     double objective(const OptVectorType& x) const;
 
     concept_usage(ObjectiveFunctor) {
-      prl::same_type(d, f.objective(cvt));
+      sill::same_type(d, f.objective(cvt));
     }
 
   private:
@@ -315,6 +315,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_OPTIMIZATION_CONCEPTS_HPP
+#endif // #ifndef SILL_OPTIMIZATION_CONCEPTS_HPP

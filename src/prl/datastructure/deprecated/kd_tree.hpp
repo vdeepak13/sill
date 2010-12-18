@@ -15,8 +15,8 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_KD_TREE_HPP
-#define PRL_KD_TREE_HPP
+#ifndef SILL_KD_TREE_HPP
+#define SILL_KD_TREE_HPP
 
 #include <algorithm>
 #include <iterator>
@@ -27,14 +27,14 @@
 
 #include <boost/tuple/tuple.hpp>
 
-#include <prl/set.hpp>
-#include <prl/bsp_tree.hpp>
+#include <sill/set.hpp>
+#include <sill/bsp_tree.hpp>
 
 ///////////////////////////////////////////////////////////////////
 // Needs to be cleaned up
 ///////////////////////////////////////////////////////////////////
 
-namespace prl {
+namespace sill {
 
   /**
    * A kd-tree is a BSP tree that is used to store points.  It
@@ -151,7 +151,7 @@ namespace prl {
        * Returns truth if the supplied region overlaps the portion of
        * the space that satisfies a predicate (or its negation).
        */
-      static inline prl::pred_set_rel_t relation(const predicate_t& p,
+      static inline sill::pred_set_rel_t relation(const predicate_t& p,
 						 const region_t& r) {
 	const interval_t& interval = r[p.first];
 	if (interval.second < p.second)
@@ -490,7 +490,7 @@ namespace prl {
 	return -result;
       }
 
-    }; // class prl::kd_tree_t::euclidean_dist_priority_t
+    }; // class sill::kd_tree_t::euclidean_dist_priority_t
 
     /**
      * A visitor used to implement the \f$k\f$ nearest neighbor search
@@ -627,7 +627,7 @@ namespace prl {
 	}
       }
 
-    }; // class prl::kd_tree_t::knn_visitor_t
+    }; // class sill::kd_tree_t::knn_visitor_t
 
   public:
 
@@ -694,6 +694,6 @@ namespace prl {
 	
   }; // end of class: kd_tree_t
 
-} // namespace prl 
+} // namespace sill 
 
-#endif // #ifndef PRL_KD_TREE_HPP
+#endif // #ifndef SILL_KD_TREE_HPP

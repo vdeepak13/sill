@@ -1,4 +1,4 @@
-#define PRL_PRINT_VARIABLE_ADDRESS
+#define SILL_PRINT_VARIABLE_ADDRESS
 
 // This file demonstrates serialization / deserialization to different
 // archive types.
@@ -18,18 +18,18 @@
 #include <boost/serialization/utility.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/variable.hpp>
-#include <prl/stl_io.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/gaussian_factors.hpp>
-#include <prl/factor/mixture.hpp>
-#include <prl/factor/random.hpp>
+#include <sill/variable.hpp>
+#include <sill/stl_io.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/gaussian_factors.hpp>
+#include <sill/factor/mixture.hpp>
+#include <sill/factor/random.hpp>
 
-#include <prl/math/bindings/lapack.hpp>
-#include <prl/range/numeric.hpp>
+#include <sill/math/bindings/lapack.hpp>
+#include <sill/range/numeric.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 boost::mt19937 rng;
 
@@ -95,7 +95,7 @@ T load_xml(const std::string& filename) {
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Serialize a domain
@@ -177,8 +177,8 @@ int main(int argc, char** argv) {
   vector_domain xy = make_domain(x, y);
   vector_var_vector xy_vec(xy.begin(), xy.end());
 
-  using prl::math::bindings::lapack::double_matrix;
-  using prl::math::bindings::lapack::double_vector;
+  using sill::math::bindings::lapack::double_matrix;
+  using sill::math::bindings::lapack::double_vector;
   typedef canonical_gaussian<double_matrix,double_vector> canonical_gaussian;
   typedef moment_gaussian<double_matrix,double_vector> moment_gaussian;
   typedef std::pair<canonical_gaussian, moment_gaussian> factor_pair;
@@ -214,7 +214,7 @@ int main(int argc, char** argv) {
     //mix[1] = mg1;
     // there is an issue with serializing / deserializing the mixture
     // when it contains two copies of the same component
-    // -- we fail at the shared pointer / prl::map
+    // -- we fail at the shared pointer / sill::map
     cout << "Original mixture: " << mix << endl;
     save_text("serialized_mixture.txt", mix);
   }

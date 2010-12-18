@@ -1,12 +1,12 @@
 
-#ifndef PRL_VOID_STEP_FUNCTOR_HPP
-#define PRL_VOID_STEP_FUNCTOR_HPP
+#ifndef SILL_VOID_STEP_FUNCTOR_HPP
+#define SILL_VOID_STEP_FUNCTOR_HPP
 
-#include <prl/optimization/real_opt_step_functor.hpp>
+#include <sill/optimization/real_opt_step_functor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class which does nothing, save for fitting the real_opt_step_functor
@@ -42,6 +42,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_VOID_STEP_FUNCTOR_HPP
+#endif // #ifndef SILL_VOID_STEP_FUNCTOR_HPP

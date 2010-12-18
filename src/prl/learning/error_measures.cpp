@@ -1,9 +1,9 @@
 
-#include <prl/learning/error_measures.hpp>
+#include <sill/learning/error_measures.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace error_measures {
 
@@ -34,4 +34,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

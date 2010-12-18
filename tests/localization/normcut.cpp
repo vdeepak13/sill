@@ -4,18 +4,18 @@
 #include <algorithm>
 #include <iterator>
 
-#include <prl/global.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/functional.hpp>
-#include <prl/math/bindings/lapack.hpp>
-#include <prl/graph/normalized_cut.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/global.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/functional.hpp>
+#include <sill/math/bindings/lapack.hpp>
+#include <sill/graph/normalized_cut.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-typedef prl::math::bindings::lapack_kernel<double> kernel;
+typedef sill::math::bindings::lapack_kernel<double> kernel;
 typedef kernel::symmetric_matrix matrix_type;
 typedef kernel::vector vector_type;
 typedef std::pair<size_t,size_t> vertex_pair;
@@ -23,7 +23,7 @@ typedef std::pair<size_t,size_t> vertex_pair;
 int main(int argc, char* argv[]) {
   using namespace std;
   using namespace boost;
-  using namespace prl;
+  using namespace sill;
   
   assert(argc==2);
   ifstream is(argv[1]);
@@ -36,8 +36,8 @@ int main(int argc, char* argv[]) {
     is >> from >> to;
     if (!is.fail()) edges.push_back(make_pair(from, to));
   }
-  size_t n = max(max(edges | prl::transformed(pair_first<size_t,size_t>())),
-		 max(edges | prl::transformed(pair_second<size_t,size_t>())));
+  size_t n = max(max(edges | sill::transformed(pair_first<size_t,size_t>())),
+		 max(edges | sill::transformed(pair_second<size_t,size_t>())));
   cout << "Loaded " << edges.size() << " neighbors; n = " << n << endl;
 
   // Create the adjacency matrix
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
   }
   
   // Compute & store the relaxed solution
-  vector_type relaxed = prl::graph::normalized_cut<kernel>(w);
+  vector_type relaxed = sill::graph::normalized_cut<kernel>(w);
   cout << relaxed << endl;
   list<size_t> left, right;
   find_indices(relaxed <=0, back_inserter(left));

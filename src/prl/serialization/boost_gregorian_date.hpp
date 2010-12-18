@@ -1,11 +1,11 @@
-#ifndef PRL_SERIALIZE_BOOST_GREGORIAN_DATE_HPP
-#define PRL_SERIALIZE_BOOST_GREGORIAN_DATE_HPP
+#ifndef SILL_SERIALIZE_BOOST_GREGORIAN_DATE_HPP
+#define SILL_SERIALIZE_BOOST_GREGORIAN_DATE_HPP
 
 #include <boost/date_time/gregorian/gregorian.hpp>
 
-#include <prl/serialization/serialize.hpp>
+#include <sill/serialization/serialize.hpp>
 
-namespace prl {
+namespace sill {
   
   inline oarchive& operator<<(oarchive& a, const boost::gregorian::date& date) {
     if (date.is_special()) {

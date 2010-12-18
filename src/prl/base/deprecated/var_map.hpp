@@ -1,13 +1,13 @@
-#ifndef PRL_VAR_MAP_HPP
-#define PRL_VAR_MAP_HPP
+#ifndef SILL_VAR_MAP_HPP
+#define SILL_VAR_MAP_HPP
 
 #include <map>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
 
-namespace prl {
+namespace sill {
 
   // Forward declarations
   class variable;
@@ -15,7 +15,7 @@ namespace prl {
   std::ostream&
   operator<<(std::ostream& out, const std::map<variable*, variable*>& map);
 
-} // end namespace prl
+} // end namespace sill
 
 
 namespace std {
@@ -24,9 +24,9 @@ namespace std {
    * \ingroup base_types
    */
   template<>
-  class map<prl::variable*, prl::variable*>
-    : public prl::finite_var_map,
-      public prl::vector_var_map{
+  class map<sill::variable*, sill::variable*>
+    : public sill::finite_var_map,
+      public sill::vector_var_map{
 
     // Constructors and assignment/conversion operators
     //==========================================================================
@@ -35,64 +35,64 @@ namespace std {
     map() {}
 
     //! Singleton constructor
-    map(prl::finite_variable* v, prl::finite_variable* w) { 
-      prl::finite_var_map::insert(std::make_pair(v,w));
+    map(sill::finite_variable* v, sill::finite_variable* w) { 
+      sill::finite_var_map::insert(std::make_pair(v,w));
     }
 
     //! Singleton constructor
-    map(prl::vector_variable* v, prl::vector_variable* w) {
-      prl::vector_var_map::insert(std::make_pair(v, w));
+    map(sill::vector_variable* v, sill::vector_variable* w) {
+      sill::vector_var_map::insert(std::make_pair(v, w));
     }
 
     //! Constructs an map with the given finite component
-    map(const prl::finite_var_map& a)
-      : prl::finite_var_map(a) { }
+    map(const sill::finite_var_map& a)
+      : sill::finite_var_map(a) { }
 
     //! Constructs an map with the given vector component
-    map(const prl::vector_var_map& a)
-      : prl::vector_var_map(a) { }
+    map(const sill::vector_var_map& a)
+      : sill::vector_var_map(a) { }
 
     //! Assignment operator
-    map& operator=(prl::finite_var_map a) {
+    map& operator=(sill::finite_var_map a) {
       // clear the other components. since a is passed by value, &a != this
       clear(); 
-      prl::finite_var_map::operator=(a);
+      sill::finite_var_map::operator=(a);
       return *this;
     }
 
     //! Assignment operator
-    map& operator=(prl::vector_var_map a) {
+    map& operator=(sill::vector_var_map a) {
       // clear the other components. since a is passed by value, &a != this
       clear();
-      prl::vector_var_map::operator=(a);
+      sill::vector_var_map::operator=(a);
       return *this;
     }
 
     //! Conversion to human-readable representation
     operator std::string() const {
-      using namespace prl;
+      using namespace sill;
       std::ostringstream out; out << *this; return out.str(); 
     }
       
     // Accessors
     //==========================================================================
     //! Returns the finite portion of this map
-    const prl::finite_var_map& finite() const {
+    const sill::finite_var_map& finite() const {
       return *this;
     }
 
     //! Returns the finite portion of this map
-    prl::finite_var_map& finite() {
+    sill::finite_var_map& finite() {
       return *this;
     }
 
     //! Returns the vector portion of this map
-    const prl::vector_var_map& vector() const {
+    const sill::vector_var_map& vector() const {
       return *this;
     }
 
     //! Returns the vector portion of this map
-    prl::vector_var_map& vector() {
+    sill::vector_var_map& vector() {
       return *this;
     }
 
@@ -109,19 +109,19 @@ namespace std {
     // Queries
     //==========================================================================
     //! Returns true if the map contains a variable
-    bool contains(prl::variable* v) const {
-      prl::finite_variable* fv = dynamic_cast<prl::finite_variable*>(v);
+    bool contains(sill::variable* v) const {
+      sill::finite_variable* fv = dynamic_cast<sill::finite_variable*>(v);
       if (fv) return finite().count(fv) > 0;
-      prl::vector_variable* vv = dynamic_cast<prl::vector_variable*>(v);
+      sill::vector_variable* vv = dynamic_cast<sill::vector_variable*>(v);
       if (vv) return vector().count(vv) > 0;
       assert(false); return false;
     }
 
     //! Returns the value associated with a variable
-    prl::variable* operator[](prl::variable* v) const {
-      prl::finite_variable* fv = dynamic_cast<prl::finite_variable*>(v);
+    sill::variable* operator[](sill::variable* v) const {
+      sill::finite_variable* fv = dynamic_cast<sill::finite_variable*>(v);
       if (fv) return safe_get(finite(), fv);
-      prl::vector_variable* vv = dynamic_cast<prl::vector_variable*>(v);
+      sill::vector_variable* vv = dynamic_cast<sill::vector_variable*>(v);
       if (vv) return safe_get(vector(), vv);
       assert(false); return NULL;
     }
@@ -140,8 +140,8 @@ namespace std {
     //==========================================================================
     //! Removes all elements from the map
     void clear() {
-      prl::finite_var_map::clear();
-      prl::vector_var_map::clear();
+      sill::finite_var_map::clear();
+      sill::vector_var_map::clear();
     }
 
   }; // class map<variable*, variable*>
@@ -149,7 +149,7 @@ namespace std {
 
 } // namespace std
 
-namespace prl {
+namespace sill {
   
   /**
    * Computes the union of two maps
@@ -202,6 +202,6 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

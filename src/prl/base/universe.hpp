@@ -1,8 +1,8 @@
-namespace prl {
+namespace sill {
   class universe;
 }
-#ifndef PRL_NAMED_UNIVERSE_HPP
-#define PRL_NAMED_UNIVERSE_HPP
+#ifndef SILL_NAMED_UNIVERSE_HPP
+#define SILL_NAMED_UNIVERSE_HPP
 
 #include <string>
 #include <stdexcept>
@@ -10,16 +10,16 @@ namespace prl {
 
 #include <boost/unordered_set.hpp>
 #include <boost/lexical_cast.hpp>
-#include <prl/global.hpp>
-#include <prl/base/process.hpp>
-#include <prl/base/concepts.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/global.hpp>
+#include <sill/base/process.hpp>
+#include <sill/base/concepts.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   class universe{
 
@@ -167,8 +167,8 @@ namespace prl {
   template <>
   vector_variable* universe::new_variable<vector_variable>(size_t size);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

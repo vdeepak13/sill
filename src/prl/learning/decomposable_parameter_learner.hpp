@@ -1,20 +1,20 @@
-#ifndef PRL_DECOMPOSABLE_PARAMETER_LEARNER_HPP
-#define PRL_DECOMPOSABLE_PARAMETER_LEARNER_HPP
+#ifndef SILL_DECOMPOSABLE_PARAMETER_LEARNER_HPP
+#define SILL_DECOMPOSABLE_PARAMETER_LEARNER_HPP
 
 #include <boost/timer.hpp>
 
-#include <prl/factor/concepts.hpp>
-#include <prl/learning/crossval_methods.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/learn_factor.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/math/statistics.hpp>
-#include <prl/model/decomposable.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/learning/crossval_methods.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/learn_factor.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/math/statistics.hpp>
+#include <sill/model/decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Parameters for decomposable_parameter_learner.
@@ -320,8 +320,8 @@ namespace prl {
 
   }; // decomposable_parameter_learner
 
-};  // namespace prl
+};  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_DECOMPOSABLE_PARAMETER_LEARNER_HPP
+#endif // SILL_DECOMPOSABLE_PARAMETER_LEARNER_HPP

@@ -3,24 +3,24 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/structure_search/decomposable_search.hpp>
-#include <prl/learning/structure_search/entropy_score.hpp>
-#include <prl/learning/structure_search/dmove_push_back_subtree.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/structure_search/decomposable_search.hpp>
+#include <sill/learning/structure_search/entropy_score.hpp>
+#include <sill/learning/structure_search/dmove_push_back_subtree.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Create a dataset to work with

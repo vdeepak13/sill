@@ -25,41 +25,41 @@
  *
  *  - Intro to Using PRL
  *    - Basic Data Structures:
- *      - \ref prl::variable "Variable"
- *        - \ref prl::finite_variable "Finite Variable"
- *        - \ref prl::vector_variable "Vector (Real) Variable"
- *      - \ref prl::assignment "Assignment"
- *        - \ref prl::finite_assignment "Finite Assignment"
- *        - \ref prl::vector_assignment "Vector (Real) Assignment"
- *      - \ref prl::factor "Factor"
- *      - \ref prl::crf_factor "CRF (Conditional) Factor"
+ *      - \ref sill::variable "Variable"
+ *        - \ref sill::finite_variable "Finite Variable"
+ *        - \ref sill::vector_variable "Vector (Real) Variable"
+ *      - \ref sill::assignment "Assignment"
+ *        - \ref sill::finite_assignment "Finite Assignment"
+ *        - \ref sill::vector_assignment "Vector (Real) Assignment"
+ *      - \ref sill::factor "Factor"
+ *      - \ref sill::crf_factor "CRF (Conditional) Factor"
  *    - \ref graph "Graphs"
- *      - \ref prl::directed_graph "Directed Graph"
- *      - \ref prl::undirected_graph "Undirected Graph"
+ *      - \ref sill::directed_graph "Directed Graph"
+ *      - \ref sill::undirected_graph "Undirected Graph"
  *    - PGM Structures:
- *      - \ref prl::bayesian_graph "Bayesian Graph"
- *      - \ref prl::junction_tree "Junction Tree"
- *      - \ref prl::markov_graph "Markov Graph"
- *      - \ref prl::crf_graph "Conditional Random Field (CRF) Graph"
+ *      - \ref sill::bayesian_graph "Bayesian Graph"
+ *      - \ref sill::junction_tree "Junction Tree"
+ *      - \ref sill::markov_graph "Markov Graph"
+ *      - \ref sill::crf_graph "Conditional Random Field (CRF) Graph"
  *    - Probabilistic Graphical Models:
- *      - \ref prl::bayesian_network "Bayesian Network" (based on Bayesian Graph)
- *      - \ref prl::decomposable "Decomposable" (based on Junction Tree)
+ *      - \ref sill::bayesian_network "Bayesian Network" (based on Bayesian Graph)
+ *      - \ref sill::decomposable "Decomposable" (based on Junction Tree)
  *        - Multiply in factors; automatically renormalizes.
  *        - Also can e.g. compute marginals, condition on evidence,
  *            compute entropies
- *      - \ref prl::markov_network "Markov Network" (based on Markov Graph)
- *      - \ref prl::crf_model "Conditional Random Field (CRF)" (based on CRF Graph)
- *    - \ref prl::dataset "Dataset"
+ *      - \ref sill::markov_network "Markov Network" (based on Markov Graph)
+ *      - \ref sill::crf_model "Conditional Random Field (CRF)" (based on CRF Graph)
+ *    - \ref sill::dataset "Dataset"
  *    - Learning
  *      - \ref learning_param "Parameter Learning"
- *      - \ref learning_structure "Structure Learning" (\ref prl::chow_liu "Chow Liu", \ref prl::pwl_crf_learner "Tree CRF Learner")
+ *      - \ref learning_structure "Structure Learning" (\ref sill::chow_liu "Chow Liu", \ref sill::pwl_crf_learner "Tree CRF Learner")
  *      - \ref learning_discriminative "Discriminative Learning"
  *    - Other Data Structures
- *      - \ref prl::set "Set" (based on STL set)
- *      - \ref prl::map "Map" (based on STL map)
- *      - \ref prl::table_base "Tables" (\ref prl::dense_table "Dense" and
- *        \ref prl::sparse_table_t "Sparse")
- *      - \ref prl::copy_ptr "Copy-on-Write Pointer"
+ *      - \ref sill::set "Set" (based on STL set)
+ *      - \ref sill::map "Map" (based on STL map)
+ *      - \ref sill::table_base "Tables" (\ref sill::dense_table "Dense" and
+ *        \ref sill::sparse_table_t "Sparse")
+ *      - \ref sill::copy_ptr "Copy-on-Write Pointer"
  *  - Intro to Programming in PRL (with Boost)
  *    - \ref range "Ranges" (based on Boost ranges)
  *    - Boost Concept Checking

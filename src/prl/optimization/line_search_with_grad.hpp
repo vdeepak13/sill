@@ -1,12 +1,12 @@
 
-#ifndef PRL_LINE_SEARCH_WITH_GRAD_HPP
-#define PRL_LINE_SEARCH_WITH_GRAD_HPP
+#ifndef SILL_LINE_SEARCH_WITH_GRAD_HPP
+#define SILL_LINE_SEARCH_WITH_GRAD_HPP
 
-#include <prl/optimization/line_search.hpp>
+#include <sill/optimization/line_search.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for doing a line search from a point x in a given direction
@@ -210,6 +210,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LINE_SEARCH_WITH_GRAD_HPP
+#endif // #ifndef SILL_LINE_SEARCH_WITH_GRAD_HPP

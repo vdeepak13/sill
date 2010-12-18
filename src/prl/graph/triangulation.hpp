@@ -1,6 +1,6 @@
 
-#ifndef PRL_TRIANGULATION_HPP
-#define PRL_TRIANGULATION_HPP
+#ifndef SILL_TRIANGULATION_HPP
+#define SILL_TRIANGULATION_HPP
 
 #include <iostream>
 #include <algorithm>
@@ -8,12 +8,12 @@
 #include <vector>
 #include <set>
 
-#include <prl/datastructure/set_index.hpp>
-#include <prl/graph/elimination.hpp>
+#include <sill/datastructure/set_index.hpp>
+#include <sill/graph/elimination.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A visitor that outputs elimination cliques into an iterator.
@@ -63,7 +63,7 @@ namespace prl {
    *        an interior vertex_index property.
    * @param OutIt
    *        an output iterator type which can be assigned lvalues
-   *        of type prl::set<vertex_t>, where vertex_t is
+   *        of type sill::set<vertex_t>, where vertex_t is
    *        boost::graph_traits<Graph>::vertex_descriptor.
    * @param ElimStrategy
    *        The type of elimination strategy; it must model the
@@ -97,8 +97,8 @@ namespace prl {
     eliminate(graph, visitor, elim_strategy);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_TRIANGULATION_HPP
+#endif // #ifndef SILL_TRIANGULATION_HPP

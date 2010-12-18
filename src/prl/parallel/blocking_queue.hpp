@@ -4,11 +4,11 @@
 
 
 #include <list>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template<typename T>
   class blocking_queue {
@@ -146,8 +146,8 @@ namespace prl {
   }; // end of blocking_queue class
   
 
-} // end of namespace prl
+} // end of namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

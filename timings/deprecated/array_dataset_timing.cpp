@@ -3,22 +3,22 @@
 
 #include <boost/timer.hpp>
 
-#include <prl/variable.hpp>
-#include <prl/assignment.hpp>
-#include <prl/learning/dataset/array_dataset.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-//#include <prl/learning/dataset/old_array_dataset.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/factor/table_factor.hpp>
+#include <sill/variable.hpp>
+#include <sill/assignment.hpp>
+#include <sill/learning/dataset/array_dataset.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+//#include <sill/learning/dataset/old_array_dataset.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/factor/table_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file array_dataset_timing.cpp Test of the array_dataset.hpp class.
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   std::string filename = "../../tests/data/spam.txt";

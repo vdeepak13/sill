@@ -1,14 +1,14 @@
-#ifndef PRL_PRIOR_LIKELIHOOD_XML_HPP
-#define PRL_PRIOR_LIKELIHOOD_XML_HPP
+#ifndef SILL_PRIOR_LIKELIHOOD_XML_HPP
+#define SILL_PRIOR_LIKELIHOOD_XML_HPP
 
 #include <iosfwd>
 
-#include <prl/factor/prior_likelihood.hpp>
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_tag.hpp>
+#include <sill/factor/prior_likelihood.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_tag.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename F, typename G>
   const char* xml_tag(prior_likelihood<F,G>*) {
@@ -39,6 +39,6 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

@@ -1,12 +1,12 @@
 
-#ifndef PRL_DATASOURCE_INFO_TYPE_HPP
-#define PRL_DATASOURCE_INFO_TYPE_HPP
+#ifndef SILL_DATASOURCE_INFO_TYPE_HPP
+#define SILL_DATASOURCE_INFO_TYPE_HPP
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/range/forward_range.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Everything you need to know about a datasource.
   struct datasource_info_type {
@@ -51,6 +51,6 @@ namespace prl {
 
   }; // struct datasource_info_type
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_DATASOURCE_INFO_TYPE_HPP
+#endif // #ifndef SILL_DATASOURCE_INFO_TYPE_HPP

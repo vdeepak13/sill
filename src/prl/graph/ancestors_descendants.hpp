@@ -1,13 +1,13 @@
-#ifndef PRL_ANCESTORS_DESCENDANTS_HPP
-#define PRL_ANCESTORS_DESCENDANTS_HPP
+#ifndef SILL_ANCESTORS_DESCENDANTS_HPP
+#define SILL_ANCESTORS_DESCENDANTS_HPP
 #include <set>
 #include <queue>
 
-#include <prl/graph/concepts.hpp>
+#include <sill/graph/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Returns the ancestors for a set of vertices. 
@@ -55,6 +55,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

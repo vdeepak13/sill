@@ -1,17 +1,17 @@
 
-#ifndef PRL_LEARNING_DATASET_CONCEPTS_HPP
-#define PRL_LEARNING_DATASET_CONCEPTS_HPP
+#ifndef SILL_LEARNING_DATASET_CONCEPTS_HPP
+#define SILL_LEARNING_DATASET_CONCEPTS_HPP
 
-#include <prl/base/assignment.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/learning/dataset/datasource.hpp>
-#include <prl/learning/dataset/record.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/learning/dataset/datasource.hpp>
+#include <sill/learning/dataset/record.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   class record;
 
@@ -70,17 +70,17 @@ namespace prl {
     //    concept_assert((Convertible<record, assignment>));
 
     concept_usage(DataSource) {
-      prl::same_type(empty(), b);
-      prl::same_type(variables(), d);
-      prl::same_type(finite_variables(), fdref);
-      prl::same_type(vector_variables(), vdref);
-      prl::same_type(variable_type_order(), var_type_vec);
-      prl::same_type(finite_list(), fvarvec);
-      prl::same_type(vector_list(), vvarvec);
-      prl::same_type(num_finite(), i);
-      prl::same_type(num_vector(), i);
-      prl::same_type(finite_class_variables(), fvarvec);
-      prl::same_type(vector_class_variables(), vvarvec);
+      sill::same_type(empty(), b);
+      sill::same_type(variables(), d);
+      sill::same_type(finite_variables(), fdref);
+      sill::same_type(vector_variables(), vdref);
+      sill::same_type(variable_type_order(), var_type_vec);
+      sill::same_type(finite_list(), fvarvec);
+      sill::same_type(vector_list(), vvarvec);
+      sill::same_type(num_finite(), i);
+      sill::same_type(num_vector(), i);
+      sill::same_type(finite_class_variables(), fvarvec);
+      sill::same_type(vector_class_variables(), vvarvec);
       (void) set_finite_class_variable(fvar);
       (void) set_vector_class_variable(vvar);
       (void) set_finite_class_variables(fvarvec);
@@ -119,8 +119,8 @@ namespace prl {
     bool next();
 
     concept_usage(Oracle) {
-      prl::same_type(current(), r);
-      prl::same_type(next(), b);
+      sill::same_type(current(), r);
+      sill::same_type(next(), b);
     }
 
   private:
@@ -147,19 +147,19 @@ namespace prl {
 
     //! Returns a range over the records of this dataset
     //! Eventually, will be able to provide a set of variables
-    prl::forward_range<const record&> records() const;
+    sill::forward_range<const record&> records() const;
 
     concept_usage(Dataset) {
-      prl::same_type(size(), i);
-      prl::same_type(operator[](i), r);
-      prl::same_type(at(i), r);
-      prl::same_type(records(), record_range); 
+      sill::same_type(size(), i);
+      sill::same_type(operator[](i), r);
+      sill::same_type(at(i), r);
+      sill::same_type(records(), record_range); 
     }
 
   private:
     std::size_t i;
     static record& r;
-    prl::forward_range<const record&> record_range;
+    sill::forward_range<const record&> record_range;
 
   }; // struct Dataset
 
@@ -189,9 +189,9 @@ namespace prl {
 
   };  // struct MutableDataset
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

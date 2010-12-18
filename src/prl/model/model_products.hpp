@@ -1,15 +1,15 @@
-#ifndef PRL_MODEL_PRODUCTS_HPP
-#define PRL_MODEL_PRODUCTS_HPP
+#ifndef SILL_MODEL_PRODUCTS_HPP
+#define SILL_MODEL_PRODUCTS_HPP
 
-#include <prl/factor/gaussian_crf_factor.hpp>
-#include <prl/factor/table_crf_factor.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/crf_model.hpp>
-#include <prl/model/decomposable.hpp>
+#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/crf_model.hpp>
+#include <sill/model/decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Multiply models P(X) and P(Y|X) together to create a decomposable model
@@ -57,8 +57,8 @@ namespace prl {
     YXmodel *= factors;
   }
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_MODEL_PRODUCTS_HPP
+#endif // SILL_MODEL_PRODUCTS_HPP

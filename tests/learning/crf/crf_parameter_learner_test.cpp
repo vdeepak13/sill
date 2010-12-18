@@ -3,34 +3,34 @@
 #include <boost/program_options.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/log_reg_crf_factor.hpp>
-#include <prl/factor/table_crf_factor.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/crf/crf_parameter_learner_builder.hpp>
-#include <prl/learning/crossval_builder.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/generate_datasets.hpp>
-#include <prl/learning/dataset/vector_assignment_dataset.hpp>
-#include <prl/model/model_products.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/log_reg_crf_factor.hpp>
+#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/crf/crf_parameter_learner_builder.hpp>
+#include <sill/learning/crossval_builder.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/generate_datasets.hpp>
+#include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/model/model_products.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * Run the CRF parameter learner test.
  */
 template <typename F>
 void
-run_test(const prl::crf_model<F>& YgivenXmodel,
-         const prl::decomposable<typename F::output_factor_type>& YXmodel,
-         const prl::datasource_info_type& ds_info,
+run_test(const sill::crf_model<F>& YgivenXmodel,
+         const sill::decomposable<typename F::output_factor_type>& YXmodel,
+         const sill::datasource_info_type& ds_info,
          size_t ntrain, size_t ntest,
-         bool do_cv, const prl::vec& fixed_lambda, boost::mt11213b& rng,
-         typename prl::crf_parameter_learner<F>::parameters& cpl_params,
-         prl::crossval_builder& cv_builder) {
+         bool do_cv, const sill::vec& fixed_lambda, boost::mt11213b& rng,
+         typename sill::crf_parameter_learner<F>::parameters& cpl_params,
+         sill::crossval_builder& cv_builder) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   typedef typename F::regularization_type regularization_type;
@@ -106,7 +106,7 @@ run_test(const prl::crf_model<F>& YgivenXmodel,
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Parse the command-line parameters

@@ -1,18 +1,18 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_NAIVE_BAYES_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_NAIVE_BAYES_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_NAIVE_BAYES_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_NAIVE_BAYES_HPP
 
-#include <prl/assignment.hpp>
-#include <prl/datastructure/concepts.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
+#include <sill/assignment.hpp>
+#include <sill/datastructure/concepts.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file naive_bayes.hpp Naive Bayes
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Naive Bayes
@@ -37,7 +37,7 @@ namespace prl {
     template <typename LabelRange, typename ParamRange>
     naive_bayes(const statistics<vec>& stats,
                 const ParamRange& parameters) {
-      concept_assert((prl::Dataset<Dataset>));
+      concept_assert((sill::Dataset<Dataset>));
       // assert that labels are binary or multiclass
       // TODO: Do I need to do concept checking for labels and parameters here
       // since I do it in the Classifier concept class?
@@ -64,8 +64,8 @@ namespace prl {
 
   }; // class naive_bayes
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_NAIVE_BAYES_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_NAIVE_BAYES_HPP

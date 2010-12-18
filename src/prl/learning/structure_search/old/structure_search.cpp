@@ -1,10 +1,10 @@
 #include <iostream>
-#include <prl/data.hpp>
-#include <prl/variable.hpp>
-#include <prl/assignment.hpp>
-#include <prl/learning/structure_search.hpp>
+#include <sill/data.hpp>
+#include <sill/variable.hpp>
+#include <sill/assignment.hpp>
+#include <sill/learning/structure_search.hpp>
 
-using namespace prl;
+using namespace sill;
 
 // Test of the structure_search class.
 int main() {

@@ -1,13 +1,13 @@
-#ifndef PRL_TABLE_CRF_FACTOR_HPP
-#define PRL_TABLE_CRF_FACTOR_HPP
+#ifndef SILL_TABLE_CRF_FACTOR_HPP
+#define SILL_TABLE_CRF_FACTOR_HPP
 
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/learnable_crf_factor.hpp>
-#include <prl/optimization/table_factor_opt_vector.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/optimization/table_factor_opt_vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * CRF factor based on table_factor.  This supports finite Y,X only.
@@ -394,8 +394,8 @@ namespace prl {
 
   };  // class table_crf_factor
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_TABLE_CRF_FACTOR_HPP
+#endif // SILL_TABLE_CRF_FACTOR_HPP

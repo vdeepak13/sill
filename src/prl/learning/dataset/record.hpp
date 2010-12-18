@@ -1,21 +1,21 @@
 
-#ifndef PRL_RECORD_HPP
-#define PRL_RECORD_HPP
+#ifndef SILL_RECORD_HPP
+#define SILL_RECORD_HPP
 
 #include <map>
 
-#include <prl/base/assignment.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/base/variables.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/learning/dataset/datasource.hpp>
-#include <prl/learning/dataset/finite_record.hpp>
-#include <prl/learning/dataset/vector_record.hpp>
-#include <prl/math/vector.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/variables.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/learning/dataset/datasource.hpp>
+#include <sill/learning/dataset/finite_record.hpp>
+#include <sill/learning/dataset/vector_record.hpp>
+#include <sill/math/vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Forward declarations
   finite_var_vector extract_finite_var_vector(const var_vector& vars);
@@ -122,30 +122,30 @@ namespace prl {
     //==========================================================================
 
     //! Returns this record as an assignment.
-    prl::assignment assignment() const {
-      return prl::assignment(this->finite_assignment(),
+    sill::assignment assignment() const {
+      return sill::assignment(this->finite_assignment(),
                              this->vector_assignment());
     }
 
     //! Converts this record to an assignment.
-    operator prl::assignment() const {
+    operator sill::assignment() const {
       return this->assignment();
     }
 
     //! Returns this record as an assignment,
     //! but only for the given variables X.
     //! @param X  All of these variables must be in this record.
-    prl::assignment assignment(const domain& X) const;
+    sill::assignment assignment(const domain& X) const;
 
     //! Returns the finite part of this record as an assignment,
     //! but only for the given variables X.
     //! @param X  All of these variables must be in this record.
-    prl::finite_assignment assignment(const finite_domain& X) const;
+    sill::finite_assignment assignment(const finite_domain& X) const;
 
     //! Returns the vector part of this record as an assignment,
     //! but only for the given variables X.
     //! @param X  All of these variables must be in this record.
-    prl::vector_assignment assignment(const vector_domain& X) const;
+    sill::vector_assignment assignment(const vector_domain& X) const;
 
     //! Write the record to the given output stream.
     template <typename CharT, typename Traits>
@@ -177,7 +177,7 @@ namespace prl {
     //! The new copy owns its data since a record does not know whether
     //! or not it's OK to rely on the outside reference.
     //! This clears the non-finite component.
-    record& operator=(const prl::finite_assignment& a) {
+    record& operator=(const sill::finite_assignment& a) {
       vector_record::clear();
       finite_record::operator=(a);
       return *this;
@@ -189,7 +189,7 @@ namespace prl {
     //! The new copy owns its data since a record does not know whether
     //! or not it's OK to rely on the outside reference.
     //! This clears the non-vector component.
-    record& operator=(const prl::vector_assignment& a) {
+    record& operator=(const sill::vector_assignment& a) {
       finite_record::clear();
       vector_record::operator=(a);
       return *this;
@@ -259,8 +259,8 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_RECORD_HPP
+#endif // #ifndef SILL_RECORD_HPP

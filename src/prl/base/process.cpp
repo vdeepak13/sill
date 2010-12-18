@@ -1,9 +1,9 @@
-#include <prl/base/process.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/base/timed_process.hpp>
+#include <sill/base/process.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/base/timed_process.hpp>
 #include <iostream>
 
-namespace prl {
+namespace sill {
 
   std::ostream& operator<<(std::ostream& out, process* p) {
     out << std::string(*p);

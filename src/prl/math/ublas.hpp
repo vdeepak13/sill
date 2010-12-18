@@ -1,5 +1,5 @@
-#ifndef PRL_MATH_UBLAS_HPP
-#define PRL_MATH_UBLAS_HPP
+#ifndef SILL_MATH_UBLAS_HPP
+#define SILL_MATH_UBLAS_HPP
 
 // Standard types and functions from uBLAS
 #include <boost/numeric/ublas/vector.hpp>
@@ -11,27 +11,27 @@
 #include <boost/numeric/ublas/detail/concepts.hpp> // for vector addition
 
 // Additional functions
-#include <prl/math/ublas/serialize_storage.hpp>
-#include <prl/math/ublas/matrix_functions.hpp>
-#include <prl/math/ublas/vector_functions.hpp>
-#include <prl/math/ublas/io.hpp>
+#include <sill/math/ublas/serialize_storage.hpp>
+#include <sill/math/ublas/matrix_functions.hpp>
+#include <sill/math/ublas/vector_functions.hpp>
+#include <sill/math/ublas/io.hpp>
 
 // Lapack bindings using Boost Sandbox
 #include <boost/numeric/bindings/traits/ublas_matrix.hpp>
 #include <boost/numeric/bindings/traits/ublas_vector.hpp>
-#include <prl/math/ublas/determinant.hpp>
-#include <prl/math/ublas/inverse.hpp>
-#include <prl/math/ublas/eig.hpp>
-#include <prl/math/ublas/svd.hpp>
-#include <prl/math/ublas/chol.hpp>
-#include <prl/math/ublas/solve.hpp>
+#include <sill/math/ublas/determinant.hpp>
+#include <sill/math/ublas/inverse.hpp>
+#include <sill/math/ublas/eig.hpp>
+#include <sill/math/ublas/svd.hpp>
+#include <sill/math/ublas/chol.hpp>
+#include <sill/math/ublas/solve.hpp>
 
-#include <prl/serializable.hpp>
-// #include <prl/range/numeric.hpp>
+#include <sill/serializable.hpp>
+// #include <sill/range/numeric.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \ingroup math_ublas
   namespace ublas = boost::numeric::ublas;
@@ -139,8 +139,8 @@ namespace prl {
   //! \ingroup math_ublas
   typedef ublas_algebra<float> ublas_float;
 
-  //EXPORT_PRIMITIVE2(prl::ublas_double, "ublas_double");
-  //EXPORT_PRIMITIVE2(prl::ublas_float, "ublas_float");
+  //EXPORT_PRIMITIVE2(sill::ublas_double, "ublas_double");
+  //EXPORT_PRIMITIVE2(sill::ublas_float, "ublas_float");
 
   
   //! Concatenates a sequence of vectors
@@ -162,9 +162,9 @@ namespace prl {
     return result;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
   

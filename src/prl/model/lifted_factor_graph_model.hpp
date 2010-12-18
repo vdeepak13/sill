@@ -1,20 +1,20 @@
-#ifndef PRL_LIFTED_FACTOR_GRAPH_MODEL_HPP
-#define PRL_LIFTED_FACTOR_GRAPH_MODEL_HPP
+#ifndef SILL_LIFTED_FACTOR_GRAPH_MODEL_HPP
+#define SILL_LIFTED_FACTOR_GRAPH_MODEL_HPP
 
 #include <vector>
 #include <map>
 #include <iostream>
 
-#include <prl/factor/concepts.hpp>
-#include <prl/model/interfaces.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/list.hpp>
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/list.hpp>
+#include <sill/macros_def.hpp>
+namespace sill {
 
   /**
    * This represents a factor graph graphical models.  A factor graph
@@ -195,6 +195,6 @@ namespace prl {
 };
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_FACTOR_GRAPH_MODEL_HPP
+#endif // SILL_FACTOR_GRAPH_MODEL_HPP

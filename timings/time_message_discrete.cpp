@@ -1,22 +1,22 @@
-#include <prl/factor/table_factor.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/range/numeric.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/range/numeric.hpp>
 #include <boost/lexical_cast.hpp>
 
-using prl::universe;
-using prl::finite_variable;
+using sill::universe;
+using sill::finite_variable;
 
 universe u;
 finite_variable* x;
 finite_variable* y;
 
-prl::table_factor compute_message(const std::vector<prl::table_factor>& factors) {
-  return prl::combine(factors,prl::product_op).marginal(make_domain(y));
+sill::table_factor compute_message(const std::vector<sill::table_factor>& factors) {
+  return sill::combine(factors,sill::product_op).marginal(make_domain(y));
 }
 
 int main(int argc, char* argv[])
 {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   assert(argc==3);
   

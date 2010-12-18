@@ -1,5 +1,5 @@
-#ifndef PRL_OARCHIVE_HPP
-#define PRL_OARCHIVE_HPP
+#ifndef SILL_OARCHIVE_HPP
+#define SILL_OARCHIVE_HPP
 
 #include <iostream>
 #include <cassert>
@@ -10,7 +10,7 @@
 #include <itpp/base/ittypes.h> // for int32_t etc.
 #endif
 
-namespace prl {
+namespace sill {
   
   class oarchive{
    public:
@@ -85,6 +85,6 @@ namespace prl {
     t.save(a);
     return a;
   }
-} // namespace prl
+} // namespace sill
 
 #endif  //PRL_OARCHIVE_HPP

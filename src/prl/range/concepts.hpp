@@ -1,16 +1,16 @@
-#ifndef PRL_RANGE_CONCEPTS_HPP
-#define PRL_RANGE_CONCEPTS_HPP
+#ifndef SILL_RANGE_CONCEPTS_HPP
+#define SILL_RANGE_CONCEPTS_HPP
 
 #include <boost/range/concepts.hpp>
 #include <boost/range/iterator.hpp>
 #include <boost/range/value_type.hpp>
 #include <boost/type_traits/is_same.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup range_concepts
   //! @{
@@ -65,8 +65,8 @@ namespace prl {
     concept_assert((boost::Convertible<reference, T>));
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

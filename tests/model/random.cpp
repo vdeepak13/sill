@@ -2,13 +2,13 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/random.hpp>
 
 int main() {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   size_t n = 10;

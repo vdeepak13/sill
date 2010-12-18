@@ -1,17 +1,17 @@
 #include <iostream>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/batch_booster_OC.hpp>
-#include <prl/learning/discriminative/boosters.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/stump.hpp>
-#include <prl/learning/learn_factor.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/batch_booster_OC.hpp>
+#include <sill/learning/discriminative/boosters.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/stump.hpp>
+#include <sill/learning/learn_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * Test AdaBoost OC on letter dataset from UCI ML Repository.
@@ -20,7 +20,7 @@
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   size_t ntrain = 5000;

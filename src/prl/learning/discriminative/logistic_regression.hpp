@@ -1,22 +1,22 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_LOGISTIC_REGRESSION_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_LOGISTIC_REGRESSION_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_LOGISTIC_REGRESSION_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_LOGISTIC_REGRESSION_HPP
 
 #include <algorithm>
 
-#include <prl/functional.hpp>
-#include <prl/learning/dataset/ds_oracle.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/functional.hpp>
+#include <sill/learning/dataset/ds_oracle.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to true to print debugging information.
 #define DEBUG_LOGISTIC_REGRESSION 0
 
-namespace prl {
+namespace sill {
 
   // forward declarations
   class logistic_regression;
@@ -512,6 +512,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_LOGISTIC_REGRESSION_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_LOGISTIC_REGRESSION_HPP

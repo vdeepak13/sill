@@ -1,20 +1,20 @@
-#ifndef PRL_DETECT_FILE_FORMAT_HPP
-#define PRL_DETECT_FILE_FORMAT_HPP
+#ifndef SILL_DETECT_FILE_FORMAT_HPP
+#define SILL_DETECT_FILE_FORMAT_HPP
 
 #include <string>
 #include <vector>
 #include <iostream>
 #include <fstream>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
 
-#include <prl/parsers/protein.hpp>
-#include <prl/parsers/uai_parser.hpp>
-#include <prl/parsers/alchemy.hpp>
-#include <prl/parsers/bif_parser.hpp>
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/parsers/protein.hpp>
+#include <sill/parsers/uai_parser.hpp>
+#include <sill/parsers/alchemy.hpp>
+#include <sill/parsers/bif_parser.hpp>
+#include <sill/macros_def.hpp>
+namespace sill {
 
   enum filetypes_enum {
     FILETYPE_UAI,     // UAI Inference Challenge 2008 file format as 
@@ -119,7 +119,7 @@ namespace prl {
     }
   }
 } // End of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
-#endif // PRL_BN_PARSER_HPP
+#endif // SILL_BN_PARSER_HPP

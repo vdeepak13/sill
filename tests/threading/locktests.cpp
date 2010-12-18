@@ -1,8 +1,8 @@
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 #include <iostream>
 #include <cassert>
 
-using namespace prl;
+using namespace sill;
 
 
 template <typename LockType>

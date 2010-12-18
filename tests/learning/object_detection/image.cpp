@@ -2,16 +2,16 @@
 
 #include <boost/timer.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/learning/object_detection/image.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/learning/object_detection/image.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   boost::timer timer;
 

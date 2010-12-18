@@ -1,17 +1,17 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_DECISION_TREE_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_DECISION_TREE_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_DECISION_TREE_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_DECISION_TREE_HPP
 
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/discriminative/stump.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/discriminative/stump.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to true to print debugging information.
 #define DEBUG_DECISION_TREE 0
 
-namespace prl {
+namespace sill {
 
   struct decision_tree_parameters {
 
@@ -86,7 +86,7 @@ namespace prl {
   template <typename Objective = discriminative::objective_information>
   class decision_tree : public binary_classifier {
 
-    concept_assert((prl::DomainPartitioningObjective<Objective>));
+    concept_assert((sill::DomainPartitioningObjective<Objective>));
 
     // Protected data members
     //==========================================================================
@@ -498,10 +498,10 @@ namespace prl {
 
   }; // class decision_tree
 
-} // namespace prl
+} // namespace sill
 
 #undef DEBUG_DECISION_TREE
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_DECISION_TREE_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_DECISION_TREE_HPP

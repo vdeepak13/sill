@@ -1,13 +1,13 @@
-#ifndef PRL_TEMPLATED_CRF_FACTOR_HPP
-#define PRL_TEMPLATED_CRF_FACTOR_HPP
+#ifndef SILL_TEMPLATED_CRF_FACTOR_HPP
+#define SILL_TEMPLATED_CRF_FACTOR_HPP
 
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/learnable_crf_factor.hpp>
-#include <prl/learning/dataset/record_conversions.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/learning/dataset/record_conversions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * CRF factor representing P(Y | X).
@@ -497,8 +497,8 @@ namespace prl {
 
   };  // class templated_crf_factor
 
-};  // namespace prl
+};  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_TEMPLATED_CRF_FACTOR_HPP
+#endif // SILL_TEMPLATED_CRF_FACTOR_HPP

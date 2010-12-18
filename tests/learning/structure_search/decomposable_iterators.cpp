@@ -3,21 +3,21 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/structure_search/decomposable_iterators.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/structure_search/decomposable_iterators.hpp>
+#include <sill/model/random.hpp>
 
-using namespace prl;
+using namespace sill;
 
 // Test of decomposable iterators.
 int main() {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Create a dataset to work with

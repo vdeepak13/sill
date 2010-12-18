@@ -1,34 +1,34 @@
 
-#ifndef PRL_CLUSTER_GRAPH_MODEL_HPP
-#define PRL_CLUSTER_GRAPH_MODEL_HPP
+#ifndef SILL_CLUSTER_GRAPH_MODEL_HPP
+#define SILL_CLUSTER_GRAPH_MODEL_HPP
 
 #include <vector>
 
 #include <boost/range/iterator_range.hpp>
 
-#include <prl/range/algorithm.hpp>
-#include <prl/variable.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/factor/arguments_functor.hpp>
-#include <prl/graph/tree_traversal.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/variable.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/arguments_functor.hpp>
+#include <sill/graph/tree_traversal.hpp>
 
-#include <prl/model/interfaces.hpp>
-#include <prl/model/cluster_graph.hpp>
-#include <prl/inference/variable_elimination.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/model/cluster_graph.hpp>
+#include <sill/inference/variable_elimination.hpp>
 
-#include <prl/range/concepts.hpp>
+#include <sill/range/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 ///////////////////////////////////////////////////////////////////
 // This file needs to be cleaned up & rewritten to use new graphs
 // See decomposable.hpp
 ///////////////////////////////////////////////////////////////////
 
-namespace prl {
+namespace sill {
 
-  // #define PRL_VERBOSE // for debugging
+  // #define SILL_VERBOSE // for debugging
 
   /**
    * A cluster graph representation of a probability distribution.
@@ -180,7 +180,7 @@ namespace prl {
      */
     template <typename FactorRange>
     cluster_graph_model(const FactorRange& factors)
-      : base(factors | prl::transformed(arguments_functor()), 
+      : base(factors | sill::transformed(arguments_functor()), 
              boost::begin(factors),
              constant_potential_functor(1)) {
       // Note the base constructor adds a constant 1 potential for all the
@@ -229,8 +229,8 @@ namespace prl {
     }
 
     //! Convert this model to a Markov graph.
-    prl::markov_graph<> markov_graph() const {
-      prl::markov_graph<> mg(arguments());
+    sill::markov_graph<> markov_graph() const {
+      sill::markov_graph<> mg(arguments());
       foreach(vertex_descriptor v, vertices()) 
         mg.add_clique(clique(v));
       return mg;
@@ -371,7 +371,7 @@ namespace prl {
       concept_assert((ReadableForwardRangeConvertible<Range, F>));
 
       // Retriangulate the model so that it contains a clique for each factor.
-      add_cliques(factors | prl::transformed(arguments_functor()));
+      add_cliques(factors | sill::transformed(arguments_functor()));
 
       // For each factor, multiply it into a clique that subsumes it.
       // We do not use F for iteration since Range may be over a different
@@ -548,6 +548,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_CLUSTER_GRAPH_MODEL_HPP
+#endif // #ifndef SILL_CLUSTER_GRAPH_MODEL_HPP

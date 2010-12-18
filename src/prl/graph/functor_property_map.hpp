@@ -1,15 +1,15 @@
-#ifndef PRL_PROPERTY_MAP
-#define PRL_PROPERTY_MAP
+#ifndef SILL_PROPERTY_MAP
+#define SILL_PROPERTY_MAP
 
 #include <boost/property_map/property_map.hpp>
 #include <boost/type_traits/remove_const.hpp>
 #include <boost/type_traits/remove_reference.hpp>
 
-#include <prl/stl_concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-namespace prl {
+namespace sill {
 
   //! A readable property map based on an unary function
   //! @see Boost.PropertyMap
@@ -48,6 +48,6 @@ namespace prl {
     return functor_property_map<F>(f);
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif 

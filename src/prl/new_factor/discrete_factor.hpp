@@ -1,15 +1,15 @@
-#ifndef PRL_DISCRETE_FACTOR_HPP
-#define PRL_DISCRETE_FACTOR_HPP
+#ifndef SILL_DISCRETE_FACTOR_HPP
+#define SILL_DISCRETE_FACTOR_HPP
 
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/assignment.hpp>
-#include <prl/base/finite_assignment_iterator.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
 
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   class discrete_factor {
   private:
@@ -110,7 +110,7 @@ namespace prl {
 
   }; // end of discrete_factor
 
-}; // end of namespace prl
+}; // end of namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

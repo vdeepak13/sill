@@ -1,15 +1,15 @@
 
-#ifndef PRL_MATH_STATISTICS_HPP
-#define PRL_MATH_STATISTICS_HPP
+#ifndef SILL_MATH_STATISTICS_HPP
+#define SILL_MATH_STATISTICS_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Means, standard errors, medians, and MADs
   //============================================================================
@@ -143,7 +143,7 @@ namespace prl {
     return extreme_index<T, std::less<T>, Engine>(v, rng);
   }
 
-  // For prl::vector
+  // For sill::vector
   template <typename T, typename Engine>
   size_t max_index(const vector<T>& v, Engine& rng) {
     return extreme_index<T, std::less<T>, Engine>(v, rng);
@@ -168,7 +168,7 @@ namespace prl {
     return extreme_index<T, std::greater<T>, Engine>(v, rng);
   }
 
-  // For prl::vector
+  // For sill::vector
   template <typename T, typename Engine>
   size_t min_index(const vector<T>& v, Engine& rng) {
     return extreme_index<T, std::greater<T>, Engine>(v, rng);
@@ -230,6 +230,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_MATH_STATISTICS_HPP
+#endif // #ifndef SILL_MATH_STATISTICS_HPP

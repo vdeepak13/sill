@@ -1,9 +1,9 @@
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/syn_oracle_knorm.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/syn_oracle_knorm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Private methods
     //==========================================================================
@@ -25,7 +25,7 @@ namespace prl {
         for (size_t j = 0; j < nfeatures_; j++)
           centers[k][j] = uniform_dist(rng);
       }
-      #ifdef PRL_SYN_ORACLE_KNORM_HPP_VERBOSE
+      #ifdef SILL_SYN_ORACLE_KNORM_HPP_VERBOSE
       std::cerr << " Centers:\n";
       for (size_t k = 0; k < nmeans_; k++) {
         std::cerr << "\t";
@@ -49,7 +49,7 @@ namespace prl {
           nearest_neighbors[k][k2] = sqrt(nearest_neighbors[k][k2]);
         }
       }
-      #ifdef PRL_SYN_ORACLE_KNORM_HPP_VERBOSE
+      #ifdef SILL_SYN_ORACLE_KNORM_HPP_VERBOSE
       std::cerr << " Distances:\n";
       for (size_t k = 0; k < nmeans_ - 1; k++) {
         std::cerr << "\t";
@@ -83,7 +83,7 @@ namespace prl {
         for (size_t j = 0; j < nfeatures_; j++)
           centers[k][j] *= scale;
       }
-      #ifdef PRL_SYN_ORACLE_KNORM_HPP_VERBOSE
+      #ifdef SILL_SYN_ORACLE_KNORM_HPP_VERBOSE
       std::cerr << " Average min distance = " << avg_distance << std::endl;
       std::cerr << " Rescaled centers:\n";
       for (size_t k = 0; k < nmeans_; k++) {
@@ -137,6 +137,6 @@ namespace prl {
                             var_type_order, params);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

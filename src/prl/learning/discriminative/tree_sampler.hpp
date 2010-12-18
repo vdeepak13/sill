@@ -1,6 +1,6 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_TREE_SAMPLER_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_TREE_SAMPLER_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_TREE_SAMPLER_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_TREE_SAMPLER_HPP
 
 #include <fstream>
 #include <sstream>
@@ -9,13 +9,13 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for efficiently sampling from a large finite distribution
@@ -235,8 +235,8 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_TREE_SAMPLER_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_TREE_SAMPLER_HPP

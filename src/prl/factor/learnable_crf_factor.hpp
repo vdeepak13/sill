@@ -1,11 +1,11 @@
-#ifndef PRL_LEARNABLE_CRF_FACTOR_HPP
-#define PRL_LEARNABLE_CRF_FACTOR_HPP
+#ifndef SILL_LEARNABLE_CRF_FACTOR_HPP
+#define SILL_LEARNABLE_CRF_FACTOR_HPP
 
-#include <prl/factor/crf_factor.hpp>
+#include <sill/factor/crf_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Regularization information for CRF parameters.
@@ -207,8 +207,8 @@ namespace prl {
 
   }; // class learnable_crf_factor
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_LEARNABLE_CRF_FACTOR_HPP
+#endif // SILL_LEARNABLE_CRF_FACTOR_HPP

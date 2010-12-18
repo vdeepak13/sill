@@ -1,22 +1,22 @@
-#ifndef PRL_BAYESIAN_NETWORK_HPP
-#define PRL_BAYESIAN_NETWORK_HPP
+#ifndef SILL_BAYESIAN_NETWORK_HPP
+#define SILL_BAYESIAN_NETWORK_HPP
 #include <map>
 
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/global.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/learning/dataset/record.hpp>
-#include <prl/model/bayesian_graph.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/graph/graph_traversal.hpp>
-#include <prl/graph/property_functors.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/learning/dataset/record.hpp>
+#include <sill/model/bayesian_graph.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/graph/graph_traversal.hpp>
+#include <sill/graph/property_functors.hpp>
 
-#include <prl/range/transformed.hpp>
+#include <sill/range/transformed.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A Bayesian network with CPDs for each variable.
@@ -116,8 +116,8 @@ namespace prl {
       return base::d_separated(x, y, z);
     }
 
-    prl::markov_graph<variable_type*> markov_graph() const {
-      prl::markov_graph<variable_type*> mg;
+    sill::markov_graph<variable_type*> markov_graph() const {
+      sill::markov_graph<variable_type*> mg;
       foreach(vertex v, vertices())
         mg.add_clique(factor(v).arguments());
       return mg;
@@ -213,19 +213,19 @@ namespace prl {
     return mn;
   }
 
-} // namespace prl
+} // namespace sill
 
 namespace boost {
 
   //! A traits class that lets bayesian_network work in BGL algorithms
   template <typename F>
-  struct graph_traits< prl::bayesian_network<F> >
-    : public graph_traits< prl::bayesian_graph<typename F::variable_type*, F> >
+  struct graph_traits< sill::bayesian_network<F> >
+    : public graph_traits< sill::bayesian_graph<typename F::variable_type*, F> >
   { };
 
 } // namespace boost
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_BAYESIAN_NETWORK_HPP
+#endif // #ifndef SILL_BAYESIAN_NETWORK_HPP

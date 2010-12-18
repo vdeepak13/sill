@@ -1,8 +1,8 @@
 
-#ifndef PRL_STRUCTURE_SEARCH_HPP
-#define PRL_STRUCTURE_SEARCH_HPP
+#ifndef SILL_STRUCTURE_SEARCH_HPP
+#define SILL_STRUCTURE_SEARCH_HPP
 
-#include <prl/learning/decomposable_iterator.hpp>
+#include <sill/learning/decomposable_iterator.hpp>
 
 /**
  * \file structure_search.hpp  Incomplete structure search class; I need to
@@ -119,7 +119,7 @@
 
 */
 
-namespace prl {
+namespace sill {
 
   //! Structure learning objectives.
   enum structure_objective_enum {
@@ -514,4 +514,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#endif // #ifndef PRL_STRUCTURE_SEARCH_HPP
+#endif // #ifndef SILL_STRUCTURE_SEARCH_HPP

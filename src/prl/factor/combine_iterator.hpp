@@ -1,17 +1,17 @@
 
-#ifndef PRL_COMBINE_ITERATOR_HPP
-#define PRL_COMBINE_ITERATOR_HPP
+#ifndef SILL_COMBINE_ITERATOR_HPP
+#define SILL_COMBINE_ITERATOR_HPP
 
 #include <iterator>
 
-#include <prl/global.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/math/gdl_enum.hpp>
+#include <sill/global.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/math/gdl_enum.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An output iterator that combines together the factors that are
@@ -104,8 +104,8 @@ namespace prl {
 
   }; // class combine_iterator
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_COMBINE_ITERATOR_HPP
+#endif // #ifndef SILL_COMBINE_ITERATOR_HPP

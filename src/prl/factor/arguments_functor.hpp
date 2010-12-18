@@ -1,13 +1,13 @@
-#ifndef PRL_ARGUMENTS_FUNCTOR_HPP
-#define PRL_ARGUMENTS_FUNCTOR_HPP
+#ifndef SILL_ARGUMENTS_FUNCTOR_HPP
+#define SILL_ARGUMENTS_FUNCTOR_HPP
 
 #include <functional>
 
-#include <prl/factor/concepts.hpp>
+#include <sill/factor/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A functor that returns the arguments of a factor.
@@ -22,8 +22,8 @@ namespace prl {
     }
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,12 +1,12 @@
-#include <prl/model/xml/decomposable.hpp>
-#include <prl/factor/xml/table_factor.hpp>
+#include <sill/model/xml/decomposable.hpp>
+#include <sill/factor/xml/table_factor.hpp>
 
-#include <prl/archive/xml_ofarchive.hpp>
-#include <prl/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_ofarchive.hpp>
+#include <sill/archive/xml_iarchive.hpp>
 
 int main()
 {
-  using namespace prl;
+  using namespace sill;
 
   universe u;
   var_vector vf = u.new_finite_variables(2,2);

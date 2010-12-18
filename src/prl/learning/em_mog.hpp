@@ -1,10 +1,10 @@
-#ifndef PRL_EM_MOG_HPP
-#define PRL_EM_MOG_HPP
+#ifndef SILL_EM_MOG_HPP
+#define SILL_EM_MOG_HPP
 
-#include <prl/factor/mixture.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/parameter/gaussian.hpp>
+#include <sill/factor/mixture.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/parameter/gaussian.hpp>
 
 /*
 Todo: Fix mixture. Fix moment gaussians. Learning of moment gaussians. 
@@ -12,7 +12,7 @@ Test the momemnt gaussians more.
 Think through weighted combinations.
 */
 
-namespace prl {
+namespace sill {
 
   /**
    * implements EM with mixture of Gaussians
@@ -68,6 +68,6 @@ namespace prl {
 
   }; // class em_mog
 
-} // namespace prl
+} // namespace sill
 
 #endif 

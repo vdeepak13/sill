@@ -1,12 +1,12 @@
-#ifndef PRL_MATH_FREE_FUNCTIONS_HPP
-#define PRL_MATH_FREE_FUNCTIONS_HPP
+#ifndef SILL_MATH_FREE_FUNCTIONS_HPP
+#define SILL_MATH_FREE_FUNCTIONS_HPP
 
 #include <cmath>
 #include <vector> // for use in randperm
 
 #include <boost/random/uniform_real.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup math_free_functions
   //! @{
@@ -55,6 +55,6 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
 #endif

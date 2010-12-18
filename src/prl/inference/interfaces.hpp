@@ -1,12 +1,12 @@
-#ifndef PRL_INFERENCE_INTERFACES_HPP
-#define PRL_INFERENCE_INTERFACES_HPP
+#ifndef SILL_INFERENCE_INTERFACES_HPP
+#define SILL_INFERENCE_INTERFACES_HPP
 
-#include <prl/base/timed_process.hpp>
-#include <prl/factor/concepts.hpp>
+#include <sill/base/timed_process.hpp>
+#include <sill/factor/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Forward declaration
   template <typename F> class dynamic_bayesian_network;
@@ -92,6 +92,6 @@ namespace prl {
 
 };
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

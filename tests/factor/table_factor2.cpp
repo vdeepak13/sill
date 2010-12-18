@@ -3,15 +3,15 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/random.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/record_conversions.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/record_conversions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   boost::mt19937 rng(time(NULL));

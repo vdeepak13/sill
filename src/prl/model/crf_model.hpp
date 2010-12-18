@@ -1,5 +1,5 @@
-#ifndef PRL_CRF_MODEL_HPP
-#define PRL_CRF_MODEL_HPP
+#ifndef SILL_CRF_MODEL_HPP
+#define SILL_CRF_MODEL_HPP
 
 #include <iterator>
 #include <map>
@@ -7,20 +7,20 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/model/crf_graph.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/range/forward_range.hpp>
-#include <prl/range/transformed.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/model/crf_graph.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/range/transformed.hpp>
 
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/list.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/list.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * This is a factor graph representation of a conditional random field (CRF)
@@ -49,7 +49,7 @@ namespace prl {
                        typename FactorType::variable_type,
                        FactorType*> {
 
-    concept_assert((prl::CRFfactor<FactorType>));
+    concept_assert((sill::CRFfactor<FactorType>));
 
     /**
      * Print debugging info.
@@ -1081,8 +1081,8 @@ namespace prl {
     return out;
   }
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_CRF_MODEL_HPP
+#endif // SILL_CRF_MODEL_HPP

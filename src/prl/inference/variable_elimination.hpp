@@ -1,6 +1,6 @@
 
-#ifndef PRL_VARIABLE_ELIMINATION_HPP
-#define PRL_VARIABLE_ELIMINATION_HPP
+#ifndef SILL_VARIABLE_ELIMINATION_HPP
+#define SILL_VARIABLE_ELIMINATION_HPP
 
 #include <algorithm>
 #include <iterator>
@@ -8,19 +8,19 @@
 #include <map>
 #include <set>
 
-#include <prl/factor/combine_iterator.hpp>
-#include <prl/model/markov_graph.hpp>
-#include <prl/graph/elimination.hpp>
-#include <prl/copy_ptr.hpp>
+#include <sill/factor/combine_iterator.hpp>
+#include <sill/model/markov_graph.hpp>
+#include <sill/graph/elimination.hpp>
+#include <sill/copy_ptr.hpp>
 
-#include <prl/stl_concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/range/transformed.hpp>
-#include <prl/range/algorithm.hpp>
+#include <sill/range/transformed.hpp>
+#include <sill/range/algorithm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A visitor used in the elimination algorithm to record the order
@@ -120,7 +120,7 @@ namespace prl {
     
     // Determine the elimination order.
     typename std::vector<variable_type*> elim_order;
-    prl::eliminate
+    sill::eliminate
       (mg,
        make_elimination_order_visitor(std::back_inserter(elim_order), retain),
        elim_strategy);
@@ -149,7 +149,7 @@ namespace prl {
       //std::cerr << "new result " << combine(factors, product_tag()) << std::endl;
     }
     // Report the remaining factors.
-    return prl::copy(factors, output);
+    return sill::copy(factors, output);
   }
 
   /**
@@ -193,8 +193,8 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_VARIABLE_ELIMINATION_HPP
+#endif // #ifndef SILL_VARIABLE_ELIMINATION_HPP

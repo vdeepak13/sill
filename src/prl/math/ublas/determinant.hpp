@@ -1,5 +1,5 @@
-#ifndef PRL_MATH_UBLAS_DETERMINANT_HPP
-#define PRL_MATH_UBLAS_DETERMINANT_HPP
+#ifndef SILL_MATH_UBLAS_DETERMINANT_HPP
+#define SILL_MATH_UBLAS_DETERMINANT_HPP
 
 #include <vector>
 #include <algorithm>

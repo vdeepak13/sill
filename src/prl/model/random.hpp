@@ -1,21 +1,21 @@
-#ifndef PRL_RANDOM_MODEL
-#define PRL_RANDOM_MODEL
+#ifndef SILL_RANDOM_MODEL
+#define SILL_RANDOM_MODEL
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-#include <prl/range/concepts.hpp>
-#include <prl/factor/gaussian_crf_factor.hpp>
-#include <prl/factor/random.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/table_crf_factor.hpp>
-#include <prl/model/bayesian_network.hpp>
-#include <prl/model/crf_model.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/base/universe.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/table_crf_factor.hpp>
+#include <sill/model/bayesian_network.hpp>
+#include <sill/model/crf_model.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/universe.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file random.hpp  Construct synthetic examples of common graphical models.
@@ -36,7 +36,7 @@
  *     - create_analogous_generative_model
  */
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup model
   //! @{
@@ -403,8 +403,8 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_RANDOM_MODEL
+#endif // SILL_RANDOM_MODEL

@@ -3,15 +3,15 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/model/io.hpp>
-#include <prl/learning/ipf.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/io.hpp>
+#include <sill/learning/ipf.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // The number of iterations

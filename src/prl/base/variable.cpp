@@ -1,19 +1,19 @@
 #include <string>
 
-#include <prl/base/variable.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/process.hpp>
-#include <prl/base/finite_assignment_iterator.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/process.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // All variables are implemented here (in a single file) to cut down 
 // on the compilation time
 
-namespace prl {
+namespace sill {
 
   std::ostream& operator<<(std::ostream& out, variable* v) {
     out << std::string(*v) << (void*)(v);
@@ -113,5 +113,5 @@ namespace prl {
   }
 
 
-} // namespace prl
+} // namespace sill
 

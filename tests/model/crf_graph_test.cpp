@@ -8,15 +8,15 @@
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/random.hpp>
-#include <prl/model/crf_graph.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/model/crf_graph.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-using namespace prl;
+using namespace sill;
 
 /**
  * \file crf_graph.cpp CRF graph test

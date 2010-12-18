@@ -1,7 +1,7 @@
 
-#include <prl/optimization/gradient_method_builder.hpp>
+#include <sill/optimization/gradient_method_builder.hpp>
 
-namespace prl {
+namespace sill {
 
   void gradient_method_builder::add_options
   (boost::program_options::options_description& desc,
@@ -71,4 +71,4 @@ namespace prl {
     return gm_params;
   } // get_parameters
 
-}; // namespace prl
+}; // namespace sill

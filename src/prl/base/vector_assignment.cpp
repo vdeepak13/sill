@@ -1,9 +1,9 @@
 
-#include <prl/base/vector_assignment.hpp>
+#include <sill/base/vector_assignment.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Returns the size of the vector variables in this map.
   //! \relates vector_variable
@@ -18,4 +18,4 @@ namespace prl {
   //! @}
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

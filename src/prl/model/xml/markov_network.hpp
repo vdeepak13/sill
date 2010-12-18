@@ -1,16 +1,16 @@
 // This file has not been tested yet
 
-#ifndef PRL_MARKOV_NETWORK_XML_HPP
-#define PRL_MARKOV_NETWORK_XML_HPP
+#ifndef SILL_MARKOV_NETWORK_XML_HPP
+#define SILL_MARKOV_NETWORK_XML_HPP
 
-#include <prl/model/decomposable.hpp>
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_tag.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_tag.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   template <typename NodeF, typename EdgeF>
   const char* xml_tag(pairwise_markov_network<NodeF, EdgeF>*) {
@@ -51,8 +51,8 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

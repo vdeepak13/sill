@@ -1,10 +1,10 @@
 
-#include <prl/math/free_functions.hpp>
-#include <prl/model/random.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Methods for conditional models over finite variables
   //============================================================================
@@ -297,6 +297,6 @@ namespace prl {
                                       3, 1, .3, .3, .3, false, random_seed);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

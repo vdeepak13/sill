@@ -1,11 +1,11 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP
 
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset/statistics.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file concepts.hpp Concepts for discriminative models
@@ -15,7 +15,7 @@
  *  - multilabel regression
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Optimization criteria (unnormalized scores, normalized scores, confidences)
@@ -57,10 +57,10 @@ namespace prl {
     static double confidence(double class0, double class1);
 
     concept_usage(DomainPartitioningObjective) {
-      prl::same_type(confidence_rated(), b);
-      prl::same_type(objective(d,d,d,d), d);
-      prl::same_type(unnormalized(d,d), d);
-      prl::same_type(confidence(d,d), d);
+      sill::same_type(confidence_rated(), b);
+      sill::same_type(objective(d,d,d,d), d);
+      sill::same_type(unnormalized(d,d), d);
+      sill::same_type(confidence(d,d), d);
     }
 
   private:
@@ -98,12 +98,12 @@ namespace prl {
     double train_accuracy() const;
 
     concept_usage(MulticlassClassifier) {
-      prl::same_type(finite_list(), fvarvec);
-      prl::same_type(vector_list(), vvarvec);
-      prl::same_type(label(), l);
-      prl::same_type(predict(r), i);
-      prl::same_type(predict(example), i);
-      prl::same_type(train_accuracy(), d);
+      sill::same_type(finite_list(), fvarvec);
+      sill::same_type(vector_list(), vvarvec);
+      sill::same_type(label(), l);
+      sill::same_type(predict(r), i);
+      sill::same_type(predict(example), i);
+      sill::same_type(train_accuracy(), d);
     }
 
   private:
@@ -137,9 +137,9 @@ namespace prl {
     double confidence(const assignment& example) const;
 
     concept_usage(BinaryClassifier) {
-      prl::same_type(confidence_rated(), b);
-      prl::same_type(confidence(r), d);
-      prl::same_type(confidence(example), d);
+      sill::same_type(confidence_rated(), b);
+      sill::same_type(confidence(r), d);
+      sill::same_type(confidence(example), d);
     }
 
   private:
@@ -162,13 +162,13 @@ namespace prl {
     const vector_var_vector& vector_list() const;
 
     //! Returns the class variables
-    prl::forward_range<const finite_variable*> labels() const;
+    sill::forward_range<const finite_variable*> labels() const;
 
     //! Predict the labels of a new example.
-    prl::forward_range<size_t> predict(const record& example) const;
+    sill::forward_range<size_t> predict(const record& example) const;
 
     //! Predict the labels of a new example.
-    prl::forward_range<size_t> predict(const assignment& example) const;
+    sill::forward_range<size_t> predict(const assignment& example) const;
 
     //! Predict the value of label variable var of a new example.
     size_t predict(const record& example, finite_variable* var) const;
@@ -177,22 +177,22 @@ namespace prl {
     size_t predict(const assignment& example, finite_variable* var) const;
 
     concept_usage(MultilabelClassifier) {
-      prl::same_type(finite_list(), varvec);
-      prl::same_type(vector_list(), varvec);
-      prl::same_type(labels(), ls);
-      prl::same_type(predict(r), vals);
-      prl::same_type(predict(example), vals);
-      prl::same_type(predict(r, var), val);
-      prl::same_type(predict(example, var), val);
+      sill::same_type(finite_list(), varvec);
+      sill::same_type(vector_list(), varvec);
+      sill::same_type(labels(), ls);
+      sill::same_type(predict(r), vals);
+      sill::same_type(predict(example), vals);
+      sill::same_type(predict(r, var), val);
+      sill::same_type(predict(example, var), val);
     }
 
   private:
 
     const var_vector& varvec;
-    prl::forward_range<const finite_variable*> ls;
+    sill::forward_range<const finite_variable*> ls;
     const record& r;
     const assignment& example;
-    prl::forward_range<size_t> vals;
+    sill::forward_range<size_t> vals;
     finite_variable* var;
     size_t val;
 
@@ -218,19 +218,19 @@ namespace prl {
 
     //! Predict the probabilities of the class variable having all
     //! potential values.
-    prl::forward_range<double> probabilities(const record& example) const;
+    sill::forward_range<double> probabilities(const record& example) const;
 
-    prl::forward_range<double>
+    sill::forward_range<double>
     probabilities(const assignment& example) const;
 
     concept_usage(MulticlassRegressor) {
-      prl::same_type(finite_list(), fvarvec);
-      prl::same_type(vector_list(), vvarvec);
-      prl::same_type(label(), l);
-      prl::same_type(probability(r, i), d);
-      prl::same_type(probability(example, i), d);
-      prl::same_type(probabilities(r), drange);
-      prl::same_type(probabilities(example), drange);
+      sill::same_type(finite_list(), fvarvec);
+      sill::same_type(vector_list(), vvarvec);
+      sill::same_type(label(), l);
+      sill::same_type(probability(r, i), d);
+      sill::same_type(probability(example, i), d);
+      sill::same_type(probabilities(r), drange);
+      sill::same_type(probabilities(example), drange);
     }
 
   private:
@@ -242,7 +242,7 @@ namespace prl {
     const assignment& example;
     size_t i;
     double d;
-    prl::forward_range<double> drange;
+    sill::forward_range<double> drange;
 
   };
 
@@ -255,8 +255,8 @@ namespace prl {
     double probability(const assignment& example) const;
 
     concept_usage(BinaryRegressor) {
-      prl::same_type(probability(r), d);
-      prl::same_type(probability(example), d);
+      sill::same_type(probability(r), d);
+      sill::same_type(probability(example), d);
     }
 
   private:
@@ -365,8 +365,8 @@ namespace prl {
     size_t iteration() const;
 
     concept_usage(Booster) {
-      prl::same_type(step(), b);
-      prl::same_type(iteration(), i);
+      sill::same_type(step(), b);
+      sill::same_type(iteration(), i);
     }
 
   private:
@@ -376,8 +376,8 @@ namespace prl {
 
   }; // struct Booster
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP
+#endif // SILL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP

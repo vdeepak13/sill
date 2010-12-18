@@ -2,19 +2,19 @@
 
 #include <boost/array.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/model/bayesian_network.hpp>
-// #include <prl/model/free_functions.hpp>
-#include <prl/model/markov_network.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/model/bayesian_network.hpp>
+// #include <sill/model/free_functions.hpp>
+#include <sill/model/markov_network.hpp>
 
 /**
  * \file bayes_markov_model.cpp Bayes net and Markov net test
  */
 int main() {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   using boost::array;
 

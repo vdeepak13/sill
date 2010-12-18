@@ -1,24 +1,24 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_LOGISTIC_REGRESSION_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_LOGISTIC_REGRESSION_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_LOGISTIC_REGRESSION_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_LOGISTIC_REGRESSION_HPP
 
 #include <algorithm>
 
-#include <prl/functional.hpp>
-#include <prl/learning/crossval_parameters.hpp>
-#include <prl/learning/dataset/ds_oracle.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/multiclass_classifier.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/math/linear_algebra.hpp>
-#include <prl/math/statistics.hpp>
-#include <prl/optimization/conjugate_gradient.hpp>
-#include <prl/optimization/gradient_descent.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/functional.hpp>
+#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/dataset/ds_oracle.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/multiclass_classifier.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/math/linear_algebra.hpp>
+#include <sill/math/statistics.hpp>
+#include <sill/optimization/conjugate_gradient.hpp>
+#include <sill/optimization/gradient_descent.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   struct multiclass_logistic_regression_parameters {
 
@@ -360,7 +360,7 @@ namespace prl {
       double inner_prod(const opt_variables& other) const {
         return (elem_mult_sum(f, other.f)
                 + elem_mult_sum(v, other.v)
-                + prl::inner_prod(b, other.b));
+                + sill::inner_prod(b, other.b));
       }
 
       //! Element-wise multiplication with another value of the same size.
@@ -1197,6 +1197,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_LOGISTIC_REGRESSION_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_LOGISTIC_REGRESSION_HPP

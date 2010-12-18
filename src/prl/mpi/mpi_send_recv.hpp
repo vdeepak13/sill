@@ -1,5 +1,5 @@
-#ifndef PRL_MPI_SEND_RECV_HPP
-#define PRL_MPI_SEND_RECV_HPP
+#ifndef SILL_MPI_SEND_RECV_HPP
+#define SILL_MPI_SEND_RECV_HPP
 
 #include <mpi.h>
 
@@ -7,9 +7,9 @@
 #include <sstream>
 #include <limits>
 
-#include <prl/serialization/serialize.hpp>
+#include <sill/serialization/serialize.hpp>
 
-namespace prl {
+namespace sill {
   
   template <typename T>
   void mpi_send(int dest, int tag, const T& value) {
@@ -54,6 +54,6 @@ namespace prl {
     return status;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

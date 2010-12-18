@@ -1,10 +1,10 @@
-#ifndef PRL_FACTOR_TRAITS_HPP
-#define PRL_FACTOR_TRAITS_HPP
+#ifndef SILL_FACTOR_TRAITS_HPP
+#define SILL_FACTOR_TRAITS_HPP
 
 #include <boost/type_traits/is_base_of.hpp>
 
 // Factor traits
-namespace prl {
+namespace sill {
 
   //! \addtogroup factor_operations
   //! @{
@@ -34,6 +34,6 @@ namespace prl {
 
   //! @} group factor_types
 
-} // namespace prl
+} // namespace sill
 
 #endif

@@ -1,17 +1,17 @@
 
-#ifndef PRL_DATA_CONVERSIONS_HPP
-#define PRL_DATA_CONVERSIONS_HPP
+#ifndef SILL_DATA_CONVERSIONS_HPP
+#define SILL_DATA_CONVERSIONS_HPP
 
 #include <iostream>
 
 #include <boost/serialization/shared_ptr.hpp>
 
-#include <prl/learning/dataset/concepts.hpp>
-#include <prl/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset/concepts.hpp>
+#include <sill/learning/dataset/oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /*
   //! Returns the Euclidean distance between two records.
@@ -43,7 +43,7 @@ namespace prl {
   template <typename Dataset>
   static boost::shared_ptr<Dataset>
   oracle2dataset(oracle& o, size_t max_records) {
-    concept_assert((prl::Dataset<Dataset>));
+    concept_assert((sill::Dataset<Dataset>));
     boost::shared_ptr<Dataset> data_ptr
       (new Dataset(o.finite_list(), o.vector_list(),
                    o.variable_type_order()));
@@ -58,9 +58,9 @@ namespace prl {
     return data_ptr;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_DATA_CONVERSIONS_HPP
+#endif // SILL_DATA_CONVERSIONS_HPP
 

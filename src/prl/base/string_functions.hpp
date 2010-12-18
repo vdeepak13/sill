@@ -1,13 +1,13 @@
 
-#ifndef PRL_STRING_FUNCTIONS_HPP
-#define PRL_STRING_FUNCTIONS_HPP
+#ifndef SILL_STRING_FUNCTIONS_HPP
+#define SILL_STRING_FUNCTIONS_HPP
 
 #include <cassert>
 #include <sstream>
 #include <string>
 #include <vector>
 
-namespace prl {
+namespace sill {
 
   /**
    * Splits a file path into a directory and the file name.
@@ -56,6 +56,6 @@ namespace prl {
     return val;
   }
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_STRING_FUNCTIONS_HPP
+#endif // #ifndef SILL_STRING_FUNCTIONS_HPP

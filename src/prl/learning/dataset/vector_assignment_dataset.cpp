@@ -1,14 +1,14 @@
-#include <prl/learning/dataset/vector_assignment_dataset.hpp>
-#include <prl/math/norms.hpp>
+#include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/math/norms.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Protected methods required by record
   //==========================================================================
 
-  void vector_assignment_dataset::load_assignment(size_t i, prl::assignment& a) const {
+  void vector_assignment_dataset::load_assignment(size_t i, sill::assignment& a) const {
     assert(i < nrecords);
     a = data_vector[i];
   }
@@ -111,8 +111,8 @@ namespace prl {
   void vector_assignment_dataset::set_record(size_t i, const std::vector<size_t>& fvals,
                                              const vec& vvals, double w) {
     assert(i < nrecords);
-    prl::copy(fvals, finite_data[i].begin());
-    prl::copy(vvals, vector_data[i].begin());
+    sill::copy(fvals, finite_data[i].begin());
+    sill::copy(vvals, vector_data[i].begin());
     convert_finite_record2assignment(fvals, data_vector[i].finite());
     convert_vector_record2assignment(vvals, data_vector[i].vector());
     if (weighted) {
@@ -210,12 +210,12 @@ namespace prl {
     double weight_tmp;
     for (size_t i = 0; i < nrecords-1; ++i) {
       size_t j = (size_t)(boost::uniform_int<int>(i,nrecords-1)(rng));
-      prl::copy(finite_data[i], fin_tmp.begin());
-      prl::copy(finite_data[j], finite_data[i].begin());
-      prl::copy(fin_tmp, finite_data[j].begin());
-      prl::copy(vector_data[i], vec_tmp.begin());
-      prl::copy(vector_data[j], vector_data[i].begin());
-      prl::copy(vec_tmp, vector_data[j].begin());
+      sill::copy(finite_data[i], fin_tmp.begin());
+      sill::copy(finite_data[j], finite_data[i].begin());
+      sill::copy(fin_tmp, finite_data[j].begin());
+      sill::copy(vector_data[i], vec_tmp.begin());
+      sill::copy(vector_data[j], vector_data[i].begin());
+      sill::copy(vec_tmp, vector_data[j].begin());
       tmpa = data_vector[i];
       data_vector[i] = data_vector[j];
       data_vector[j] = tmpa;
@@ -227,6 +227,6 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

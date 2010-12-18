@@ -4,20 +4,20 @@
 #include <iostream>
 #include <vector>
 
-#include <prl/factor/fixed_factors.hpp>
-#include <prl/factor/random.hpp>
+#include <sill/factor/fixed_factors.hpp>
+#include <sill/factor/random.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 boost::mt19937 rng;
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   size_t n = (argc<2) ? 1000 : boost::lexical_cast<size_t>(argv[1]);

@@ -1,12 +1,12 @@
-#ifndef PRL_RESIDUAL_BETHE_BP
-#define PRL_RESIDUAL_BETHE_BP
+#ifndef SILL_RESIDUAL_BETHE_BP
+#define SILL_RESIDUAL_BETHE_BP
 
-#include <prl/inference/bethe_bp.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
+#include <sill/inference/bethe_bp.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Loopy BP engine that implements residual B.P.
@@ -77,8 +77,8 @@ namespace prl {
 
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

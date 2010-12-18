@@ -1,7 +1,7 @@
 
-#include <prl/optimization/real_optimizer_builder.hpp>
+#include <sill/optimization/real_optimizer_builder.hpp>
 
-namespace prl {
+namespace sill {
 
   real_optimizer_builder::real_optimizer_type
   real_optimizer_builder::method() const {
@@ -67,4 +67,4 @@ namespace prl {
     return params;
   }
 
-}; // namespace prl
+}; // namespace sill

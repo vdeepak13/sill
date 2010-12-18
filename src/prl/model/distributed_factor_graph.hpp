@@ -1,19 +1,19 @@
-#ifndef PRL_DISTRIBUTED_FACTOR_GRAPH_HPP
-#define PRL_DISTRIBUTED_FACTOR_GRAPH_HPP
+#ifndef SILL_DISTRIBUTED_FACTOR_GRAPH_HPP
+#define SILL_DISTRIBUTED_FACTOR_GRAPH_HPP
 
 #error "Incomplete and do not use!"
 
-#include <prl/factor/concepts.hpp>
-#include <prl/model/interfaces.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/macros_def.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/range/forward_range.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/macros_def.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
 #include <unistd.h> // for usleep
-namespace prl {
+namespace sill {
 
   // protocol headers
   const char DF_TOTAL_BLOCKS_QUERY[5] = "tbk?";     // tbk?
@@ -436,6 +436,6 @@ namespace prl {
 
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_DISTRIBUTED_FACTOR_GRAPH_HPP
+#endif // SILL_DISTRIBUTED_FACTOR_GRAPH_HPP

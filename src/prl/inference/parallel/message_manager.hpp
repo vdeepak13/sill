@@ -5,14 +5,14 @@
 #include <map>
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/parallel/binned_scheduling_queue.hpp>
-#include <prl/factor/norms.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/parallel/binned_scheduling_queue.hpp>
+#include <sill/factor/norms.hpp>
 
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file message_manager.hpp
@@ -20,7 +20,7 @@
  * Defines the basic message manager which manages the state of a
  * (multicore) BP algorithm
  */
-namespace prl {
+namespace sill {
 
   /**
    *  \enum ReadWrite
@@ -242,7 +242,7 @@ namespace prl {
 
   public:  
     //! Preallocate all messages for the graphical model
-    basic_message_manager(const prl::factor_graph_model<factor_type> &model,
+    basic_message_manager(const sill::factor_graph_model<factor_type> &model,
                           bool allow_simultaneous_rw = true,
                           int num_schedule_queues = 20) : 
       var_schedule_(1), factor_schedule_(1),
@@ -451,6 +451,6 @@ namespace prl {
 } // End of namespace
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

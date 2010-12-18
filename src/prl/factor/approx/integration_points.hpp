@@ -1,13 +1,13 @@
-#ifndef PRL_INTEGRATION_POINTS_APPROXIMATOR_HPP
-#define PRL_INTEGRATION_POINTS_APPROXIMATOR_HPP
+#ifndef SILL_INTEGRATION_POINTS_APPROXIMATOR_HPP
+#define SILL_INTEGRATION_POINTS_APPROXIMATOR_HPP
 
 #include <utility> // for std::pair
 
-#include <prl/factor/approx/interfaces.hpp>
-#include <prl/math/matrix.hpp>
-#include <prl/math/vector.hpp>
+#include <sill/factor/approx/interfaces.hpp>
+#include <sill/math/matrix.hpp>
+#include <sill/math/vector.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A Gaussian approximator that uses a set of fixed integation points.
@@ -30,6 +30,6 @@ namespace prl {
 
   };
 
-} // namespace prl
+} // namespace sill
 
 #endif

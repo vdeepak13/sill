@@ -1,18 +1,18 @@
-#ifndef PRL_LEARN_CRF_FACTOR_HPP
-#define PRL_LEARN_CRF_FACTOR_HPP
+#ifndef SILL_LEARN_CRF_FACTOR_HPP
+#define SILL_LEARN_CRF_FACTOR_HPP
 
-#include <prl/base/variables.hpp>
-#include <prl/factor/hybrid_crf_factor.hpp>
-#include <prl/factor/gaussian_crf_factor.hpp>
-#include <prl/factor/log_reg_crf_factor.hpp>
-#include <prl/factor/table_crf_factor.hpp>
-#include <prl/learning/crossval_methods.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/learn_factor.hpp>
-#include <prl/math/constants.hpp>
-#include <prl/math/free_functions.hpp>
+#include <sill/base/variables.hpp>
+#include <sill/factor/hybrid_crf_factor.hpp>
+#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/log_reg_crf_factor.hpp>
+#include <sill/factor/table_crf_factor.hpp>
+#include <sill/learning/crossval_methods.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/learn_factor.hpp>
+#include <sill/math/constants.hpp>
+#include <sill/math/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file learn_crf_factors.hpp  Methods for learning CRF factors from data.
@@ -36,7 +36,7 @@
    const hybrid_crf_factor<F>::parameters& params,                      \
    unsigned random_seed);
 
-namespace prl {
+namespace sill {
 
   // Declarations: Learning CRF Factors with Fixed Regularization
   //============================================================================
@@ -324,8 +324,8 @@ namespace prl {
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
 
-};  // namespace prl
+};  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_LEARN_CRF_FACTOR_HPP
+#endif // SILL_LEARN_CRF_FACTOR_HPP

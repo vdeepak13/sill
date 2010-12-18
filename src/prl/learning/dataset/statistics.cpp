@@ -1,10 +1,10 @@
 
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/learn_factor.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/learn_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Public methods: order statistics
     //==========================================================================
@@ -114,6 +114,6 @@ namespace prl {
     return maxs;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

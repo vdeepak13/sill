@@ -1,11 +1,11 @@
-#ifndef PRL_TEST_TREE_HPP
-#define PRL_TEST_TREE_HPP
+#ifndef SILL_TEST_TREE_HPP
+#define SILL_TEST_TREE_HPP
 
 #include <queue>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \ingroup graph_algorithms
   template <typename Graph, typename EdgeFilter>
@@ -40,8 +40,8 @@ namespace prl {
     return test_tree(g, v, make_constant(true));
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,13 +1,13 @@
 
-#ifndef PRL_LEARNING_DECOMPOSABLE_MOVE_HPP
-#define PRL_LEARNING_DECOMPOSABLE_MOVE_HPP
+#ifndef SILL_LEARNING_DECOMPOSABLE_MOVE_HPP
+#define SILL_LEARNING_DECOMPOSABLE_MOVE_HPP
 
-#include <prl/learning/structure_search/decomposable_score.hpp>
-#include <prl/model/learnt_decomposable.hpp>
+#include <sill/learning/structure_search/decomposable_score.hpp>
+#include <sill/model/learnt_decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Virtual class for representing a possible move in structure search for
@@ -71,6 +71,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DECOMPOSABLE_MOVE_HPP
+#endif // #ifndef SILL_LEARNING_DECOMPOSABLE_MOVE_HPP

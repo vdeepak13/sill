@@ -1,8 +1,8 @@
 
-#ifndef PRL_VOID_PRECONDITIONER_HPP
-#define PRL_VOID_PRECONDITIONER_HPP
+#ifndef SILL_VOID_PRECONDITIONER_HPP
+#define SILL_VOID_PRECONDITIONER_HPP
 
-namespace prl {
+namespace sill {
 
   /**
    * Class used when no preconditioner is used by conjugate_gradient.
@@ -32,4 +32,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#endif // #ifndef PRL_VOID_PRECONDITIONER_HPP
+#endif // #ifndef SILL_VOID_PRECONDITIONER_HPP

@@ -1,14 +1,14 @@
-#ifndef PRL_ANY_FACTOR_BINARY_HPP
-#define PRL_ANY_FACTOR_BINARY_HPP
+#ifndef SILL_ANY_FACTOR_BINARY_HPP
+#define SILL_ANY_FACTOR_BINARY_HPP
 
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#include <prl/factor/any_factor_placeholder.hpp>
+#include <sill/factor/any_factor_placeholder.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An interface that provides type erasure for binary factor operations.
@@ -133,9 +133,9 @@ namespace prl {
 
   } // namespace impl
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

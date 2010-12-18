@@ -2,17 +2,17 @@
 
 #include <boost/array.hpp>
 
-#include <prl/variable.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/model/factor_list_model.hpp>
+#include <sill/variable.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/model/factor_list_model.hpp>
 
 /**
  * \file factor_list_model.cpp Factor List Model test
  */
 int main() {
 
-  using namespace prl;
+  using namespace sill;
   using boost::array;
 
   // Create a universe.

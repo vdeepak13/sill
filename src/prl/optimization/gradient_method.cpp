@@ -1,7 +1,7 @@
 
-#include <prl/optimization/gradient_method.hpp>
+#include <sill/optimization/gradient_method.hpp>
 
-namespace prl {
+namespace sill {
 
   bool gradient_method_parameters::valid(bool print_warnings) const {
     switch (step_type) {
@@ -22,4 +22,4 @@ namespace prl {
     return true;
   }
 
-}; // namespace prl
+}; // namespace sill

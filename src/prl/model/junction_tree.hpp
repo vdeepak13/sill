@@ -1,6 +1,6 @@
 
-#ifndef PRL_JUNCTION_TREE_HPP
-#define PRL_JUNCTION_TREE_HPP
+#ifndef SILL_JUNCTION_TREE_HPP
+#define SILL_JUNCTION_TREE_HPP
 
 #include <vector>
 #include <iterator>
@@ -8,30 +8,30 @@
 #include <set>
 //#include <boost/pending/disjoint_sets.hpp>
 
-#include <prl/global.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/datastructure/set_index.hpp>
-#include <prl/graph/concepts.hpp>
-#include <prl/graph/undirected_graph.hpp>
-#include <prl/graph/property_functors.hpp>
-#include <prl/graph/tree_traversal.hpp>
-#include <prl/graph/triangulation.hpp>
-#include <prl/graph/mst.hpp>
-#include <prl/graph/subgraph.hpp>
-#include <prl/model/markov_graph.hpp>
+#include <sill/global.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/datastructure/set_index.hpp>
+#include <sill/graph/concepts.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/graph/property_functors.hpp>
+#include <sill/graph/tree_traversal.hpp>
+#include <sill/graph/triangulation.hpp>
+#include <sill/graph/mst.hpp>
+#include <sill/graph/subgraph.hpp>
+#include <sill/model/markov_graph.hpp>
 
-#include <prl/model/cluster_graph.hpp> //! For the conversion constructor
+#include <sill/model/cluster_graph.hpp> //! For the conversion constructor
 
-#include <prl/stl_concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/range/concepts.hpp>
-#include <prl/range/transformed.hpp>
-#include <prl/range/numeric.hpp>
-#include <prl/range/io.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/range/transformed.hpp>
+#include <sill/range/numeric.hpp>
+#include <sill/range/io.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace impl {
     /**
@@ -106,7 +106,7 @@ namespace prl {
       return out;
     }
 
-  } // namespace prl::impl
+  } // namespace sill::impl
 
   /**
    * Represents a junction tree \f$T\f$ over a set of nodes.
@@ -284,7 +284,7 @@ namespace prl {
         add_clique(v, cg.cluster(v), cg[v]);
       foreach(edge e, cg.edges())
         add_edge(e.source(), e.target(), cg[e]);
-      next_vertex = prl::accumulate(vertices(), 0, maximum<size_t>()) + 1;
+      next_vertex = sill::accumulate(vertices(), 0, maximum<size_t>()) + 1;
 
       if(force) triangulate();
     }
@@ -313,7 +313,7 @@ namespace prl {
 
       // Use triangulation to compute the cliques.
       std::vector<node_set> graph_cliques;
-      prl::triangulate(graph, std::back_inserter(graph_cliques), strategy);
+      sill::triangulate(graph, std::back_inserter(graph_cliques), strategy);
       initialize(graph_cliques);
       // std::cout << graph_cliques << std::endl;
     }
@@ -761,7 +761,7 @@ namespace prl {
      */
     junction_tree subtree(vertex root, size_t nhops) const {
       junction_tree new_jt;
-      prl::subgraph(graph, root, nhops, new_jt.graph);
+      sill::subgraph(graph, root, nhops, new_jt.graph);
       foreach(vertex v, vertices())
         new_jt.clique_index.insert(clique(v), v);
       new_jt.next_vertex = next_vertex;
@@ -784,8 +784,8 @@ namespace prl {
     /**
      * Returns an equivalent markov graph (without the side information).
      */
-    prl::markov_graph<Node> markov_graph() const {
-      prl::markov_graph<Node> mg(nodes());
+    sill::markov_graph<Node> markov_graph() const {
+      sill::markov_graph<Node> mg(nodes());
       foreach(vertex v, vertices())
         mg.add_clique(clique(v));
       return mg;
@@ -1090,7 +1090,7 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
 
 namespace boost {
@@ -1098,12 +1098,12 @@ namespace boost {
   //! A traits class that lets junction_tree work in BGL algorithms
   //! (inherits from the traits class for the underlying undirected_graph)
   template <typename Node, typename VP, typename EP>
-  struct graph_traits< prl::junction_tree<Node, VP, EP> >
-    : public graph_traits<typename prl::junction_tree<Node, VP, EP>::graph_type>
+  struct graph_traits< sill::junction_tree<Node, VP, EP> >
+    : public graph_traits<typename sill::junction_tree<Node, VP, EP>::graph_type>
     { };
 
 } // namespace boost
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_JUNCTION_TREE_HPP
+#endif // #ifndef SILL_JUNCTION_TREE_HPP

@@ -1,22 +1,22 @@
-#ifndef PRL_GAUSSIAN_FACTOR_HPP
-#define PRL_GAUSSIAN_FACTOR_HPP
+#ifndef SILL_GAUSSIAN_FACTOR_HPP
+#define SILL_GAUSSIAN_FACTOR_HPP
 
 #include <map>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/base/vector_assignment.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/learning/dataset/vector_record.hpp>
-#include <prl/math/irange.hpp>
-#include <prl/math/logarithmic.hpp>
-#include <prl/math/vector.hpp>
-#include <prl/range/concepts.hpp>
-#include <prl/range/forward_range.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/vector_assignment.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/learning/dataset/vector_record.hpp>
+#include <sill/math/irange.hpp>
+#include <sill/math/logarithmic.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * The base class of all Guassians
@@ -146,6 +146,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

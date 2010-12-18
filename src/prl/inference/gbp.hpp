@@ -1,20 +1,20 @@
-#ifndef PRL_GBP_HPP
-#define PRL_GBP_HPP
+#ifndef SILL_GBP_HPP
+#define SILL_GBP_HPP
 
 #include <algorithm> // for std::max
 
 #include <boost/scoped_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/factor/invalid_operation.hpp>
-#include <prl/model/interfaces.hpp>
-#include <prl/model/region_graph.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/factor/invalid_operation.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/model/region_graph.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A class thatimplements generalized synchronous generalized belief
@@ -214,8 +214,8 @@ namespace prl {
 
   }; // class gbp
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

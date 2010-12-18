@@ -1,18 +1,18 @@
-#ifndef PRL_KIKUCHI_REGION_GRAPH_HPP
-#define PRL_KIKUCHI_REGION_GRAPH_HPP
+#ifndef SILL_KIKUCHI_REGION_GRAPH_HPP
+#define SILL_KIKUCHI_REGION_GRAPH_HPP
 
 #include <vector>
 #include <iterator> // for back_inserter
 
 #include <set>
 #include <map>
-#include <prl/model/region_graph.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/functional/size_greater.hpp>
+#include <sill/model/region_graph.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/functional/size_greater.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Constructs a valid region graph using Kikuchi method.
@@ -59,8 +59,8 @@ namespace prl {
 
     // add the edges
     std::vector<size_t> regions(rg.num_vertices());
-    prl::copy(rg.vertices(), regions.begin());
-    prl::sort(regions,
+    sill::copy(rg.vertices(), regions.begin());
+    sill::sort(regions,
               typename region_graph<Node,VP,EP>::cluster_size_less(&rg));
 
     for(int i = regions.size() - 1; i >= 0; i--) {
@@ -86,6 +86,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

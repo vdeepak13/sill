@@ -1,9 +1,9 @@
-#include <prl/base/universe.hpp>
-#include <prl/model/region_graph.hpp>
-#include <prl/inference/kikuchi.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/model/region_graph.hpp>
+#include <sill/inference/kikuchi.hpp>
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   universe u;

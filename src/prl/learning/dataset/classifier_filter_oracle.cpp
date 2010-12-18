@@ -1,8 +1,8 @@
-#include <prl/learning/dataset/classifier_filter_oracle.hpp>
+#include <sill/learning/dataset/classifier_filter_oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Mutating operations
     //==========================================================================
@@ -102,6 +102,6 @@ namespace prl {
       return true;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

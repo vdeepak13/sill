@@ -5,16 +5,16 @@
 #include <string>
 #include <cstring>
 
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/vector.hpp>
-#include <prl/serialization/map.hpp>
-#include <prl/serialization/list.hpp>
-#include <prl/serialization/set.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/vector.hpp>
+#include <sill/serialization/map.hpp>
+#include <sill/serialization/list.hpp>
+#include <sill/serialization/set.hpp>
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
-// using namespace prl;
+// using namespace sill;
 // Look for the class TestClass() to see the most interesting tutorial on how to 
 // use the serializer
 void test_basic_datatype() {
@@ -45,8 +45,8 @@ void test_basic_datatype() {
   f.open("test.bin",fstream::binary);
   oarchive a(f);
   a << t1 << t2 << t3 << t4 << t5 << t6 << t7 << t8;
-  prl::serialize(a, t9, strlen(t9) + 1);
-  prl::serialize(a, t10, strlen(t10) + 1);
+  sill::serialize(a, t9, strlen(t9) + 1);
+  sill::serialize(a, t10, strlen(t10) + 1);
   f.close();
   
   // deserialize into r1-10
@@ -54,8 +54,8 @@ void test_basic_datatype() {
   g.open("test.bin",fstream::binary);
   iarchive b(g);
   b >> r1 >> r2 >> r3 >> r4 >> r5 >> r6 >> r7 >> r8;
-  prl::deserialize(b, &r9, strlen(t9) + 1);
-  prl::deserialize(b, r10, strlen(t10) + 1);
+  sill::deserialize(b, &r9, strlen(t9) + 1);
+  sill::deserialize(b, r10, strlen(t10) + 1);
   g.close();
   
   assert(t1 == r1);

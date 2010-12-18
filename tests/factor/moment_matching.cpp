@@ -1,12 +1,12 @@
 #include <iostream>
 
-#include <prl/math/linear_algebra.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/mixture.hpp>
+#include <sill/math/linear_algebra.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/mixture.hpp>
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   universe u;

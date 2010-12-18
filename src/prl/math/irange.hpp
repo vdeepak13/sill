@@ -1,13 +1,13 @@
-#ifndef PRL_INDEX_RANGE_HPP
-#define PRL_INDEX_RANGE_HPP
+#ifndef SILL_INDEX_RANGE_HPP
+#define SILL_INDEX_RANGE_HPP
 
 #include <iostream>
 
-#include <prl/serialization/serialize.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An open range of integral indices.
@@ -78,6 +78,6 @@ namespace prl {
     return out;
   }
   
-} // namespace prl
+} // namespace sill
 
 #endif

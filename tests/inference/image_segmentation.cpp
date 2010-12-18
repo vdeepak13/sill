@@ -1,11 +1,11 @@
-#include <prl/math/math.hpp>
+#include <sill/math/math.hpp>
 
-#include <prl/variable.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/model/random.hpp>
-#include <prl/inference/belief_propagation.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/dense_table.hpp>
+#include <sill/variable.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/random.hpp>
+#include <sill/inference/belief_propagation.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/dense_table.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/multi_array.hpp>
@@ -16,13 +16,13 @@
 #include <iostream>
 #include <fstream>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 enum { MAX_BUF = 60000 };
 
 typedef boost::multi_array<double, 2> image_type;
 typedef boost::multi_array<size_t, 2> vertex_array;
-typedef prl::pairwise_markov_network<prl::tablef> markov_network_type;
+typedef sill::pairwise_markov_network<sill::tablef> markov_network_type;
 
 image_type load_image(const char* filename) {
   typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
@@ -83,7 +83,7 @@ template <typename Engine>
 void save_belief(const char* filename,
                  const Engine& engine, const vertex_array& vertex) {
   using namespace std;
-  using namespace prl;
+  using namespace sill;
   ofstream os(filename);
   for(size_t i = 0; i < vertex.shape()[0]; i++) {
     for(size_t j = 0; j < vertex.shape()[1]; j++) {
@@ -97,12 +97,12 @@ void save_belief(const char* filename,
 
 std::pair<markov_network_type, vertex_array>
 make_segmentation_model(const image_type& image,
-                        prl::universe& u,
+                        sill::universe& u,
                         double mean0, double var0,
                         double mean1, double var1,
                         double lambda) {
   using namespace std;
-  using namespace prl;
+  using namespace sill;
   size_t m = image.shape()[0], n = image.shape()[1];
 
   adjacency_list<vecS,vecS,undirectedS> g;
@@ -129,7 +129,7 @@ make_segmentation_model(const image_type& image,
 
 int main(size_t argc, char* argv[])
 {
-  using namespace prl;
+  using namespace sill;
   using std::cout;
   using std::endl;
   using boost::lexical_cast;

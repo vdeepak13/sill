@@ -1,13 +1,13 @@
-#ifndef PRL_XML_OSTRINGARCHIVE_HPP
-#define PRL_XML_OSTRINGARCHIVE_HPP
+#ifndef SILL_XML_OSTRINGARCHIVE_HPP
+#define SILL_XML_OSTRINGARCHIVE_HPP
 
 #include <sstream>
 
 #include <boost/scoped_ptr.hpp>
 
-#include <prl/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An archive that stores PRL models in a string buffer.
@@ -33,7 +33,7 @@ namespace prl {
 
   }; // class xml_ostringarchive
 
-} // namespace prl 
+} // namespace sill 
 
 
 #endif

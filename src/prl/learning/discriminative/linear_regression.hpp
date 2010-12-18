@@ -1,21 +1,21 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_LINEAR_REGRESSION_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_LINEAR_REGRESSION_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_LINEAR_REGRESSION_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_LINEAR_REGRESSION_HPP
 
-#include <prl/base/variable_type_group.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/math/linear_algebra.hpp>
-#include <prl/math/statistics.hpp>
-#include <prl/optimization/conjugate_gradient.hpp>
-#include <prl/optimization/gradient_descent.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/base/variable_type_group.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/math/linear_algebra.hpp>
+#include <sill/math/statistics.hpp>
+#include <sill/optimization/conjugate_gradient.hpp>
+#include <sill/optimization/gradient_descent.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   struct linear_regression_parameters {
 
@@ -323,7 +323,7 @@ namespace prl {
       //! Inner product with a value of the same size.
       double inner_prod(const opt_vector& other) const {
         return (elem_mult_sum(A, other.A)
-                + prl::inner_prod(b, other.b));
+                + sill::inner_prod(b, other.b));
       }
 
       //! Element-wise multiplication with another value of the same size.
@@ -1208,6 +1208,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_LINEAR_REGRESSION_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_LINEAR_REGRESSION_HPP

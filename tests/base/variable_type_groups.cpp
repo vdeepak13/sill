@@ -1,13 +1,13 @@
 
-#include <prl/base/universe.hpp>
-#include <prl/base/variable_type_groups.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/base/variable_type_groups.hpp>
 
 template <typename DomainType>
 static void do_something();
 
 template <>
-static void do_something<prl::finite_domain>() {
-  using namespace prl;
+static void do_something<sill::finite_domain>() {
+  using namespace sill;
   universe u;
   finite_domain d;
   d.insert(u.new_finite_variable(2));
@@ -15,8 +15,8 @@ static void do_something<prl::finite_domain>() {
 }
 
 template <>
-static void do_something<prl::vector_domain>() {
-  using namespace prl;
+static void do_something<sill::vector_domain>() {
+  using namespace sill;
   universe u;
   vector_domain d;
   d.insert(u.new_vector_variable(2));
@@ -25,7 +25,7 @@ static void do_something<prl::vector_domain>() {
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
 
   do_something<variable_types<finite_variable>::domain_type>();
 

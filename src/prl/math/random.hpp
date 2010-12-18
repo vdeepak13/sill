@@ -1,16 +1,16 @@
-#ifndef PRL_MATH_RANDOM_HPP
-#define PRL_MATH_RANDOM_HPP
+#ifndef SILL_MATH_RANDOM_HPP
+#define SILL_MATH_RANDOM_HPP
 
 #include <boost/random/exponential_distribution.hpp>
 #include <boost/random/uniform_real.hpp>
 
 #include <itpp/base/random.h>
 
-#include <prl/math/vector.hpp>
+#include <sill/math/vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   using itpp::randb;
   using itpp::randu;
@@ -198,6 +198,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_MATH_RANDOM_HPP
+#endif // SILL_MATH_RANDOM_HPP

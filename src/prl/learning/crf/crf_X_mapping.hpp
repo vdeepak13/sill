@@ -1,15 +1,15 @@
 
-#ifndef PRL_CRF_X_MAPPING_HPP
-#define PRL_CRF_X_MAPPING_HPP
+#ifndef SILL_CRF_X_MAPPING_HPP
+#define SILL_CRF_X_MAPPING_HPP
 
 #include <set>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/factor/concepts.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/factor/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class passed as a parameter to crf_X_mapping to specify what inputs X
@@ -28,7 +28,7 @@ namespace prl {
   template <typename FactorType>
   class crf_X_mapping {
 
-    concept_assert((prl::CRFfactor<FactorType>));
+    concept_assert((sill::CRFfactor<FactorType>));
 
     //! CRF factor type
     typedef FactorType crf_factor;
@@ -197,6 +197,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_CRF_X_MAPPING_HPP
+#endif // #ifndef SILL_CRF_X_MAPPING_HPP

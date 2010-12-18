@@ -7,11 +7,11 @@
 #include <cstdlib>
 
 
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 
 

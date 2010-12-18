@@ -6,13 +6,13 @@
 #include <map>
 #include <cassert>
 
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
 // This should come last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   // Predecleration
   template<typename T>
   class binned_scheduling_queue;
@@ -51,7 +51,7 @@ namespace prl {
     friend class binned_scheduling_queue<T>;
   private:
     typedef std::map<T, int> inverse_map_type;
-    typedef prl::mutable_queue<T, Priority> bin_type;
+    typedef sill::mutable_queue<T, Priority> bin_type;
     typedef std::vector<bin_type> bins_type;
    
     //! The N queues go here
@@ -411,5 +411,5 @@ namespace prl {
  
 } // end of namespace
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

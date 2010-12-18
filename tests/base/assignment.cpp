@@ -4,14 +4,14 @@
 
 #include <boost/array.hpp>
 
-#include <prl/base/finite_assignment.hpp>
-#include <prl/base/finite_assignment_iterator.hpp>
-#include <prl/base/vector_assignment.hpp>
-#include <prl/base/universe.hpp>
+#include <sill/base/finite_assignment.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
+#include <sill/base/vector_assignment.hpp>
+#include <sill/base/universe.hpp>
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Create a universe.

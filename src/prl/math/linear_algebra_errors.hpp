@@ -1,9 +1,9 @@
-#ifndef PRL_LINEAR_ALGEBRA_ERRORS_HPP
-#define PRL_LINEAR_ALGEBRA_ERRORS_HPP
+#ifndef SILL_LINEAR_ALGEBRA_ERRORS_HPP
+#define SILL_LINEAR_ALGEBRA_ERRORS_HPP
 
 #include <stdexcept>
 
-namespace prl {
+namespace sill {
 
   /**
    * An exception thrown when a matrix inverse inv() fails.
@@ -39,6 +39,6 @@ namespace prl {
       : std::runtime_error(what) { }
   };
 
-} // namespace prl
+} // namespace sill
 
-#endif  // PRL_LINEAR_ALGEBRA_ERRORS_HPP
+#endif  // SILL_LINEAR_ALGEBRA_ERRORS_HPP

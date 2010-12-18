@@ -1,11 +1,11 @@
 #include <sstream>
 
-#include <prl/math/matrix.hpp>
+#include <sill/math/matrix.hpp>
 
-namespace prl {
+namespace sill {
 
   
 
 
-} // namespace prl
+} // namespace sill
 

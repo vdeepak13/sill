@@ -1,12 +1,12 @@
-#ifndef PRL_GRAPH_CONNECTED_HPP
+#ifndef SILL_GRAPH_CONNECTED_HPP
 #define PLR_GRAPH_CONNECTED_HPP
 
 #include <queue>
 #include <map>
 #include <set>
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Returns true if an undirected graph is connected
   //! \ingroup graph_algorithms
@@ -38,6 +38,6 @@ namespace prl {
   }
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

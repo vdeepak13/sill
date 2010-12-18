@@ -1,10 +1,10 @@
-#ifndef PRL_VECTOR_MAP_HPP
-#define PRL_VECTOR_MAP_HPP
+#ifndef SILL_VECTOR_MAP_HPP
+#define SILL_VECTOR_MAP_HPP
 
 #include <vector>
 #include <utility>
 
-namespace prl {
+namespace sill {
 
   //! A simple map based on std::vector
   //! \ingroup datastructure
@@ -61,6 +61,6 @@ namespace prl {
 
   }; // class vector_map
 
-} // namespace prl
+} // namespace sill
 
 #endif

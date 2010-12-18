@@ -1,5 +1,5 @@
-#ifndef PRL_CRF_GRAPH_HPP
-#define PRL_CRF_GRAPH_HPP
+#ifndef SILL_CRF_GRAPH_HPP
+#define SILL_CRF_GRAPH_HPP
 
 #include <fstream>
 #include <list>
@@ -7,22 +7,22 @@
 #include <stdexcept>
 #include <vector>
 
-#include <prl/base/universe.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/datastructure/set_index.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/graph/undirected_graph.hpp>
-#include <prl/graph/property_functors.hpp>
-#include <prl/iterator/map_value_iterator.hpp>
-#include <prl/learning/dataset/datasource.hpp>
-#include <prl/model/interfaces.hpp>
-#include <prl/range/forward_range.hpp>
-#include <prl/serialization/list.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/datastructure/set_index.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/graph/property_functors.hpp>
+#include <sill/iterator/map_value_iterator.hpp>
+#include <sill/learning/dataset/datasource.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/serialization/list.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Forward declaration
   template <typename InputVar, typename OutputFactor, typename OptVector>
@@ -138,7 +138,7 @@ namespace prl {
       return out;
     }
 
-  } // namespace prl::impl
+  } // namespace sill::impl
 
   /**
    * This is the graph of a factor graph representation of a
@@ -900,9 +900,9 @@ namespace prl {
 //      * in this model
 //      * \todo implement this
 //      */
-//      prl::markov_graph<variable_type> markov_graph() {
+//      sill::markov_graph<variable_type> markov_graph() {
 //       assert(false); // TODO
-//       return prl::markov_graph<variable_type>();
+//       return sill::markov_graph<variable_type>();
 //     }
 
 //     /**
@@ -990,6 +990,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_CRF_GRAPH_HPP
+#endif // SILL_CRF_GRAPH_HPP

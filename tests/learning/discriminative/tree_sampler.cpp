@@ -4,13 +4,13 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/learning/discriminative/tree_sampler.hpp>
+#include <sill/learning/discriminative/tree_sampler.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   size_t nvals = 11;

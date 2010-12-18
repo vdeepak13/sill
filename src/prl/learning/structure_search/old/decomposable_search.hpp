@@ -1,14 +1,14 @@
 
-#ifndef PRL_LEARNING_DECOMPOSABLE_SEARCH_HPP
-#define PRL_LEARNING_DECOMPOSABLE_SEARCH_HPP
+#ifndef SILL_LEARNING_DECOMPOSABLE_SEARCH_HPP
+#define SILL_LEARNING_DECOMPOSABLE_SEARCH_HPP
 
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/learning/structure_learning/decomposable_move.hpp>
-#include <prl/model/learnt_decomposable.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/learning/structure_learning/decomposable_move.hpp>
+#include <sill/model/learnt_decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for learning decomposable models via structure search
@@ -196,6 +196,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DECOMPOSABLE_SEARCH_HPP
+#endif // #ifndef SILL_LEARNING_DECOMPOSABLE_SEARCH_HPP

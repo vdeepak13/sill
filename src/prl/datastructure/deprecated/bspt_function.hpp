@@ -1,6 +1,6 @@
 
-#ifndef PRL_BSPT_FUNCTION_HPP
-#define PRL_BSPT_FUNCTION_HPP
+#ifndef SILL_BSPT_FUNCTION_HPP
+#define SILL_BSPT_FUNCTION_HPP
 
 #include <algorithm>
 #include <iostream>
@@ -16,7 +16,7 @@
 // Needs clean-up
 ///////////////////////////////////////////////////////////////////
 
-namespace prl {
+namespace sill {
 
   /**
    * Represents a piecewise constant approximation of a scalar-valued
@@ -42,7 +42,7 @@ namespace prl {
        * The representation of a space.  This is a set of dimension
        * identifiers.
        */
-      typedef prl::set<dimension_id_t> space_t;
+      typedef sill::set<dimension_id_t> space_t;
 
       /**
        * An iso-hyperplane partition of the input space; it consists
@@ -668,6 +668,6 @@ namespace prl {
     return bspt_function_t(f, g, std::plus<double>());
   }
 
-} // namespace prl
+} // namespace sill
 
-#endif // PRL_BSPT_FUNCTION_HPP
+#endif // SILL_BSPT_FUNCTION_HPP

@@ -1,8 +1,8 @@
-#include <prl/learning/object_detection/sliding_windows_oracle.hpp>
+#include <sill/learning/object_detection/sliding_windows_oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     void sliding_windows_oracle::init() {
       assert(window_h > 1 && window_w > 1);
@@ -98,6 +98,6 @@ namespace prl {
       return true;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

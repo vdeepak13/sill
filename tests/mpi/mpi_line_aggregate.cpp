@@ -2,15 +2,15 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/stl_io.hpp>
-#include <prl/mpi/mpi_line_aggregate.hpp>
-#include <prl/functional/add.hpp>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/math/free_functions.hpp>
+#include <sill/stl_io.hpp>
+#include <sill/mpi/mpi_line_aggregate.hpp>
+#include <sill/functional/add.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/math/free_functions.hpp>
 
 boost::mt19937 rng;
 
-struct send_line : public prl::runnable {
+struct send_line : public sill::runnable {
 
   //std::vector<int> sources;
   size_t group_size;
@@ -18,7 +18,7 @@ struct send_line : public prl::runnable {
   send_line(size_t group_size) : group_size(group_size) { }
 
   void run() {
-    using namespace prl;
+    using namespace sill;
     int numprocs;
     MPI_Comm_size(MPI_COMM_WORLD, &numprocs);
     for(int i = 0; i < numprocs; i++) {
@@ -55,7 +55,7 @@ struct send_line : public prl::runnable {
 
 // aggregates data along a spanning tree
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   
   int myid;  

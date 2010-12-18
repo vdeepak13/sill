@@ -1,19 +1,19 @@
 
-#ifndef PRL_OBJECT_DETECTION_FREE_FUNCTIONS_HPP
-#define PRL_OBJECT_DETECTION_FREE_FUNCTIONS_HPP
+#ifndef SILL_OBJECT_DETECTION_FREE_FUNCTIONS_HPP
+#define SILL_OBJECT_DETECTION_FREE_FUNCTIONS_HPP
 
-#include <prl/assignment.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/discriminative.hpp>
-#include <prl/learning/object_detection/image.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/assignment.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/discriminative.hpp>
+#include <sill/learning/object_detection/image.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Convert a dataset which has records in a non-image format into a
@@ -36,7 +36,7 @@ namespace prl {
   boost::shared_ptr<Dataset>
   ds2image_format(universe& u, const Dataset& ds, bool by_row, size_t height,
                   size_t width, size_t depth) {
-    concept_assert((prl::MutableDataset<Dataset>));
+    concept_assert((sill::MutableDataset<Dataset>));
     assert(width > 0);
     assert(ds.vector_class_variables().size() == 0);
     vector_var_vector vector_vars
@@ -59,6 +59,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_OBJECT_DETECTION_FREE_FUNCTIONS_HPP
+#endif // #ifndef SILL_OBJECT_DETECTION_FREE_FUNCTIONS_HPP

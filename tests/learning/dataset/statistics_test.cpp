@@ -1,20 +1,20 @@
 #include <iostream>
 #include <string>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/assignment_dataset.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/dataset/syn_oracle_knorm.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/syn_oracle_knorm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file dataset.cpp Test of the statistics class using assignment_dataset.
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Create a dataset with vector variables to work with

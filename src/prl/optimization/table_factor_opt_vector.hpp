@@ -1,13 +1,13 @@
 
-#ifndef PRL_TABLE_FACTOR_OPT_VECTOR_HPP
-#define PRL_TABLE_FACTOR_OPT_VECTOR_HPP
+#ifndef SILL_TABLE_FACTOR_OPT_VECTOR_HPP
+#define SILL_TABLE_FACTOR_OPT_VECTOR_HPP
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/functional/reciprocal.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/functional/reciprocal.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Struct which permits a table_factor to be used as an OptimizationVector.
@@ -200,8 +200,8 @@ namespace prl {
   std::ostream& operator<<(std::ostream& out,
                            const table_factor_opt_vector& f);
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_TABLE_FACTOR_OPT_VECTOR_HPP
+#endif // SILL_TABLE_FACTOR_OPT_VECTOR_HPP

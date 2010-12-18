@@ -8,31 +8,31 @@
 #include <limits>
 
 #include <boost/program_options.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/serialization/serialize.hpp>
 
 
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
 
-#include <prl/parallel/timer.hpp>
-#include <prl/parsers/alchemy.hpp>
+#include <sill/parallel/timer.hpp>
+#include <sill/parsers/alchemy.hpp>
 
-#include <prl/inference/blf_residual_splash_bp.hpp>
-#include <prl/inference/residual_splash_bp.hpp>
-#include <prl/inference/gibbs_engine.hpp>
-#include <prl/inference/round_robin_bp.hpp>
-#include <prl/inference/mk_propagation.hpp>
+#include <sill/inference/blf_residual_splash_bp.hpp>
+#include <sill/inference/residual_splash_bp.hpp>
+#include <sill/inference/gibbs_engine.hpp>
+#include <sill/inference/round_robin_bp.hpp>
+#include <sill/inference/mk_propagation.hpp>
 
-#include <prl/factor/norms.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/macros_def.hpp>
 
 
 // Rename the program options namespace
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 
 typedef factor_graph_model<log_table_factor>   factor_graph_type;
@@ -343,7 +343,7 @@ int main(int argc, char* argv[]) {
 
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 //End of file
 
 

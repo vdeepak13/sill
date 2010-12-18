@@ -1,10 +1,10 @@
-#ifndef PRL_GRAPH_PROPERTY_FUNCTORS_HPP
-#define PRL_GRAPH_PROPERTY_FUNCTORS_HPP
+#ifndef SILL_GRAPH_PROPERTY_FUNCTORS_HPP
+#define SILL_GRAPH_PROPERTY_FUNCTORS_HPP
 
 #include <boost/mpl/if.hpp>
 #include <boost/type_traits/is_const.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A functor type that returns the vertex property by reference.

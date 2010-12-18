@@ -2,13 +2,13 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/finite_assignment_iterator.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   finite_variable::operator std::string() const {
     return "#V(" + name() + "|F|" 
@@ -71,5 +71,5 @@ namespace prl {
     return ar;
   }
 
-} // namespace prl
+} // namespace sill
 

@@ -1,16 +1,16 @@
-#ifndef PRL_ANY_FACTOR_PLACEHOLDER_HPP
-#define PRL_ANY_FACTOR_PLACEHOLDER_HPP
+#ifndef SILL_ANY_FACTOR_PLACEHOLDER_HPP
+#define SILL_ANY_FACTOR_PLACEHOLDER_HPP
 
 #include <string>
 
 #include <boost/type_traits/is_base_of.hpp>
 
-#include <prl/factor/factor.hpp>
-#include <prl/archive/xml_oarchive.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/archive/xml_oarchive.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   // Forward declarations
   namespace impl { }
@@ -164,9 +164,9 @@ namespace prl {
 
   } // namespace impl
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

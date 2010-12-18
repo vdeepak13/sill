@@ -1,17 +1,17 @@
-#ifndef PRL_GRAPH_MST_HPP
-#define PRL_GRAPH_MST_HPP
+#ifndef SILL_GRAPH_MST_HPP
+#define SILL_GRAPH_MST_HPP
 
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
 #include <boost/property_map/property_map.hpp>
 
-#include <prl/graph/index_map.hpp>
-#include <prl/graph/functor_property_map.hpp>
-#include <prl/graph/vertex_index.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/graph/index_map.hpp>
+#include <sill/graph/functor_property_map.hpp>
+#include <sill/graph/vertex_index.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Kruskal Minimum Spanning Tree (MST) algorithm.
@@ -25,7 +25,7 @@ namespace prl {
   void kruskal_minimum_spanning_tree(const Graph& g, OutIt spanning_tree_edges){
     concept_assert((OutputIterator<OutIt, typename Graph::edge>));
     boost::unordered_map<typename Graph::vertex, size_t> map;
-    prl::vertex_index(g, map);
+    sill::vertex_index(g, map);
     boost::kruskal_minimum_spanning_tree
       (g,
        spanning_tree_edges,
@@ -46,7 +46,7 @@ namespace prl {
                                      OutIt spanning_tree_edges, F f) {
     concept_assert((OutputIterator<OutIt, typename Graph::edge>));
     boost::unordered_map<typename Graph::vertex, size_t> map;
-    prl::vertex_index(g, map);
+    sill::vertex_index(g, map);
     boost::kruskal_minimum_spanning_tree
       (g,
        spanning_tree_edges,
@@ -54,8 +54,8 @@ namespace prl {
        weight_map(make_functor_property_map(f)));
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,15 +1,15 @@
-#ifndef PRL_GRAPH_CLIQUE_HPP
-#define PRL_GRAPH_CLIQUE_HPP
+#ifndef SILL_GRAPH_CLIQUE_HPP
+#define SILL_GRAPH_CLIQUE_HPP
 
 #include <boost/graph/graph_traits.hpp>
 //#include <boost/graph/graph_utility.hpp>
 #include <boost/range/functions.hpp>
 
-#include <prl/stl_concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace dispatch {
 
@@ -78,7 +78,7 @@ namespace prl {
       g.add_edge(u, v);
     }
 
-  } // namespace prl::dispatch
+  } // namespace sill::dispatch
 
   //! \addtogroup graph_algorithms
   //! @{
@@ -144,8 +144,8 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

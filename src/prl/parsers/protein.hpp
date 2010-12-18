@@ -1,5 +1,5 @@
-#ifndef PRL_PROTEIN_HPP
-#define PRL_PROTEIN_HPP
+#ifndef SILL_PROTEIN_HPP
+#define SILL_PROTEIN_HPP
 #include <cmath>
 #include <limits>
 #include <cassert>
@@ -9,12 +9,12 @@
 #include <ios>
 #include <string>
 
-#include <prl/math/logarithmic.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/model/factor_graph_model.hpp>
+#include <sill/math/logarithmic.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/model/factor_graph_model.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl{
+#include <sill/macros_def.hpp>
+namespace sill{
 
   class binary_input_stream : public std::ifstream {
     typedef std::ifstream base_type;
@@ -205,5 +205,5 @@ namespace prl{
     return static_cast<double>(correct) / network.arguments().size();
   }
 }
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

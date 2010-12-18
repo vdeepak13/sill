@@ -1,23 +1,23 @@
-#ifndef PRL_REGION_GRAPH_HPP
-#define PRL_REGION_GRAPH_HPP
+#ifndef SILL_REGION_GRAPH_HPP
+#define SILL_REGION_GRAPH_HPP
 
 #include <algorithm> // for std::max
 #include <set>
 
-#include <prl/datastructure/set_index.hpp>
-#include <prl/graph/directed_graph.hpp>
-#include <prl/graph/property_functors.hpp>
-#include <prl/graph/ancestors_descendants.hpp>
-#include <prl/graph/graph_traversal.hpp>
+#include <sill/datastructure/set_index.hpp>
+#include <sill/graph/directed_graph.hpp>
+#include <sill/graph/property_functors.hpp>
+#include <sill/graph/ancestors_descendants.hpp>
+#include <sill/graph/graph_traversal.hpp>
 
-#include <prl/range/forward_range.hpp>
-#include <prl/range/transformed.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/range/transformed.hpp>
 
-// #include <prl/stl_io.hpp>
+// #include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace impl {
 
@@ -84,7 +84,7 @@ namespace prl {
       return out;
     }
 
-  } // namespace prl::impl
+  } // namespace sill::impl
 
   /**
    * This class represents a region grxc vmmmnm aph, see Yedidia 2005.
@@ -198,7 +198,7 @@ namespace prl {
 
     //! Returns the ancestors of one or more vertices
     std::set<vertex> ancestors(const std::set<vertex>& vertices) const {
-      return prl::ancestors(vertices, *this);
+      return sill::ancestors(vertices, *this);
     }
 
     //! Returns the ancestors of one vertices
@@ -210,7 +210,7 @@ namespace prl {
 
     //! Returns the descendants of a vertex
     std::set<vertex> descendants(const std::set<vertex>& vertices) const {
-      return prl::descendants(vertices, *this);
+      return sill::descendants(vertices, *this);
     }
 
     //! Returns the descendants of one vertices
@@ -519,7 +519,7 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
 
 namespace boost {
@@ -527,12 +527,12 @@ namespace boost {
   //! A traits class that lets junction_tree work in BGL algorithms
   //! (inherits from the traits class for the underlying undirected_graph)
   template <typename Node, typename VP, typename EP>
-  struct graph_traits< prl::region_graph<Node, VP, EP> >
-    : public graph_traits<typename prl::region_graph<Node, VP, EP>::graph_type>
+  struct graph_traits< sill::region_graph<Node, VP, EP> >
+    : public graph_traits<typename sill::region_graph<Node, VP, EP>::graph_type>
     { };
 
 } // namespace boost
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

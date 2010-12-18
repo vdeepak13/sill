@@ -1,12 +1,12 @@
 
-#ifndef PRL_FINITE_RECORD_ITERATOR_HPP
-#define PRL_FINITE_RECORD_ITERATOR_HPP
+#ifndef SILL_FINITE_RECORD_ITERATOR_HPP
+#define SILL_FINITE_RECORD_ITERATOR_HPP
 
 #include <iterator>
 
-#include <prl/learning/dataset/finite_record.hpp>
+#include <sill/learning/dataset/finite_record.hpp>
 
-namespace prl {
+namespace sill {
 
   // Pre-declaration
   class finite_record;
@@ -68,6 +68,6 @@ namespace prl {
 
   }; // class finite_record_iterator
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_FINITE_RECORD_ITERATOR_HPP
+#endif // #ifndef SILL_FINITE_RECORD_ITERATOR_HPP

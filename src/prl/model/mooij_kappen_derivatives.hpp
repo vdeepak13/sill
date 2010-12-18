@@ -1,11 +1,11 @@
-#ifndef PRL_MOOIJ_KAPPEN_DERIVATIVES_HPP
-#define PRL_MOOIJ_KAPPEN_DERIVATIVES_HPP
+#ifndef SILL_MOOIJ_KAPPEN_DERIVATIVES_HPP
+#define SILL_MOOIJ_KAPPEN_DERIVATIVES_HPP
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/macros_def.hpp>
 #include <cmath>
-namespace prl{
+namespace sill{
 
   /* Computes the msg derivative between v1 and f where
     f is a factor. it will take the max of v1 to all other vertices through f*/
@@ -24,5 +24,5 @@ namespace prl{
   }
 
 }
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

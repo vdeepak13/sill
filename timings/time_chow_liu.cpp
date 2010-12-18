@@ -1,13 +1,13 @@
 
 #include <boost/timer.hpp>
 
-#include <prl/learning/chow_liu.hpp>
-#include <prl/learning/dataset/assignment_dataset.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <prl/model/random.hpp>
+#include <sill/learning/chow_liu.hpp>
+#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * Time Chow-Liu implementations:
@@ -18,7 +18,7 @@
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Generate some training and test data (from a random HMM)

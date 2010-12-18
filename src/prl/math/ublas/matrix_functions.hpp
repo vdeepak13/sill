@@ -1,5 +1,5 @@
-#ifndef PRL_MATH_UBLAS_MATRIX_FUNCTIONS_HPP
-#define PRL_MATH_UBLAS_MATRIX_FUNCTIONS_HPP
+#ifndef SILL_MATH_UBLAS_MATRIX_FUNCTIONS_HPP
+#define SILL_MATH_UBLAS_MATRIX_FUNCTIONS_HPP
 
 #include <algorithm>
 
@@ -8,10 +8,10 @@
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/banded.hpp>
 
-#include <prl/range/algorithm.hpp>
-#include <prl/range/numeric.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/range/numeric.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 namespace boost { namespace numeric { namespace ublas 
 {
@@ -60,11 +60,11 @@ namespace boost { namespace numeric { namespace ublas
 
     if (dim == 1) { // aggregate along each column
       for(std::size_t i = 0; i < m.size2(); i++)
-        v[i] = prl::accumulate(m.column(i), zero, f);
+        v[i] = sill::accumulate(m.column(i), zero, f);
     } 
     else { // aggregate along each row
       for(std::size_t i = 0; i < m.size1(); i++)
-        v[i] = prl::accumulate(m.row(i), zero, f);
+        v[i] = sill::accumulate(m.row(i), zero, f);
     }
     return v;
   }
@@ -96,7 +96,7 @@ namespace boost { namespace numeric { namespace ublas
   diagonal_matrix<typename E::value_type>
   diag(const vector_expression<E>& v) {
     diagonal_matrix<typename E::value_type> d(v().size());
-    prl::copy(v(), d.data().begin());
+    sill::copy(v(), d.data().begin());
     return d;
   }
 
@@ -202,6 +202,6 @@ namespace boost { namespace numeric { namespace ublas
     
 } } } // namespaces
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

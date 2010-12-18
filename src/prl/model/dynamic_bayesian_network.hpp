@@ -1,16 +1,16 @@
-#ifndef PRL_DYNAMIC_BAYESIAN_NETWORK_HPP
-#define PRL_DYNAMIC_BAYESIAN_NETWORK_HPP
+#ifndef SILL_DYNAMIC_BAYESIAN_NETWORK_HPP
+#define SILL_DYNAMIC_BAYESIAN_NETWORK_HPP
 
 #include <iosfwd>
 
-#include <prl/global.hpp>
-#include <prl/base/timed_process.hpp>
-#include <prl/graph/directed_graph.hpp>
-#include <prl/model/bayesian_network.hpp>
+#include <sill/global.hpp>
+#include <sill/base/timed_process.hpp>
+#include <sill/graph/directed_graph.hpp>
+#include <sill/model/bayesian_network.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A dynamic Bayesian network.
@@ -213,6 +213,6 @@ namespace prl {
   
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

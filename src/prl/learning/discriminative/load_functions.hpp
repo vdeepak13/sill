@@ -1,11 +1,11 @@
 
-#ifndef PRL_DISCRIMINATIVE_LOAD_FUNCTIONS_HPP
-#define PRL_DISCRIMINATIVE_LOAD_FUNCTIONS_HPP
+#ifndef SILL_DISCRIMINATIVE_LOAD_FUNCTIONS_HPP
+#define SILL_DISCRIMINATIVE_LOAD_FUNCTIONS_HPP
 
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/multiclass_classifier.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/multiclass_classifier.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file load_functions.hpp Functions for loading learners from files;
@@ -13,7 +13,7 @@
  *                          templated.
  */
 
-namespace prl {
+namespace sill {
 
   // Free functions
   //==========================================================================
@@ -84,7 +84,7 @@ namespace prl {
    *                            and any base learners.
    * @return  pointer to empty classifier; or NULL pointer if unable to load
    */
-  boost::shared_ptr<prl::binary_classifier>
+  boost::shared_ptr<sill::binary_classifier>
   empty_binary_classifier(std::string learner_name,
                           size_t booster_iterations);
 
@@ -99,12 +99,12 @@ namespace prl {
    *
    * @return  pointer to empty classifier; or NULL pointer if unable to load
    */
-  boost::shared_ptr<prl::multiclass_classifier>
-  empty_multiclass_classifier(std::string learner_name, prl::universe& u,
+  boost::shared_ptr<sill::multiclass_classifier>
+  empty_multiclass_classifier(std::string learner_name, sill::universe& u,
                               size_t booster_iterations);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_DISCRIMINATIVE_LOAD_FUNCTIONS_HPP
+#endif // #ifndef SILL_DISCRIMINATIVE_LOAD_FUNCTIONS_HPP

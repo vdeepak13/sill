@@ -1,6 +1,6 @@
 
-#ifndef PRL_SUBSET_ITERATOR_HPP
-#define PRL_SUBSET_ITERATOR_HPP
+#ifndef SILL_SUBSET_ITERATOR_HPP
+#define SILL_SUBSET_ITERATOR_HPP
 
 #include <limits>
 #include <list>
@@ -10,9 +10,9 @@
 
 #include <set>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for iterating over subsets of a set.
@@ -382,8 +382,8 @@ namespace prl {
 
   }; // class subset_iterator
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_SUBSET_ITERATOR_HPP
+#endif // #ifndef SILL_SUBSET_ITERATOR_HPP

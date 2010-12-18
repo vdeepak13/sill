@@ -1,5 +1,5 @@
-#ifndef PRL_VARIABLE_HPP
-#define PRL_VARIABLE_HPP
+#ifndef SILL_VARIABLE_HPP
+#define SILL_VARIABLE_HPP
 
 #include <string>
 #include <iosfwd>
@@ -9,17 +9,17 @@
 
 #include <boost/any.hpp>
 
-#include <prl/base/concepts.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/iterator/set_insert_iterator.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/range/converted.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/base/concepts.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/iterator/set_insert_iterator.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/range/converted.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup base_types
   //! @{
@@ -57,7 +57,7 @@ namespace prl {
     
     //! Returns the process, with which this variable is associated
     //! \return the associated process or NULL if this is a free variable
-    prl::process* process() const {
+    sill::process* process() const {
       return process_;
     }
 
@@ -105,7 +105,7 @@ namespace prl {
     size_t id_;
 
     //! The process, if any, with which this variable is associated
-    prl::process* process_;
+    sill::process* process_;
 
     //! The index of the variable in the process
     boost::any index_;
@@ -135,7 +135,7 @@ namespace prl {
 
     //! Creates a variable with the given name, process, and index
     variable(const std::string& name,
-             prl::process* process,
+             sill::process* process,
              const boost::any& index)
       : name_(name), id_(0), process_(process), index_(index) { }
 
@@ -170,7 +170,7 @@ namespace prl {
   std::set<V*> intersect(const std::set<V*>& s, const domain& t) {
     concept_assert((Variable<V>));
     std::set<V*> u;
-    prl::set_intersection(s, t, set_inserter(u));
+    sill::set_intersection(s, t, set_inserter(u));
     return u;
   }
 
@@ -193,7 +193,7 @@ namespace prl {
     concept_assert((Variable<U>));
     concept_assert((Variable<V>));
     domain u;
-    prl::set_union(make_converted<variable*>(s),
+    sill::set_union(make_converted<variable*>(s),
                    make_converted<variable*>(t),
                    set_inserter(u));
     return u;
@@ -361,11 +361,11 @@ void dynamic_deep_serialize(oarchive &a, variable* const &i);
 //! This deserializes the pointer variable*, reconstructing the original
 //! datatype of the variable.
 void dynamic_deep_deserialize(iarchive &a, variable* &i);
-} // namespace prl
+} // namespace sill
 
 
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

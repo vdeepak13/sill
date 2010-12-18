@@ -1,17 +1,17 @@
 
-#ifndef PRL_ELIMINATION_HPP
-#define PRL_ELIMINATION_HPP
+#ifndef SILL_ELIMINATION_HPP
+#define SILL_ELIMINATION_HPP
 
 #include <vector>
 
 #include <boost/concept_archetype.hpp>
 
-#include <prl/global.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
+#include <sill/global.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Places a clique of edges over all neighbors of a vertex and then
@@ -41,7 +41,7 @@ namespace prl {
    * in some order.
    * The order is chosen greedily using an elimination strategy.
    *
-   * Note: This function should be called with a prl:: prefix to avoid
+   * Note: This function should be called with a sill:: prefix to avoid
    *       accidental mistakes in name resolution.
    *
    * @tparam Graph
@@ -74,7 +74,7 @@ namespace prl {
     typedef typename Strategy::priority_type priority_type;
 
     // Make a priority queue of vertex indices, ordered by priority.
-    typename prl::mutable_queue<vertex, priority_type> pq;
+    typename sill::mutable_queue<vertex, priority_type> pq;
     foreach(vertex v, graph.vertices()) {
       priority_type priority = elim_strategy.priority(v, graph);
       pq.push(v, priority);
@@ -98,8 +98,8 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif 

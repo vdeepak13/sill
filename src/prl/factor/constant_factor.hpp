@@ -1,20 +1,20 @@
 
-#ifndef PRL_CONSTANT_FACTOR_HPP
-#define PRL_CONSTANT_FACTOR_HPP
+#ifndef SILL_CONSTANT_FACTOR_HPP
+#define SILL_CONSTANT_FACTOR_HPP
 
 #include <sstream>
 
 #include <set>
 
-#include <prl/base/finite_assignment.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/global.hpp>
-#include <prl/learning/dataset/finite_record.hpp>
-#include <prl/math/is_finite.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/base/finite_assignment.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/global.hpp>
+#include <sill/learning/dataset/finite_record.hpp>
+#include <sill/math/is_finite.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /*************************************************************************//**
    * A constant factor represents a constant, i.e., a function of no
@@ -235,8 +235,8 @@ namespace prl {
     return f.combine_in(c, op);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_CONSTANT_FACTOR_HPP
+#endif // #ifndef SILL_CONSTANT_FACTOR_HPP

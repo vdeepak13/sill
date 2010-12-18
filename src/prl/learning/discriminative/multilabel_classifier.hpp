@@ -1,14 +1,14 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_MULTILABEL_CLASSIFIER_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_MULTILABEL_CLASSIFIER_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_MULTILABEL_CLASSIFIER_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_MULTILABEL_CLASSIFIER_HPP
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/discriminative/classifier.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/discriminative/classifier.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Multilabel classifier interface.
@@ -218,6 +218,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_MULTILABEL_CLASSIFIER_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_MULTILABEL_CLASSIFIER_HPP

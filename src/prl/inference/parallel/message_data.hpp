@@ -2,14 +2,14 @@
 #define MESSAGE_DATA_HPP
 
 
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/parallel/object_allocator.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/parallel/object_allocator.hpp>
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   /**
    * \todo move this into the basic_state_manager.
    */
@@ -208,6 +208,6 @@ namespace prl {
   }; // End of message_data
 
 } //end of prl namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

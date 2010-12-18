@@ -1,13 +1,13 @@
-#ifndef PRL_INDEX_MAP_HPP
-#define PRL_INDEX_MAP_HPP
+#ifndef SILL_INDEX_MAP_HPP
+#define SILL_INDEX_MAP_HPP
 
 #include <boost/range/value_type.hpp>
 
-#include <prl/range/concepts.hpp>
+#include <sill/range/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Returns an object that maps the elements of a range (v_0, ..., v_n-1) to 
   //! values 0, ..., n-1.
@@ -27,6 +27,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

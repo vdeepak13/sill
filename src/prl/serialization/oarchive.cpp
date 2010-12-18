@@ -2,7 +2,7 @@
 #include <cstring>
 #include <stdexcept>
 
-#include <prl/serialization/oarchive.hpp>
+#include <sill/serialization/oarchive.hpp>
 
 /***************************************************************************
  *                        Basic Serializers                                * 
@@ -30,7 +30,7 @@ namespace {
 
 }
 
-namespace prl {
+namespace sill {
 
   oarchive& operator<<(oarchive& a, const char i) {
     a.o->put(i);
@@ -99,4 +99,4 @@ namespace prl {
     return a;
   }
 
-} // namespace prl
+} // namespace sill

@@ -1,18 +1,18 @@
 #include <iostream>
 
-#include <prl/learning/dataset/classifier_filter_oracle.hpp>
-#include <prl/learning/dataset/ds_oracle.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/dataset/syn_oracle_knorm.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/stump.hpp>
+#include <sill/learning/dataset/classifier_filter_oracle.hpp>
+#include <sill/learning/dataset/ds_oracle.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/stump.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Create a dataset to work with

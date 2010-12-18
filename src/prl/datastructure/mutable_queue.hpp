@@ -1,12 +1,12 @@
 
-#ifndef PRL_MUTABLE_PRIORITY_QUEUE_HPP
-#define PRL_MUTABLE_PRIORITY_QUEUE_HPP
+#ifndef SILL_MUTABLE_PRIORITY_QUEUE_HPP
+#define SILL_MUTABLE_PRIORITY_QUEUE_HPP
 
 #include <cassert>
 #include <map>
 #include <vector>
 
-namespace prl {
+namespace sill {
 
   /**
    * A heap implementation of a priority queue that supports external
@@ -423,6 +423,6 @@ namespace prl {
     }
   }; // class mutable_queue
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_MUTABLE_PRIORITY_QUEUE_HPP
+#endif // #ifndef SILL_MUTABLE_PRIORITY_QUEUE_HPP

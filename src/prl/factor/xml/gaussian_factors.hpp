@@ -1,14 +1,14 @@
-#ifndef PRL_GAUSSIAN_FACTORS_XML_HPP
-#define PRL_GAUSSIAN_FACTORS_XML_HPP
+#ifndef SILL_GAUSSIAN_FACTORS_XML_HPP
+#define SILL_GAUSSIAN_FACTORS_XML_HPP
 
 #include <iosfwd>
 
-#include <prl/factor/gaussian_factors.hpp>
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_tag.hpp>
+#include <sill/factor/gaussian_factors.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_tag.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename LA>
   const char* xml_tag(canonical_gaussian<LA>*) {
@@ -87,6 +87,6 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

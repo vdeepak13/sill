@@ -2,12 +2,12 @@
 #define MPI_CONSENSUS_HPP
 
 #include <sstream>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/mpi/mpi_protocols.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/mpi/mpi_protocols.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/serialization/serialize.hpp>
 
-namespace prl {
+namespace sill {
   class mpi_consensus;
 
   struct consensus_state {
@@ -88,7 +88,7 @@ namespace prl {
   }; // end class mpi_simple_consensus
 
 
-} // end namespace prl
+} // end namespace sill
 
 
 

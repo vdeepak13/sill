@@ -3,14 +3,14 @@
 
 #include <boost/array.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/range/concepts.hpp>
-#include <prl/learning/dataset/syn_oracle_knorm.hpp>
-#include <prl/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/learning/dataset/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset/syn_oracle_majority.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-using namespace prl;
+using namespace sill;
 
 int main(int argc, char** argv) {
 

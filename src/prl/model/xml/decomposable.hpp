@@ -1,16 +1,16 @@
-#ifndef PRL_DECOMPOSABLE_XML_HPP
-#define PRL_DECOMPOSABLE_XML_HPP
+#ifndef SILL_DECOMPOSABLE_XML_HPP
+#define SILL_DECOMPOSABLE_XML_HPP
 
 #include <list>
 
-#include <prl/model/decomposable.hpp>
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_tag.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_tag.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename F>
   const char* xml_tag(decomposable<F>*) { 
@@ -46,6 +46,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,15 +1,15 @@
 #include <iostream>
 #include <functional>
 
-#include <prl/model/cluster_graph.hpp>
-#include <prl/base/universe.hpp>
+#include <sill/model/cluster_graph.hpp>
+#include <sill/base/universe.hpp>
 
 /**
  * \file cluster_graph.cpp Cluster Graph test
  */
 int main() {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   /**

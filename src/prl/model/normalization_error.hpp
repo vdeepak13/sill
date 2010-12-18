@@ -1,9 +1,9 @@
-#ifndef PRL_NORMALIZATION_ERROR_HPP
-#define PRL_NORMALIZATION_ERROR_HPP
+#ifndef SILL_NORMALIZATION_ERROR_HPP
+#define SILL_NORMALIZATION_ERROR_HPP
 
 #include <stdexcept>
 
-namespace prl {
+namespace sill {
 
   /**
    * An exception thrown when a normalization operation cannot be performed on

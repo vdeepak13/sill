@@ -1,9 +1,9 @@
-#ifndef PRL_SET_INSERT_ITERATOR_HPP
-#define PRL_SET_INSERT_ITERATOR_HPP
+#ifndef SILL_SET_INSERT_ITERATOR_HPP
+#define SILL_SET_INSERT_ITERATOR_HPP
 
 #include <iterator>
 
-namespace prl {
+namespace sill {
 
   /**
    * An output iterator that inserts elements into a set.
@@ -73,7 +73,7 @@ namespace prl {
     return set_insert_iterator<Set>(set); 
   }
 
-} // namespace prl
+} // namespace sill
 
-#endif // PRL_SET_INSERT_ITERATOR_HPP
+#endif // SILL_SET_INSERT_ITERATOR_HPP
 

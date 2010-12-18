@@ -1,7 +1,7 @@
 
-#include <prl/learning/learn_crf_factor.hpp>
+#include <sill/learning/learn_crf_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Macro for specializing learn_crf_factor to hybrid_crf_factor instances.
 // (Specialization definition)
@@ -128,7 +128,7 @@
                                     x2_multipliers);                    \
   }
 
-namespace prl {
+namespace sill {
 
   // Definitions: Learning CRF Factors with Fixed Regularization
   //============================================================================
@@ -592,6 +592,6 @@ namespace prl {
 
   GEN_LEARN_CRF_FACTOR_CV_HYBRID_DEF(gaussian_crf_factor)
 
-}; // namespace prl
+}; // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

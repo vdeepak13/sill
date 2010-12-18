@@ -15,22 +15,22 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_LAZY_FACTOR_HPP
-#define PRL_LAZY_FACTOR_HPP
+#ifndef SILL_LAZY_FACTOR_HPP
+#define SILL_LAZY_FACTOR_HPP
 
-#include <prl/global.hpp>
-#include <prl/set.hpp>
-#include <prl/variable.hpp>
-#include <prl/assignment.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/inference/variable_elimination.hpp>
-#include <prl/combine_iterator.hpp>
-#include <prl/copy_ptr.hpp>
+#include <sill/global.hpp>
+#include <sill/set.hpp>
+#include <sill/variable.hpp>
+#include <sill/assignment.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/inference/variable_elimination.hpp>
+#include <sill/combine_iterator.hpp>
+#include <sill/copy_ptr.hpp>
 
 ///////////////////////////////////////////////////////////////////
 // Needs to be cleaned up & rewritten to use enum-based gdl
 ///////////////////////////////////////////////////////////////////
-namespace prl {
+namespace sill {
 
   /**
    * A lazy factor, which uses variable elimination to delay
@@ -41,8 +41,8 @@ namespace prl {
    * \ingroup factor_types
    */
   template <typename factor_t,
-            typename csr_tag_t = prl::sum_product_tag,
-            typename elim_strategy_t = prl::min_degree_strategy>
+            typename csr_tag_t = sill::sum_product_tag,
+            typename elim_strategy_t = sill::min_degree_strategy>
   class lazy_factor_t {
 
   public:
@@ -68,7 +68,7 @@ namespace prl {
     domain args;
 
     //! The type of pointer used to hold internal factors.
-    typedef prl::copy_ptr<factor_t> factor_ptr_t;
+    typedef sill::copy_ptr<factor_t> factor_ptr_t;
 
     /**
      * The internal factors; the value of this factor is given by the
@@ -124,9 +124,9 @@ namespace prl {
      *
      * @param factor_ptr the factor to wrap
      */
-    lazy_factor_t(typename prl::copy_ptr<factor_t> factor_ptr,
+    lazy_factor_t(typename sill::copy_ptr<factor_t> factor_ptr,
                   elim_strategy_t elim_strategy = elim_strategy_t())
-      : args(prl::const_ptr(factor_ptr)->arguments()),
+      : args(sill::const_ptr(factor_ptr)->arguments()),
         elim_strategy(elim_strategy)
     {
       factor_ptr_vec.push_back(factor_ptr);
@@ -186,12 +186,12 @@ namespace prl {
      * Returns the result of performing any delayed combination
      * operations.
      */
-    inline prl::const_ptr_t<factor_t> flatten() const {
-      prl::combine_iterator<factor_t, dot_op_tag_t> output_it;
+    inline sill::const_ptr_t<factor_t> flatten() const {
+      sill::combine_iterator<factor_t, dot_op_tag_t> output_it;
       output_it = std::copy(factor_ptr_vec.begin(),
                 factor_ptr_vec.end(),
                 output_it);
-      prl::const_ptr_t<factor_t> result = output_it.result();
+      sill::const_ptr_t<factor_t> result = output_it.result();
       // Now that the flattening has been computed, store it.  (This
       // avoids repeating the computation.)  Note that it is not
       // always a win; if the flattening is large, then maintaining
@@ -302,12 +302,12 @@ namespace prl {
                                         binary_op_tag_t> expr,
                   elim_strategy_t elim_strategy = elim_strategy_t()) {
       // Flatten the input factors.
-      prl::const_ptr_t<factor_t> x_ptr = expr.x_ptr->flatten();
-      prl::const_ptr_t<factor_t> y_ptr = expr.y_ptr->flatten();
+      sill::const_ptr_t<factor_t> x_ptr = expr.x_ptr->flatten();
+      sill::const_ptr_t<factor_t> y_ptr = expr.y_ptr->flatten();
       // Initialize this factor with the combination of these two
       // factors.
-      prl::const_ptr_t<factor_t> result_ptr
-        (new factor_t(prl::combine(x_ptr, y_ptr, binary_op_tag_t())));
+      sill::const_ptr_t<factor_t> result_ptr
+        (new factor_t(sill::combine(x_ptr, y_ptr, binary_op_tag_t())));
       this->factor_ptr_vec.push_back(result_ptr);
       this->args = result_ptr->arguments();
       this->elim_strategy = elim_strategy;
@@ -346,11 +346,11 @@ namespace prl {
                                          binary_op_tag_t> expr,
                   elim_strategy_t elim_strategy = elim_strategy_t()) {
       // Flatten the input factor.
-      prl::const_ptr_t<factor_t> x_ptr = expr.x_ptr->flatten();
+      sill::const_ptr_t<factor_t> x_ptr = expr.x_ptr->flatten();
       // Now apply the collapse operation to the result.
       this->factor_ptr_vec.push_back
-        (prl::const_ptr_t<factor_t>
-         (new factor_t(prl::collapse(x_ptr, expr.retained,
+        (sill::const_ptr_t<factor_t>
+         (new factor_t(sill::collapse(x_ptr, expr.retained,
                                      binary_op_tag_t()))));
       this->args = expr.x_ptr->arguments().intersect(expr.retained);
       this->elim_strategy = elim_strategy;
@@ -367,8 +367,8 @@ namespace prl {
              expr.x_ptr->factor_ptr_vec.begin();
            it != expr.x_ptr->factor_ptr_vec.end(); ++it)
         this->factor_ptr_vec.push_back
-          (prl::copy_ptr<factor_t>
-           (new factor_t(prl::restrict(const_ptr(*it), expr.assignment))));
+          (sill::copy_ptr<factor_t>
+           (new factor_t(sill::restrict(const_ptr(*it), expr.assignment))));
       this->args = expr.x_ptr->arguments().minus(expr.assignment.keys());
       this->elim_strategy = elim_strategy;
     }
@@ -385,7 +385,7 @@ namespace prl {
     storage_t get(const assignment& assignment) const {
       typename std::vector<factor_ptr_t>::const_iterator it =
         factor_ptr_vec.begin();
-      prl::const_ptr_t<factor_t> factor_ptr = *it;
+      sill::const_ptr_t<factor_t> factor_ptr = *it;
       storage_t result = factor_ptr->get(assignment);
       binary_op<storage_t, dot_op_tag_t> op;
       while (++it != factor_ptr_vec.end()) {
@@ -453,7 +453,7 @@ namespace prl {
               typename binary_op_tag_t>
     void combine_in(const_ptr_t<other_factor_t> y_ptr,
                     binary_op_tag_t binary_op_tag) {
-      prl::copy_ptr<factor_t> flat_ptr = this->flatten();
+      sill::copy_ptr<factor_t> flat_ptr = this->flatten();
       // Combine the argument into the flat factor.
       flat_ptr->combine_in(y_ptr, binary_op_tag);
       // Reset this factor to the result.
@@ -494,8 +494,8 @@ namespace prl {
      */
     storage_t kl_divergence_to(const lazy_factor_t& f) const {
       // Flatten this factor and the argument factor.
-      prl::const_ptr_t<factor_t> p_ptr = this->flatten();
-      prl::const_ptr_t<factor_t> q_ptr = f.flatten();
+      sill::const_ptr_t<factor_t> p_ptr = this->flatten();
+      sill::const_ptr_t<factor_t> q_ptr = f.flatten();
       // Compute the KL using these factors.
       return p_ptr->kl_divergence_to(*q_ptr);
     }
@@ -521,17 +521,17 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#ifdef PRL_CONSTANT_FACTOR_HPP
-#include <prl/constant_and_lazy_factor.hpp>
-#endif // #ifdef PRL_CONSTANT_FACTOR_HPP
+#ifdef SILL_CONSTANT_FACTOR_HPP
+#include <sill/constant_and_lazy_factor.hpp>
+#endif // #ifdef SILL_CONSTANT_FACTOR_HPP
 
-#ifdef PRL_TABLE_FACTOR_HPP
-#include <prl/table_and_lazy_factor.hpp>
-#endif // #ifdef PRL_TABLE_FACTOR_HPP
+#ifdef SILL_TABLE_FACTOR_HPP
+#include <sill/table_and_lazy_factor.hpp>
+#endif // #ifdef SILL_TABLE_FACTOR_HPP
 
-#endif // PRL_LAZY_FACTOR_HPP
+#endif // SILL_LAZY_FACTOR_HPP
 
 
 

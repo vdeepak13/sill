@@ -1,5 +1,5 @@
-#ifndef PRL_IARCHIVE_HPP
-#define PRL_IARCHIVE_HPP
+#ifndef SILL_IARCHIVE_HPP
+#define SILL_IARCHIVE_HPP
 
 #include <iostream>
 #include <cassert>
@@ -10,24 +10,24 @@
 #include <itpp/base/ittypes.h> // for int32_t etc.
 #endif
 
-namespace prl {
+namespace sill {
 
   class universe;
 
   class iarchive {
   public:
     std::istream* i;
-    prl::universe* u;
+    sill::universe* u;
     size_t bytes_;
 
     iarchive(std::istream& is)
       :i(&is), u(NULL), bytes_() { }
 
-    void attach_universe(prl::universe* uni) {
+    void attach_universe(sill::universe* uni) {
       u = uni;
     }
 
-    prl::universe* universe() {
+    sill::universe* universe() {
       return u;
     }
 
@@ -104,6 +104,6 @@ namespace prl {
     t.load(a);
     return a;
   }
-} // namespace prl
+} // namespace sill
 
 #endif //PRL_IARCHIVE_HPP

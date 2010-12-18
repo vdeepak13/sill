@@ -1,15 +1,15 @@
 #include <boost/bind.hpp>
 
-#include <prl/math/logarithmic.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/map.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/math/logarithmic.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/map.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Serialization
   //============================================================================
@@ -341,15 +341,15 @@ namespace prl {
         /* not well defined */
         return collapse(safe_divides<result_type>(), 1.0, retained);
       case max_op:
-        return collapse(prl::maximum<result_type>(), 
+        return collapse(sill::maximum<result_type>(), 
                         -std::numeric_limits<double>::infinity(), retained);
       case min_op:
-        return collapse(prl::minimum<result_type>(), 
+        return collapse(sill::minimum<result_type>(), 
                         std::numeric_limits<double>::infinity(), retained);
       case and_op:
-        return collapse(prl::logical_and<result_type>(), 1.0, retained);
+        return collapse(sill::logical_and<result_type>(), 1.0, retained);
       case or_op:
-        return collapse(prl::logical_or<result_type>(), 0.0, retained);
+        return collapse(sill::logical_or<result_type>(), 0.0, retained);
       default:
         assert(false); /* Should never reach here */
         return *this;
@@ -368,15 +368,15 @@ namespace prl {
         /* not well defined */
         return collapse(safe_divides<result_type>(), 1.0);
       case max_op:
-        return collapse(prl::maximum<result_type>(), 
+        return collapse(sill::maximum<result_type>(), 
                          -std::numeric_limits<double>::infinity());
       case min_op:
-        return collapse(prl::minimum<result_type>(), 
+        return collapse(sill::minimum<result_type>(), 
                          std::numeric_limits<double>::infinity());
       case and_op:
-        return collapse(prl::logical_and<result_type>(), 1.0);
+        return collapse(sill::logical_and<result_type>(), 1.0);
       case or_op:
-        return collapse(prl::logical_or<result_type>(), 0.0);
+        return collapse(sill::logical_or<result_type>(), 0.0);
       default:
         assert(false); /* Should never reach here */
         return 0.0;
@@ -520,10 +520,10 @@ namespace prl {
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      prl::logical_and<log_table_factor::result_type>());
+                      sill::logical_and<log_table_factor::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, prl::logical_and<log_table_factor::result_type>());
+      *this = combine(*this, y, sill::logical_and<log_table_factor::result_type>());
     }
     return *this;
   }
@@ -533,10 +533,10 @@ namespace prl {
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      prl::logical_or<log_table_factor::result_type>());
+                      sill::logical_or<log_table_factor::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, prl::logical_or<log_table_factor::result_type>());
+      *this = combine(*this, y, sill::logical_or<log_table_factor::result_type>());
     }
     return *this;
   }
@@ -545,10 +545,10 @@ namespace prl {
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      prl::maximum<log_table_factor::result_type>());
+                      sill::maximum<log_table_factor::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, prl::maximum<log_table_factor::result_type>());
+      *this = combine(*this, y, sill::maximum<log_table_factor::result_type>());
     }
     return *this;
   }
@@ -557,15 +557,15 @@ namespace prl {
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      prl::minimum<log_table_factor::result_type>());
+                      sill::minimum<log_table_factor::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, prl::minimum<log_table_factor::result_type>());
+      *this = combine(*this, y, sill::minimum<log_table_factor::result_type>());
     }
     return *this;
   }
 
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

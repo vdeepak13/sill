@@ -3,14 +3,14 @@
 #include <boost/random/lagged_fibonacci.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/math/linear_algebra.hpp>
 
 int main()
 {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   universe u;

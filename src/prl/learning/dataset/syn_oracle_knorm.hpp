@@ -1,6 +1,6 @@
 
-#ifndef PRL_SYN_ORACLE_KNORM_HPP
-#define PRL_SYN_ORACLE_KNORM_HPP
+#ifndef SILL_SYN_ORACLE_KNORM_HPP
+#define SILL_SYN_ORACLE_KNORM_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/normal_distribution.hpp>
@@ -8,16 +8,16 @@
 #include <boost/random/uniform_smallint.hpp>
 #include <boost/random/variate_generator.hpp>
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/learning/dataset/oracle.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/learning/dataset/oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // uncomment to print debugging information
-//#define PRL_SYN_ORACLE_KNORM_HPP_VERBOSE
+//#define SILL_SYN_ORACLE_KNORM_HPP_VERBOSE
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for generating synthetic data from k Gaussians.
@@ -238,8 +238,8 @@ namespace prl {
   (size_t k, size_t nfeatures, universe& u,
    syn_oracle_knorm::parameters params = syn_oracle_knorm::parameters());
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_SYN_ORACLE_KNORM_HPP
+#endif // #ifndef SILL_SYN_ORACLE_KNORM_HPP

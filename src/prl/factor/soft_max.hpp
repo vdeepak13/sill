@@ -1,14 +1,14 @@
-#ifndef PRL_SOFT_MAX_HPP
-#define PRL_SOFT_MAX_HPP
+#ifndef SILL_SOFT_MAX_HPP
+#define SILL_SOFT_MAX_HPP
 
 #include <iosfwd>
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/assignment.hpp>
-#include <prl/math/ublas/special_matrics.hpp>
-#include <prl/factor/factor.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/math/ublas/special_matrics.hpp>
+#include <sill/factor/factor.hpp>
 
-namespace prl {
+namespace sill {
 
   // Forward declarations of related factors
   class constant_factor;
@@ -130,7 +130,7 @@ namespace prl {
     typedef ;
   };
 
-} // namespace prl
+} // namespace sill
 
 
 #endif

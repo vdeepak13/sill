@@ -1,10 +1,10 @@
-#include <prl/graph/grid_graphs.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/model/random.hpp>
-#include <prl/inference/belief_propagation.hpp>
+#include <sill/graph/grid_graphs.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/random.hpp>
+#include <sill/inference/belief_propagation.hpp>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/dense_table.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/dense_table.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -16,7 +16,7 @@ boost::mt19937 rng;
 
 int main(int argc, char* argv[])
 {
-  using namespace prl;
+  using namespace sill;
   using std::cout;
   using std::endl;
   typedef pairwise_markov_network<table_factor> mn_type;

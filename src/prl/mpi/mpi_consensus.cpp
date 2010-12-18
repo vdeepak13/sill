@@ -1,11 +1,11 @@
 #include <sstream>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/mpi/mpi_protocols.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/mpi/mpi_consensus.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/mpi/mpi_protocols.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/mpi/mpi_consensus.hpp>
 
-namespace prl {
+namespace sill {
 
   void consensus_po_box_callback::recv_message(const mpi_post_office::message& msg) {
     // read and deserialize the the token
@@ -291,5 +291,5 @@ namespace prl {
     }
   }
 
-} // end namespace prl
+} // end namespace sill
 

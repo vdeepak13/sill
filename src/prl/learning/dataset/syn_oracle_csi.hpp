@@ -1,19 +1,19 @@
 
-#ifndef PRL_SYN_ORACLE_CSI_HPP
-#define PRL_SYN_ORACLE_CSI_HPP
+#ifndef SILL_SYN_ORACLE_CSI_HPP
+#define SILL_SYN_ORACLE_CSI_HPP
 
 #include <boost/random/bernoulli_distribution.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/assignment.hpp>
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/model/bayesian_network.hpp>
+#include <sill/assignment.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/model/bayesian_network.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for generating discrete data from a Bayesian network
@@ -205,8 +205,8 @@ namespace prl {
     return syn_oracle_csi(var_order, params);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_SYN_ORACLE_CSI_HPP
+#endif // #ifndef SILL_SYN_ORACLE_CSI_HPP

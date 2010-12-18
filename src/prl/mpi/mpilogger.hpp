@@ -3,7 +3,7 @@
 #include <iostream>
 #include "prl/mpi/mpi_wrapper.hpp"
 #include "prl/mpi/mpi_protocols.hpp"
-namespace prl {
+namespace sill {
 
 class mpilogger {
 private:

@@ -1,21 +1,21 @@
 
-#ifndef PRL_SYMBOLIC_ORACLE_HPP
-#define PRL_SYMBOLIC_ORACLE_HPP
+#ifndef SILL_SYMBOLIC_ORACLE_HPP
+#define SILL_SYMBOLIC_ORACLE_HPP
 
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 
-#include <prl/global.hpp>
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/learning/dataset/symbolic.hpp>
+#include <sill/global.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset/symbolic.hpp>
 
 #include <boost/tokenizer.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for loading data from symbolic data files (text or binary).
@@ -253,8 +253,8 @@ namespace prl {
 
   }; // class symbolic_oracle
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_SYMBOLIC_ORACLE_HPP
+#endif // #ifndef SILL_SYMBOLIC_ORACLE_HPP

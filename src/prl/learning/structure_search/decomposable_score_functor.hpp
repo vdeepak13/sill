@@ -1,10 +1,10 @@
 
-#ifndef PRL_LEARNING_DECOMPOSABLE_SCORE_FUNCTOR_HPP
-#define PRL_LEARNING_DECOMPOSABLE_SCORE_FUNCTOR_HPP
+#ifndef SILL_LEARNING_DECOMPOSABLE_SCORE_FUNCTOR_HPP
+#define SILL_LEARNING_DECOMPOSABLE_SCORE_FUNCTOR_HPP
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Virtual functor used by the map functions in decomposable_change.
@@ -27,6 +27,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DECOMPOSABLE_SCORE_FUNCTOR_HPP
+#endif // #ifndef SILL_LEARNING_DECOMPOSABLE_SCORE_FUNCTOR_HPP

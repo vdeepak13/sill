@@ -1,15 +1,15 @@
 #include <iostream>
 
-#include <prl/base/universe.hpp>
-#include <prl/model/bayesian_graph.hpp>
-#include <prl/model/markov_graph.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/model/bayesian_graph.hpp>
+#include <sill/model/markov_graph.hpp>
 
 /**
  * \file bayes_markov_graph.cpp Bayes net graph and Markov graph test
  */
 int main() {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   universe u;

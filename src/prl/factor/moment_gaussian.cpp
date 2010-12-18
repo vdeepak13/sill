@@ -1,19 +1,19 @@
 #include <stdexcept>
 
-#include <prl/math/constants.hpp>
-#include <prl/math/linear_algebra.hpp>
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/invalid_operation.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/vector.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/math/constants.hpp>
+#include <sill/math/linear_algebra.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/invalid_operation.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/vector.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Serialization
   //============================================================================
@@ -169,7 +169,7 @@ namespace prl {
     if (!marginal())
       throw invalid_operation
         ("moment_gaussian::operator() called on a non-marginal distribution.");
-    vec x = prl::concat(values(a, head_list));
+    vec x = sill::concat(values(a, head_list));
     return operator()(x);
   }
 
@@ -240,7 +240,7 @@ namespace prl {
       if (ntail + y.size() == 0) // Then we do not restrict anything.
         return *this;
       assert(ntail == tail_list.size()); // for now
-      vec v_tail(prl::concat(values(a, tail_list)));
+      vec v_tail(sill::concat(values(a, tail_list)));
       new_cmean += coeff * v_tail;
       if (y.size() == 0)
         return moment_gaussian(x, new_cmean, cov, likelihood);
@@ -248,7 +248,7 @@ namespace prl {
 
     ivec ix(indices(x));
     ivec iy(indices(y));
-    vec dy(prl::concat(values(a, y)));
+    vec dy(sill::concat(values(a, y)));
     dy -= new_cmean(iy);
     mat invyy_covyx;
     bool result = ls_solve_chol(cov(iy,iy), cov(iy,ix), invyy_covyx);
@@ -423,6 +423,6 @@ namespace prl {
       throw std::invalid_argument("Cannot directly combine moment Gaussians");
   }
 
-} // namespace prl
+} // namespace sill
 
 

@@ -1,12 +1,12 @@
-#ifndef PRL_MATH_UBLAS_FIXED_HPP
-#define PRL_MATH_UBLAS_FIXED_HPP
+#ifndef SILL_MATH_UBLAS_FIXED_HPP
+#define SILL_MATH_UBLAS_FIXED_HPP
 
 #include <algorithm>
 
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/numeric/ublas/matrix.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 namespace boost { namespace numeric { namespace ublas
 {
@@ -104,6 +104,6 @@ namespace boost { namespace numeric { namespace ublas
 
 } } } // namespaces
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

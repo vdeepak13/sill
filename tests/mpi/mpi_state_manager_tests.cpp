@@ -8,20 +8,20 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
-#include <prl/factor/random.hpp>
+#include <sill/factor/random.hpp>
 
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/mpi/mpilogger.hpp>
-#include <prl/inference/parallel/mpi_state_manager.hpp>
-#include <prl/inference/parallel/mpi_state_manager_protocol.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/inference/parallel/residual_splash_engine.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/mpi/mpilogger.hpp>
+#include <sill/inference/parallel/mpi_state_manager.hpp>
+#include <sill/inference/parallel/mpi_state_manager_protocol.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/inference/parallel/residual_splash_engine.hpp>
 
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 void create_test_graph(universe &u, factor_graph_model<tablef> &fg) {
   boost::mt19937 rng;

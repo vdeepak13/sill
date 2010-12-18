@@ -1,20 +1,20 @@
 
-#ifndef PRL_SYN_ORACLE_MAJORITY_HPP
-#define PRL_SYN_ORACLE_MAJORITY_HPP
+#ifndef SILL_SYN_ORACLE_MAJORITY_HPP
+#define SILL_SYN_ORACLE_MAJORITY_HPP
 
 #include <boost/random/bernoulli_distribution.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/math/free_functions.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/math/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // uncomment to print debugging information
-//#define PRL_SYN_ORACLE_MAJORITY_HPP_VERBOSE
+//#define SILL_SYN_ORACLE_MAJORITY_HPP_VERBOSE
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for generating synthetic data from a majority vote rule.
@@ -195,8 +195,8 @@ namespace prl {
    const syn_oracle_majority::parameters& params
    = syn_oracle_majority::parameters());
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_SYN_ORACLE_MAJORITY_HPP
+#endif // #ifndef SILL_SYN_ORACLE_MAJORITY_HPP

@@ -1,9 +1,9 @@
-#ifndef PRL_RECIPROCAL_HPP
-#define PRL_RECIPROCAL_HPP
+#ifndef SILL_RECIPROCAL_HPP
+#define SILL_RECIPROCAL_HPP
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! A functor which returns the reciprocal of the given number.
   template <typename T>
@@ -22,7 +22,7 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_RECIPROCAL_HPP
+#endif // SILL_RECIPROCAL_HPP
 

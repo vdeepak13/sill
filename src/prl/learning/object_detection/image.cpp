@@ -1,12 +1,12 @@
 #include <map>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/object_detection/image.hpp>
-#include <prl/base/stl_util.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/object_detection/image.hpp>
+#include <sill/base/stl_util.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Publics methods: getting image info
     //==========================================================================
@@ -267,6 +267,6 @@ namespace prl {
       return var_order;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

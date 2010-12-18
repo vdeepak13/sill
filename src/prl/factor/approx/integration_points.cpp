@@ -1,10 +1,10 @@
-#include <prl/factor/approx/integration_points.hpp>
+#include <sill/factor/approx/integration_points.hpp>
 
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/nonlinear_gaussian.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/nonlinear_gaussian.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-namespace prl {
+namespace sill {
 
   moment_gaussian integration_points_approximator::
   operator()(const nonlinear_gaussian& ng, const moment_gaussian& prior) const {
@@ -88,5 +88,5 @@ namespace prl {
                           concat(w0, w1, w2));
   }
 
-} // namespace prl
+} // namespace sill
 

@@ -1,5 +1,5 @@
-#ifndef PRL_ALGORITHM_HPP
-#define PRL_ALGORITHM_HPP
+#ifndef SILL_ALGORITHM_HPP
+#define SILL_ALGORITHM_HPP
 
 #include <algorithm>
 #include <functional>
@@ -12,13 +12,13 @@
 #include <boost/range/value_type.hpp>
 #include <boost/type_traits/remove_const.hpp>
 
-#include <prl/functional.hpp> // minimum & maximum
-#include <prl/range/concepts.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/functional.hpp> // minimum & maximum
+#include <sill/range/concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup range_algorithm
   //! @{
@@ -679,7 +679,7 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_ALGORITHM_HPP
+#endif // SILL_ALGORITHM_HPP
 

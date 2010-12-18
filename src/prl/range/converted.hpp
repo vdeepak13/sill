@@ -1,12 +1,12 @@
-#ifndef PRL_CONVERTED_HPP
-#define PRL_CONVERTED_HPP
+#ifndef SILL_CONVERTED_HPP
+#define SILL_CONVERTED_HPP
 
 #include <boost/range/iterator_range.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 
-#include <prl/functional.hpp>
+#include <sill/functional.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \ingroup range_adapters
   template <typename T, typename Range>

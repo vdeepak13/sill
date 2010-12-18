@@ -1,10 +1,10 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_BOOSTER_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_BOOSTER_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_BOOSTER_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_BOOSTER_HPP
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   struct booster_parameters {
 
@@ -110,8 +110,8 @@ namespace prl {
 
   }; // class booster
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_BOOSTER_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_BOOSTER_HPP

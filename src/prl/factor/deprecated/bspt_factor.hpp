@@ -15,26 +15,26 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_BSPT_FACTOR_HPP
-#define PRL_BSPT_FACTOR_HPP
+#ifndef SILL_BSPT_FACTOR_HPP
+#define SILL_BSPT_FACTOR_HPP
 
 #include <boost/type_traits.hpp>
 #include <boost/mpl/if.hpp>
 
-#include <prl/global.hpp>
-#include <prl/set.hpp>
-#include <prl/variable.hpp>
-#include <prl/assignment.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/bsp_tree.hpp>
-#include <prl/copy_ptr.hpp>
+#include <sill/global.hpp>
+#include <sill/set.hpp>
+#include <sill/variable.hpp>
+#include <sill/assignment.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/bsp_tree.hpp>
+#include <sill/copy_ptr.hpp>
 
 ////////////////////////////////////////////////////////////////////
 // Needs clean-up; does not compile at the moment
 ///////////////////////////////////////////////////////////////////
 
-namespace prl {
+namespace sill {
 
   /**
    * A BSPT factor is a factor which uses a binary space partitioning
@@ -112,7 +112,7 @@ namespace prl {
        * of the space is mapped to information about its available
        * range.
        */
-      typedef prl::map<variable_h, range_info_t> region_t;
+      typedef sill::map<variable_h, range_info_t> region_t;
 
       /**
        * Each leaf is associated with a factor.  This factor is held
@@ -120,9 +120,9 @@ namespace prl {
        * avoids unnecessary copies in cases like copying BSPT factors.
        * To avoid the copy-on-write penalty when only const access is
        * required, this pointer can be converted to a
-       * prl::const_ptr_t<leaf_factor_t> pointer before dereferencing.
+       * sill::const_ptr_t<leaf_factor_t> pointer before dereferencing.
        */
-      typedef typename prl::copy_ptr<leaf_factor_t> leaf_data_t;
+      typedef typename sill::copy_ptr<leaf_factor_t> leaf_data_t;
 
       //! Returns the union space of the two supplied spaces.
       static inline space_t merge_spaces(const space_t& s,
@@ -134,7 +134,7 @@ namespace prl {
        * Returns truth if the supplied region overlaps the portion of
        * the space that satisfies a predicate (or its negation).
        */
-      static inline prl::pred_set_rel_t relation(const predicate_t& p,
+      static inline sill::pred_set_rel_t relation(const predicate_t& p,
                                                  const region_t& r) {
         const variable_h& variable = p.first;
         const finite_value& value = p.second;
@@ -299,7 +299,7 @@ namespace prl {
         const_ptr_t<leaf_factor_t> x_const_ptr(x_ptr);
         const_ptr_t<leaf_factor_t> y_const_ptr(y_ptr);
         // Note that the measure is irrelevant to the combination.
-        return prl::copy_ptr<leaf_factor_t>
+        return sill::copy_ptr<leaf_factor_t>
           (new leaf_factor_t(combine(x_const_ptr, y_const_ptr,
                                      binary_op_tag_t())));
       }
@@ -348,17 +348,17 @@ namespace prl {
         finite_value num_x_assignments = num_assignments(x_measure);
         finite_value num_y_assignments = num_assignments(y_measure);
         // Scale each leaf factor by the number of assignments.
-        typedef prl::constant_factor<finite_value> constant_t;
+        typedef sill::constant_factor<finite_value> constant_t;
         const_ptr_t<constant_t> xc_ptr(new constant_t(num_x_assignments));
         const_ptr_t<constant_t> yc_ptr(new constant_t(num_y_assignments));
         const_ptr_t<leaf_factor_t>
-          x_scaled_ptr(new leaf_factor_t(prl::combine(x_const_ptr, xc_ptr,
+          x_scaled_ptr(new leaf_factor_t(sill::combine(x_const_ptr, xc_ptr,
                                                       product_tag())));
         const_ptr_t<leaf_factor_t>
-          y_scaled_ptr(new leaf_factor_t(prl::combine(y_const_ptr, yc_ptr,
+          y_scaled_ptr(new leaf_factor_t(sill::combine(y_const_ptr, yc_ptr,
                                                       product_tag())));
         // Now add the two scaled factors.
-        return prl::copy_ptr<leaf_factor_t>
+        return sill::copy_ptr<leaf_factor_t>
           (new leaf_factor_t(combine(x_scaled_ptr, y_scaled_ptr,
                                      sum_tag())));
       }
@@ -416,7 +416,7 @@ namespace prl {
      *
      * @param factor_ptr the root factor
      */
-    bspt_factor_t(typename prl::copy_ptr<leaf_factor_t> factor_ptr)
+    bspt_factor_t(typename sill::copy_ptr<leaf_factor_t> factor_ptr)
       : args(factor_ptr->arguments()),
         leaf_args(factor_ptr->arguments())
     {
@@ -531,7 +531,7 @@ namespace prl {
      * with this tree; this method requires that the tree is a
      * singleton.
      */
-    inline const prl::copy_ptr<leaf_factor_t>& get_singleton_factor() const {
+    inline const sill::copy_ptr<leaf_factor_t>& get_singleton_factor() const {
       return get_bspt().get_singleton_data();
     }
 
@@ -593,7 +593,7 @@ namespace prl {
      */
     storage_t get(const assignment& assignment) const {
       // Note that a const pointer is used here to avoid copy-on-write.
-      typename prl::const_ptr_t<leaf_factor_t> leaf_factor_ptr =
+      typename sill::const_ptr_t<leaf_factor_t> leaf_factor_ptr =
         get_bspt().get_leaf_data(assignment);
       return leaf_factor_ptr->get(assignment);
     }
@@ -610,7 +610,7 @@ namespace prl {
      * @param  value the value associated with the assignment
      */
     void set(const assignment& assignment, storage_t val) {
-      typename prl::copy_ptr<leaf_factor_t> leaf_factor_ptr =
+      typename sill::copy_ptr<leaf_factor_t> leaf_factor_ptr =
         get_bspt().get_leaf_data(assignment);
       leaf_factor_ptr->set(assignment, val);
     }
@@ -665,8 +665,8 @@ namespace prl {
       // combinations.
       typename bspt_t::leaf_iterator_t it, end;
       for (boost::tie(it, end) = get_bspt().leaves(); it != end; ++it)
-        it->leaf_data = prl::copy_ptr<leaf_factor_t>
-          (new leaf_factor_t(prl::combine(it->leaf_data,
+        it->leaf_data = sill::copy_ptr<leaf_factor_t>
+          (new leaf_factor_t(sill::combine(it->leaf_data,
                                           expr.y_ptr,
                                           binary_op_tag_t())));
       // The arguments and internal arguments are obtained as unions.
@@ -748,7 +748,7 @@ namespace prl {
         typename bspt_t::leaf_iterator_t it, end;
         for (boost::tie(it, end) = get_bspt().leaves(); it != end; ++it)
           it->leaf_data.reset(new leaf_factor_t
-                              (prl::restrict(it->leaf_data,
+                              (sill::restrict(it->leaf_data,
                                              expr.assignment)));
       }
     }
@@ -773,7 +773,7 @@ namespace prl {
       // TODO: currently, there is no performance advantage to using
       // combine_in rather than combine.
       const_ptr_t<bspt_factor_t> c_ptr(new bspt_factor_t(*this));
-      bspt_factor_t d(prl::combine(c_ptr, y_ptr, binary_op_tag));
+      bspt_factor_t d(sill::combine(c_ptr, y_ptr, binary_op_tag));
       this->swap(d);
     }
 
@@ -918,14 +918,14 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#ifdef PRL_CONSTANT_FACTOR_HPP
-#include <prl/constant_and_bspt_factor.hpp>
-#endif // #ifdef PRL_CONSTANT_FACTOR_HPP
+#ifdef SILL_CONSTANT_FACTOR_HPP
+#include <sill/constant_and_bspt_factor.hpp>
+#endif // #ifdef SILL_CONSTANT_FACTOR_HPP
 
-#ifdef PRL_TABLE_FACTOR_HPP
-#include <prl/table_and_bspt_factor.hpp>
-#endif // #ifdef PRL_TABLE_FACTOR_HPP
+#ifdef SILL_TABLE_FACTOR_HPP
+#include <sill/table_and_bspt_factor.hpp>
+#endif // #ifdef SILL_TABLE_FACTOR_HPP
 
-#endif // PRL_BSPT_FACTOR_HPP
+#endif // SILL_BSPT_FACTOR_HPP

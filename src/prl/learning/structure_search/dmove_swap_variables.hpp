@@ -1,12 +1,12 @@
 
-#ifndef PRL_LEARNING_DMOVE_SWAP_VARIABLES_HPP
-#define PRL_LEARNING_DMOVE_SWAP_VARIABLES_HPP
+#ifndef SILL_LEARNING_DMOVE_SWAP_VARIABLES_HPP
+#define SILL_LEARNING_DMOVE_SWAP_VARIABLES_HPP
 #include <set>
-#include <prl/learning/structure_search/decomposable_move.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/learning/structure_search/decomposable_move.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for representing a possible move in structure search for
@@ -228,6 +228,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DMOVE_SWAP_VARIABLES_HPP
+#endif // #ifndef SILL_LEARNING_DMOVE_SWAP_VARIABLES_HPP

@@ -1,6 +1,6 @@
 
-#ifndef PRL_OPTIMIZATION_LINE_SEARCH_HPP
-#define PRL_OPTIMIZATION_LINE_SEARCH_HPP
+#ifndef SILL_OPTIMIZATION_LINE_SEARCH_HPP
+#define SILL_OPTIMIZATION_LINE_SEARCH_HPP
 
 #include <cassert>
 #include <cmath>
@@ -10,12 +10,12 @@
 
 #include <boost/type_traits/is_same.hpp>
 
-#include <prl/optimization/real_opt_step.hpp>
-#include <prl/optimization/real_opt_step_functor.hpp>
+#include <sill/optimization/real_opt_step.hpp>
+#include <sill/optimization/real_opt_step_functor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Parameters for line_search.
   struct line_search_parameters {
@@ -356,6 +356,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_OPTIMIZATION_LINE_SEARCH_HPP
+#endif // #ifndef SILL_OPTIMIZATION_LINE_SEARCH_HPP

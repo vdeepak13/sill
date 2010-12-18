@@ -1,38 +1,38 @@
 
 #include <iostream>
 
-#include <prl/math/vector.hpp>
-#include <prl/optimization/conjugate_gradient.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/optimization/conjugate_gradient.hpp>
 
 static const double CGT_OBJ_CONST = 1;
 
 struct obj_functor {
-  double objective(prl::vec val) const {
-    prl::vec tmpval(2,1.);
+  double objective(sill::vec val) const {
+    sill::vec tmpval(2,1.);
     return -5. +
-      CGT_OBJ_CONST * prl::inner_prod<double>(val - tmpval, val - tmpval);
+      CGT_OBJ_CONST * sill::inner_prod<double>(val - tmpval, val - tmpval);
   }
 };
 
 struct grad_functor {
-  void gradient(prl::vec& grad, const prl::vec& val) const {
-    prl::vec tmpval(2,1.);
+  void gradient(sill::vec& grad, const sill::vec& val) const {
+    sill::vec tmpval(2,1.);
     grad = 2. * CGT_OBJ_CONST * (val - tmpval);
   }
 };
 
 struct prec_functor {
-  void precondition(prl::vec& grad, const prl::vec& val) const {
+  void precondition(sill::vec& grad, const sill::vec& val) const {
     grad *= 1. / CGT_OBJ_CONST;
   }
-  void precondition(prl::vec& grad) const {
+  void precondition(sill::vec& grad) const {
     grad *= 1. / CGT_OBJ_CONST;
   }
 };
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
 
   size_t niter = 5;
 

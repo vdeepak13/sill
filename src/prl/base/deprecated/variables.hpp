@@ -1,12 +1,12 @@
-#ifndef PRL_BASE_VARIABLES_HPP
-#define PRL_BASE_VARIABLES_HPP
+#ifndef SILL_BASE_VARIABLES_HPP
+#define SILL_BASE_VARIABLES_HPP
 
-#include <prl/base/variable.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/finite_assignment_iterator.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file variables.hpp
@@ -15,7 +15,7 @@
  *       involving single variables and things involving domains.
  */
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup base_types
   //! @{
@@ -28,8 +28,8 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

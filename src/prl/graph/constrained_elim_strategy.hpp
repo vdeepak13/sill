@@ -1,11 +1,11 @@
-#ifndef PRL_CONSTRAINED_ELIM_STRATEGY_HPP
-#define PRL_CONSTRAINED_ELIM_STRATEGY_HPP
+#ifndef SILL_CONSTRAINED_ELIM_STRATEGY_HPP
+#define SILL_CONSTRAINED_ELIM_STRATEGY_HPP
 
-#include <prl/graph/concepts.hpp>
+#include <sill/graph/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Implements an elimination strategy subject to an elimination
@@ -86,8 +86,8 @@ namespace prl {
 
   }; // struct constrained_elim_strategy
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,10 +1,10 @@
-#ifndef PRL_MIN_DEGREE_STRATEGY_HPP
-#define PRL_MIN_DEGREE_STRATEGY_HPP
+#ifndef SILL_MIN_DEGREE_STRATEGY_HPP
+#define SILL_MIN_DEGREE_STRATEGY_HPP
 
-#include <prl/graph/concepts.hpp>
-#include <prl/range/algorithm.hpp>
+#include <sill/graph/concepts.hpp>
+#include <sill/range/algorithm.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Min-degree elimination strategy.
@@ -41,11 +41,11 @@ namespace prl {
     void updated(typename Graph::vertex v, const Graph& g, OutIt updated) {
       //concept_assert((IncidenceGraph<Graph>));
       //concept_assert((OutputIterator<OutIt, typename Graph::vertex>));
-      prl::copy(g.neighbors(v), updated);
+      sill::copy(g.neighbors(v), updated);
     }
 
   }; // struct min_degree_strategy
 
-} // namespace prl
+} // namespace sill
 
 #endif

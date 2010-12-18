@@ -1,12 +1,12 @@
-#ifndef PRL_BOOST_UNORDERED_UTILS_HPP
-#define PRL_BOOST_UNORDERED_UTILS_HPP
+#ifndef SILL_BOOST_UNORDERED_UTILS_HPP
+#define SILL_BOOST_UNORDERED_UTILS_HPP
 
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename T>
   size_t intersection_size(const boost::unordered_set<T>& a,
@@ -46,6 +46,6 @@ namespace prl {
   }
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,16 +1,16 @@
-#ifndef PRL_VECTOR_VARIABLE_HPP
-#define PRL_VECTOR_VARIABLE_HPP
+#ifndef SILL_VECTOR_VARIABLE_HPP
+#define SILL_VECTOR_VARIABLE_HPP
 
 #include <vector>
 #include <set>
 #include <map>
 
-#include <prl/math/vector.hpp>
-#include <prl/base/variable.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A variable that can take on values in \f$\Re^d\f$
@@ -40,7 +40,7 @@ namespace prl {
 
     //! Constructs a variable with the given name, dimensionality, and process
     vector_variable(const std::string& name, size_t size,
-                    prl::process* process, const boost::any& index)
+                    sill::process* process, const boost::any& index)
       : variable(name, process, index), size_(size) { }
 
     //! Conversion to human-readable format
@@ -116,8 +116,8 @@ namespace prl {
   //! The archive must have an attached universe
   iarchive& operator>>(iarchive& ar, vector_variable*& v);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

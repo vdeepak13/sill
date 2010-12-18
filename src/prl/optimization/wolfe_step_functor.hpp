@@ -1,13 +1,13 @@
 
-#ifndef PRL_WOLFE_STEP_FUNCTOR_HPP
-#define PRL_WOLFE_STEP_FUNCTOR_HPP
+#ifndef SILL_WOLFE_STEP_FUNCTOR_HPP
+#define SILL_WOLFE_STEP_FUNCTOR_HPP
 
-#include <prl/optimization/concepts.hpp>
-#include <prl/optimization/real_opt_step_functor.hpp>
+#include <sill/optimization/concepts.hpp>
+#include <sill/optimization/real_opt_step_functor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Functor to be passed to line_search_with_grad by conjugate gradient or
@@ -46,9 +46,9 @@ namespace prl {
   struct wolfe_step_functor
     : public real_opt_step_functor {
 
-    concept_assert((prl::OptimizationVector<OptVector>));
-    concept_assert((prl::ObjectiveFunctor<Objective, OptVector>));
-    concept_assert((prl::GradientFunctor<Gradient, OptVector>));
+    concept_assert((sill::OptimizationVector<OptVector>));
+    concept_assert((sill::ObjectiveFunctor<Objective, OptVector>));
+    concept_assert((sill::GradientFunctor<Gradient, OptVector>));
 
   private:
 
@@ -256,6 +256,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_WOLFE_STEP_FUNCTOR_HPP
+#endif // #ifndef SILL_WOLFE_STEP_FUNCTOR_HPP

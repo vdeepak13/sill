@@ -16,11 +16,11 @@
 #include <mpi.h>
 
 
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/parallel/timer.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/parallel/timer.hpp>
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 
 

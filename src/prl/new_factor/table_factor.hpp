@@ -1,17 +1,17 @@
-#ifndef PRL_TABLE_FACTOR_HPP
-#define PRL_TABLE_FACTOR_HPP
+#ifndef SILL_TABLE_FACTOR_HPP
+#define SILL_TABLE_FACTOR_HPP
 
 #include <vector>
 #include <typeinfo>
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/assignment.hpp>
-#include <prl/base/finite_assignment_iterator.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
 
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   class table_factor : public discrete_factor {
   private:
@@ -146,9 +146,9 @@ namespace prl {
 
   }; // end of discrete_factor
 
-}; // end of namespace prl
+}; // end of namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif
 
 

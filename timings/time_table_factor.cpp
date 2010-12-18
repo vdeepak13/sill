@@ -10,20 +10,20 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/factor/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/factor/random.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-using namespace prl;
+using namespace sill;
 
 int main(int argc, char** argv) {
 
   using namespace boost;
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   
   // The number of repetitions

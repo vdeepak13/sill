@@ -1,6 +1,6 @@
 
-#ifndef PRL_DATASET_VIEW_HPP
-#define PRL_DATASET_VIEW_HPP
+#ifndef SILL_DATASET_VIEW_HPP
+#define SILL_DATASET_VIEW_HPP
 
 #include <fstream>
 #include <string>
@@ -14,16 +14,16 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/base/assignment.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/range/concepts.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/range/concepts.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A class that provides a view of a subset of another dataset.
@@ -208,7 +208,7 @@ namespace prl {
     void convert_assignment_(assignment& a) const;
 
     //! Load datapoint i into assignment a
-    void load_assignment(size_t i, prl::assignment& a) const;
+    void load_assignment(size_t i, sill::assignment& a) const;
 
     //! Load record i into r
     void load_record(size_t i, record& r) const;
@@ -560,8 +560,8 @@ namespace prl {
 
   };  // class dataset_view
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

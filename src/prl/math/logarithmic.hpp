@@ -1,6 +1,6 @@
 
-#ifndef PRL_LOGARITHMIC_HPP
-#define PRL_LOGARITHMIC_HPP
+#ifndef SILL_LOGARITHMIC_HPP
+#define SILL_LOGARITHMIC_HPP
 
 #include <limits>
 #include <iostream>
@@ -11,11 +11,11 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/math/special_functions/log1p.hpp>
 
-#include <prl/global.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/global.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! A tag that is used to indicate a log-space value.
   //! \ingroup math_number
@@ -501,24 +501,24 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill
 
 namespace std {
   // overload the log in std
   //! Returns the log-value of the logarithmic object
   //! \relates logarithmic
   template <typename T>
-  inline T log(const prl::logarithmic<T>& x) {
+  inline T log(const sill::logarithmic<T>& x) {
     return x.log_value();
   }
 }
 
-namespace prl{ 
+namespace sill{ 
   using std::log;
 }
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_LOGARITHMIC_HPP
+#endif // SILL_LOGARITHMIC_HPP
 
 
 

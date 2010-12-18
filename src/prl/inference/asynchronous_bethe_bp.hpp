@@ -1,11 +1,11 @@
-#ifndef PRL_ASYNCHRONOUS_BETHE_BP
-#define PRL_ASYNCHRONOUS_BETHE_BP
+#ifndef SILL_ASYNCHRONOUS_BETHE_BP
+#define SILL_ASYNCHRONOUS_BETHE_BP
 
-#include <prl/inference/bethe_bp.hpp>
+#include <sill/inference/bethe_bp.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Loopy BP engine with an asynchronous ordering of updates.
@@ -54,8 +54,8 @@ namespace prl {
 
   }; // class asynchronous_bethe_bp
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

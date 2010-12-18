@@ -1,16 +1,16 @@
 
-#ifndef PRL_MARKOV_GRAPH_HPP
-#define PRL_MARKOV_GRAPH_HPP
+#ifndef SILL_MARKOV_GRAPH_HPP
+#define SILL_MARKOV_GRAPH_HPP
 
 #include <iterator>
 
 #include <boost/type_traits/is_same.hpp>
 
-#include <prl/graph/undirected_graph.hpp>
+#include <sill/graph/undirected_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Graph for a Markov model.
@@ -133,17 +133,17 @@ namespace prl {
 
   }; // class markov_graph
 
-} // namespace prl
+} // namespace sill
 
 namespace boost {
 
   //! A traits class that lets markov_graph work in BGL algorithms
   template <typename Node, typename VP, typename EP>
-  struct graph_traits< prl::markov_graph<Node, VP, EP> >
-    : public graph_traits< prl::undirected_graph<Node, VP, EP> > { };
+  struct graph_traits< sill::markov_graph<Node, VP, EP> >
+    : public graph_traits< sill::undirected_graph<Node, VP, EP> > { };
 
 } // namespace boost
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_MARKOV_GRAPH_HPP
+#endif // #ifndef SILL_MARKOV_GRAPH_HPP

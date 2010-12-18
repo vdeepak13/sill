@@ -8,12 +8,12 @@
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/table_factor.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/table_factor.hpp>
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace boost;
   using namespace std;
   /*

@@ -4,22 +4,22 @@
 #include <set>
 #include <boost/timer.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/syn_oracle_knorm.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file dataset_view_timing.cpp Timing tests of datasets and views.
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   universe u;

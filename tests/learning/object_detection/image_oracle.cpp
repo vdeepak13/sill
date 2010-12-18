@@ -2,17 +2,17 @@
 
 #include <boost/timer.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/object_detection/image.hpp>
-#include <prl/learning/object_detection/image_oracle.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/object_detection/image.hpp>
+#include <sill/learning/object_detection/image_oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   cout << "Variable-sized images:\n" << endl;

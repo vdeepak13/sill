@@ -1,15 +1,15 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_HPP
 
 #include <algorithm>
 
-#include <prl/datastructure/concepts.hpp>
-#include <prl/functional.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/datastructure/concepts.hpp>
+#include <sill/functional.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file discriminative.hpp Discriminative learning
@@ -22,7 +22,7 @@
  *    predictions with AdaBoost.
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Currently, this namespace is only used for optimization criteria
@@ -166,6 +166,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_HPP

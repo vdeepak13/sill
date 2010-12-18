@@ -1,12 +1,12 @@
 
-#ifndef PRL_LEARNT_JUNCTION_TREE_HPP
-#define PRL_LEARNT_JUNCTION_TREE_HPP
+#ifndef SILL_LEARNT_JUNCTION_TREE_HPP
+#define SILL_LEARNT_JUNCTION_TREE_HPP
 
-#include <prl/model/junction_tree.hpp>
+#include <sill/model/junction_tree.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * This is a more mutable version of a junction tree.  It allows unsafe
@@ -120,8 +120,8 @@ namespace prl {
 
   };  // class learnt_junction_tree
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNT_JUNCTION_TREE_HPP
+#endif // #ifndef SILL_LEARNT_JUNCTION_TREE_HPP

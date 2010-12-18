@@ -1,21 +1,21 @@
-#ifndef PRL_MIXTURE_HPP
-#define PRL_MIXTURE_HPP
+#ifndef SILL_MIXTURE_HPP
+#define SILL_MIXTURE_HPP
 
 #include <vector>
 #include <sstream>
 #include <set>
 #include <map>
 
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/global.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/global.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   /**
    * A class that represents a mixture (sum) of functions.
@@ -351,6 +351,6 @@ namespace prl {
   //! \relates mixture
   moment_gaussian project(const mixture_gaussian& mixture);
 
-} // namespace prl
+} // namespace sill
 
-#endif // PRL_MIXTURE_HPP
+#endif // SILL_MIXTURE_HPP

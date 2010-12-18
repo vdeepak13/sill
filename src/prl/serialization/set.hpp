@@ -1,13 +1,13 @@
-#ifndef PRL_SERIALIZE_SET_HPP
-#define PRL_SERIALIZE_SET_HPP
+#ifndef SILL_SERIALIZE_SET_HPP
+#define SILL_SERIALIZE_SET_HPP
 
 #include <set>
 
-#include <prl/serialization/iarchive.hpp>
-#include <prl/serialization/oarchive.hpp>
-#include <prl/serialization/iterator.hpp>
+#include <sill/serialization/iarchive.hpp>
+#include <sill/serialization/oarchive.hpp>
+#include <sill/serialization/iterator.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
     Serializes a set
@@ -28,6 +28,6 @@ namespace prl {
     return a;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif //PRL_SERIALIZE_SET_HPP

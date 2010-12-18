@@ -1,6 +1,6 @@
 
-#ifndef PRL_LEARNING_DATASET_SYMBOLIC_HPP
-#define PRL_LEARNING_DATASET_SYMBOLIC_HPP
+#ifndef SILL_LEARNING_DATASET_SYMBOLIC_HPP
+#define SILL_LEARNING_DATASET_SYMBOLIC_HPP
 
 #include <fstream>
 #include <iostream>
@@ -9,9 +9,9 @@
 
 #include <boost/tokenizer.hpp>
 
-#include <prl/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/dataset.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file symbolic.hpp File defining the symbolic file format,
@@ -77,7 +77,7 @@
  * the symbolic format used by Anton, and the old format used by Joseph.
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * SYMBOLIC FILE FORMAT METADATA
@@ -240,8 +240,8 @@ namespace prl {
   (const std::string& filename, const datasource_info_type& info,
    bool check_class_vars = false);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DATASET_SYMBOLIC_HPP
+#endif // #ifndef SILL_LEARNING_DATASET_SYMBOLIC_HPP

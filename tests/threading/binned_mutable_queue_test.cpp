@@ -1,9 +1,9 @@
-#include <prl/parallel/binned_mutable_queue.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/parallel/binned_mutable_queue.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 #include <cassert>
 #include <map>
 
-using namespace prl;
+using namespace sill;
 
 void ShortCorrectnessTest(){
   binned_mutable_queue<int,int> q(2);

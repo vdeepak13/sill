@@ -1,10 +1,10 @@
-#ifndef PRL_SERIALIZE_ITERATOR_HPP
-#define PRL_SERIALIZE_ITERATOR_HPP
-#include <prl/serialization/iarchive.hpp>
-#include <prl/serialization/oarchive.hpp>
+#ifndef SILL_SERIALIZE_ITERATOR_HPP
+#define SILL_SERIALIZE_ITERATOR_HPP
+#include <sill/serialization/iarchive.hpp>
+#include <sill/serialization/oarchive.hpp>
 #include <iterator>
 
-namespace prl {
+namespace sill {
   /**
     Serializes the contents between the iterators begin and end.
     This version prefers the availability of RandomAccessIterator since it needs
@@ -68,5 +68,5 @@ namespace prl {
       result++;
     }
   }
-} // namespace prl
+} // namespace sill
 #endif //PRL_SERIALIZE_ITERATOR_HPP

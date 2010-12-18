@@ -1,27 +1,27 @@
 
-#ifndef PRL_DECOMPOSABLE_ITERATOR_HPP
-#define PRL_DECOMPOSABLE_ITERATOR_HPP
+#ifndef SILL_DECOMPOSABLE_ITERATOR_HPP
+#define SILL_DECOMPOSABLE_ITERATOR_HPP
 
 #include <vector>
 
 #include <boost/tuple/tuple.hpp>
 
-#include <prl/set.hpp>
-#include <prl/subset_iterator.hpp>
-#include <prl/map.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/junction_tree.hpp>
-#include <prl/model/decomposable.hpp>
+#include <sill/set.hpp>
+#include <sill/subset_iterator.hpp>
+#include <sill/map.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/junction_tree.hpp>
+#include <sill/model/decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file decomposable_iterator.hpp  Outdated iterator class; I need to
  *                                  reorganize structure search.
  */
 
-namespace prl {
+namespace sill {
 
   //! Initial model for search.
   enum structure_initial_enum {
@@ -90,7 +90,7 @@ namespace prl {
    */
   template <typename F> class decomposable_iterator :
     public std::iterator<std::forward_iterator_tag,
-			 const prl::decomposable<F> >{
+			 const sill::decomposable<F> >{
 
     concept_assert((Factor<F>));
     //should be:
@@ -1532,4 +1532,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#endif // #ifndef PRL_DECOMPOSABLE_ITERATOR_HPP
+#endif // #ifndef SILL_DECOMPOSABLE_ITERATOR_HPP

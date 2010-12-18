@@ -4,9 +4,9 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/progress.hpp>
-#include <prl/datastructure/kd_tree.hpp>
-#include <prl/set.hpp>
-#include <prl/set_insert_iterator.hpp>
+#include <sill/datastructure/kd_tree.hpp>
+#include <sill/set.hpp>
+#include <sill/set_insert_iterator.hpp>
 
 /////////////////////////////////////////////////////////////////
 // Needs to be cleaned up; doesn't compile.
@@ -67,7 +67,7 @@ int main(int argc, char** argv) {
 
   // Make the kd tree.
   std::cout << "done." << std::endl << "Building kd-tree..." << std::flush;
-  typedef prl::kd_tree_t<std::size_t, double, const double*> kdt_t;
+  typedef sill::kd_tree_t<std::size_t, double, const double*> kdt_t;
   kdt_t* kd_tree_ptr;
   const std::size_t max_pts_per_leaf_c = 10;
   {
@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
   const std::size_t num_trials_c = 10;
   double kd_tree_time = 0.0;
   double exhaustive_time = 0.0;
-  typedef prl::set<const double*> point_set_t;
+  typedef sill::set<const double*> point_set_t;
   for (std::size_t trial = 0; trial < num_trials_c; ++trial) {
 
     // Use the kd-tree.
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
     {
       boost::timer t;
       kd_tree_ptr->nearest_neighbors(pts[0], k,
-                                     prl::set_inserter(nearest_neighbors));
+                                     sill::set_inserter(nearest_neighbors));
       kd_tree_time += t.elapsed();
     }
 
@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
       std::nth_element(pts_copy.begin(), pts_copy.begin() + k,
                        pts_copy.end(), cmp);
       std::copy(pts_copy.begin(), pts_copy.begin() + k,
-                prl::set_inserter(true_nearest_neighbors));
+                sill::set_inserter(true_nearest_neighbors));
       exhaustive_time += t.elapsed();
     }
 

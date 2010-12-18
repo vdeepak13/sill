@@ -1,13 +1,13 @@
 
-#ifndef PRL_LEARN_FACTOR_HPP
-#define PRL_LEARN_FACTOR_HPP
+#ifndef SILL_LEARN_FACTOR_HPP
+#define SILL_LEARN_FACTOR_HPP
 
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/dataset.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/dataset.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file learn_factor.hpp Methods for learning regular (non-CRF) factors.
@@ -16,7 +16,7 @@
  *       they can take a number of lambdas specified via the factor type.
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Learns a marginal factor P(X) from data.
@@ -125,8 +125,8 @@ namespace prl {
   learn_marginal<canonical_gaussian>(const vector_domain& Xdom,
                                      const dataset& ds, double reg_cov);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARN_FACTOR_HPP
+#endif // #ifndef SILL_LEARN_FACTOR_HPP

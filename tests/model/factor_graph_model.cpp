@@ -9,15 +9,15 @@
 #include <boost/random/uniform_int.hpp>
 
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/random.hpp>
-#include <prl/serialization/serialize.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-using namespace prl;
+using namespace sill;
 
 typedef factor_graph_model<table_factor> factor_gm_type;
 typedef factor_gm_type::factor_type factor_type;

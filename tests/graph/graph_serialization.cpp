@@ -1,10 +1,10 @@
 #include <fstream>
 #include <iostream>
 
-#include <prl/serialization/serialize.hpp>
+#include <sill/serialization/serialize.hpp>
 
-#include <prl/graph/directed_graph.hpp>
-#include <prl/graph/undirected_graph.hpp>
+#include <sill/graph/directed_graph.hpp>
+#include <sill/graph/undirected_graph.hpp>
 
 template <typename Graph>
 void test(const char* filename) {
@@ -17,12 +17,12 @@ void test(const char* filename) {
   g.add_edge(2, 3);
 
   std::ofstream ofs(filename, fstream::binary);
-  prl::oarchive oar(ofs);
+  sill::oarchive oar(ofs);
   oar << g;
   ofs.close();
 
   std::ifstream ifs(filename, fstream::binary);
-  prl::iarchive iar(ifs);
+  sill::iarchive iar(ifs);
   iar >> h;
   ifs.close();
 
@@ -31,7 +31,7 @@ void test(const char* filename) {
 }
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   test<directed_graph<int, std::string> >("test.bin");
   test<undirected_graph<int, std::string> >("test.bin");
 }

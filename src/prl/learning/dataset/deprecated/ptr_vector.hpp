@@ -1,6 +1,6 @@
 
-#ifndef PRL_PTR_VECTOR_HPP
-#define PRL_PTR_VECTOR_HPP
+#ifndef SILL_PTR_VECTOR_HPP
+#define SILL_PTR_VECTOR_HPP
 
 #include <fstream>
 #include <string>
@@ -11,14 +11,14 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/assignment.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/concepts.hpp>
-#include <prl/learning/dataset/dataset.hpp>
+#include <sill/assignment.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/concepts.hpp>
+#include <sill/learning/dataset/dataset.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * This is a class which is about the same as std::vector<T> but allows
@@ -129,8 +129,8 @@ namespace prl {
     size_t size() const { return n; }
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

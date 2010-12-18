@@ -1,19 +1,19 @@
-#ifndef PRL_STANFORD_IO_HPP
-#define PRL_STANFORD_IO_HPP
+#ifndef SILL_STANFORD_IO_HPP
+#define SILL_STANFORD_IO_HPP
 
 #include <iosfwd>
 #include <sstream>
 
-#include <prl/model/markov_network.hpp>
+#include <sill/model/markov_network.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file io.hpp Functions for reading data in Stanford-like syntax.
  *              (this file may be renamed in the future to be more specific).
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Reads a graphical model in Stanford-like syntax.
@@ -55,7 +55,7 @@ namespace prl {
     // load the potentials
     finite_domain vars = make_domain(variables);
     mn.add_nodes(vars);
-    // prl::pairwise_markov_network<F> mn(vars);
+    // sill::pairwise_markov_network<F> mn(vars);
     
     assert(line == "@Potentials");
     getline(in, line);
@@ -80,9 +80,9 @@ namespace prl {
     return true;
   }
   
-} // namespace prl
+} // namespace sill
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

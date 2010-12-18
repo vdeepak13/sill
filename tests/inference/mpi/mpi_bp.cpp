@@ -8,27 +8,27 @@
 #include <limits>
 #include <sched.h>
 
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/log_table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/log_table_factor.hpp>
 #include <boost/program_options.hpp>
-#include <prl/parallel/timer.hpp>
+#include <sill/parallel/timer.hpp>
 
-#include <prl/parsers/detect_file_format.hpp>
-#include <prl/parsers/uai_parser.hpp>
-#include <prl/parsers/alchemy.hpp>
-#include <prl/inference/interfaces.hpp>
-#include <prl/inference/mpi/mpi_splash_bp.hpp>
-#include <prl/inference/mpi/mpi_wildfire_bp.hpp>
-#include <prl/inference/mpi/mpi_round_robin_bp.hpp>
-#include <prl/inference/mpi/mpi_synchronous_bp.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/parsers/detect_file_format.hpp>
+#include <sill/parsers/uai_parser.hpp>
+#include <sill/parsers/alchemy.hpp>
+#include <sill/inference/interfaces.hpp>
+#include <sill/inference/mpi/mpi_splash_bp.hpp>
+#include <sill/inference/mpi/mpi_wildfire_bp.hpp>
+#include <sill/inference/mpi/mpi_round_robin_bp.hpp>
+#include <sill/inference/mpi/mpi_synchronous_bp.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
 
 // Rename the program options namespace
 namespace po = boost::program_options;
 
-using namespace prl;
+using namespace sill;
 
 typedef log_table_factor factor_type;
 typedef factor_graph_model<factor_type> model_type;
@@ -626,5 +626,5 @@ int main(int argc, char* argv[]) {
   return (EXIT_SUCCESS);
 } // End of main
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 //End of file

@@ -1,21 +1,21 @@
-#ifndef PRL_GIBBS_SAMPLER_HPP
-#define PRL_GIBBS_SAMPLER_HPP
+#ifndef SILL_GIBBS_SAMPLER_HPP
+#define SILL_GIBBS_SAMPLER_HPP
 
 #include <map>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/base/finite_assignment.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/model/interfaces.hpp>
+#include <sill/base/finite_assignment.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/model/interfaces.hpp>
 
-//#include <prl/range/transformed.hpp>
+//#include <sill/range/transformed.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for doing Gibbs sampling for a factorized model.
@@ -211,8 +211,8 @@ namespace prl {
 
   }; // class sequential_gibbs_sampler
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

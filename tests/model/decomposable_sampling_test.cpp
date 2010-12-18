@@ -2,11 +2,11 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file decomposable_sampling_test.cpp  Test sampling.
@@ -18,7 +18,7 @@
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Dataset parameters

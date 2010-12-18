@@ -1,12 +1,12 @@
 
-#ifndef PRL_REAL_OPT_STEP_HPP
-#define PRL_REAL_OPT_STEP_HPP
+#ifndef SILL_REAL_OPT_STEP_HPP
+#define SILL_REAL_OPT_STEP_HPP
 
-#include <prl/optimization/real_opt_step_functor.hpp>
+#include <sill/optimization/real_opt_step_functor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Interface for algorithms which execute steps in real-valued optimization
@@ -51,6 +51,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_REAL_OPT_STEP_HPP
+#endif // #ifndef SILL_REAL_OPT_STEP_HPP

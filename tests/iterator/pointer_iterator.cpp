@@ -1,5 +1,5 @@
 #include <iostream>
-#include <prl/iterator/pointer_iterator.hpp>
+#include <sill/iterator/pointer_iterator.hpp>
 
 struct test {
   int a;
@@ -11,7 +11,7 @@ struct test {
 int main()
 {
   using namespace std;
-  using namespace prl;
+  using namespace sill;
   pointer_iterator<int, std::forward_iterator_tag> begin(&t.a);
   pointer_iterator<int, std::forward_iterator_tag> end((&t.c)+1);
   cout << end - begin << endl;

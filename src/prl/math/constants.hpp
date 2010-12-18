@@ -1,10 +1,10 @@
-#ifndef PRL_MATH_CONSTANTS_HPP
-#define PRL_MATH_CONSTANTS_HPP
+#ifndef SILL_MATH_CONSTANTS_HPP
+#define SILL_MATH_CONSTANTS_HPP
 
 #include <limits>
 #include <boost/math/constants/constants.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup math_constants
   //! @{
@@ -108,6 +108,6 @@ namespace prl {
 
   // @}
 
-} // namespace prl
+} // namespace sill
 
 #endif

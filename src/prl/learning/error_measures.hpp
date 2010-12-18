@@ -1,12 +1,12 @@
 
-#ifndef PRL_ERROR_MEASURES_HPP
-#define PRL_ERROR_MEASURES_HPP
+#ifndef SILL_ERROR_MEASURES_HPP
+#define SILL_ERROR_MEASURES_HPP
 
-#include <prl/base/assignment.hpp>
+#include <sill/base/assignment.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Namespace with methods for computing measures of error.
@@ -41,6 +41,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_ERROR_MEASURES_HPP
+#endif // #ifndef SILL_ERROR_MEASURES_HPP

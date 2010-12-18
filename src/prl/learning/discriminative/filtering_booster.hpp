@@ -1,15 +1,15 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_HPP
 
-#include <prl/learning/discriminative/binary_booster.hpp>
+#include <sill/learning/discriminative/binary_booster.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to 1 to print out debugging information
 #define FILTERING_BOOSTER_DEBUG 0
 
-namespace prl {
+namespace sill {
 
   /**
    * FILTERING_BOOSTER_PARAMETERS
@@ -644,8 +644,8 @@ namespace prl {
 
   }; // class filtering_booster
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_HPP

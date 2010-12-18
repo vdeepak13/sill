@@ -1,9 +1,9 @@
 
-#include <prl/learning/parameter_grid.hpp>
+#include <sill/learning/parameter_grid.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   std::vector<vec>
   create_parameter_grid(const vec& minvals, const vec& maxvals, size_t k,
@@ -318,6 +318,6 @@ namespace prl {
     return create_parameter_grid_alt(minvals, maxvals, k, log_scale, false);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

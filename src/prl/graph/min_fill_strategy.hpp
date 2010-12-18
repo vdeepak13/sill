@@ -1,14 +1,14 @@
-#ifndef PRL_MIN_FILL_STRATEGY_HPP
-#define PRL_MIN_FILL_STRATEGY_HPP
+#ifndef SILL_MIN_FILL_STRATEGY_HPP
+#define SILL_MIN_FILL_STRATEGY_HPP
 
 #include <set>
 
 #include <boost/range/metafunctions.hpp>
 
-#include <prl/global.hpp>
-#include <prl/range/algorithm.hpp>
+#include <sill/global.hpp>
+#include <sill/range/algorithm.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Represents a min-fill elimination strategy.
@@ -66,11 +66,11 @@ namespace prl {
           update_set.insert(*n_begin);
         }
       }
-      prl::copy(update_set, updated);
+      sill::copy(update_set, updated);
     }
 
   }; // struct min_fill_strategy
 
-} // namespace prl
+} // namespace sill
 
 #endif

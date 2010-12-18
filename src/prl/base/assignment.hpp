@@ -1,12 +1,12 @@
-#ifndef PRL_ASSIGNMENT_HPP
-#define PRL_ASSIGNMENT_HPP
+#ifndef SILL_ASSIGNMENT_HPP
+#define SILL_ASSIGNMENT_HPP
 
-#include <prl/base/finite_assignment.hpp>
-#include <prl/base/vector_assignment.hpp>
+#include <sill/base/finite_assignment.hpp>
+#include <sill/base/vector_assignment.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An assignment over an arbitrary set of variables.
@@ -60,7 +60,7 @@ namespace prl {
 
     //! Conversion to human-readable representation
     operator std::string() const {
-      using namespace prl;
+      using namespace sill;
       std::ostringstream out;
       out << finite_assignment(*this) << vector_assignment(*this);
       return out.str();
@@ -160,9 +160,9 @@ namespace prl {
 
   std::ostream& operator<<(std::ostream& out, const assignment& a);  
 
-} // end namespace prl
+} // end namespace sill
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

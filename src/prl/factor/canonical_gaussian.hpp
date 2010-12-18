@@ -1,17 +1,17 @@
-#ifndef PRL_CANONICAL_GAUSSIAN_HPP
-#define PRL_CANONICAL_GAUSSIAN_HPP
+#ifndef SILL_CANONICAL_GAUSSIAN_HPP
+#define SILL_CANONICAL_GAUSSIAN_HPP
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/gaussian_factor.hpp>
-#include <prl/factor/invalid_operation.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/learning/dataset/vector_record.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/gaussian_factor.hpp>
+#include <sill/factor/invalid_operation.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/learning/dataset/vector_record.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   class moment_gaussian;
 
@@ -394,10 +394,10 @@ namespace prl {
                                      const canonical_gaussian& f2,
                                      double a);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#include <prl/factor/operations.hpp>
+#include <sill/factor/operations.hpp>
 
 #endif

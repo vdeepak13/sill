@@ -1,26 +1,26 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_BINARY_BOOSTER_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_BINARY_BOOSTER_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_BINARY_BOOSTER_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_BINARY_BOOSTER_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/learning/dataset/concepts.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/dataset/ds_oracle.hpp>
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/booster.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/discriminative.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/learning/discriminative/load_functions.hpp>
+#include <sill/learning/dataset/concepts.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/ds_oracle.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/booster.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/discriminative.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/learning/discriminative/load_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * BINARY BOOSTER PARAMETERS
@@ -350,8 +350,8 @@ namespace prl {
 
   }; // class binary_booster
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_BINARY_BOOSTER_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_BINARY_BOOSTER_HPP

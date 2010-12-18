@@ -1,6 +1,6 @@
 
-#ifndef PRL_STL_UTIL_HPP
-#define PRL_STL_UTIL_HPP
+#ifndef SILL_STL_UTIL_HPP
+#define SILL_STL_UTIL_HPP
 
 
 #include <set>
@@ -10,15 +10,15 @@
 #include <iterator>
 #include <sstream>
 
-#include <prl/stl_io.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/serialization/set.hpp>
-#include <prl/serialization/map.hpp>
-#include <prl/iterator/counting_output_iterator.hpp>
+#include <sill/stl_io.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/set.hpp>
+#include <sill/serialization/map.hpp>
+#include <sill/iterator/counting_output_iterator.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Functions on sets
   //============================================================================
@@ -336,8 +336,8 @@ namespace prl {
     return out;
   }
 
-}; // end of namespace prl
+}; // end of namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,6 +1,6 @@
 #include "prl/mpi/mpilogger.hpp"
 
-namespace prl {
+namespace sill {
 mpilogger mpilog;
 
 mpilogger* mpilogger::instance = NULL;

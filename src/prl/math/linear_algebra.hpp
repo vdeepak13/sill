@@ -1,13 +1,13 @@
-#ifndef PRL_LINEAR_ALGEBRA_HPP
-#define PRL_LINEAR_ALGEBRA_HPP
+#ifndef SILL_LINEAR_ALGEBRA_HPP
+#define SILL_LINEAR_ALGEBRA_HPP
 
 #include <itpp/base/algebra/cholesky.h>
 #include <itpp/itbase.h>
 
-#include <prl/math/vector.hpp>
-#include <prl/math/matrix.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/math/matrix.hpp>
 
-namespace prl {
+namespace sill {
   
 
   // Special matrices
@@ -76,6 +76,6 @@ namespace prl {
   //! \ingroup math_linalg
   double logdet(const itpp::mat& a);
 
-} // namespace prl
+} // namespace sill
 
 #endif

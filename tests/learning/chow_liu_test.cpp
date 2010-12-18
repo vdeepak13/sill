@@ -1,21 +1,21 @@
 
 #include <iostream>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/chow_liu.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/syn_oracle_majority.hpp>
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/chow_liu.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file chow_liu_test.cpp Test of learning a Bayes net via Chow-Liu.
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   universe u;

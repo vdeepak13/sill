@@ -1,12 +1,12 @@
-#ifndef PRL_FACTOR_NORM_HPP
-#define PRL_FACTOR_NORM_HPP
+#ifndef SILL_FACTOR_NORM_HPP
+#define SILL_FACTOR_NORM_HPP
 
-#include <prl/global.hpp>
-#include <prl/factor/concepts.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup factor_types
   //! @{
@@ -80,6 +80,6 @@ namespace prl {
   //! @} group factor
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

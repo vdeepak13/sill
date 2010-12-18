@@ -1,10 +1,10 @@
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/load_functions.hpp>
-#include <prl/learning/discriminative/multiclass2multilabel.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/load_functions.hpp>
+#include <sill/learning/discriminative/multiclass2multilabel.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Parameters: public methods
     //==========================================================================
@@ -150,6 +150,6 @@ namespace prl {
       return true;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

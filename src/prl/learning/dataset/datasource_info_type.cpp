@@ -1,9 +1,9 @@
 
-#include <prl/learning/dataset/datasource_info_type.hpp>
+#include <sill/learning/dataset/datasource_info_type.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   datasource_info_type::datasource_info_type
   (const finite_var_vector& finite_seq,
@@ -49,6 +49,6 @@ namespace prl {
   }
   */
 
-}; // namespace prl
+}; // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

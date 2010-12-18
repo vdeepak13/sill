@@ -1,17 +1,17 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_BOOSTERS_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_BOOSTERS_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_BOOSTERS_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_BOOSTERS_HPP
 
-#include <prl/datastructure/concepts.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
+#include <sill/datastructure/concepts.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file boosters.hpp Boosting Algorithms, as defined by optimization criteria
  */
 
-namespace prl {
+namespace sill {
 
   // forward declarations
   double binary_label(double label);
@@ -124,8 +124,8 @@ namespace prl {
 
   } // namespace boosting
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_BOOSTERS_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_BOOSTERS_HPP

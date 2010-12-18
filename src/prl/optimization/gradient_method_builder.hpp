@@ -1,12 +1,12 @@
 
-#ifndef PRL_GRADIENT_METHOD_BUILDER_HPP
-#define PRL_GRADIENT_METHOD_BUILDER_HPP
+#ifndef SILL_GRADIENT_METHOD_BUILDER_HPP
+#define SILL_GRADIENT_METHOD_BUILDER_HPP
 
-#include <prl/optimization/gradient_method.hpp>
-#include <prl/optimization/line_search_builder.hpp>
-#include <prl/optimization/single_opt_step_builder.hpp>
+#include <sill/optimization/gradient_method.hpp>
+#include <sill/optimization/line_search_builder.hpp>
+#include <sill/optimization/single_opt_step_builder.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for parsing command-line options which specify
@@ -44,4 +44,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#endif // #ifndef PRL_GRADIENT_METHOD_BUILDER_HPP
+#endif // #ifndef SILL_GRADIENT_METHOD_BUILDER_HPP

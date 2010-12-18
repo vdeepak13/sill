@@ -1,12 +1,12 @@
-#ifndef PRL_SOFT_MAX_FUNCTION_HPP
-#define PRL_SOFT_MAX_FUNCTION_HPP
+#ifndef SILL_SOFT_MAX_FUNCTION_HPP
+#define SILL_SOFT_MAX_FUNCTION_HPP
 
 #include <iostream>
 #include <functional>
 
-#include <prl/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A soft-max function. This function can represent a conditional 
@@ -64,6 +64,6 @@ namespace prl {
   }; // class soft_max
   
 
-} // namespace prl
+} // namespace sill
 
 #endif

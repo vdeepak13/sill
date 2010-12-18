@@ -1,13 +1,13 @@
-#ifndef PRL_XML_OFARCHIVE_HPP
-#define PRL_XML_OFARCHIVE_HPP
+#ifndef SILL_XML_OFARCHIVE_HPP
+#define SILL_XML_OFARCHIVE_HPP
 
 #include <fstream>
 
 #include <boost/scoped_ptr.hpp>
 
-#include <prl/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An archive that stores PRL models in an XML file.
@@ -39,7 +39,7 @@ namespace prl {
 
   }; // class xml_ofarchive
 
-} // namespace prl
+} // namespace sill
 
 
 #endif

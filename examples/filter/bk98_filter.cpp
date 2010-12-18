@@ -2,13 +2,13 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/dynamic_bayesian_network.hpp>
-#include <prl/model/junction_tree.hpp>
-#include <prl/inference/bk98_filter.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/dynamic_bayesian_network.hpp>
+#include <sill/model/junction_tree.hpp>
+#include <sill/inference/bk98_filter.hpp>
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   size_t nsegs  = argc > 1 ? boost::lexical_cast<size_t>(argv[1]) : 3;
   size_t nsteps = argc > 2 ? boost::lexical_cast<size_t>(argv[2]) : 2;

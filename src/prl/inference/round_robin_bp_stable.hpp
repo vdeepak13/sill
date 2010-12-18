@@ -15,17 +15,17 @@
 #include <limits>
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/inference/bp_convergence_measures.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/inference/bp_convergence_measures.hpp>
 
 
 // This include should always be last
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
   template<typename F>
   class round_robin_bp {
@@ -332,7 +332,7 @@ namespace prl {
 
 
 }; // end of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
 

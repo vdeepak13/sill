@@ -1,9 +1,9 @@
 
-#include <prl/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/dataset.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Getters and queries
   //==========================================================================
@@ -254,6 +254,6 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

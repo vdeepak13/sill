@@ -1,13 +1,13 @@
 
-#ifndef PRL_SINGLE_OPT_STEP_HPP
-#define PRL_SINGLE_OPT_STEP_HPP
+#ifndef SILL_SINGLE_OPT_STEP_HPP
+#define SILL_SINGLE_OPT_STEP_HPP
 
-#include <prl/optimization/real_opt_step.hpp>
-#include <prl/optimization/void_step_functor.hpp>
+#include <sill/optimization/real_opt_step.hpp>
+#include <sill/optimization/void_step_functor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Parameters for single_opt_step.
@@ -108,6 +108,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_SINGLE_OPT_STEP_HPP
+#endif // #ifndef SILL_SINGLE_OPT_STEP_HPP

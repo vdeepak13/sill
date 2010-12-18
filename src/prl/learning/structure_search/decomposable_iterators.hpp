@@ -1,14 +1,14 @@
 
-#ifndef PRL_DECOMPOSABLE_ITERATORS_HPP
-#define PRL_DECOMPOSABLE_ITERATORS_HPP
+#ifndef SILL_DECOMPOSABLE_ITERATORS_HPP
+#define SILL_DECOMPOSABLE_ITERATORS_HPP
 
 #include <boost/tuple/tuple.hpp>
 
-#include <prl/learning/dataset/statistics.hpp>
-#include <prl/model/learnt_decomposable.hpp>
-#include <prl/iterator/subset_iterator.hpp>
+#include <sill/learning/dataset/statistics.hpp>
+#include <sill/model/learnt_decomposable.hpp>
+#include <sill/iterator/subset_iterator.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file decomposable_iterators.hpp Functions and classes for methodically
@@ -19,7 +19,7 @@
  *  - star: star-shaped junction trees with maximal cliques
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Make the given model into an empty model (with single-variable cliques),
@@ -196,4 +196,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#endif // #ifndef PRL_DECOMPOSABLE_ITERATORS_HPP
+#endif // #ifndef SILL_DECOMPOSABLE_ITERATORS_HPP

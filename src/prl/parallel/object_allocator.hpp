@@ -1,10 +1,10 @@
 #ifndef OBJECT_ALLOCATOR_HPP
 #define OBJECT_ALLOCATOR_HPP
 #include <pthread.h>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 /**
   * \class object_allocator 
   * 
@@ -249,5 +249,5 @@ public:
   }
 }; // End of object_allocator
 };
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

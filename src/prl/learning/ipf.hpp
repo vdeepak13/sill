@@ -1,17 +1,17 @@
-#ifndef PRL_IPF_HPP
-#define PRL_IPF_HPP
+#ifndef SILL_IPF_HPP
+#define SILL_IPF_HPP
 
 #include <boost/unordered_map.hpp>
 
-#include <prl/global.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/inference/junction_tree_inference.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/inference/junction_tree_inference.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An engine that performs parameter learning with iterated proportional
@@ -117,8 +117,8 @@ namespace prl {
 
   }; // class jt_ipf
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

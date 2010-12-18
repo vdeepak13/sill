@@ -1,13 +1,13 @@
-#ifndef PRL_FLAT_FILTER_HPP
-#define PRL_FLAT_FILTER_HPP
+#ifndef SILL_FLAT_FILTER_HPP
+#define SILL_FLAT_FILTER_HPP
 
-#include <prl/model/dynamic_bayesian_network.hpp>
-#include <prl/inference/interfaces.hpp>
+#include <sill/model/dynamic_bayesian_network.hpp>
+#include <sill/inference/interfaces.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
-namespace prl {
+namespace sill {
   
   /**
    * A filter that represents the belief state as a factor.
@@ -90,8 +90,8 @@ namespace prl {
 
   }; // class flat_filter
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

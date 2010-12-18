@@ -1,9 +1,9 @@
-#ifndef PRL_LAPLACE_APPROXIMATOR_HPP
-#define PRL_LAPLACE_APPROXIMATOR_HPP
+#ifndef SILL_LAPLACE_APPROXIMATOR_HPP
+#define SILL_LAPLACE_APPROXIMATOR_HPP
 
-#include <prl/factor/approx/interfaces.hpp>
+#include <sill/factor/approx/interfaces.hpp>
 
-namespace prl {
+namespace sill {
 
   /** 
    * Laplace Gaussian approximator.
@@ -30,6 +30,6 @@ namespace prl {
 
   }; // class laplace_approximator
 
-} // namespace prl
+} // namespace sill
 
 #endif

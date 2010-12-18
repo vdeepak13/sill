@@ -1,13 +1,13 @@
-#ifndef PRL_LOGISTIC_FUNCTION_HPP
-#define PRL_LOGISTIC_FUNCTION_HPP
+#ifndef SILL_LOGISTIC_FUNCTION_HPP
+#define SILL_LOGISTIC_FUNCTION_HPP
 
 #include <functional>
 #include <cmath>
 #include <iostream>
 
-#include <prl/math/vector.hpp>
+#include <sill/math/vector.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A logistic function parameterized by a vector of coefficients
@@ -56,6 +56,6 @@ namespace prl {
 
   }; // class logistic
 
-} // namespace prl
+} // namespace sill
 
 #endif

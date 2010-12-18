@@ -1,9 +1,9 @@
-#ifndef PRL_LEARN_CRF_FACTOR_BUILDER_HPP
-#define PRL_LEARN_CRF_FACTOR_BUILDER_HPP
+#ifndef SILL_LEARN_CRF_FACTOR_BUILDER_HPP
+#define SILL_LEARN_CRF_FACTOR_BUILDER_HPP
 
-#include <prl/learning/learn_crf_factor.hpp>
+#include <sill/learning/learn_crf_factor.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for parsing command-line options to run learn_crf_factor.
@@ -40,6 +40,6 @@ namespace prl {
   template <>
   const gaussian_crf_factor::parameters& get_parameters<gaussian_crf_factor>();
 
-}  // namespace prl
+}  // namespace sill
 
-#endif // PRL_LEARN_CRF_FACTOR_BUILDER_HPP
+#endif // SILL_LEARN_CRF_FACTOR_BUILDER_HPP

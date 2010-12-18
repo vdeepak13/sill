@@ -15,8 +15,8 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_POST_OFFICE
-#define PRL_POST_OFFICE
+#ifndef SILL_POST_OFFICE
+#define SILL_POST_OFFICE
 
 
 #include <mpi.h>
@@ -25,11 +25,11 @@
 #include <string>
 #include <cassert>
 
-#include <prl/mpi/mpi_protocols.hpp>
-#include <prl/parallel/blocking_queue.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/mpi/mpi_protocols.hpp>
+#include <sill/parallel/blocking_queue.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
-namespace prl {
+namespace sill {
 
 
   class mpi_single_tag_handler {
@@ -262,7 +262,7 @@ namespace prl {
   operator<<(std::ostream& out, const mpi_single_tag_handler::message& msg);
 
 
-} // End of namespace prl
+} // End of namespace sill
 
 #endif
 

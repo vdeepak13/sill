@@ -1,6 +1,6 @@
 
-#ifndef PRL_VECTOR_ASSIGNMENT_DATASET_HPP
-#define PRL_VECTOR_ASSIGNMENT_DATASET_HPP
+#ifndef SILL_VECTOR_ASSIGNMENT_DATASET_HPP
+#define SILL_VECTOR_ASSIGNMENT_DATASET_HPP
 
 #include <fstream>
 #include <string>
@@ -11,14 +11,14 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/base/assignment.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A class that represents a dataset stored both in vectors and in
@@ -57,13 +57,13 @@ namespace prl {
     mutable std::vector<vec> vector_data;
 
     //! The same data, stored in assignments.
-    mutable std::vector<prl::assignment> data_vector;
+    mutable std::vector<sill::assignment> data_vector;
 
     // Protected methods required by record
     //==========================================================================
 
     //! Load datapoint i into assignment a
-    void load_assignment(size_t i, prl::assignment& a) const;
+    void load_assignment(size_t i, sill::assignment& a) const;
 
     //! Load record i into r
     void load_record(size_t i, record& r) const;
@@ -225,8 +225,8 @@ namespace prl {
 
   };  // class vector_assignment_dataset
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,18 +1,18 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_STUMP_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_STUMP_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_STUMP_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_STUMP_HPP
 
 #include <algorithm>
 
-#include <prl/functional.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/discriminative.hpp>
-#include <prl/stl_io.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/functional.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/discriminative.hpp>
+#include <sill/stl_io.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file stump.hpp Decision Stump
@@ -28,7 +28,7 @@
 // Set to true to print debugging information.
 #define DEBUG_STUMP 0
 
-namespace prl {
+namespace sill {
 
   struct stump_parameters {
 
@@ -95,7 +95,7 @@ namespace prl {
   template <typename Objective = discriminative::objective_accuracy>
   class stump : public binary_classifier {
 
-    concept_assert((prl::DomainPartitioningObjective<Objective>));
+    concept_assert((sill::DomainPartitioningObjective<Objective>));
 
     // Protected data members
     //==========================================================================
@@ -561,6 +561,6 @@ namespace prl {
 
 #undef DEBUG_STUMP
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_STUMP_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_STUMP_HPP

@@ -1,14 +1,14 @@
 
-#ifndef PRL_REAL_OPTIMIZER_BUILDER_HPP
-#define PRL_REAL_OPTIMIZER_BUILDER_HPP
+#ifndef SILL_REAL_OPTIMIZER_BUILDER_HPP
+#define SILL_REAL_OPTIMIZER_BUILDER_HPP
 
-#include <prl/optimization/conjugate_gradient.hpp>
-#include <prl/optimization/gradient_descent.hpp>
-#include <prl/optimization/gradient_method_builder.hpp>
-#include <prl/optimization/lbfgs.hpp>
-#include <prl/optimization/stochastic_gradient.hpp>
+#include <sill/optimization/conjugate_gradient.hpp>
+#include <sill/optimization/gradient_descent.hpp>
+#include <sill/optimization/gradient_method_builder.hpp>
+#include <sill/optimization/lbfgs.hpp>
+#include <sill/optimization/stochastic_gradient.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for parsing command-line options to specify an optimization method
@@ -98,4 +98,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#endif // #ifndef PRL_REAL_OPTIMIZER_BUILDER_HPP
+#endif // #ifndef SILL_REAL_OPTIMIZER_BUILDER_HPP

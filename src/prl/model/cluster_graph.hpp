@@ -1,6 +1,6 @@
 
-#ifndef PRL_CLUSTER_GRAPH_HPP
-#define PRL_CLUSTER_GRAPH_HPP
+#ifndef SILL_CLUSTER_GRAPH_HPP
+#define SILL_CLUSTER_GRAPH_HPP
 
 #include <sstream>
 #include <vector>
@@ -8,25 +8,25 @@
 #include <set>
 #include <boost/bind.hpp>
 
-#include <prl/global.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/datastructure/set_index.hpp>
-#include <prl/graph/undirected_graph.hpp>
-#include <prl/graph/tree_traversal.hpp>
-#include <prl/graph/connected.hpp>
-#include <prl/graph/test_tree.hpp>
-#include <prl/graph/subgraph.hpp>
+#include <sill/global.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/datastructure/set_index.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/graph/tree_traversal.hpp>
+#include <sill/graph/connected.hpp>
+#include <sill/graph/test_tree.hpp>
+#include <sill/graph/subgraph.hpp>
 
-#include <prl/range/concepts.hpp>
-#include <prl/range/transformed.hpp>
-#include <prl/range/forward_range.hpp>
-#include <prl/range/io.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/range/transformed.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/range/io.hpp>
 
-#include <prl/stl_concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace impl {
 
@@ -92,7 +92,7 @@ namespace prl {
       return out;
     }
 
-  } // namespace prl::impl
+  } // namespace sill::impl
 
 
   /**
@@ -352,12 +352,12 @@ namespace prl {
 
     //! Returns true if the graph is connected
     bool connected() const {
-      return prl::is_connected(graph);
+      return sill::is_connected(graph);
     }
 
     //! Returns true if the cluster graph is a connected tree
     bool tree() const {
-      return num_edges() == num_vertices() - 1 && prl::is_connected(graph);
+      return num_edges() == num_vertices() - 1 && sill::is_connected(graph);
     }
 
     //! Returns true if the cluster graph satisfies
@@ -386,7 +386,7 @@ namespace prl {
      */
     cluster_graph subgraph(vertex root, size_t nhops) const {
       cluster_graph new_cg;
-      prl::subgraph(graph, root, nhops, new_cg.graph);
+      sill::subgraph(graph, root, nhops, new_cg.graph);
       foreach(vertex v, new_cg.vertices())
         new_cg.cluster_index.insert(cluster(v), v);
       new_cg.next_vertex = next_vertex;
@@ -532,12 +532,12 @@ namespace prl {
   }
 
 
-} // namespace prl
+} // namespace sill
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_CLUSTER_GRAPH_HPP
+#endif // #ifndef SILL_CLUSTER_GRAPH_HPP
 
 
 

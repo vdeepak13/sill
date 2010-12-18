@@ -1,15 +1,15 @@
-#include <prl/base/stl_util.hpp>
-#include <prl/learning/dataset/record.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/learning/dataset/record.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Getters and helpers
   //==========================================================================
 
-  prl::assignment record::assignment(const domain& X) const {
-    prl::assignment a;
+  sill::assignment record::assignment(const domain& X) const {
+    sill::assignment a;
     foreach(variable* v, X) {
       switch(v->get_variable_type()) {
       case variable::FINITE_VARIABLE:
@@ -35,14 +35,14 @@ namespace prl {
     return a;
   }
 
-  prl::finite_assignment record::assignment(const finite_domain& X) const {
+  sill::finite_assignment record::assignment(const finite_domain& X) const {
     return finite_record::assignment(X);
   }
 
-  prl::vector_assignment record::assignment(const vector_domain& X) const {
+  sill::vector_assignment record::assignment(const vector_domain& X) const {
     return vector_record::assignment(X);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

@@ -1,8 +1,8 @@
-#include <prl/learning/dataset/vector_record.hpp>
+#include <sill/learning/dataset/vector_record.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Getters and helpers
   //==========================================================================
@@ -11,8 +11,8 @@ namespace prl {
     return (vector_numbering_ptr->count(v) != 0);
   }
 
-    prl::vector_assignment vector_record::vector_assignment() const {
-      prl::vector_assignment a;
+    sill::vector_assignment vector_record::vector_assignment() const {
+      sill::vector_assignment a;
       foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
         vec v(p.first->size());
         for(size_t j = 0; j < p.first->size(); ++j)
@@ -22,9 +22,9 @@ namespace prl {
       return a;
     }
 
-  prl::vector_assignment
+  sill::vector_assignment
   vector_record::assignment(const vector_domain& X) const {
-    prl::vector_assignment a;
+    sill::vector_assignment a;
     foreach(vector_variable* v, X) {
       size_t v_index(safe_get(*vector_numbering_ptr, v));
       vec val(v->size());
@@ -61,9 +61,9 @@ namespace prl {
       return *this;
     }
 
-  vector_record& vector_record::operator=(const prl::vector_assignment& a) {
+  vector_record& vector_record::operator=(const sill::vector_assignment& a) {
     size_t a_vars_size(0);
-    foreach(const prl::vector_assignment::value_type& a_val, a) {
+    foreach(const sill::vector_assignment::value_type& a_val, a) {
       a_vars_size += a_val.first->size();
     }
     if (!vec_own) {
@@ -106,6 +106,6 @@ namespace prl {
       }
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

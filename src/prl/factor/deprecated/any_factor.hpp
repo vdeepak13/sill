@@ -1,17 +1,17 @@
-#ifndef PRL_ANY_FACTOR_HPP
-#define PRL_ANY_FACTOR_HPP
+#ifndef SILL_ANY_FACTOR_HPP
+#define SILL_ANY_FACTOR_HPP
 
 #include <iosfwd>
 #include <typeinfo>
 
-#include <prl/factor/factor.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/any_factor_placeholder.hpp>
-#include <prl/factor/any_factor_binary.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/any_factor_placeholder.hpp>
+#include <sill/factor/any_factor_binary.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A class that provides type erasure for factors.
@@ -20,7 +20,7 @@ namespace prl {
    * be held in a container. In these cases, any_factor can be used to
    * to store and manipulate factors of arbitrary types. This class
    * serves as a wrapper that can hold any factor that subclasses
-   * prl::factor.
+   * sill::factor.
    *
    * Initially, the user needs to register all the types that can be
    * held by this factor class, as well as the binary operations among
@@ -405,8 +405,8 @@ namespace prl {
     return f == any_factor(g);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

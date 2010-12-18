@@ -1,16 +1,16 @@
-#ifndef PRL_MATH_UBLAS_VECTOR_FUNCTIONS_HPP
-#define PRL_MATH_UBLAS_VECTOR_FUNCTIONS_HPP
+#ifndef SILL_MATH_UBLAS_VECTOR_FUNCTIONS_HPP
+#define SILL_MATH_UBLAS_VECTOR_FUNCTIONS_HPP
 
 #include <boost/numeric/ublas/expression_types.hpp>
 
-#include <prl/range/algorithm.hpp>
-#include <prl/functional.hpp>
-#include <prl/math/ublas/vector_operators.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/functional.hpp>
+#include <sill/math/ublas/vector_operators.hpp>
 
-#include <prl/range/algorithm.hpp>
-#include <prl/range/io.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/range/io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // in namespace boost::numeric::ublas, to take advantage of ADL
 namespace boost { namespace numeric { namespace ublas
@@ -50,7 +50,7 @@ namespace boost { namespace numeric { namespace ublas
     typedef typename E::value_type T;
     if (v().empty()) return 0;
     T threshold = max(v()) * precision;
-    return prl::count(v() > threshold, true);
+    return sill::count(v() > threshold, true);
   }
 
   // Element-wise vector operations
@@ -61,14 +61,14 @@ namespace boost { namespace numeric { namespace ublas
   vector<typename E::value_type>
   transform(const vector_expression<E>& u, F f) {
     vector<typename E::value_type> v(u().size());
-    prl::transform(u(), v.begin(), f);
+    sill::transform(u(), v.begin(), f);
     return v;
   }
 
   //! Computes the square-root for each element of the vector
   template <typename E>
   vector<typename E::value_type> sqrt(const vector_expression<E>& v) {
-    return transform(v, prl::square_root<typename E::value_type>());
+    return transform(v, sill::square_root<typename E::value_type>());
   }
 
   // Vector concatenation
@@ -106,6 +106,6 @@ namespace boost { namespace numeric { namespace ublas
 
 } } } // namespaces
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

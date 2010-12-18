@@ -1,17 +1,17 @@
 
-#ifndef PRL_VECTOR_RECORD_HPP
-#define PRL_VECTOR_RECORD_HPP
+#ifndef SILL_VECTOR_RECORD_HPP
+#define SILL_VECTOR_RECORD_HPP
 
 #include <map>
 
-#include <prl/base/vector_assignment.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/math/vector.hpp>
+#include <sill/base/vector_assignment.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/math/vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A type that provides a mutable view of a single datapoint's vector data.
@@ -134,17 +134,17 @@ namespace prl {
     bool has_variable(vector_variable* v) const;
 
     //! Returns the vector part of this record as an assignment.
-    prl::vector_assignment vector_assignment() const;
+    sill::vector_assignment vector_assignment() const;
 
     //! Converts this record to a vector assignment.
-    operator prl::vector_assignment() const {
+    operator sill::vector_assignment() const {
       return this->vector_assignment();
     }
 
     //! Returns the vector part of this record as an assignment,
     //! but only for the given variables X.
     //! @param X  All of these variables must be in this record.
-    prl::vector_assignment assignment(const vector_domain& X) const;
+    sill::vector_assignment assignment(const vector_domain& X) const;
 
     //! Returns the number of vector variables.
     size_t num_vector() const {
@@ -279,7 +279,7 @@ namespace prl {
     //! NOTE: The assignment must give values to all variables in this record.
     //! The new copy owns its data since a record does not know whether
     //! or not it's OK to rely on the outside reference.
-    vector_record& operator=(const prl::vector_assignment& a);
+    vector_record& operator=(const sill::vector_assignment& a);
 
     //! Clear the record.
     void clear();
@@ -316,8 +316,8 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_VECTOR_RECORD_HPP
+#endif // #ifndef SILL_VECTOR_RECORD_HPP

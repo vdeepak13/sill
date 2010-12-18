@@ -1,14 +1,14 @@
-#ifndef PRL_BIDIRECTIONAL_HPP
-#define PRL_BIDIRECTIONAL_HPP
+#ifndef SILL_BIDIRECTIONAL_HPP
+#define SILL_BIDIRECTIONAL_HPP
 
 #include <iosfwd>
 
-#include <prl/global.hpp>
-#include <prl/graph/undirected_graph.hpp>
+#include <sill/global.hpp>
+#include <sill/graph/undirected_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An adapter that allows bidirectional information in an undirected graph.
@@ -62,6 +62,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

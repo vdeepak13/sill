@@ -1,15 +1,15 @@
-#ifndef PRL_BASE_CONCEPTS_HPP
-#define PRL_BASE_CONCEPTS_HPP
+#ifndef SILL_BASE_CONCEPTS_HPP
+#define SILL_BASE_CONCEPTS_HPP
 
 #include <string>
 
 #include <boost/type_traits/is_base_of.hpp>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // forward declarations
   class variable;
@@ -40,7 +40,7 @@ namespace prl {
     value_type value(const std::string& str) const;
 
     concept_usage(Variable) {
-      prl::same_type(var1->type_compatible(var2), bool_value);
+      sill::same_type(var1->type_compatible(var2), bool_value);
     }
 
     static std::string __unused_str;
@@ -78,7 +78,7 @@ namespace prl {
     variable_type* at(const index_type& index) const;
 
     concept_usage(Process) {
-      prl::same_type(proc->at(index_type()), var);
+      sill::same_type(proc->at(index_type()), var);
     }
 
   private:
@@ -86,8 +86,8 @@ namespace prl {
     const P* proc;
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

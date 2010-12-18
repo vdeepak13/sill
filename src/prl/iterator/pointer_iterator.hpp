@@ -1,10 +1,10 @@
-#ifndef PRL_POINTER_ITERATOR_HPP
-#define PRL_POINTER_ITERATOR_HPP
+#ifndef SILL_POINTER_ITERATOR_HPP
+#define SILL_POINTER_ITERATOR_HPP
 
 #include <boost/iterator/iterator_facade.hpp>
 #include <boost/iterator/iterator_categories.hpp>
 
-namespace prl {
+namespace sill {
 
   /** 
    * A class that wraps around the raw pointer T* and provides member 
@@ -54,6 +54,6 @@ namespace prl {
 
   // todo: simplify. provide index()
   
-} // namespace prl
+} // namespace sill
 
 #endif 

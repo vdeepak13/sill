@@ -1,15 +1,15 @@
-#ifndef PRL_BK98_FILTER_HPP
-#define PRL_BK98_FILTER_HPP
+#ifndef SILL_BK98_FILTER_HPP
+#define SILL_BK98_FILTER_HPP
 
-#include <prl/model/junction_tree.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/model/dynamic_bayesian_network.hpp>
-#include <prl/inference/interfaces.hpp>
-#include <prl/inference/variable_elimination.hpp>
+#include <sill/model/junction_tree.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/dynamic_bayesian_network.hpp>
+#include <sill/inference/interfaces.hpp>
+#include <sill/inference/variable_elimination.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Junction tree assumed density filtering. Implements the B&K 98
@@ -156,8 +156,8 @@ namespace prl {
 
   }; // class bk98_filter
 
-}; // namespace prl
+}; // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

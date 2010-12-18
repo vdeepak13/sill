@@ -4,19 +4,19 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/factor/any_factor.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/random.hpp>
-#include <prl/inference/junction_tree_inference.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/factor/any_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/inference/junction_tree_inference.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
 boost::mt19937 rng;
 
 int main(int argc, char** argv)
 {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   /*
@@ -80,5 +80,5 @@ int main(int argc, char** argv)
 
   // Compare the computed beliefs
   assert(poly_beliefs.size() == table_beliefs.size());
-  assert(prl::equal(poly_beliefs, table_beliefs));
+  assert(sill::equal(poly_beliefs, table_beliefs));
 }

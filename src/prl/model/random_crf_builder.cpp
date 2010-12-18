@@ -1,10 +1,10 @@
 
-#include <prl/model/random.hpp>
-#include <prl/model/random_crf_builder.hpp>
+#include <sill/model/random.hpp>
+#include <sill/model/random_crf_builder.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   void random_crf_builder::add_options
   (boost::program_options::options_description& desc) {
@@ -176,6 +176,6 @@ namespace prl {
     return out;
   }
 
-}; // namespace prl
+}; // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

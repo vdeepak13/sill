@@ -1,9 +1,9 @@
 
-#include <prl/base/string_functions.hpp>
+#include <sill/base/string_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   std::pair<std::string, std::string>
   split_directory_file(const std::string& filepath) {
@@ -14,6 +14,6 @@ namespace prl {
       return std::make_pair(filepath.substr(0,i), filepath.substr(i+1));
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

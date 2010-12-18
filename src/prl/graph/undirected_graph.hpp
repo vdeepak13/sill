@@ -1,5 +1,5 @@
-#ifndef PRL_UNDIRECTED_GRAPH_HPP
-#define PRL_UNDIRECTED_GRAPH_HPP
+#ifndef SILL_UNDIRECTED_GRAPH_HPP
+#define SILL_UNDIRECTED_GRAPH_HPP
 #include <set>
 #include <list>
 #include <iterator>
@@ -11,15 +11,15 @@
 #include <boost/functional/hash.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <prl/global.hpp>
-#include <prl/graph/undirected_edge.hpp>
-#include <prl/graph/boost_graph_helpers.hpp>
-#include <prl/iterator/map_key_iterator.hpp>
-#include <prl/range/concepts.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/global.hpp>
+#include <sill/graph/undirected_edge.hpp>
+#include <sill/graph/boost_graph_helpers.hpp>
+#include <sill/iterator/map_key_iterator.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
 
   //============================================================================
@@ -70,7 +70,7 @@ namespace prl {
     // Public type declerations -----------------------------------------------
     // Binding template arguments
     typedef Vertex vertex;                       //!< The vertex type
-    typedef prl::undirected_edge<Vertex> edge;   //!< The edge type
+    typedef sill::undirected_edge<Vertex> edge;   //!< The edge type
     typedef VertexProperty vertex_property; //!< Data associated with vertices
     typedef EdgeProperty edge_property;     //!< Data associated with edges
 
@@ -607,16 +607,16 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
 
 namespace boost {
 
   //! Type declarations that let our graph structure work in BGL algorithms
   template <typename Vertex, typename VP, typename EP>
-  struct graph_traits< prl::undirected_graph<Vertex, VP, EP> > {
+  struct graph_traits< sill::undirected_graph<Vertex, VP, EP> > {
     
-    typedef prl::undirected_graph<Vertex, VP, EP> graph_type;
+    typedef sill::undirected_graph<Vertex, VP, EP> graph_type;
 
     typedef typename graph_type::vertex             vertex_descriptor;
     typedef typename graph_type::edge               edge_descriptor;
@@ -645,6 +645,6 @@ namespace boost {
 
 } // namespace boost
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

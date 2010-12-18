@@ -1,13 +1,13 @@
-#ifndef PRL_GRAPH_CONCEPTS_HPP
-#define PRL_GRAPH_CONCEPTS_HPP
+#ifndef SILL_GRAPH_CONCEPTS_HPP
+#define SILL_GRAPH_CONCEPTS_HPP
 
-#include <prl/stl_concepts.hpp>
+#include <sill/stl_concepts.hpp>
 #include <boost/iterator/iterator_archetypes.hpp> 
 // This file is not up-to-date and may not compile
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * The concept that represents a basic graph. A graph may be thought
@@ -293,30 +293,30 @@ namespace prl {
 
 
     concept_usage(Graph) {
-      prl::same_type( g.vertices(),                     vr);
-      prl::same_type( g.edges(),                        er);
-      prl::same_type( g.contains(vertex()),             bool());
-      prl::same_type( g.contains(edge()),               bool());
-      prl::same_type( g.contains(vertex(), vertex()),   bool());
-      prl::same_type( g.parents(vertex()),              pr);
-      prl::same_type( g.children(vertex()),             cr);
-      prl::same_type( g.out_edges(vertex()),            oer);
-      prl::same_type( g.in_edge(vertex()),              ier);
-      prl::same_type( g.source(edge()),                 vertex());
-      prl::same_type( g.target(edge()),                 vertex());
-      prl::same_type( g.out_degree(vertex()),           size_t());
-      prl::same_type( g.in_degree(vertex()),            size_t());
-      prl::same_type( g.degree(vertex()),               size_t());
-      prl::same_type( g.empty(),                        bool());
-      prl::same_type( g.num_vertices(),                 size_t());
-      prl::same_type( g.num_edges(),                    size_t());
-      prl::same_type( g.edge(vertex(), vertex()),       edge());
-      prl::same_type( g.reverse(edge()),                edge());
-      prl::same_type( g[vertex()],                      vertex_property());
-      prl::same_type( g.vertex_property(vertex()),      vertex_property());
-      prl::same_type( g[edge()],                        edge_property());
-      prl::same_type( g.edge_property(edge()),          edge_property());
-      prl::same_type( g.edge_property(vertex(),vertex()), edge_property());
+      sill::same_type( g.vertices(),                     vr);
+      sill::same_type( g.edges(),                        er);
+      sill::same_type( g.contains(vertex()),             bool());
+      sill::same_type( g.contains(edge()),               bool());
+      sill::same_type( g.contains(vertex(), vertex()),   bool());
+      sill::same_type( g.parents(vertex()),              pr);
+      sill::same_type( g.children(vertex()),             cr);
+      sill::same_type( g.out_edges(vertex()),            oer);
+      sill::same_type( g.in_edge(vertex()),              ier);
+      sill::same_type( g.source(edge()),                 vertex());
+      sill::same_type( g.target(edge()),                 vertex());
+      sill::same_type( g.out_degree(vertex()),           size_t());
+      sill::same_type( g.in_degree(vertex()),            size_t());
+      sill::same_type( g.degree(vertex()),               size_t());
+      sill::same_type( g.empty(),                        bool());
+      sill::same_type( g.num_vertices(),                 size_t());
+      sill::same_type( g.num_edges(),                    size_t());
+      sill::same_type( g.edge(vertex(), vertex()),       edge());
+      sill::same_type( g.reverse(edge()),                edge());
+      sill::same_type( g[vertex()],                      vertex_property());
+      sill::same_type( g.vertex_property(vertex()),      vertex_property());
+      sill::same_type( g[edge()],                        edge_property());
+      sill::same_type( g.edge_property(edge()),          edge_property());
+      sill::same_type( g.edge_property(vertex(),vertex()), edge_property());
     }
   private:
     G g;
@@ -476,7 +476,7 @@ namespace prl {
 
     //! Implementation of the concept checking class
     concept_usage(EliminationStrategy) {
-      prl::same_type(s.priority(v, g), p);
+      sill::same_type(s.priority(v, g), p);
       s.updated(v, g, out);
     }
 
@@ -489,10 +489,10 @@ namespace prl {
 
   }; // concept EliminationStrategy
 
-} // namespace prl
+} // namespace sill
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_GRAPH_CONCEPTS_HPP
+#endif // #ifndef SILL_GRAPH_CONCEPTS_HPP
 

@@ -1,15 +1,15 @@
 
-#ifndef PRL_TRANSFORM_OUTPUT_ITERATOR_HPP
-#define PRL_TRANSFORM_OUTPUT_ITERATOR_HPP
+#ifndef SILL_TRANSFORM_OUTPUT_ITERATOR_HPP
+#define SILL_TRANSFORM_OUTPUT_ITERATOR_HPP
 
 #include <iterator>
 
-#include <prl/global.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/global.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An output iterator that transforms the values that are assigned
@@ -74,8 +74,8 @@ namespace prl {
     return transform_output_iterator<OutIt, F>(out, f);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 #endif

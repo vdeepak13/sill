@@ -1,5 +1,5 @@
-#ifndef PRL_FORWARD_RANGE_HPP
-#define PRL_FORWARD_RANGE_HPP
+#ifndef SILL_FORWARD_RANGE_HPP
+#define SILL_FORWARD_RANGE_HPP
 
 #include <iterator>
 #include <utility> // std::pair
@@ -12,10 +12,10 @@
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/range/iterator_range.hpp>
 
-#include <prl/iterator/forward_iterator.hpp>
-#include <prl/math/vector.hpp>
+#include <sill/iterator/forward_iterator.hpp>
+#include <sill/math/vector.hpp>
 
-namespace prl {
+namespace sill {
 
   using boost::enable_if;
 
@@ -84,7 +84,7 @@ namespace prl {
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
       : base(range) { }
 
-    //! Constructs a forward_range from prl::vector
+    //! Constructs a forward_range from sill::vector
     template <typename T>
     forward_range(const vector<T>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
@@ -98,6 +98,6 @@ namespace prl {
 
   }; // class forward_range
   
-} // namespace prl
+} // namespace sill
 
 #endif

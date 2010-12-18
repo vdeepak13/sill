@@ -1,12 +1,12 @@
-#ifndef PRL_ASYNCHRONOUS_GBP_HPP
-#define PRL_ASYNCHRONOUS_GBP_HPP
+#ifndef SILL_ASYNCHRONOUS_GBP_HPP
+#define SILL_ASYNCHRONOUS_GBP_HPP
 
-#include <prl/inference/gbp.hpp>
-#include <prl/graph/graph_traversal.hpp>
+#include <sill/inference/gbp.hpp>
+#include <sill/graph/graph_traversal.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * GBP engine that updates the messages in a topological order.
@@ -50,8 +50,8 @@ namespace prl {
     
   }; // class asynchronous_gbp
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

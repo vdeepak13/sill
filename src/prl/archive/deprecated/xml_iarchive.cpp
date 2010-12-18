@@ -4,18 +4,18 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/range/functions.hpp>
 
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/base/variable.hpp>
-#include <prl/process.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/universe.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/process.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/universe.hpp>
 
 #ifdef HAVE_LIBXMLPP
 
 #include <libxml++/parsers/textreader.h>
 
-namespace prl {
+namespace sill {
   
   // Implementation
   map<std::string, xml_iarchive::deserializer*> xml_iarchive::deserializers;
@@ -257,7 +257,7 @@ namespace prl {
       if(!reader->read()) return;
   }
 
-} // namespace prl
+} // namespace sill
   
 #else // ifdef HAVE_LIBXMLPP
 
@@ -265,119 +265,119 @@ namespace xmlpp {
   struct TextReader { }; 
 }
 
-#define PRL_LIBXMLPP_ERROR                                              \
+#define SILL_LIBXMLPP_ERROR                                              \
   throw std::runtime_error                                              \
     ("PRL needs to be compiled with libxml++ to use xml_iarchive");
 
-namespace prl {
+namespace sill {
 
   // Constructors
   //============================================================================
   xml_iarchive::xml_iarchive(const char* filename, named_universe& u)
     : u(u) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
   
   xml_iarchive::xml_iarchive(const unsigned char* dat, size_t size, named_universe& u)
     : u(u) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   } 
 
   xml_iarchive::xml_iarchive(const char* dat, size_t size, named_universe& u)
     : u(u) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   xml_iarchive::xml_iarchive(const std::vector<unsigned char>& dat, named_universe& u)
     : u(u) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   xml_iarchive::~xml_iarchive() {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   // Public functions 
   //============================================================================
   std::string xml_iarchive::name() const {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   std::string xml_iarchive::attribute(const char* name) const {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
   
   std::string xml_iarchive::text() const {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   bool xml_iarchive::has_next() {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
     
   void xml_iarchive::override_name(const char* name) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   void xml_iarchive::start_element(const char* name) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
     
   void xml_iarchive::end_element() {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   xml_iarchive& xml_iarchive::operator>>(var_vector& vars) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   xml_iarchive& xml_iarchive::operator>>(finite_var_vector& vars) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   xml_iarchive& xml_iarchive::operator>>(vector_var_vector& vars) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   xml_iarchive& xml_iarchive::operator>>(domain& vars) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   xml_iarchive& xml_iarchive::operator>>(finite_domain& vars) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   xml_iarchive& xml_iarchive::operator>>(vector_domain& vars) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   serializable* xml_iarchive::load() {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   void xml_iarchive::load(const char* name, std::string& str) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   std::string xml_iarchive::load_string(const char* name) {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   // Private functions 
   //============================================================================
   void xml_iarchive::initialize() {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   void xml_iarchive::register_variables() {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
   void xml_iarchive::skip_whitespace() {
-    PRL_LIBXMLPP_ERROR;
+    SILL_LIBXMLPP_ERROR;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif 
 

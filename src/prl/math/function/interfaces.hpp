@@ -1,13 +1,13 @@
-#ifndef PRL_FUNCTION_INTERFACES_HPP
-#define PRL_FUNCTION_INTERFACES_HPP
+#ifndef SILL_FUNCTION_INTERFACES_HPP
+#define SILL_FUNCTION_INTERFACES_HPP
 
 #include <functional>
 #include <string>
 
-#include <prl/math/vector.hpp>
-#include <prl/math/matrix.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/math/matrix.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A vector-valued function over a vector domain.
@@ -69,6 +69,6 @@ namespace prl {
 
   }; // class real_function
 
-} // namespace prl
+} // namespace sill
 
 #endif

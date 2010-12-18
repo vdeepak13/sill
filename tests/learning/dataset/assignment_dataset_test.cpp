@@ -1,27 +1,27 @@
 #include <iostream>
 #include <string>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/assignment_dataset.hpp>
-#include <prl/learning/dataset/concepts.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/factor/table_factor.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/learning/dataset/concepts.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/factor/table_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file assignment_dataset.cpp Test of the assignment dataset class.
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   std::string filename = argc > 1 ? argv[1] : "../../../../tests/data/spam.sum";
 
   universe u;
 
-  concept_assert((prl::MutableDataset<assignment_dataset>));
+  concept_assert((sill::MutableDataset<assignment_dataset>));
 
   boost::shared_ptr<assignment_dataset> data_ptr =
     data_loader::load_symbolic_dataset<assignment_dataset>(filename, u);

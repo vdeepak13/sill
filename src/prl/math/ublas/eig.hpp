@@ -1,5 +1,5 @@
-#ifndef PRL_MATH_UBLAS_EIGENVALUES_HPP
-#define PRL_MATH_UBLAS_EIGENVALUES_HPP
+#ifndef SILL_MATH_UBLAS_EIGENVALUES_HPP
+#define SILL_MATH_UBLAS_EIGENVALUES_HPP
 
 #include <boost/numeric/ublas/matrix.hpp>
 #include <boost/numeric/ublas/vector.hpp>

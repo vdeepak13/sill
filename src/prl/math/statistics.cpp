@@ -1,10 +1,10 @@
 
-#include <prl/math/is_finite.hpp>
-#include <prl/math/statistics.hpp>
+#include <sill/math/is_finite.hpp>
+#include <sill/math/statistics.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Means, standard errors, medians, and MADs
   //============================================================================
@@ -81,4 +81,4 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

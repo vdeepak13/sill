@@ -1,13 +1,13 @@
 #include <limits>
 #include <stdexcept>
 
-#include <prl/learning/discriminative/linear_regression.hpp>
-#include <prl/learning/parameter_grid.hpp>
-#include <prl/math/free_functions.hpp>
+#include <sill/learning/discriminative/linear_regression.hpp>
+#include <sill/learning/parameter_grid.hpp>
+#include <sill/math/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   std::ostream&
   operator<<(std::ostream& out, const linear_regression_parameters& params) {
@@ -653,6 +653,6 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

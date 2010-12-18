@@ -1,22 +1,22 @@
 
 #include <iostream>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace data_loader {
 
     // Free functions
     //==========================================================================
 
-  boost::shared_ptr<prl::oracle>
-  load_oracle(prl::universe& u, std::string ds_name, double random_seed) {
-    using namespace prl;
-    boost::shared_ptr<prl::oracle> oracle_ptr;
+  boost::shared_ptr<sill::oracle>
+  load_oracle(sill::universe& u, std::string ds_name, double random_seed) {
+    using namespace sill;
+    boost::shared_ptr<sill::oracle> oracle_ptr;
     if (ds_name == "knorm") {
       size_t nfeatures = 20;
       size_t k = 2;
@@ -45,11 +45,11 @@ namespace prl {
     return oracle_ptr;
   }
 
-  boost::shared_ptr<prl::oracle>
-  load_oracle(const prl::datasource_info_type& info,
+  boost::shared_ptr<sill::oracle>
+  load_oracle(const sill::datasource_info_type& info,
                            std::string ds_name, double random_seed) {
-    using namespace prl;
-    boost::shared_ptr<prl::oracle> oracle_ptr;
+    using namespace sill;
+    boost::shared_ptr<sill::oracle> oracle_ptr;
     if (ds_name == "knorm") {
       syn_oracle_knorm::parameters params;
       params.random_seed = random_seed;
@@ -187,6 +187,6 @@ namespace prl {
 
   } // namespace data_loader
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

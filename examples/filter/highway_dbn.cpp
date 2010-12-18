@@ -49,12 +49,12 @@ boost::array<double, 9> observation_values = // tail: vars_t[i]
     0.1, 0.8, 0.1,   // medium
     0.0, 0.2, 0.8}}; // fast
 
-typedef prl::dynamic_bayesian_network<prl::table_factor> dbn_type;
+typedef sill::dynamic_bayesian_network<sill::table_factor> dbn_type;
 
 void highway_dbn(std::size_t n, 
                  dbn_type& dbn,
-                 std::vector<prl::finite_timed_process*>& procs) {
-  using namespace prl;
+                 std::vector<sill::finite_timed_process*>& procs) {
+  using namespace sill;
   dbn.clear();
   procs.clear();
   

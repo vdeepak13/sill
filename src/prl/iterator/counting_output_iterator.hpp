@@ -1,12 +1,12 @@
 
-#ifndef PRL_COUNTING_OUTPUT_ITERATOR_HPP
-#define PRL_COUNTING_OUTPUT_ITERATOR_HPP
+#ifndef SILL_COUNTING_OUTPUT_ITERATOR_HPP
+#define SILL_COUNTING_OUTPUT_ITERATOR_HPP
 
 #include <iterator>
 
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An output iterator that counts how many times a value has been stored.
@@ -54,6 +54,6 @@ namespace prl {
 
   }; // class counting_output_iterator
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_COUNTING_OUTPUT_ITERATOR_HPP
+#endif // #ifndef SILL_COUNTING_OUTPUT_ITERATOR_HPP

@@ -2,7 +2,7 @@
 #include <sstream>
 #include <string>
 
-#include <prl/math/logarithmic.hpp>
+#include <sill/math/logarithmic.hpp>
 #include <cmath>
 
 #include <boost/random/mersenne_twister.hpp>
@@ -14,7 +14,7 @@ int main(int argc, char** argv)
   using namespace std;
   using namespace boost;
 
-  typedef prl::logarithmic<double> log_double;
+  typedef sill::logarithmic<double> log_double;
 
   // Create some log values.
   log_double x, y, z;

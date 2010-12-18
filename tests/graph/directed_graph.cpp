@@ -1,16 +1,16 @@
 
 #include <iostream>
-#include <prl/macros_def.hpp>
-#include <prl/graph/directed_graph.hpp>
-#include <prl/graph/graph_traversal.hpp>
+#include <sill/macros_def.hpp>
+#include <sill/graph/directed_graph.hpp>
+#include <sill/graph/graph_traversal.hpp>
 #include <vector>
 #include <algorithm>
 #include <set>
 
 #include <boost/array.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-using namespace prl;
+using namespace sill;
 using namespace std;
 
 typedef size_t V;

@@ -5,18 +5,18 @@
 #include <functional>
 #include <set>
 
-#include <prl/graph/grid_graphs.hpp>
-#include <prl/stl_io.hpp>
-#include <prl/graph/triangulation.hpp>
-#include <prl/graph/min_degree_strategy.hpp>
-#include <prl/graph/min_fill_strategy.hpp>
-#include <prl/graph/undirected_graph.hpp>
+#include <sill/graph/grid_graphs.hpp>
+#include <sill/stl_io.hpp>
+#include <sill/graph/triangulation.hpp>
+#include <sill/graph/min_degree_strategy.hpp>
+#include <sill/graph/min_fill_strategy.hpp>
+#include <sill/graph/undirected_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main() {
   using namespace std;
-  using namespace prl;
+  using namespace sill;
 
   typedef undirected_graph<size_t> graph_type;
 

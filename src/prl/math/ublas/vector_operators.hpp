@@ -1,12 +1,12 @@
-#ifndef PRL_MATH_UBLAS_VECTOR_OPERATORS_HPP
-#define PRL_MATH_UBLAS_VECTOR_OPERATORS_HPP
+#ifndef SILL_MATH_UBLAS_VECTOR_OPERATORS_HPP
+#define SILL_MATH_UBLAS_VECTOR_OPERATORS_HPP
 
 #include <boost/numeric/ublas/expression_types.hpp>
 #include <boost/numeric/ublas/vector_expression.hpp>
 #include <boost/numeric/ublas/vector.hpp>
 
-#include <prl/range/forward_range.hpp>
-#include <prl/range/transformed.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/range/transformed.hpp>
 
 #include <boost/iterator/iterator_categories.hpp>
 #include <functional>
@@ -16,14 +16,14 @@
 //! with a scalar
 #define BOOST_UBLAS_VECTOR_SCALAR_COMPARE(oper, functor)		\
   template <typename E>							\
-  prl::forward_range<bool>                                              \
+  sill::forward_range<bool>                                              \
   oper(const vector_expression<E>& vec, typename E::value_type val) {	\
     typedef typename E::value_type T;					\
     return make_transformed(vec(), std::bind2nd(std::functor<T>(), val)); \
   }									\
 									\
   template <typename E>							\
-  prl::forward_range<bool>                                              \
+  sill::forward_range<bool>                                              \
   oper(typename E::value_type val, const vector_expression<E>& vec) {	\
     typedef typename E::value_type T;					\
     return make_transformed(vec(), std::bind2nd(std::functor<T>(), val)); \

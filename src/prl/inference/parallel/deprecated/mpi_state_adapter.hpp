@@ -22,27 +22,27 @@
 
 
 // PRL Includes
-#include <prl/serializable.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/mpi/mpi_consensus.hpp>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/parallel/timer.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/inference/parallel/message_data.hpp>
+#include <sill/serializable.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/mpi/mpi_consensus.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/parallel/timer.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/inference/parallel/message_data.hpp>
 
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
 
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   class mpi_state_adapter {
     ///////////////////////////////////////////////////////////////////////
@@ -718,7 +718,7 @@ namespace prl {
 }; // end of namespace
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
 

@@ -15,24 +15,24 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_TABLE_AND_BSPT_FACTOR_HPP
-#define PRL_TABLE_AND_BSPT_FACTOR_HPP
+#ifndef SILL_TABLE_AND_BSPT_FACTOR_HPP
+#define SILL_TABLE_AND_BSPT_FACTOR_HPP
 
 //! \todo Move #ifdefs here; clean up.
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/bspt_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/bspt_factor.hpp>
 
 template <typename range_t,
 	  template <typename value_t> class Table>
 template <typename other_factor_t,
 	  typename binary_op_tag_t>
-prl::table_factor<range_t, Table>::table_factor
+sill::table_factor<range_t, Table>::table_factor
 (factor_collapse_expr<bspt_factor_t<other_factor_t>,
                         binary_op_tag_t> expr) {
   // First collapse the BSPT factor to a singleton factor.
   bspt_factor_t<other_factor_t>
-    collapsed_bspt(prl::collapse(expr.x_ptr, expr.retained, 
+    collapsed_bspt(sill::collapse(expr.x_ptr, expr.retained, 
 				 binary_op_tag_t()));
 
   // This conversion is possible only if the resulting BSPT has a
@@ -41,7 +41,7 @@ prl::table_factor<range_t, Table>::table_factor
 
   // Now create a table factor which represents the collapse of the
   // singleton factor.
-  table_factor result(prl::collapse(collapsed_bspt.get_singleton_factor(),
+  table_factor result(sill::collapse(collapsed_bspt.get_singleton_factor(),
 				      expr.retained, binary_op_tag_t()));
 
   // Initialize this object to an empty table, and then swap it with
@@ -50,7 +50,7 @@ prl::table_factor<range_t, Table>::table_factor
   this->swap(result);
 }
 
-#endif // #ifndef PRL_TABLE_AND_BSPT_FACTOR_HPP
+#endif // #ifndef SILL_TABLE_AND_BSPT_FACTOR_HPP
 
 
 

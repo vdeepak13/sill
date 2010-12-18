@@ -1,6 +1,6 @@
-#include <prl/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Computes the log-determinant of a matrix
   double logdet(const itpp::mat& a) {
@@ -8,4 +8,4 @@ namespace prl {
     return 2*sum(log(diag(l)));
   }
 
-} // namespace prl
+} // namespace sill

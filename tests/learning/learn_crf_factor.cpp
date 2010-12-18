@@ -5,16 +5,16 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/random.hpp>
-#include <prl/learning/crf/crf_parameter_learner.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/vector_assignment_dataset.hpp>
-#include <prl/learning/learn_crf_factor.hpp>
-#include <prl/model/random.hpp>
-#include <prl/optimization/real_optimizer_builder.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/learning/crf/crf_parameter_learner.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/learning/learn_crf_factor.hpp>
+#include <sill/model/random.hpp>
+#include <sill/optimization/real_optimizer_builder.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file learn_crf_factor.cpp   Test learning CRF factors (crf_factor).
@@ -23,16 +23,16 @@
 //! Create a finite variable dataset for testing table log_reg CRF factors.
 static void
 create_finite_var_data
-(prl::finite_var_vector& Y, prl::finite_var_vector& X,
- prl::finite_var_vector& YX, prl::table_factor& truth_YX,
- prl::table_factor& truth_Y_given_X, prl::table_factor& truth_X,
- boost::shared_ptr<prl::vector_assignment_dataset>& ds_ptr,
- prl::vector_assignment_dataset& test_ds,
+(sill::finite_var_vector& Y, sill::finite_var_vector& X,
+ sill::finite_var_vector& YX, sill::table_factor& truth_YX,
+ sill::table_factor& truth_Y_given_X, sill::table_factor& truth_X,
+ boost::shared_ptr<sill::vector_assignment_dataset>& ds_ptr,
+ sill::vector_assignment_dataset& test_ds,
  size_t ntrain, size_t ntest, size_t Ysize, size_t Xsize,
- prl::universe& u, boost::mt11213b& rng) {
+ sill::universe& u, boost::mt11213b& rng) {
 
   using namespace std;
-  using namespace prl;
+  using namespace sill;
 
   // Fixed dataset parameters
   double lower = .001;
@@ -45,7 +45,7 @@ create_finite_var_data
     Y.push_back(u.new_finite_variable(2));
   for (size_t j(0); j < Xsize; ++j)
     X.push_back(u.new_finite_variable(2));
-  YX = prl::concat(Y, X);
+  YX = sill::concat(Y, X);
   truth_YX =
     random_range_discrete_factor<table_factor>
     (make_domain<finite_variable>(YX), rng, lower, upper);
@@ -88,15 +88,15 @@ template <typename F>
 static std::pair<double,double>
 test_learn_crf_factor
 (double& learn_crf_factor_time, F* & f1,
- const typename prl::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
- const typename prl::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
- boost::shared_ptr<prl::vector_assignment_dataset> ds_ptr,
- const prl::vector_assignment_dataset& test_ds, bool do_cv,
- const prl::crossval_parameters<F::regularization_type::nlambdas>& cv_params,
+ const typename sill::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
+ const typename sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
+ boost::shared_ptr<sill::vector_assignment_dataset> ds_ptr,
+ const sill::vector_assignment_dataset& test_ds, bool do_cv,
+ const sill::crossval_parameters<F::regularization_type::nlambdas>& cv_params,
  typename F::parameters& f_params, boost::mt11213b& rng) {
 
   using namespace std;
-  using namespace prl;
+  using namespace sill;
 
   typedef typename F::input_variable_type input_variable_type;
   typedef typename F::input_domain_type input_domain_type;
@@ -166,17 +166,17 @@ static std::pair<double,double>
 test_crf_parameter_learner
 (double& cpl_time, const F& f1,
  const typename
- prl::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
+ sill::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
  const typename
- prl::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
- boost::shared_ptr<prl::vector_assignment_dataset> ds_ptr,
- const prl::vector_assignment_dataset& test_ds, bool do_cv,
+ sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
+ boost::shared_ptr<sill::vector_assignment_dataset> ds_ptr,
+ const sill::vector_assignment_dataset& test_ds, bool do_cv,
  size_t cpl_method, size_t line_search_type,
- const prl::crossval_parameters<F::regularization_type::nlambdas>& cv_params,
+ const sill::crossval_parameters<F::regularization_type::nlambdas>& cv_params,
  boost::mt11213b& rng) {
 
   using namespace std;
-  using namespace prl;
+  using namespace sill;
 
   typedef typename F::input_variable_type input_variable_type;
   typedef typename F::input_domain_type input_domain_type;
@@ -263,11 +263,11 @@ test_crf_parameter_learner
 template <typename F>
 static void
 print_results
-(const prl::vector_assignment_dataset& ds,
- const prl::vector_assignment_dataset& test_ds,
- const prl::vector_assignment_dataset& orig_ds,
- const prl::vector_assignment_dataset& orig_test_ds,
- const typename prl::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
+(const sill::vector_assignment_dataset& ds,
+ const sill::vector_assignment_dataset& test_ds,
+ const sill::vector_assignment_dataset& orig_ds,
+ const sill::vector_assignment_dataset& orig_test_ds,
+ const typename sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
  const typename F::output_factor_type& truth_YX,
  const typename F::output_factor_type& truth_Y_given_X,
  double learn_crf_factor_time, double cpl_time,
@@ -275,7 +275,7 @@ print_results
  std::pair<double,double> cpl_train_test_ll) {
 
   using namespace std;
-  using namespace prl;
+  using namespace sill;
 
   // Compare the results.
   double joint_ll(0);
@@ -335,7 +335,7 @@ print_results
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   //==========================================================
@@ -521,7 +521,7 @@ int main(int argc, char** argv) {
       Y.push_back(u.new_vector_variable(1));
     for (size_t j(0); j < Xsize; ++j)
       X.push_back(u.new_vector_variable(1));
-    vector_var_vector YX(prl::concat(Y, X));
+    vector_var_vector YX(sill::concat(Y, X));
     moment_gaussian truth_YX(make_marginal_gaussian_factor
                              (YX, b_max, spread, cov_strength, rng));
     truth_YX.normalize();

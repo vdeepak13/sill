@@ -1,15 +1,15 @@
-#ifndef PRL_DATASTRUCTURE_CONCEPTS_HPP
-#define PRL_DATASTRUCTURE_CONCEPTS_HPP
+#ifndef SILL_DATASTRUCTURE_CONCEPTS_HPP
+#define SILL_DATASTRUCTURE_CONCEPTS_HPP
 
 #include <boost/optional.hpp>
 
-#include <prl/global.hpp>
-#include <prl/functional.hpp> // for identity_t
-#include <prl/stl_concepts.hpp>
+#include <sill/global.hpp>
+#include <sill/functional.hpp> // for identity_t
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup datastructure
   //! @{
@@ -201,21 +201,21 @@ namespace prl {
 
     // Concept checking
     concept_usage(Table) {
-      prl::same_type(t.arity(), a);
-      prl::same_type(t.num_dimensions(), a);
-      prl::same_type(t.num_elements(), si);
-      prl::same_type(t.size(), si);
-      prl::same_type(t.size(size_t()), si);
-      prl::same_type(t.shape(), sh);
-      // prl::same_type(t.elements(), elts); // unsupported by sparse_table
-      //prl::same_type(t.indices(), idxs);   // for now
-      prl::same_type(t(i), v);
-      t.apply(prl::identity_t<value_type>());
+      sill::same_type(t.arity(), a);
+      sill::same_type(t.num_dimensions(), a);
+      sill::same_type(t.num_elements(), si);
+      sill::same_type(t.size(), si);
+      sill::same_type(t.size(size_t()), si);
+      sill::same_type(t.shape(), sh);
+      // sill::same_type(t.elements(), elts); // unsupported by sparse_table
+      //sill::same_type(t.indices(), idxs);   // for now
+      sill::same_type(t(i), v);
+      t.apply(sill::identity_t<value_type>());
       // t.join(t, t, sh, sh, op);
       t.join_with(t, sh, op);
       t.aggregate(t, sh, op);
       t.restrict(t, sh, sh);
-      // prl::same_type(T::join_aggregate(t, t, sh, sh, op, op), v);
+      // sill::same_type(T::join_aggregate(t, t, sh, sh, op, op), v);
     }
 
   private:
@@ -233,8 +233,8 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

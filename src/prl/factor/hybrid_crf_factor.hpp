@@ -1,14 +1,14 @@
-#ifndef PRL_HYBRID_CRF_FACTOR_HPP
-#define PRL_HYBRID_CRF_FACTOR_HPP
+#ifndef SILL_HYBRID_CRF_FACTOR_HPP
+#define SILL_HYBRID_CRF_FACTOR_HPP
 
-#include <prl/base/finite_assignment_iterator.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/learnable_crf_factor.hpp>
-#include <prl/optimization/hybrid_opt_vector.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/optimization/hybrid_opt_vector.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * CRF factor representing P(Y | X1, X2), where X2 are finite variables.
@@ -612,8 +612,8 @@ namespace prl {
 
   };  // class hybrid_crf_factor
 
-};  // namespace prl
+};  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_HYBRID_CRF_FACTOR_HPP
+#endif // SILL_HYBRID_CRF_FACTOR_HPP

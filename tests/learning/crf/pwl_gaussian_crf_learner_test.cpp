@@ -2,14 +2,14 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/gaussian_crf_factor.hpp>
-#include <prl/learning/crf/pwl_crf_learner.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/learning/crf/pwl_crf_learner.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file pwl_gaussian_crf_learner_test.cpp  Test the PWL-based CRF learner.
@@ -17,7 +17,7 @@
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Dataset parameters

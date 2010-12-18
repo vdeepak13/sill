@@ -1,6 +1,6 @@
-#include <prl/base/assignment.hpp>
+#include <sill/base/assignment.hpp>
 
-namespace prl {
+namespace sill {
 assignment map_union(const assignment& a, const assignment& b) {
   // Initialize the output map
   assignment output;

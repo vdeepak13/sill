@@ -4,14 +4,14 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/crf/crf_parameter_learner.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/vector_assignment_dataset.hpp>
-#include <prl/learning/learn_crf_factor.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/crf/crf_parameter_learner.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/learning/learn_crf_factor.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file gaussian_crf_factor_timing.cpp  Time learning conditional Gaussians.
@@ -28,7 +28,7 @@ static int usage() {
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Dataset parameters
@@ -106,9 +106,9 @@ int main(int argc, char** argv) {
     Y.push_back(u.new_vector_variable(1));
   for (size_t j(0); j < Xsize; ++j)
     X.push_back(u.new_vector_variable(1));
-  vector_var_vector YX(prl::concat(Y, X));
+  vector_var_vector YX(sill::concat(Y, X));
   moment_gaussian truth_YX(make_marginal_gaussian_factor
-                        (prl::concat(Y,X), b_max, spread, cov_strength, rng));
+                        (sill::concat(Y,X), b_max, spread, cov_strength, rng));
   truth_YX.normalize();
   if (1) {
     canonical_gaussian cg1(truth_YX);

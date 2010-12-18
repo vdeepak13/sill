@@ -1,5 +1,5 @@
 #include <iostream>
-#include <prl/copy_ptr.hpp>
+#include <sill/copy_ptr.hpp>
 #include <boost/timer.hpp>
 #include <boost/lexical_cast.hpp>
 
@@ -11,7 +11,7 @@ struct test {
 // Speed test for shared pointer operations
 int main(int argc, char** argv)
 {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   using namespace boost;
 

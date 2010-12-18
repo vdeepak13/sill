@@ -1,20 +1,20 @@
-#ifndef PRL_FIXED_FACTORS_HPP
-#define PRL_FIXED_FACTORS_HPP
+#ifndef SILL_FIXED_FACTORS_HPP
+#define SILL_FIXED_FACTORS_HPP
 
 #include <iosfwd>
 
 #include <boost/array.hpp>
 
-#include <prl/global.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/table_factor.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/table_factor.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template <std::size_t N>
   class binary_factor; // Forward declaration
@@ -77,14 +77,14 @@ namespace prl {
     unary_factor(const finite_domain& args, double default_value = double())
       : u(args.representative()) {
       assert(args.size() == 1 && u->size() == N);
-      prl::fill(val, default_value);
+      sill::fill(val, default_value);
     }
 
     //! Conversion to a table factor
     template <typename Table>
     operator table_factor<Table>() const {
       table_factor<Table> f(arguments(), 0);
-      prl::copy(values(), boost::begin(f.values()));
+      sill::copy(values(), boost::begin(f.values()));
       return f;
     }
 
@@ -179,7 +179,7 @@ namespace prl {
       double agg = collapse_op.left_identity();
       for(size_t i = 0; i<N; i++) agg = collapse_op(agg, val[i]);
       return agg;
-      //return prl::accumulate(val, op.left_identity(), op);
+      //return sill::accumulate(val, op.left_identity(), op);
     }
 
     //! implements Factor::restrict
@@ -233,7 +233,7 @@ namespace prl {
   template <std::size_t N>
   std::ostream& operator<<(std::ostream& out, const unary_factor<N>& f) {
     out << "#F(U|" << f.arguments() << "|";
-    prl::copy(f.values(), std::ostream_iterator<double, char>(out, " "));
+    sill::copy(f.values(), std::ostream_iterator<double, char>(out, " "));
     out << ")";
     return out;
   }
@@ -340,14 +340,14 @@ namespace prl {
       u = args[0];
       v = args[1];
       assert(u->size() == N && v->size() == N);
-      prl::fill(val, default_value);
+      sill::fill(val, default_value);
     }
 
     //! Conversion to a table factor
     template <typename Table>
     operator table_factor<Table>() const {
       table_factor<Table> f(arguments(), 0);
-      prl::copy(values(), boost::begin(f.values()));
+      sill::copy(values(), boost::begin(f.values()));
       return f;
     }
 
@@ -505,7 +505,7 @@ namespace prl {
 
     //! Returns the normalization constant
     double norm_constant() const {
-      return prl::accumulate(val, 0, plus<double>());
+      return sill::accumulate(val, 0, plus<double>());
     }
 
     //! Normalizes a factor in-place.
@@ -530,7 +530,7 @@ namespace prl {
   std::ostream& 
   operator<<(std::ostream& out, const binary_factor<N>& f) {
     out << "#F(B|" << f.arguments() << "|";
-    prl::copy(f.values(), std::ostream_iterator<double, char>(out, " "));
+    sill::copy(f.values(), std::ostream_iterator<double, char>(out, " "));
     out << ")";
     return out;
   }
@@ -566,9 +566,9 @@ namespace prl {
     return b.combine_in(u, op);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

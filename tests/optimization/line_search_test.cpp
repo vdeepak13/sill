@@ -1,12 +1,12 @@
 
 #include <iostream>
 
-#include <prl/math/vector.hpp>
-#include <prl/optimization/line_search_with_grad.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/optimization/line_search_with_grad.hpp>
 
 // minimize -5 + (val - 1)^2
 class obj_functor
-  : public prl::real_opt_step_functor {
+  : public sill::real_opt_step_functor {
 
   double objective(double val) const {
     return - 5 + (val - 1.) * (val - 1.);
@@ -24,7 +24,7 @@ class obj_functor
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
 
   double init_val(.1);
   obj_functor obj;

@@ -1,16 +1,16 @@
-#ifndef PRL_GRID_GRAPHS_HPP
-#define PRL_GRID_GRAPHS_HPP
+#ifndef SILL_GRID_GRAPHS_HPP
+#define SILL_GRID_GRAPHS_HPP
 
 //! \todo this file should be renamed to grid_graph
 
 #include <boost/multi_array.hpp>
-#include <prl/graph/undirected_graph.hpp>
+#include <sill/graph/undirected_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Constructs some common graphical models
 
-namespace prl {
+namespace sill {
   
   //! Creates a grid graph and a map of the corresponding vertices
   //! \ingroup graph_special
@@ -70,6 +70,6 @@ namespace prl {
   
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

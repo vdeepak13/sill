@@ -2,16 +2,16 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <prl/learning/dataset/syn_oracle_majority.hpp>
-#include <prl/model/random.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/model/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   size_t nsamples = 5;

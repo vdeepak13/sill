@@ -1,5 +1,5 @@
-#ifndef PRL_MATRIX_HPP
-#define PRL_MATRIX_HPP
+#ifndef SILL_MATRIX_HPP
+#define SILL_MATRIX_HPP
 
 #include <functional>
 #include <string>
@@ -8,14 +8,14 @@
 #include <itpp/base/mat.h>
 // we should also include the functions over vectors & matrices
 
-#include <prl/global.hpp>
-#include <prl/math/irange.hpp>
-#include <prl/math/vector.hpp>
-#include <prl/stl_concepts.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/global.hpp>
+#include <sill/math/irange.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/stl_concepts.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // We reimplement some of the functions, to maintain a complete 
   // documentation
@@ -721,8 +721,8 @@ namespace prl {
   //! \relates matrix
   typedef matrix<itpp::bin> bmat;
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,20 +1,20 @@
-#ifndef PRL_DECOMPOSABLE_FRAGMENT_HPP
-#define PRL_DECOMPOSABLE_FRAGMENT_HPP
+#ifndef SILL_DECOMPOSABLE_FRAGMENT_HPP
+#define SILL_DECOMPOSABLE_FRAGMENT_HPP
 
 #include <stack>
 #include <map>
 
 #include <boost/serialization/vector.hpp>
 
-#include <prl/global.hpp>
-#include <prl/factor/factor.hpp>
-#include <prl/factor/prior_likelihood.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/range/joined.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/factor.hpp>
+#include <sill/factor/prior_likelihood.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/range/joined.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   /**
    * Decomposable fragment is a factor that represents a subset 
@@ -215,7 +215,7 @@ namespace prl {
       if (arguments() != other.arguments())
         return arguments() < other.arguments();
       else
-        return prl::lexicographical_compare(*pls, *other.pls);
+        return sill::lexicographical_compare(*pls, *other.pls);
     }
 
     //! Converts this decomposable fragment to a decomposable model.
@@ -389,9 +389,9 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

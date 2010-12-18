@@ -1,21 +1,21 @@
 #include <iostream>
 #include <string>
 
-#include <prl/variable.hpp>
-#include <prl/assignment.hpp>
-#include <prl/learning/dataset/array_dataset.hpp>
-#include <prl/learning/dataset/concepts.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/factor/table_factor.hpp>
+#include <sill/variable.hpp>
+#include <sill/assignment.hpp>
+#include <sill/learning/dataset/array_dataset.hpp>
+#include <sill/learning/dataset/concepts.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/factor/table_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file array_dataset.cpp Test of the array_dataset class.
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   std::string filename = argc > 1 ? argv[1] : "../../../../tests/data/spam.txt";
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     var_type_order(10, datasource::VECTOR_VAR_TYPE);
   var_type_order.push_back(datasource::FINITE_VAR_TYPE);
 
-  concept_assert((prl::MutableDataset<array_dataset>));
+  concept_assert((sill::MutableDataset<array_dataset>));
 
   array_dataset data(*(load_plain<array_dataset>
                        (filename, fv, vv, var_type_order)));

@@ -1,15 +1,15 @@
 #include <sstream>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/nonlinear_gaussian.hpp>
-#include <prl/factor/operations.hpp>
-#include <prl/math/linear_algebra.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/nonlinear_gaussian.hpp>
+#include <sill/factor/operations.hpp>
+#include <sill/math/linear_algebra.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
   // Constructors and conversion operators
   //============================================================================
@@ -149,5 +149,5 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 

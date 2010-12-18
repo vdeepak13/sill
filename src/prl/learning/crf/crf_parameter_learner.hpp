@@ -1,29 +1,29 @@
-#ifndef PRL_CRF_PARAMETER_LEARNER_HPP
-#define PRL_CRF_PARAMETER_LEARNER_HPP
+#ifndef SILL_CRF_PARAMETER_LEARNER_HPP
+#define SILL_CRF_PARAMETER_LEARNER_HPP
 
 #include <boost/program_options.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/factor/concepts.hpp>
-#include <prl/learning/crossval_methods.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/vector_assignment_dataset.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/learning/parameter_grid.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/math/is_finite.hpp>
-#include <prl/math/statistics.hpp>
-#include <prl/model/crf_model.hpp>
-#include <prl/optimization/conjugate_gradient.hpp>
-#include <prl/optimization/gradient_descent.hpp>
-#include <prl/optimization/lbfgs.hpp>
-#include <prl/optimization/real_optimizer_builder.hpp>
-#include <prl/optimization/stochastic_gradient.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/learning/crossval_methods.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/learning/parameter_grid.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/math/is_finite.hpp>
+#include <sill/math/statistics.hpp>
+#include <sill/model/crf_model.hpp>
+#include <sill/optimization/conjugate_gradient.hpp>
+#include <sill/optimization/gradient_descent.hpp>
+#include <sill/optimization/lbfgs.hpp>
+#include <sill/optimization/real_optimizer_builder.hpp>
+#include <sill/optimization/stochastic_gradient.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Parameters for crf_parameter_learner.
@@ -1416,8 +1416,8 @@ namespace prl {
 
   }; // crf_parameter_learner
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_CRF_PARAMETER_LEARNER_HPP
+#endif // SILL_CRF_PARAMETER_LEARNER_HPP

@@ -1,16 +1,16 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_BINARY_REGRESSOR_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_BINARY_REGRESSOR_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_BINARY_REGRESSOR_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_BINARY_REGRESSOR_HPP
 
-#include <prl/assignment.hpp>
-#include <prl/datastructure/concepts.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/assignment.hpp>
+#include <sill/datastructure/concepts.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * binary_regressor.
@@ -57,6 +57,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_BINARY_REGRESSOR_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_BINARY_REGRESSOR_HPP

@@ -3,7 +3,7 @@
 
 // #define DEBUG
 // forward declaration
-namespace prl {
+namespace sill {
 template <typename F>
 class mpi_state_manager;
 }
@@ -20,12 +20,12 @@ class mpi_state_manager;
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream.hpp>
 
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/inference/parallel/mpi_state_manager.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/inference/parallel/mpi_state_manager.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
 /**
   Design Specs:
@@ -641,5 +641,5 @@ namespace mpi_state_manager_prot {
 }
 
 };
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 #endif

@@ -1,13 +1,13 @@
 #include <iostream>
 #include <iterator>
-#include <prl/data.hpp>
-#include <prl/assignment.hpp>
-#include <prl/variable.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/learning/decomposable_iterator.hpp>
+#include <sill/data.hpp>
+#include <sill/assignment.hpp>
+#include <sill/variable.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/learning/decomposable_iterator.hpp>
 
-using namespace prl;
+using namespace sill;
 
 // Test of decomposable iterators.
 int main() {
@@ -19,7 +19,7 @@ int main() {
   data_t data(filename, directory, SYMBOLIC, universe);
   std::cout << data << std::endl;
 
-  typedef prl::table_factor<double, dense_table> factor_t;
+  typedef sill::table_factor<double, dense_table> factor_t;
   typedef std::vector<factor_t> factor_vec_t;
   // create initial decomposable model
   decomposable<factor_t> model;

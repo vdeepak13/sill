@@ -2,13 +2,13 @@
 #include <string>
 #include <iterator>
 #include <cmath>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/copy_ptr.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/copy_ptr.hpp>
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // Create a constant factor with no arguments

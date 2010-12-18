@@ -3,20 +3,20 @@
 //////////////////////////////////////////////////////////////////////
 
 
-#ifndef PRL_ORDER_BASED_SEARCH_CLASSES_HPP
-#define PRL_ORDER_BASED_SEARCH_CLASSES_HPP
+#ifndef SILL_ORDER_BASED_SEARCH_CLASSES_HPP
+#define SILL_ORDER_BASED_SEARCH_CLASSES_HPP
 
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/assignment_dataset.hpp>
-#include <prl/learning/order_based_search/constants.hpp>
-#include <prl/variable.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/learning/order_based_search/constants.hpp>
+#include <sill/variable.hpp>
 
 #include <string>
 #include <cmath>
 #include <iostream>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 #define OBS_SUPPRESS_OUTPUT 1 // Set = 0 to print stuff out while this runs.
 
@@ -1569,8 +1569,8 @@ public:
     fclose(f);
   }
 
-  Statistics(const prl::assignment_dataset& ds) {
-    using namespace prl;
+  Statistics(const sill::assignment_dataset& ds) {
+    using namespace sill;
     numVariables = ds.num_variables();
     Domains = new int[numVariables];
     finite_var_vector varvec;
@@ -6641,6 +6641,6 @@ ListOp::ListOp(State *s)
 
 #endif // #ifdef GRAPH_SPACE
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_ORDER_BASED_SEARCH_CLASSES_HPP
+#endif // SILL_ORDER_BASED_SEARCH_CLASSES_HPP

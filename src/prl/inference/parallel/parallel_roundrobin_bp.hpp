@@ -13,23 +13,23 @@
 #include <limits>
 
 // PRL Includes
-#include <prl/inference/interfaces.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/model/factor_graph_partitioning.hpp>
-#include <prl/datastructure/circular_queue.hpp>
+#include <sill/inference/interfaces.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/model/factor_graph_partitioning.hpp>
+#include <sill/datastructure/circular_queue.hpp>
 // Pthread tools
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
 
   template<typename F>
@@ -456,7 +456,7 @@ namespace prl {
 
 }; // end of namespace
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
 

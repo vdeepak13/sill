@@ -1,5 +1,5 @@
-#ifndef PRL_MPI_BCAST_HPP
-#define PRL_MPI_BCAST_HPP
+#ifndef SILL_MPI_BCAST_HPP
+#define SILL_MPI_BCAST_HPP
 
 #include <mpi.h>
 
@@ -7,9 +7,9 @@
 #include <sstream>
 #include <limits>
 
-#include <prl/serialization/serialize.hpp>
+#include <sill/serialization/serialize.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename T>
   void mpi_bcast(int root, T& value) {
@@ -47,6 +47,6 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

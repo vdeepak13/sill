@@ -10,22 +10,22 @@
 
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/parallel/timer.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/datastructures/mutable_queue.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/parallel/timer.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/datastructures/mutable_queue.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
 
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * Defines the async message manager which manages the state of single
  * processor single threaded belief propagation.  This is a very
  * simple state manager which also provides basic %mpi facilities
  */
-namespace prl {
+namespace sill {
 
   /**
    * Manages the state of a belief propagation algorithm Manages the
@@ -284,6 +284,6 @@ namespace prl {
 
 } // End of namespace
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,5 +1,5 @@
-#ifndef PRL_MARKOV_NETWORK_HPP
-#define PRL_MARKOV_NETWORK_HPP
+#ifndef SILL_MARKOV_NETWORK_HPP
+#define SILL_MARKOV_NETWORK_HPP
 
 #include <iterator>
 #include <set>
@@ -9,17 +9,17 @@
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 
-#include <prl/global.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/graph/property_functors.hpp>
-#include <prl/model/interfaces.hpp>
-#include <prl/range/transformed.hpp>
-#include <prl/range/joined.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/graph/property_functors.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/range/transformed.hpp>
+#include <sill/range/joined.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Implements a Markov network with pairwise potentials.
@@ -59,7 +59,7 @@ namespace prl {
       assignment_type;
 
     //! The base class
-    typedef prl::markov_graph<variable_type*, NodeF, EdgeF> base;
+    typedef sill::markov_graph<variable_type*, NodeF, EdgeF> base;
 
     // Shortcuts
     typedef typename base::vertex vertex;
@@ -178,8 +178,8 @@ namespace prl {
       return base::d_separated(x, y, z);
     }
 
-    prl::markov_graph<variable_type*> markov_graph() const {
-      return prl::markov_graph<variable_type*>(*this);
+    sill::markov_graph<variable_type*> markov_graph() const {
+      return sill::markov_graph<variable_type*>(*this);
     }
 
     //! Throws an assertion violation if the MRF is not valid
@@ -249,7 +249,7 @@ namespace prl {
       assignment_type;
 
     //! The base class
-    typedef prl::markov_graph<variable_type*> base;
+    typedef sill::markov_graph<variable_type*> base;
 
     // Shortcuts
     typedef typename base::vertex vertex;
@@ -308,8 +308,8 @@ namespace prl {
       return logarithmic<double>(log_likelihood(a), log_tag());
     }
 
-    prl::markov_graph<variable_type*> markov_graph() const {
-      return prl::markov_graph<variable_type*>(*static_cast<const base*>(this));
+    sill::markov_graph<variable_type*> markov_graph() const {
+      return sill::markov_graph<variable_type*>(*static_cast<const base*>(this));
     }
 
     bool d_separated(const domain_type& x, const domain_type& y,
@@ -380,6 +380,6 @@ namespace prl {
   }; // class markov_network
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

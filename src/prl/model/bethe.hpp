@@ -1,14 +1,14 @@
-#ifndef PRL_BETHE_HPP
-#define PRL_BETHE_HPP
+#ifndef SILL_BETHE_HPP
+#define SILL_BETHE_HPP
 
 #include <boost/unordered_map.hpp>
 
-#include <prl/model/interfaces.hpp>
-#include <prl/model/region_graph.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/model/region_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
   
   /**
    * Implements the Bethe construction for a factorized model.
@@ -34,8 +34,8 @@ namespace prl {
     rg.recompute_counting_numbers();
   }
   
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

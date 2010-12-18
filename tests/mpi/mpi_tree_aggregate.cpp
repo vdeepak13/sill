@@ -1,11 +1,11 @@
 #include <cstdio>
 
-#include <prl/mpi/mpi_tree_aggregate.hpp>
-#include <prl/functional/add.hpp>
+#include <sill/mpi/mpi_tree_aggregate.hpp>
+#include <sill/functional/add.hpp>
 
 // aggregates data along a spanning tree
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   
   int myid;  

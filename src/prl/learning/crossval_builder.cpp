@@ -1,7 +1,7 @@
 
-#include <prl/learning/crossval_builder.hpp>
+#include <sill/learning/crossval_builder.hpp>
 
-namespace prl {
+namespace sill {
 
   void crossval_builder::add_options
   (boost::program_options::options_description& desc,
@@ -33,4 +33,4 @@ namespace prl {
 
   } // add_options
 
-} // namespace prl
+} // namespace sill

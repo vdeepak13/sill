@@ -1,5 +1,5 @@
-#ifndef PRL_STL_IO_HPP
-#define PRL_STL_IO_HPP
+#ifndef SILL_STL_IO_HPP
+#define SILL_STL_IO_HPP
 
 #include <iosfwd>
 #include <utility> // for std::pair
@@ -9,9 +9,9 @@
 #include <map>
 #include <algorithm>
 
-#include <prl/range/concepts.hpp>
+#include <sill/range/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // forward declaration
 namespace boost {
@@ -19,7 +19,7 @@ namespace boost {
   template <typename T, std::size_t N> class array;
 }
 
-namespace prl 
+namespace sill 
 {
 
   // Implementation of output functions
@@ -48,7 +48,7 @@ namespace prl
     return out;
   }
 
-  #define PRL_PRINT_CONTAINER1(container, opening, delimeter, closing)	\
+  #define SILL_PRINT_CONTAINER1(container, opening, delimeter, closing)	\
   template <typename Char, typename Traits,				\
 	    typename A1, typename Allocator>				\
   std::basic_ostream<Char,Traits>&					\
@@ -57,7 +57,7 @@ namespace prl
     return print_range(out, c, opening, delimeter, closing);		\
   }
   
-  #define PRL_PRINT_CONTAINER2(container, opening, delimeter, closing)	\
+  #define SILL_PRINT_CONTAINER2(container, opening, delimeter, closing)	\
   template <typename Char, typename Traits,				\
 	    typename A1, typename A2, typename Allocator>		\
   std::basic_ostream<Char,Traits>&					\
@@ -66,7 +66,7 @@ namespace prl
     return print_range(out, c, opening, delimeter, closing);		\
   }
   
-  #define PRL_PRINT_CONTAINER3(container, opening, delimeter, closing)	\
+  #define SILL_PRINT_CONTAINER3(container, opening, delimeter, closing)	\
   template <typename Char, typename Traits,				\
 	    typename A1, typename A2, typename A3, typename Allocator>	\
   std::basic_ostream<Char,Traits>&					\
@@ -75,16 +75,16 @@ namespace prl
     return print_range(out, c, opening, delimeter, closing);		\
   }
   
-  PRL_PRINT_CONTAINER1(std::vector, '[', ' ', ']');
-  PRL_PRINT_CONTAINER1(std::list, '(', ' ', ')');
-  PRL_PRINT_CONTAINER2(std::set, '{', ' ', '}');
-  PRL_PRINT_CONTAINER2(std::multiset, '{', ' ', '}');
-  PRL_PRINT_CONTAINER3(std::map, '{', ' ', '}');
-  PRL_PRINT_CONTAINER3(std::multimap, '{', ' ', '}');
+  SILL_PRINT_CONTAINER1(std::vector, '[', ' ', ']');
+  SILL_PRINT_CONTAINER1(std::list, '(', ' ', ')');
+  SILL_PRINT_CONTAINER2(std::set, '{', ' ', '}');
+  SILL_PRINT_CONTAINER2(std::multiset, '{', ' ', '}');
+  SILL_PRINT_CONTAINER3(std::map, '{', ' ', '}');
+  SILL_PRINT_CONTAINER3(std::multimap, '{', ' ', '}');
   
-  #undef PRL_PRINT_CONTAINER1
-  #undef PRL_PRINT_CONTAINER2
-  #undef PRL_PRINT_CONTAINER3
+  #undef SILL_PRINT_CONTAINER1
+  #undef SILL_PRINT_CONTAINER2
+  #undef SILL_PRINT_CONTAINER3
 
   template <typename Char, typename Traits, typename T, std::size_t N>
   std::basic_ostream<Char,Traits>&
@@ -141,8 +141,8 @@ namespace prl
     in.ignore(1);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

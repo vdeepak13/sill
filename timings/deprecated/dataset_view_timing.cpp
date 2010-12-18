@@ -4,24 +4,24 @@
 
 #include <boost/timer.hpp>
 
-#include <prl/variable.hpp>
-#include <prl/assignment.hpp>
-#include <prl/learning/dataset/array_dataset.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/syn_oracle_knorm.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/factor/table_factor.hpp>
+#include <sill/variable.hpp>
+#include <sill/assignment.hpp>
+#include <sill/learning/dataset/array_dataset.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/factor/table_factor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file dataset_view_timing.cpp Timing tests of datasets and views.
  */
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   universe u;
@@ -483,9 +483,9 @@ int main(int argc, char* argv[]) {
 
   // Test variable views
   dataset_view ds_view_vars(vecds);
-  prl::set<size_t> vv_finite_indices;
+  sill::set<size_t> vv_finite_indices;
   vv_finite_indices.insert(0);
-  prl::set<size_t> vv_vector_indices;
+  sill::set<size_t> vv_vector_indices;
   vv_vector_indices.insert(1);
   vv_vector_indices.insert(2);
   vv_vector_indices.insert(3);

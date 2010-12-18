@@ -1,12 +1,12 @@
 #include <boost/lexical_cast.hpp>
 
-#include <prl/graph/directed_graph.hpp>
-#include <prl/graph/directed_multigraph.hpp>
+#include <sill/graph/directed_graph.hpp>
+#include <sill/graph/directed_multigraph.hpp>
 
 // tests the memory usage of graphs
 int main(int argc, char** argv) {
   using namespace std;
-  using namespace prl;
+  using namespace sill;
 
   if (argc < 3) {
     cerr << "Usage: graph_size num_vertices num_neighbors" << endl;

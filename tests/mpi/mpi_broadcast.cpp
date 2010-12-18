@@ -1,9 +1,9 @@
 #include <cstdio>
 
-#include <prl/mpi/mpi_bcast.hpp>
+#include <sill/mpi/mpi_bcast.hpp>
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
 
   int numprocs, myid;  
   MPI_Init(&argc, &argv);

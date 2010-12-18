@@ -1,21 +1,21 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_MULTICLASS2MULTILABEL_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_MULTICLASS2MULTILABEL_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS2MULTILABEL_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_MULTICLASS2MULTILABEL_HPP
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/learning/dataset/data_conversions.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/multiclass_classifier.hpp>
-#include <prl/learning/discriminative/multilabel_classifier.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/multiclass_classifier.hpp>
+#include <sill/learning/discriminative/multilabel_classifier.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to true to print debugging information.
 //#define DEBUG_MULTICLASS2MULTILABEL 0
 
-namespace prl {
+namespace sill {
 
   struct multiclass2multilabel_parameters {
 
@@ -315,6 +315,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_MULTICLASS2MULTILABEL_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS2MULTILABEL_HPP

@@ -15,13 +15,13 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_TABLE_AND_LAZY_FACTOR_HPP
-#define PRL_TABLE_AND_LAZY_FACTOR_HPP
+#ifndef SILL_TABLE_AND_LAZY_FACTOR_HPP
+#define SILL_TABLE_AND_LAZY_FACTOR_HPP
 
 //! \todo Move #ifdefs here; clean up.
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/lazy_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/lazy_factor.hpp>
 
 template <typename range_t,
 	  template <typename value_t> class Table>
@@ -29,21 +29,21 @@ template <typename other_factor_t,
 	  typename csr_tag_t,
 	  typename elim_strategy_t,
 	  typename binary_op_tag_t>
-prl::table_factor<range_t, Table>::table_factor
+sill::table_factor<range_t, Table>::table_factor
 (factor_collapse_expr<lazy_factor_t<other_factor_t,
 		                      csr_tag_t,
 		                      elim_strategy_t>,
                         binary_op_tag_t> expr) {
   // First collapse the lazy factor.
   lazy_factor_t<other_factor_t>
-    collapsed_lazy(prl::collapse(expr.x_ptr, 
+    collapsed_lazy(sill::collapse(expr.x_ptr, 
 				 expr.retained, binary_op_tag_t()));
 
   // Flatten the lazy factor.
-  prl::const_ptr_t<other_factor_t> flat_ptr = collapsed_lazy.flatten();
+  sill::const_ptr_t<other_factor_t> flat_ptr = collapsed_lazy.flatten();
 
   // Now create a table factor which represents the flattened factor.
-  table_factor result(prl::collapse(flat_ptr, 
+  table_factor result(sill::collapse(flat_ptr, 
 				      expr.retained, binary_op_tag_t()));
 
   // Initialize this object to an empty table, and then swap it with
@@ -52,4 +52,4 @@ prl::table_factor<range_t, Table>::table_factor
   this->swap(result);
 }
 
-#endif // #ifndef PRL_TABLE_AND_LAZY_FACTOR_HPP
+#endif // #ifndef SILL_TABLE_AND_LAZY_FACTOR_HPP

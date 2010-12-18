@@ -1,24 +1,24 @@
 
-#ifndef PRL_PWL_CRF_WEIGHTS_HPP
-#define PRL_PWL_CRF_WEIGHTS_HPP
+#ifndef SILL_PWL_CRF_WEIGHTS_HPP
+#define SILL_PWL_CRF_WEIGHTS_HPP
 
 #include <set>
 
 #include <boost/timer.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/iterator/subset_iterator.hpp>
-#include <prl/learning/crf/crf_X_mapping.hpp>
-#include <prl/learning/dataset/dataset_view.hpp>
-#include <prl/learning/learn_crf_factor.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/model/free_functions.hpp>
-#include <prl/base/stl_util.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/iterator/subset_iterator.hpp>
+#include <sill/learning/crf/crf_X_mapping.hpp>
+#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/learn_crf_factor.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/free_functions.hpp>
+#include <sill/base/stl_util.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Parameters for pwl_crf_weights.
@@ -30,7 +30,7 @@ namespace prl {
   template <typename FactorType>
   struct pwl_crf_weights_parameters {
 
-    concept_assert((prl::LearnableCRFfactor<FactorType>));
+    concept_assert((sill::LearnableCRFfactor<FactorType>));
 
     //! CRF factor regularization type.
     typedef typename FactorType::regularization_type crf_factor_reg_type;
@@ -138,7 +138,7 @@ namespace prl {
   template <typename FactorType>
   class pwl_crf_weights {
 
-    concept_assert((prl::LearnableCRFfactor<FactorType>));
+    concept_assert((sill::LearnableCRFfactor<FactorType>));
 
     // Public classes
     //==========================================================================
@@ -726,6 +726,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_PWL_CRF_WEIGHTS_HPP
+#endif // #ifndef SILL_PWL_CRF_WEIGHTS_HPP

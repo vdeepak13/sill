@@ -10,25 +10,25 @@
 #include <limits>
 
 
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/inference/parallel/residual_splash_engine.hpp>
-#include <prl/inference/parallel/round_robin_engine.hpp>
-#include <prl/inference/parallel/basic_state_manager.hpp>
-// #include <prl/inference/parallel/average_state_manager.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/inference/parallel/residual_splash_engine.hpp>
+#include <sill/inference/parallel/round_robin_engine.hpp>
+#include <sill/inference/parallel/basic_state_manager.hpp>
+// #include <sill/inference/parallel/average_state_manager.hpp>
 #include <boost/program_options.hpp>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/parsers/alchemy.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/parsers/alchemy.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 
 // Rename the program options namespace
 namespace po = boost::program_options;
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 #define ROUND_ROBIN
 
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
   return EXIT_SUCCESS;
 } // End of main
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 //End of file
 
 

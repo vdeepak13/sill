@@ -5,16 +5,16 @@
 #include <map>
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/parallel/timer.hpp>
-#include <prl/parallel/binned_scheduling_queue.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/parallel/object_allocator.hpp>
-#include <prl/inference/parallel/message_data.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/parallel/timer.hpp>
+#include <sill/parallel/binned_scheduling_queue.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/parallel/object_allocator.hpp>
+#include <sill/inference/parallel/message_data.hpp>
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file basic_state_manager.hpp
@@ -22,7 +22,7 @@
  * Defines the basic message manager which manages the state of a
  * (multicore) BP algorithm
  */
-namespace prl {
+namespace sill {
 
 
   /**
@@ -376,6 +376,6 @@ namespace prl {
 
 } // End of namespace
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

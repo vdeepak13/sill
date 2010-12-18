@@ -1,8 +1,8 @@
-#include <prl/learning/object_detection/image_oracle.hpp>
+#include <sill/learning/object_detection/image_oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Protected methods
     //==========================================================================
@@ -150,6 +150,6 @@ namespace prl {
     return data_ptr;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

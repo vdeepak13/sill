@@ -1,17 +1,17 @@
-#ifndef PRL_GDL_ENUM_HPP
-#define PRL_GDL_ENUM_HPP
+#ifndef SILL_GDL_ENUM_HPP
+#define SILL_GDL_ENUM_HPP
 
 #include <iosfwd>
 #include <functional>
 #include <boost/function.hpp>
 
-#include <prl/global.hpp>
-#include <prl/functional.hpp>
-#include <prl/range/concepts.hpp>
-#include <prl/range/numeric.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/global.hpp>
+#include <sill/functional.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/range/numeric.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! A type that describes an operation in a commutative semiring
   //! \ingroup math_functions
@@ -53,10 +53,10 @@ namespace prl {
     case minus_op: return std::minus<double>();
     case product_op: return std::multiplies<double>();
     case divides_op: return std::divides<double>();
-    case max_op: return prl::maximum<double>();
-    case min_op: return prl::minimum<double>();
-    case and_op: return prl::logical_and<double>();
-    case or_op: return prl::logical_or<double>();
+    case max_op: return sill::maximum<double>();
+    case min_op: return sill::minimum<double>();
+    case and_op: return sill::logical_and<double>();
+    case or_op: return sill::logical_or<double>();
     default: assert(false); /* this should never be reached.  */ 
              return std::plus<double>(); /* Return to avoid compiler warnings*/
     }
@@ -122,8 +122,8 @@ namespace prl {
 
 #endif
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif 

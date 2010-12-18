@@ -1,14 +1,14 @@
-#ifndef PRL_TABLE_FACTOR_XML_HPP
-#define PRL_TABLE_FACTOR_XML_HPP
+#ifndef SILL_TABLE_FACTOR_XML_HPP
+#define SILL_TABLE_FACTOR_XML_HPP
 
 #include <iosfwd>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_tag.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_tag.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename Table>
   const char* xml_tag(table_factor<Table>*) { 
@@ -39,6 +39,6 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

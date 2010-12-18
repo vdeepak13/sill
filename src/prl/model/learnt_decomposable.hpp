@@ -1,15 +1,15 @@
 
-#ifndef PRL_LEARNT_DECOMPOSABLE_HPP
-#define PRL_LEARNT_DECOMPOSABLE_HPP
+#ifndef SILL_LEARNT_DECOMPOSABLE_HPP
+#define SILL_LEARNT_DECOMPOSABLE_HPP
 
-#include <prl/model/decomposable.hpp>
-#include <prl/model/learnt_junction_tree.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/learnt_junction_tree.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
-  // #define PRL_VERBOSE // for debugging
+  // #define SILL_VERBOSE // for debugging
 
   /**
    * A version of the decomposable model class which is designed to be learnt
@@ -223,6 +223,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNT_DECOMPOSABLE_HPP
+#endif // #ifndef SILL_LEARNT_DECOMPOSABLE_HPP

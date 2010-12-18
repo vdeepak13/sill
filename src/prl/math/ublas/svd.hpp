@@ -1,5 +1,5 @@
-#ifndef PRL_MATH_UBLAS_SVD_HPP
-#define PRL_MATH_UBLAS_SVD_HPP
+#ifndef SILL_MATH_UBLAS_SVD_HPP
+#define SILL_MATH_UBLAS_SVD_HPP
 
 #include <algorithm>
 

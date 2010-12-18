@@ -1,21 +1,21 @@
-#ifndef PRL_MOMENT_GAUSSIAN_HPP
-#define PRL_MOMENT_GAUSSIAN_HPP
+#ifndef SILL_MOMENT_GAUSSIAN_HPP
+#define SILL_MOMENT_GAUSSIAN_HPP
 
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/lagged_fibonacci.hpp>
 
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/gaussian_factor.hpp>
-#include <prl/factor/invalid_operation.hpp>
-#include <prl/math/linear_algebra.hpp>
-#include <prl/math/logarithmic.hpp>
-#include <prl/math/matrix.hpp>
-#include <prl/math/vector.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/gaussian_factor.hpp>
+#include <sill/factor/invalid_operation.hpp>
+#include <sill/math/linear_algebra.hpp>
+#include <sill/math/logarithmic.hpp>
+#include <sill/math/matrix.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   class canonical_gaussian;
   //  class gaussian_factor;
@@ -400,10 +400,10 @@ namespace prl {
     typedef moment_gaussian type;
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#include <prl/factor/operations.hpp>
+#include <sill/factor/operations.hpp>
 
 #endif 

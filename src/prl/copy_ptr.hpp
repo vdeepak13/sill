@@ -1,15 +1,15 @@
 
-#ifndef PRL_COPY_PTR_HPP
-#define PRL_COPY_PTR_HPP
+#ifndef SILL_COPY_PTR_HPP
+#define SILL_COPY_PTR_HPP
 
 #include <boost/serialization/shared_ptr.hpp>
 #include <boost/pointee.hpp>
 
-#include <prl/stl_concepts.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/stl_concepts.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A shared pointer that performs garbage collection via reference
@@ -136,12 +136,12 @@ namespace prl {
 
   }; // class copy_ptr<T>
 
-} // namespace prl
+} // namespace sill
 
 namespace boost {                            
 namespace serialization {                    
 template<typename T>                                   
-struct tracking_level< prl::copy_ptr<T> >                   
+struct tracking_level< sill::copy_ptr<T> >                   
 {                                            
     typedef mpl::integral_c_tag tag;         
     typedef mpl::int_<track_never> type;              
@@ -153,7 +153,7 @@ struct tracking_level< prl::copy_ptr<T> >
     BOOST_STATIC_ASSERT((                    
         mpl::greater<                        
             /* that is a prmitive */         
-        implementation_level< prl::copy_ptr<T> >,       
+        implementation_level< sill::copy_ptr<T> >,       
             mpl::int_<primitive_type>        
         >::value                             
     ));                                      
@@ -167,10 +167,10 @@ namespace boost {
    * associated with PRL pointers.
    */
   template <typename T>
-  struct pointee<prl::copy_ptr<T> > { typedef T type; };
+  struct pointee<sill::copy_ptr<T> > { typedef T type; };
 
 } // namespace boost
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_POINTER_HPP
+#endif // #ifndef SILL_POINTER_HPP

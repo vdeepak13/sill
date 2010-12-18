@@ -1,19 +1,19 @@
 
-#ifndef PRL_GDL_HPP
-#define PRL_GDL_HPP
+#ifndef SILL_GDL_HPP
+#define SILL_GDL_HPP
 #warning "Deprecated"
-#include <prl/global.hpp>
-#include <prl/functional.hpp>
-#include <prl/range/concepts.hpp>
-#include <prl/stl_concepts.hpp>
+#include <sill/global.hpp>
+#include <sill/functional.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/range/numeric.hpp>
+#include <sill/range/numeric.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // This file is deprecated
 
-namespace prl {
+namespace sill {
 
   //! The base of all binary operator tags.
   struct binary_op_tag { };
@@ -138,7 +138,7 @@ namespace prl {
   cross_all(const Range& range, CsrTag csr_tag) {
     concept_assert((InputRange<Range>));
     binary_op<typename Range::value_type, typename CsrTag::cross_tag> cross_op;
-    return prl::accumulate(range, cross_op.left_identity(), cross_op);
+    return sill::accumulate(range, cross_op.left_identity(), cross_op);
   }
 
   //! Applies the dot operator to a collection of elements.
@@ -147,7 +147,7 @@ namespace prl {
   dot_all(const Range& range, CsrTag csr_tag) {
     concept_assert((InputRange<Range>));
     binary_op<typename Range::value_type, typename CsrTag::dot_tag> dot_op;
-    return prl::accumulate(range, dot_op.left_identity(), dot_op);
+    return sill::accumulate(range, dot_op.left_identity(), dot_op);
   }
 
 #ifndef SWIG
@@ -196,8 +196,8 @@ namespace prl {
   };
 #endif
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_GDL_HPP
+#endif // #ifndef SILL_GDL_HPP

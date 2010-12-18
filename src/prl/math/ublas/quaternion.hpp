@@ -1,5 +1,5 @@
-#ifndef PRL_MATH_UBLAS_QUATERNION_HPP
-#define PRL_MATH_UBLAS_QUATERNION_HPP
+#ifndef SILL_MATH_UBLAS_QUATERNION_HPP
+#define SILL_MATH_UBLAS_QUATERNION_HPP
 
 #include <iterator>
 #include <cmath>
@@ -9,15 +9,15 @@
 #include <boost/numeric/ublas/detail/iterator.hpp>
 #include <boost/numeric/ublas/io.hpp>
 
-#include <prl/global.hpp>
-#include <prl/range/numeric.hpp>
-#include <prl/math/ublas/fixed.hpp>
+#include <sill/global.hpp>
+#include <sill/range/numeric.hpp>
+#include <sill/math/ublas/fixed.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace ublas = boost::numeric::ublas;
   
@@ -62,7 +62,7 @@ namespace prl {
     explicit quaternion(const ublas::vector_expression<E>& e) {
       switch (e().size()) {
       case 3: (*this) = quaternion(0, e()(0), e()(1), e()(2)); break;
-      case 4: prl::copy(e(), this->begin()); break;
+      case 4: sill::copy(e(), this->begin()); break;
       default: assert(false);
       }
     }
@@ -219,7 +219,7 @@ namespace prl {
     //! assignment without aliasing
     template <typename E>
     quaternion& assign(const ublas::vector_expression<E>& e) {
-      prl::copy(e(), begin());
+      sill::copy(e(), begin());
       return *this;
     }
 
@@ -302,8 +302,8 @@ namespace prl {
 
   // @} group math_ublas
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,16 +1,16 @@
 
-#ifndef PRL_LEARNING_OBJECT_DETECTION_IMAGE_HPP
-#define PRL_LEARNING_OBJECT_DETECTION_IMAGE_HPP
+#ifndef SILL_LEARNING_OBJECT_DETECTION_IMAGE_HPP
+#define SILL_LEARNING_OBJECT_DETECTION_IMAGE_HPP
 
 #include <map>
 
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // forward declaration
   class image_oracle;
@@ -352,7 +352,7 @@ namespace prl {
     template <typename MutableDataset>
     boost::shared_ptr<MutableDataset>
     read_dataset(const std::string& summary_filename, universe& u) {
-      concept_assert((prl::MutableDataset<MutableDataset>));
+      concept_assert((sill::MutableDataset<MutableDataset>));
       symbolic_oracle o(data_loader::load_symbolic_oracle(summary_filename, u));
       boost::shared_ptr<MutableDataset>
         ds_ptr(new MutableDataset(o.datasource_info()));
@@ -361,8 +361,8 @@ namespace prl {
 
   }; // class image
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_OBJECT_DETECTION_IMAGE_HPP
+#endif // #ifndef SILL_LEARNING_OBJECT_DETECTION_IMAGE_HPP

@@ -15,13 +15,13 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_ITERATOR_ITERATOR_HPP
-#define PRL_ITERATOR_ITERATOR_HPP
+#ifndef SILL_ITERATOR_ITERATOR_HPP
+#define SILL_ITERATOR_ITERATOR_HPP
 
 #include <iterator>
-#include <prl/global.hpp>
+#include <sill/global.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An iterator adaptor whose dereference operation returns the
@@ -30,8 +30,8 @@ namespace prl {
    * corresponding range of iterators.  For example, to create a
    * vector of the iterators in some container C, we can write
    * 
-   *   std::vector<iterator_type> v(prl::make_it_iterator(C.begin()), 
-   *                                prl::make_it_iterator(C.end()));
+   *   std::vector<iterator_type> v(sill::make_it_iterator(C.begin()), 
+   *                                sill::make_it_iterator(C.end()));
    *
    * \todo Where is class template this used? 
    *
@@ -105,6 +105,6 @@ namespace prl {
     return iterator_iterator<It>(it);
   }
 
-} // namespace prl
+} // namespace sill
 
-#endif // #ifndef PRL_ITERATOR_ITERATOR_HPP
+#endif // #ifndef SILL_ITERATOR_ITERATOR_HPP

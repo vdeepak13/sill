@@ -1,10 +1,10 @@
 
-#include <prl/learning/dataset/datasource.hpp>
-#include <prl/learning/dataset/record_conversions.hpp>
+#include <sill/learning/dataset/datasource.hpp>
+#include <sill/learning/dataset/record_conversions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Protected helper functions
   //==========================================================================
@@ -263,6 +263,6 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

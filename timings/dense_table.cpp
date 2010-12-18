@@ -4,16 +4,16 @@
 
 #include <boost/timer.hpp>
 
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/functional.hpp>
-#include <prl/range/io.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/functional.hpp>
+#include <sill/range/io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char** argv) {
 
   using namespace std;
-  using namespace prl;
+  using namespace sill;
 
   boost::timer t;
   // Make sure we can time things.
@@ -63,12 +63,12 @@ int main(int argc, char** argv) {
             << time << "s." << std::endl;
 
   // Now do the same with multidimensional tables.
-  typedef prl::dense_table<int>::shape_type shape_type;
+  typedef sill::dense_table<int>::shape_type shape_type;
 
   t.restart();
   const int d = 12;
   unsigned int dims[d] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-  prl::dense_table<int> a_table(shape_type(dims, dims + d));
+  sill::dense_table<int> a_table(shape_type(dims, dims + d));
   cout << a_table.shape() << endl;
   for(int i=0;i<20;i++) {
     // Number the elements uniquely.
@@ -106,7 +106,7 @@ int main(int argc, char** argv) {
       for (size_t k = 0; k < r; k++)
         sum[i][j][k] = e[i][j] + f[j][k];
 
-  typedef prl::dense_table<double> double_table;
+  typedef sill::dense_table<double> double_table;
 
   // Now do the same with multidimensional tables.
   size_t e_dims[2] = {p, q};
@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
   t.restart();
   // Now do the same with multidimensional tables.
   size_t h_dims[2] = {p, r};
-  prl::dense_table<int> h_table(h_dims, h_dims + 2, 0);
+  sill::dense_table<int> h_table(h_dims, h_dims + 2, 0);
   size_t h_dim_map[2] = {0, 2}; // maps h's dimensions to g's dimensions
   // Compute the aggregation.
   h_table.aggregate(g_table, h_dim_map, plus<int>());

@@ -5,44 +5,44 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_iarchive.hpp>
 
-#include <prl/factor/xml/table_factor.hpp>
-#include <prl/factor/xml/constant_factor.hpp>
-#include <prl/factor/xml/gaussian_factors.hpp>
-#include <prl/factor/xml/decomposable_fragment.hpp>
+#include <sill/factor/xml/table_factor.hpp>
+#include <sill/factor/xml/constant_factor.hpp>
+#include <sill/factor/xml/gaussian_factors.hpp>
+#include <sill/factor/xml/decomposable_fragment.hpp>
 
-#include <prl/graph/grid_graphs.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/model/random.hpp>
-#include <prl/inference/junction_tree_inference.hpp>
+#include <sill/graph/grid_graphs.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/random.hpp>
+#include <sill/inference/junction_tree_inference.hpp>
 
-#include <prl/math/bindings/lapack.hpp>
+#include <sill/math/bindings/lapack.hpp>
 
-typedef prl::math::bindings::lapack::double_matrix matrix_type;
-typedef prl::math::bindings::lapack::double_vector vector_type;
+typedef sill::math::bindings::lapack::double_matrix matrix_type;
+typedef sill::math::bindings::lapack::double_vector vector_type;
 
-typedef prl::tablef table_factor;
-typedef prl::constant_factor constant_factor;
-typedef prl::canonical_gaussian<matrix_type, vector_type> canonical_gaussian;
-typedef prl::decomposable_fragment<table_factor> decomposable_fragment;
+typedef sill::tablef table_factor;
+typedef sill::constant_factor constant_factor;
+typedef sill::canonical_gaussian<matrix_type, vector_type> canonical_gaussian;
+typedef sill::decomposable_fragment<table_factor> decomposable_fragment;
 
-namespace prl {
+namespace sill {
   map<std::string, xml_iarchive::deserializer*> xml_iarchive::deserializers;
 }
 
 /*
 decomposable_fragment
-generate_fragment(std::size_t m, std::size_t n, prl::universe& u) {
+generate_fragment(std::size_t m, std::size_t n, sill::universe& u) {
   boost::mt19937 rng;
 
-  prl::pairwise_markov_network< table_factor > mn;
-  prl::var_vector variables = u.new_finite_variables(m*n, 2);
+  sill::pairwise_markov_network< table_factor > mn;
+  sill::var_vector variables = u.new_finite_variables(m*n, 2);
   make_grid_graph(m, n, mn, variables);
   random_ising_model(mn, rng);
 
-  prl::shafer_shenoy<table_factor> ss(mn);
+  sill::shafer_shenoy<table_factor> ss(mn);
   ss.calibrate();
   ss.normalize();
 
@@ -53,9 +53,9 @@ generate_fragment(std::size_t m, std::size_t n, prl::universe& u) {
 int main()
 {
   using namespace std;
-  using namespace prl;
+  using namespace sill;
 
-  prl::universe u;
+  sill::universe u;
   {
     ofstream out("factors.xml");
     xml_oarchive arch(out);
@@ -64,8 +64,8 @@ int main()
 
     ::table_factor table(vf, 1);
     ::constant_factor constant(2);
-    ::canonical_gaussian gaussian(vv, prl::identity_matrix<double>(2),
-                                  prl::ones<double>(2));
+    ::canonical_gaussian gaussian(vv, sill::identity_matrix<double>(2),
+                                  sill::ones<double>(2));
     ::decomposable_fragment fragment; // = generate_fragment(2, 3, u);
 
     arch << table;

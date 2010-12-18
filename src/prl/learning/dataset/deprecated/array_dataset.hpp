@@ -1,6 +1,6 @@
 
-#ifndef PRL_ARRAY_DATASET_HPP
-#define PRL_ARRAY_DATASET_HPP
+#ifndef SILL_ARRAY_DATASET_HPP
+#define SILL_ARRAY_DATASET_HPP
 
 #include <fstream>
 #include <string>
@@ -12,15 +12,15 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/assignment.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/range/concepts.hpp>
+#include <sill/assignment.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/range/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A class that represents a dataset stored in an array.
@@ -54,7 +54,7 @@ namespace prl {
     ////////////////// PROTECTED FUNCTIONS REQUIRED BY record /////////////////
 
     //! Load datapoint i into assignment a
-    void load_assignment(size_t i, prl::assignment& a) const {
+    void load_assignment(size_t i, sill::assignment& a) const {
       assert(i < nrecords);
       finite_assignment& fa = a.finite();
       fa.clear();
@@ -71,16 +71,16 @@ namespace prl {
     }
     //! Load record i into r
     void load_record(size_t i, record& r) const {
-      prl::copy(finite_data[i], r.fin_ptr->begin());
-      prl::copy(vector_data[i], r.vec_ptr->begin());
+      sill::copy(finite_data[i], r.fin_ptr->begin());
+      sill::copy(vector_data[i], r.vec_ptr->begin());
     }
     //! Load finite data for datapoint i into findata
     void load_finite(size_t i, std::vector<size_t>& findata) const {
-      prl::copy(finite_data[i], findata.begin());
+      sill::copy(finite_data[i], findata.begin());
     }
     //! Load vector data for datapoint i into vecdata
     void load_vector(size_t i, vec& vecdata) const {
-      prl::copy(vector_data[i], vecdata.begin());
+      sill::copy(vector_data[i], vecdata.begin());
     }
 
     //////////////////////////// PUBLIC METHODS ///////////////////////////
@@ -180,8 +180,8 @@ namespace prl {
     void insert(const std::vector<size_t>& fvals, const vec& vvals,
                 double w = 1) {
       if (finite_data.size() == nrecords) reserve(2*nrecords);
-      prl::copy(fvals, finite_data[nrecords].begin());
-      prl::copy(vvals, vector_data[nrecords].begin());
+      sill::copy(fvals, finite_data[nrecords].begin());
+      sill::copy(vvals, vector_data[nrecords].begin());
       if (weighted) {
         if (nrecords >= weights_.size())
           weights_.resize(2*nrecords, true);
@@ -261,12 +261,12 @@ namespace prl {
       double weight_tmp;
       for (size_t i = 0; i < nrecords-1; ++i) {
         size_t j = (size_t)(boost::uniform_int<int>(i,nrecords-1)(rng));
-        prl::copy(finite_data[i], fin_tmp.begin());
-        prl::copy(finite_data[j], finite_data[i].begin());
-        prl::copy(fin_tmp, finite_data[j].begin());
-        prl::copy(vector_data[i], vec_tmp.begin());
-        prl::copy(vector_data[j], vector_data[i].begin());
-        prl::copy(vec_tmp, vector_data[j].begin());
+        sill::copy(finite_data[i], fin_tmp.begin());
+        sill::copy(finite_data[j], finite_data[i].begin());
+        sill::copy(fin_tmp, finite_data[j].begin());
+        sill::copy(vector_data[i], vec_tmp.begin());
+        sill::copy(vector_data[j], vector_data[i].begin());
+        sill::copy(vec_tmp, vector_data[j].begin());
         if (weighted) {
           weight_tmp = weights_[i];
           weights_[i] = weights_[j];
@@ -277,8 +277,8 @@ namespace prl {
 
   };  // class array_dataset
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

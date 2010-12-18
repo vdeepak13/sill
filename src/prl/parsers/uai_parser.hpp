@@ -1,5 +1,5 @@
-#ifndef PRL_UAI_PARSER_HPP
-#define PRL_UAI_PARSER_HPP
+#ifndef SILL_UAI_PARSER_HPP
+#define SILL_UAI_PARSER_HPP
 
 #include <string>
 #include <vector>
@@ -8,15 +8,15 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
 
-#include <prl/parsers/string_functions.hpp>
+#include <sill/parsers/string_functions.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
   // parses the formar described in http://graphmod.ics.uci.edu/uai08/FileFormat
   /**
    * This function parses the file format described in
@@ -178,7 +178,7 @@ namespace prl {
   }
 
 } // End of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
-#endif // PRL_BN_PARSER_HPP
+#endif // SILL_BN_PARSER_HPP

@@ -1,5 +1,5 @@
-#ifndef PRL_DECOMPOSABLE_PARSER_HPP
-#define PRL_DECOMPOSABLE_PARSER_HPP
+#ifndef SILL_DECOMPOSABLE_PARSER_HPP
+#define SILL_DECOMPOSABLE_PARSER_HPP
 
 #include <string>
 #include <vector>
@@ -8,12 +8,12 @@
 #include <fstream>
 #include <sstream>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/decomposable.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/decomposable.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
   typedef decomposable<table_factor>::factor_type factor_type;
   typedef decomposable<table_factor>::variable_type variable_type;
@@ -156,7 +156,7 @@ namespace prl {
   } // end of parse_decomposable method
   
 } // End of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
-#endif // PRL_DECOMPOSABLE_PARSER_HPP
+#endif // SILL_DECOMPOSABLE_PARSER_HPP

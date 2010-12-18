@@ -1,5 +1,5 @@
-#ifndef PRL_BN_PARSER_HPP
-#define PRL_BN_PARSER_HPP
+#ifndef SILL_BN_PARSER_HPP
+#define SILL_BN_PARSER_HPP
 
 #include <string>
 #include <vector>
@@ -8,13 +8,13 @@
 #include <fstream>
 #include <sstream>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/bayesian_network.hpp>
-#include <prl/factor/table_factor.hpp>
-//#include <prl/factor/log_table_factor.hpp>
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/bayesian_network.hpp>
+#include <sill/factor/table_factor.hpp>
+//#include <sill/factor/log_table_factor.hpp>
+#include <sill/macros_def.hpp>
+namespace sill {
 
   typedef bayesian_network<table_factor>::factor_type factor_type;
   typedef bayesian_network<table_factor>::variable_type variable_type;
@@ -304,7 +304,7 @@ namespace prl {
   } // end of parse_bn method
 
 } // End of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
-#endif // PRL_BN_PARSER_HPP
+#endif // SILL_BN_PARSER_HPP

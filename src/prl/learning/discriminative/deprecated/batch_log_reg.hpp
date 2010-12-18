@@ -1,26 +1,26 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_BATCH_LOG_REG_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_BATCH_LOG_REG_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_BATCH_LOG_REG_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_BATCH_LOG_REG_HPP
 
 #include <algorithm>
 
-#include <prl/assignment.hpp>
-#include <prl/datastructure/concepts.hpp>
-#include <prl/stl_io.hpp>
-#include <prl/functional.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/discriminative.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
+#include <sill/assignment.hpp>
+#include <sill/datastructure/concepts.hpp>
+#include <sill/stl_io.hpp>
+#include <sill/functional.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/discriminative.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file batch_log_reg.hpp Batch Logistic Regression
  *                          using stochastic gradient descent
  */
 
-namespace prl {
+namespace sill {
 
   // forward declarations
   class batch_log_reg;
@@ -538,6 +538,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_BATCH_LOG_REG_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_BATCH_LOG_REG_HPP

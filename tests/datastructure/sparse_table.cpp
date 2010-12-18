@@ -6,18 +6,18 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/progress.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/datastructure/sparse_table.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/datastructure/sparse_table.hpp>
 
 
 // This file needs to be updated to the new interfaces; does not compile
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
 
   // Create two large sparse tables of booleans with a dimension in common.
-  typedef prl::sparse_table_t<double> sd_table_t;
+  typedef sill::sparse_table_t<double> sd_table_t;
   const table_size_t d = 2;
   const table_size_t p = 10000;
   const table_size_t q = 100;

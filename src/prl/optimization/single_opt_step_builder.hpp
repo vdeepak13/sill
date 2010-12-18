@@ -1,12 +1,12 @@
 
-#ifndef PRL_SINGLE_OPT_STEP_BUILDER_HPP
-#define PRL_SINGLE_OPT_STEP_BUILDER_HPP
+#ifndef SILL_SINGLE_OPT_STEP_BUILDER_HPP
+#define SILL_SINGLE_OPT_STEP_BUILDER_HPP
 
 #include <boost/program_options.hpp>
 
-#include <prl/optimization/single_opt_step.hpp>
+#include <sill/optimization/single_opt_step.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Class for parsing command-line options which specify
@@ -37,4 +37,4 @@ namespace prl {
 
 }; // end of namespace: prl
 
-#endif // #ifndef PRL_SINGLE_OPT_STEP_BUILDER_HPP
+#endif // #ifndef SILL_SINGLE_OPT_STEP_BUILDER_HPP

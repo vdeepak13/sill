@@ -1,19 +1,19 @@
-#ifndef PRL_RANDOM_FACTOR_HPP
-#define PRL_RANDOM_FACTOR_HPP
+#ifndef SILL_RANDOM_FACTOR_HPP
+#define SILL_RANDOM_FACTOR_HPP
 
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/base/finite_assignment.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/factor/canonical_gaussian.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/math/random.hpp>
+#include <sill/base/finite_assignment.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/math/random.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup factor_random
   //! @{
@@ -326,6 +326,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -12,24 +12,24 @@
 #include <limits>
 
 // PRL Includes
-#include <prl/base/stl_util.hpp>
-#include <prl/inference/interfaces.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/mpi/mpi_consensus.hpp>
-#include <prl/inference/mpi/mpi_adapter.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/model/factor_graph_partitioning.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/inference/interfaces.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/mpi/mpi_consensus.hpp>
+#include <sill/inference/mpi/mpi_adapter.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/model/factor_graph_partitioning.hpp>
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 #define HARD_SPLASH_SIZE
 #define UPDATE_BOUND 10.0
-namespace prl {
+namespace sill {
 
   template<typename F>
   class mpi_splash_bp:public factor_graph_inference<factor_graph_model<F> > {
@@ -681,7 +681,7 @@ namespace prl {
 #ifdef HARD_SPLASH_SIZE
 #undef HARD_SPLASH_SIZE
 #endif
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
 

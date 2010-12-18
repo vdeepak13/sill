@@ -1,6 +1,6 @@
-/*#include <prl/factor/gaussian_factors.hpp>
-#include <prl/math/bindings/lapack.hpp>
-#include <prl/model/junction_tree.hpp>
+/*#include <sill/factor/gaussian_factors.hpp>
+#include <sill/math/bindings/lapack.hpp>
+#include <sill/model/junction_tree.hpp>
 */
 
 #include <iostream>
@@ -8,19 +8,19 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/graph/grid_graphs.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/model/random.hpp>
-#include <prl/inference/junction_tree_inference.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/graph/grid_graphs.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/random.hpp>
+#include <sill/inference/junction_tree_inference.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char** argv) {
   using namespace boost;
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   boost::mt19937 rng;
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
 }
 
 
-// using namespace prl::math::bindings::lapack;
+// using namespace sill::math::bindings::lapack;
 /*
 
 // singleton constructor
@@ -94,11 +94,11 @@ double_matrix mat(double x00, double x01, double x10, double x11) {
   return m;
 }
 
-typedef prl::canonical_gaussian<double_matrix,double_vector> canonical_gaussian;
-typedef prl::moment_gaussian<double_matrix,double_vector> moment_gaussian;
-typedef prl::junction_tree<prl::variable_h,
+typedef sill::canonical_gaussian<double_matrix,double_vector> canonical_gaussian;
+typedef sill::moment_gaussian<double_matrix,double_vector> moment_gaussian;
+typedef sill::junction_tree<sill::variable_h,
                            canonical_gaussian,
-                           prl::void_,
+                           sill::void_,
                            canonical_gaussian> jt_type;
 
 std::map<std::size_t, jt_type::vertex_t> vertex;
@@ -140,7 +140,7 @@ std::vector<T> seq(T a, T b) {
 
 int main(int argc, char* argv[])
 {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   using boost::lexical_cast;
   typedef jt_type::edge_t edge_descriptor;

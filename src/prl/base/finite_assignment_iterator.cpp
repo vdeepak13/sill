@@ -1,8 +1,8 @@
-#include <prl/base/finite_assignment_iterator.hpp>
+#include <sill/base/finite_assignment_iterator.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   finite_assignment_iterator::
   finite_assignment_iterator(const forward_range<finite_variable*>& vars)
@@ -51,4 +51,4 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

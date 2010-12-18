@@ -1,8 +1,8 @@
-#ifndef PRL_ARCHIVE_FWD_HPP
-#define PRL_ARCHIVE_FWD_HPP
+#ifndef SILL_ARCHIVE_FWD_HPP
+#define SILL_ARCHIVE_FWD_HPP
 
 // forward declarations of archives
-namespace prl {
+namespace sill {
 
   class xml_iarchive;
   class xml_oarchive;

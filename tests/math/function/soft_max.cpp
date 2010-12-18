@@ -1,9 +1,9 @@
 #include <iostream>
 
-#include <prl/math/function/soft_max.hpp>
+#include <sill/math/function/soft_max.hpp>
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
     
   soft_max sm("1;-1", "1 1");

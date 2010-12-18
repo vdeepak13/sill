@@ -1,26 +1,26 @@
 
 #include <iostream>
 
-#include <prl/math/vector.hpp>
-#include <prl/optimization/lbfgs.hpp>
+#include <sill/math/vector.hpp>
+#include <sill/optimization/lbfgs.hpp>
 
 struct obj_functor {
-  double objective(prl::vec val) const {
-    prl::vec tmpval(2,1.);
-    return -5. + prl::inner_prod<double>(val - tmpval, val - tmpval);
+  double objective(sill::vec val) const {
+    sill::vec tmpval(2,1.);
+    return -5. + sill::inner_prod<double>(val - tmpval, val - tmpval);
   }
 };
 
 struct grad_functor {
-  void gradient(prl::vec& grad, const prl::vec& val) const {
-    prl::vec tmpval(2,1.);
+  void gradient(sill::vec& grad, const sill::vec& val) const {
+    sill::vec tmpval(2,1.);
     grad = 2. * (val - tmpval);
   }
 };
 
 int main(int argc, char* argv[]) {
 
-  using namespace prl;
+  using namespace sill;
 
   size_t niter = 5;
 

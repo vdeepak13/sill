@@ -4,17 +4,17 @@
 
 #include <boost/array.hpp>
 
-#include <prl/functional.hpp>
-#include <prl/graph/grid_graphs.hpp>
-#include <prl/graph/undirected_graph.hpp>
-#include <prl/graph/min_degree_strategy.hpp>
-#include <prl/graph/min_fill_strategy.hpp>
-#include <prl/model/learnt_junction_tree.hpp>
+#include <sill/functional.hpp>
+#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/graph/min_degree_strategy.hpp>
+#include <sill/graph/min_fill_strategy.hpp>
+#include <sill/model/learnt_junction_tree.hpp>
 
 
 int main() {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   typedef undirected_graph<size_t> graph_type;

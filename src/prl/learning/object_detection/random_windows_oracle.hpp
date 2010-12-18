@@ -1,17 +1,17 @@
-#ifndef PRL_RANDOM_WINDOWS_ORACLE_HPP
-#define PRL_RANDOM_WINDOWS_ORACLE_HPP
+#ifndef SILL_RANDOM_WINDOWS_ORACLE_HPP
+#define SILL_RANDOM_WINDOWS_ORACLE_HPP
 #include <map>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/learning/dataset/oracle.hpp>
-#include <prl/learning/object_detection/image.hpp>
-#include <prl/math/free_functions.hpp>
+#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/object_detection/image.hpp>
+#include <sill/math/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Oracle which generates (optionally labeled) fixed-size images from
@@ -142,8 +142,8 @@ namespace prl {
 
   }; // class random_windows_oracle
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_RANDOM_WINDOWS_ORACLE_HPP
+#endif // #ifndef SILL_RANDOM_WINDOWS_ORACLE_HPP

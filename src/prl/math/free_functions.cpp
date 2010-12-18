@@ -1,9 +1,9 @@
-#include <prl/math/free_functions.hpp>
+#include <sill/math/free_functions.hpp>
 
-namespace prl {
+namespace sill {
 
   double round(double value) {
     return ceil(value - .5);
   }
 
-} // namespace prl
+} // namespace sill

@@ -1,12 +1,12 @@
-#ifndef PRL_FACTOR_APPROXIMATION_INTERFACES_HPP
-#define PRL_FACTOR_APPROXIMATION_INTERFACES_HPP
+#ifndef SILL_FACTOR_APPROXIMATION_INTERFACES_HPP
+#define SILL_FACTOR_APPROXIMATION_INTERFACES_HPP
 
 #include <functional>
 
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/nonlinear_gaussian.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/nonlinear_gaussian.hpp>
 
-namespace prl {
+namespace sill {
 
   // forward declarations
   class moment_gaussian;
@@ -40,6 +40,6 @@ namespace prl {
 
   }; // interface gaussian_approximator
 
-} // namespace prl
+} // namespace sill
 
 #endif

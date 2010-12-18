@@ -1,10 +1,10 @@
 
-#ifndef PRL_VARIABLE_TYPE_GROUP_HPP
-#define PRL_VARIABLE_TYPE_GROUP_HPP
+#ifndef SILL_VARIABLE_TYPE_GROUP_HPP
+#define SILL_VARIABLE_TYPE_GROUP_HPP
 
-#include <prl/base/assignment.hpp>
+#include <sill/base/assignment.hpp>
 
-namespace prl {
+namespace sill {
 
   // Forward declarations
   class finite_record;
@@ -67,8 +67,8 @@ namespace prl {
 
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/learning/dataset/record.hpp>
+#include <sill/learning/dataset/record.hpp>
 
-#endif // #ifndef PRL_VARIABLE_TYPE_GROUP_HPP
+#endif // #ifndef SILL_VARIABLE_TYPE_GROUP_HPP

@@ -1,14 +1,14 @@
-#ifndef PRL_FINITE_ASSIGNMENT_HPP
-#define PRL_FINITE_ASSIGNMENT_HPP
+#ifndef SILL_FINITE_ASSIGNMENT_HPP
+#define SILL_FINITE_ASSIGNMENT_HPP
 
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/stl_util.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/stl_util.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup base_types
   //! @{
@@ -53,6 +53,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,18 +1,18 @@
 
-#ifndef PRL_GRADIENT_METHOD_HPP
-#define PRL_GRADIENT_METHOD_HPP
+#ifndef SILL_GRADIENT_METHOD_HPP
+#define SILL_GRADIENT_METHOD_HPP
 
-#include <prl/base/stl_util.hpp>
-#include <prl/math/is_finite.hpp>
-#include <prl/optimization/basic_step_functor.hpp>
-#include <prl/optimization/line_search_with_grad.hpp>
-#include <prl/optimization/real_optimizer.hpp>
-#include <prl/optimization/single_opt_step.hpp>
-#include <prl/optimization/wolfe_step_functor.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/math/is_finite.hpp>
+#include <sill/optimization/basic_step_functor.hpp>
+#include <sill/optimization/line_search_with_grad.hpp>
+#include <sill/optimization/real_optimizer.hpp>
+#include <sill/optimization/single_opt_step.hpp>
+#include <sill/optimization/wolfe_step_functor.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! Parameters for gradient_method subclasses.
   struct gradient_method_parameters {
@@ -95,8 +95,8 @@ namespace prl {
   class gradient_method
     : public real_optimizer<OptVector> {
 
-    concept_assert((prl::ObjectiveFunctor<Objective, OptVector>));
-    concept_assert((prl::GradientFunctor<Gradient, OptVector>));
+    concept_assert((sill::ObjectiveFunctor<Objective, OptVector>));
+    concept_assert((sill::GradientFunctor<Gradient, OptVector>));
 
     // Public types
     //==========================================================================
@@ -447,6 +447,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_GRADIENT_METHOD_HPP
+#endif // #ifndef SILL_GRADIENT_METHOD_HPP

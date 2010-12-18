@@ -1,18 +1,18 @@
 
-#ifndef PRL_TREE_TRAVERSAL_HPP
-#define PRL_TREE_TRAVERSAL_HPP
+#ifndef SILL_TREE_TRAVERSAL_HPP
+#define SILL_TREE_TRAVERSAL_HPP
 
 #include <deque>
 #include <vector>
 #include <iterator>
 
-#include <prl/global.hpp>
-#include <prl/graph/output_edge_visitor.hpp>
-#include <prl/range/reversed.hpp>
+#include <sill/global.hpp>
+#include <sill/graph/output_edge_visitor.hpp>
+#include <sill/range/reversed.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace impl {
 
@@ -80,7 +80,7 @@ namespace prl {
       }
     }; // class TripletToPair Visitor
 
-  } // namespace prl::impl
+  } // namespace sill::impl
 
   /**
    * Performs a pre-order traversal of a tree (i.e., a singly-connected graph)
@@ -203,7 +203,7 @@ namespace prl {
     pre_order_traversal
       (g, v, make_output_edge_visitor(std::back_inserter(edges)));
     // Now visit the reverse of these edges in the reverse order.
-    foreach(edge e, prl::make_reversed(edges))
+    foreach(edge e, sill::make_reversed(edges))
       visitor(g.reverse(e), g);
     // Now visit the edges in the original order.
     foreach(edge e, edges)
@@ -241,7 +241,7 @@ namespace prl {
     pre_order_traversal
       (g, v, make_output_edge_visitor(std::back_inserter(edges)));
     // Now visit the reverse of these edges in the reverse order.
-    foreach(edge e, prl::make_reversed(edges))
+    foreach(edge e, sill::make_reversed(edges))
       post_visitor(g.reverse(e), g);
     // Now visit the edges in the original order.
     foreach(edge e, edges)
@@ -351,8 +351,8 @@ namespace prl {
                           out, vertex_printer);
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_TREE_TRAVERSAL_HPP
+#endif // #ifndef SILL_TREE_TRAVERSAL_HPP

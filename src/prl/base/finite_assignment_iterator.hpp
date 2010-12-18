@@ -1,12 +1,12 @@
-#ifndef PRL_FINITE_ASSIGNMENT_ITERATOR_HPP
-#define PRL_FINITE_ASSIGNMENT_ITERATOR_HPP
+#ifndef SILL_FINITE_ASSIGNMENT_ITERATOR_HPP
+#define SILL_FINITE_ASSIGNMENT_ITERATOR_HPP
 
 #include <iterator>
-#include <prl/base/finite_assignment.hpp>
+#include <sill/base/finite_assignment.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An iterator that iterates through all possible assignments
@@ -86,8 +86,8 @@ namespace prl {
   finite_assignment_range assignments(const finite_domain& vars);
 
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

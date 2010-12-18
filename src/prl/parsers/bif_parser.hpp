@@ -12,16 +12,16 @@
 #include <fstream>
 #include <algorithm>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/parsers/string_functions.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/parsers/string_functions.hpp>
 
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
   /**
    * This function fills in a factor graph with with *.bif file
@@ -77,7 +77,7 @@ namespace prl {
     //so that we can use a tokenizer on it
     std::string file_single_line = file_single_line_stream.str();
 
-    std::map<std::string, prl::finite_variable*> name_to_var_map;
+    std::map<std::string, sill::finite_variable*> name_to_var_map;
     std::map<finite_variable*, std::map<std::string, finite_variable::value_type> > var_to_val_to_id_map;
     std::map<finite_variable*, std::set<finite_variable*> > var_to_parents;
     std::map<finite_variable*, std::set<finite_variable*> > var_to_children;
@@ -192,7 +192,7 @@ namespace prl {
           }while(CLOSE_BRACE.compare(token) != 0);
 
         F factor(v_vector, 0.0);
-        BOOST_FOREACH(const prl::finite_assignment& a, reverse_factor.assignments())
+        BOOST_FOREACH(const sill::finite_assignment& a, reverse_factor.assignments())
           factor(a) = reverse_factor(a);
 
         fg.add_factor(factor);

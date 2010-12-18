@@ -8,16 +8,16 @@
 #include <boost/timer.hpp>
 #include <boost/program_options.hpp>
 
-#include <prl/base/variable.hpp>
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/model/io.hpp>
-#include <prl/inference/belief_propagation.hpp>
+#include <sill/base/variable.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/io.hpp>
+#include <sill/inference/belief_propagation.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 namespace po = boost::program_options;
 
@@ -64,8 +64,8 @@ int main(int ac, char* av[])
   assert(niters>0);
 
   // Load the network and create the inference engine
-  using namespace prl;
-  typedef prl::pairwise_markov_network<table_factor> network_type;
+  using namespace sill;
+  typedef sill::pairwise_markov_network<table_factor> network_type;
 
   universe u;
   cout << "Loading the model" << endl;

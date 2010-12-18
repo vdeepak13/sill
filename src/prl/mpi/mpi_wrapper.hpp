@@ -15,8 +15,8 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_POST_OFFICE
-#define PRL_POST_OFFICE
+#ifndef SILL_POST_OFFICE
+#define SILL_POST_OFFICE
 
 
 #include <mpi.h>
@@ -26,11 +26,11 @@
 #include <map>
 #include <cassert>
 #include <stdint.h>
-#include <prl/mpi/mpi_protocols.hpp>
-#include <prl/parallel/blocking_queue.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/mpi/mpi_protocols.hpp>
+#include <sill/parallel/blocking_queue.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
-namespace prl {
+namespace sill {
   /**
     This tries to be an wrapper around MPI to provide around the same
     level of functionality as TCP. The MPI post office creates 2 background
@@ -364,7 +364,7 @@ namespace prl {
   void mpi_inplace_reduce_uint64(uint64_t &x);
   void mpi_inplace_reduce_uint32(uint32_t &x);
 
-} // End of namespace prl
+} // End of namespace sill
 
 #endif
 

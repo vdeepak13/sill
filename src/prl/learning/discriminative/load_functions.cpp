@@ -1,19 +1,19 @@
-#include <prl/learning/discriminative/all_pairs_batch.hpp>
-#include <prl/learning/discriminative/batch_booster.hpp>
-#include <prl/learning/discriminative/batch_booster_OC.hpp>
-#include <prl/learning/discriminative/boosters.hpp>
-#include <prl/learning/discriminative/concepts.hpp>
-#include <prl/learning/discriminative/decision_tree.hpp>
-#include <prl/learning/discriminative/filtering_booster.hpp>
-#include <prl/learning/discriminative/load_functions.hpp>
-#include <prl/learning/discriminative/logistic_regression.hpp>
-#include <prl/learning/discriminative/stump.hpp>
-#include <prl/learning/object_detection/haar.hpp>
-#include <prl/base/universe.hpp>
+#include <sill/learning/discriminative/all_pairs_batch.hpp>
+#include <sill/learning/discriminative/batch_booster.hpp>
+#include <sill/learning/discriminative/batch_booster_OC.hpp>
+#include <sill/learning/discriminative/boosters.hpp>
+#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/learning/discriminative/decision_tree.hpp>
+#include <sill/learning/discriminative/filtering_booster.hpp>
+#include <sill/learning/discriminative/load_functions.hpp>
+#include <sill/learning/discriminative/logistic_regression.hpp>
+#include <sill/learning/discriminative/stump.hpp>
+#include <sill/learning/object_detection/haar.hpp>
+#include <sill/base/universe.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Free functions
   //==========================================================================
@@ -94,8 +94,8 @@ namespace prl {
 
   boost::shared_ptr<binary_classifier>
   load_binary_classifier(std::ifstream& in, const datasource& ds) {
-    using namespace prl::discriminative;
-    using namespace prl::boosting;
+    using namespace sill::discriminative;
+    using namespace sill::boosting;
     std::string line;
     getline(in, line);
     boost::shared_ptr<binary_classifier> ptr;
@@ -164,8 +164,8 @@ namespace prl {
 
   boost::shared_ptr<multiclass_classifier>
   load_multiclass_classifier(std::ifstream& in, const datasource& ds) {
-    using namespace prl::discriminative;
-    using namespace prl::boosting;
+    using namespace sill::discriminative;
+    using namespace sill::boosting;
     std::string line;
     getline(in, line);
     boost::shared_ptr<multiclass_classifier> ptr;
@@ -201,11 +201,11 @@ namespace prl {
     return c;
   }
 
-  boost::shared_ptr<prl::binary_classifier>
+  boost::shared_ptr<sill::binary_classifier>
   empty_binary_classifier(std::string learner_name,
                           size_t booster_iterations) {
-    using namespace prl::discriminative;
-    using namespace prl::boosting;
+    using namespace sill::discriminative;
+    using namespace sill::boosting;
     std::string name, obj, base;
     boost::tie(name, obj, base) = parse_learner_name(learner_name);
     boost::shared_ptr<binary_classifier> learner_ptr;
@@ -285,10 +285,10 @@ namespace prl {
     return learner_ptr;
   }
 
-  boost::shared_ptr<prl::multiclass_classifier>
-  empty_multiclass_classifier(std::string learner_name, prl::universe& u,
+  boost::shared_ptr<sill::multiclass_classifier>
+  empty_multiclass_classifier(std::string learner_name, sill::universe& u,
                               size_t booster_iterations) {
-    using namespace prl::boosting;
+    using namespace sill::boosting;
     std::string name, obj, base;
     boost::tie(name, obj, base) = parse_learner_name(learner_name);
     boost::shared_ptr<multiclass_classifier> learner_ptr;
@@ -342,6 +342,6 @@ namespace prl {
     return learner_ptr;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

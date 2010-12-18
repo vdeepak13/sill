@@ -1,10 +1,10 @@
-#include <prl/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
 
-#include <prl/process.hpp>
+#include <sill/process.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace {
 
@@ -34,7 +34,7 @@ namespace prl {
     : out(out), inside_header(false), finalized(false), leaf(false) { 
     out << "<?xml version=\"1.0\"?>" << std::endl;
     out << std::endl;
-    out << "<prl>";
+    out << "<sill>";
     level = 1;
   }
 
@@ -171,5 +171,5 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 

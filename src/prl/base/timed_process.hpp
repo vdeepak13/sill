@@ -1,10 +1,10 @@
-namespace prl {
+namespace sill {
   template <typename V>
   class timed_process;
 }
 
-#ifndef PRL_TIMED_PROCESS_HPP
-#define PRL_TIMED_PROCESS_HPP
+#ifndef SILL_TIMED_PROCESS_HPP
+#define SILL_TIMED_PROCESS_HPP
 
 #include <set>
 #include <map>
@@ -12,14 +12,14 @@ namespace prl {
 
 #include <boost/lexical_cast.hpp>
 
-#include <prl/base/concepts.hpp>
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/base/process.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/base/concepts.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/base/process.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup base_types
   //! @{
@@ -210,8 +210,8 @@ namespace prl {
     return ar;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

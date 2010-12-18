@@ -1,19 +1,19 @@
 
-#ifndef PRL_SET_INDEX_HPP
-#define PRL_SET_INDEX_HPP
+#ifndef SILL_SET_INDEX_HPP
+#define SILL_SET_INDEX_HPP
 
 #include <list>
 #include <map>
 #include <set>
 #include <stdexcept>
 
-#include <prl/global.hpp>
-#include <prl/stl_concepts.hpp>
-#include <prl/iterator/counting_output_iterator.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/global.hpp>
+#include <sill/stl_concepts.hpp>
+#include <sill/iterator/counting_output_iterator.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * An index over sets that efficiently processes intersection and
@@ -352,8 +352,8 @@ namespace prl {
     return out;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_SET_INDEX_HPP
+#endif // #ifndef SILL_SET_INDEX_HPP

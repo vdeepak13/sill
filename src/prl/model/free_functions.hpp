@@ -1,23 +1,23 @@
 
-#ifndef PRL_MODEL_FREE_FUNCTIONS_HPP
-#define PRL_MODEL_FREE_FUNCTIONS_HPP
+#ifndef SILL_MODEL_FREE_FUNCTIONS_HPP
+#define SILL_MODEL_FREE_FUNCTIONS_HPP
 
 #include <cmath>
 
 #include <boost/range/iterator_range.hpp>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/graph/undirected_graph.hpp>
-#include <prl/model/bayesian_network.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/iterator/transform_output_iterator.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/model/bayesian_network.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/iterator/transform_output_iterator.hpp>
 
-#include <prl/range/concepts.hpp>
+#include <sill/range/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Create a pairwise Markov network from a factorized model.
@@ -67,7 +67,7 @@ namespace prl {
   (const FactorRange& node_beliefs, const domain& orig_vars,
    std::map<finite_variable*, std::vector<finite_variable*> >& var_mapping) {
     concept_assert((InputRangeConvertible<FactorRange, F>));
-    using namespace prl;
+    using namespace sill;
     std::vector<F> fvec;
     foreach(const F& f, node_beliefs) {
       finite_variable* v = *(f.arguments().begin());
@@ -132,7 +132,7 @@ namespace prl {
   template <typename F, typename FactorRange>
   decomposable<F> factors2thin_decomposable(const FactorRange& factors) {
     concept_assert((InputRangeConvertible<FactorRange, F>));
-    using namespace prl;
+    using namespace sill;
     /*
       Create a graph and a mapping of edges to weights.
       - for each belief
@@ -213,8 +213,8 @@ namespace prl {
     return model;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_MODEL_FREE_FUNCTIONS_HPP
+#endif // SILL_MODEL_FREE_FUNCTIONS_HPP

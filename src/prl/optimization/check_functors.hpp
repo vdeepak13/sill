@@ -1,13 +1,13 @@
 
-#ifndef PRL_OPTIMIZATION_CHECK_FUNCTORS_HPP
-#define PRL_OPTIMIZATION_CHECK_FUNCTORS_HPP
+#ifndef SILL_OPTIMIZATION_CHECK_FUNCTORS_HPP
+#define SILL_OPTIMIZATION_CHECK_FUNCTORS_HPP
 
-#include <prl/learning/parameter_grid.hpp>
-#include <prl/optimization/concepts.hpp>
+#include <sill/learning/parameter_grid.hpp>
+#include <sill/optimization/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Method for checking the validity of a GradientFunctor object
@@ -42,9 +42,9 @@ namespace prl {
                               const Objective& obj_functor,
                               const Gradient& grad_functor,
                               double min_eta, double max_eta, size_t k) {
-    concept_assert((prl::OptimizationVector<OptVector>));
-    concept_assert((prl::ObjectiveFunctor<Objective, OptVector>));
-    concept_assert((prl::GradientFunctor<Gradient, OptVector>));
+    concept_assert((sill::OptimizationVector<OptVector>));
+    concept_assert((sill::ObjectiveFunctor<Objective, OptVector>));
+    concept_assert((sill::GradientFunctor<Gradient, OptVector>));
 
     assert(min_eta > 0);
     assert(min_eta < max_eta);
@@ -107,9 +107,9 @@ namespace prl {
                                  const Gradient& grad_functor,
                                  const HessianDiag& hd_functor,
                                  double min_eta, double max_eta, size_t k) {
-    concept_assert((prl::OptimizationVector<OptVector>));
-    concept_assert((prl::GradientFunctor<Gradient, OptVector>));
-    concept_assert((prl::HessianDiagFunctor<HessianDiag, OptVector>));
+    concept_assert((sill::OptimizationVector<OptVector>));
+    concept_assert((sill::GradientFunctor<Gradient, OptVector>));
+    concept_assert((sill::HessianDiagFunctor<HessianDiag, OptVector>));
 
     vec etas(create_parameter_grid(min_eta, max_eta, k, true));
     OptVector x_(x);
@@ -131,6 +131,6 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_OPTIMIZATION_CHECK_FUNCTORS_HPP
+#endif // #ifndef SILL_OPTIMIZATION_CHECK_FUNCTORS_HPP

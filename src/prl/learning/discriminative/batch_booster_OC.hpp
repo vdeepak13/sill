@@ -1,16 +1,16 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_OC_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_OC_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_OC_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_OC_HPP
 
-#include <prl/learning/dataset/vector_dataset.hpp>
-#include <prl/learning/discriminative/multiclass_booster_OC.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/discriminative/multiclass_booster_OC.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Set to 1 to print debugging info
 #define DEBUG_BATCH_BOOSTER_OC 0
 
-namespace prl {
+namespace sill {
 
   /**
    * BATCH_BOOSTER_OC_PARAMETERS
@@ -472,8 +472,8 @@ namespace prl {
 
   }; // class batch_booster_OC
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_OC_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_OC_HPP

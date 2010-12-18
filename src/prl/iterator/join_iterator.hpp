@@ -1,9 +1,9 @@
-#ifndef PRL_JOIN_ITERATOR_HPP
-#define PRL_JOIN_ITERATOR_HPP
+#ifndef SILL_JOIN_ITERATOR_HPP
+#define SILL_JOIN_ITERATOR_HPP
 
 #include <iterator>
 
-namespace prl {
+namespace sill {
   
   /**
    * An iterator that merges two 
@@ -69,6 +69,6 @@ namespace prl {
     return join_iterator<It1, It2>(it1, end1, it2);
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

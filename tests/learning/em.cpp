@@ -1,16 +1,16 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/em_mog.hpp>
-#include <prl/learning/dataset/assignment_dataset.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/range/numeric.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/em_mog.hpp>
+#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/range/numeric.hpp>
 
 boost::mt19937 rng; 
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
   
   typedef em_mog em_engine;

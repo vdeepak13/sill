@@ -1,21 +1,21 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/inference/asynchronous_gbp_pc.hpp>
-#include <prl/inference/kikuchi.hpp>
-#include <prl/inference/bethe.hpp>
+#include <sill/inference/asynchronous_gbp_pc.hpp>
+#include <sill/inference/kikuchi.hpp>
+#include <sill/inference/bethe.hpp>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/graph/grid_graphs.hpp>
-#include <prl/model/markov_network.hpp>
-#include <prl/model/random.hpp>
-#include <prl/model/decomposable.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/graph/grid_graphs.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/random.hpp>
+#include <sill/model/decomposable.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char** argv) {
   using namespace std;
-  using namespace prl;
+  using namespace sill;
   
   if (argc < 4) {
     cout << "Usage: gbp m n niters region_graph [eta]" << endl;

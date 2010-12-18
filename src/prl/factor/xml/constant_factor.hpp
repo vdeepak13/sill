@@ -1,14 +1,14 @@
-#ifndef PRL_CONSTANT_FACTOR_XML_HPP
-#define PRL_CONSTANT_FACTOR_XML_HPP
+#ifndef SILL_CONSTANT_FACTOR_XML_HPP
+#define SILL_CONSTANT_FACTOR_XML_HPP
 
 #include <iosfwd>
 
-#include <prl/factor/constant_factor.hpp>
-#include <prl/archive/xml_tag.hpp>
-#include <prl/archive/xml_oarchive.hpp>
-#include <prl/archive/xml_iarchive.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/archive/xml_tag.hpp>
+#include <sill/archive/xml_oarchive.hpp>
+#include <sill/archive/xml_iarchive.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename T>
   const char* xml_tag(constant_factor*) { 
@@ -32,6 +32,6 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill
 
 #endif

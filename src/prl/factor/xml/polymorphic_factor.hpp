@@ -1,11 +1,11 @@
-#ifndef PRL_POLYMORPHIC_FACTOR_XML_HPP
-#define PRL_POLYMORPHIC_FACTOR_XML_HPP
+#ifndef SILL_POLYMORPHIC_FACTOR_XML_HPP
+#define SILL_POLYMORPHIC_FACTOR_XML_HPP
 
-#include <prl/factor/any_factor.hpp>
-#include <prl/archive/xml_iarchive.hpp>
-#include <prl/archive/xml_oarchive.hpp>
+#include <sill/factor/any_factor.hpp>
+#include <sill/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_oarchive.hpp>
 
-namespace prl {
+namespace sill {
 
   template <typename T>
   const char* xml_tag(any_factor<T>*) {
@@ -26,7 +26,7 @@ namespace prl {
     return in;
   }
 
-} // namespace prl 
+} // namespace sill 
 
 #endif
 

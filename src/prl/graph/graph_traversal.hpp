@@ -1,19 +1,19 @@
 
-#ifndef PRL_GRAPH_TRAVERSAL_HPP
-#define PRL_GRAPH_TRAVERSAL_HPP
+#ifndef SILL_GRAPH_TRAVERSAL_HPP
+#define SILL_GRAPH_TRAVERSAL_HPP
 
 #include <deque>
 #include <vector>
 #include <iterator>
 #include <map>
 
-#include <prl/global.hpp>
-#include <prl/graph/output_edge_visitor.hpp>
-#include <prl/range/reversed.hpp>
+#include <sill/global.hpp>
+#include <sill/graph/output_edge_visitor.hpp>
+#include <sill/range/reversed.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Visits each vertex of a directed acyclic graph once in a traversal
@@ -72,8 +72,8 @@ namespace prl {
     return vertices;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_GRAPH_TRAVERSAL_HPP
+#endif // #ifndef SILL_GRAPH_TRAVERSAL_HPP

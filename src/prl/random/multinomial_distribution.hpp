@@ -1,9 +1,9 @@
-#ifndef PRL_MULTINOMIAL_DISTRIBUTION_HPP
-#define PRL_MULTINOMIAL_DISTRIBUTION_HPP
+#ifndef SILL_MULTINOMIAL_DISTRIBUTION_HPP
+#define SILL_MULTINOMIAL_DISTRIBUTION_HPP
 
-#include <prl/math/vector.hpp>
+#include <sill/math/vector.hpp>
 
-namespace prl {
+namespace sill {
   
   /**
    * A class that represents a multinomial distribution:
@@ -62,6 +62,6 @@ namespace prl {
 
   }; // class multinomial_distribution
 
-} // namespace prl
+} // namespace sill
 
 #endif

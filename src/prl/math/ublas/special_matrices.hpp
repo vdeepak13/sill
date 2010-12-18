@@ -1,9 +1,9 @@
-#ifndef PRL_MATH_UBLAS_SPECIAL_MATRICES_HPP
-#define PRL_MATH_UBLAS_SPECIAL_MATRICES_HPP
+#ifndef SILL_MATH_UBLAS_SPECIAL_MATRICES_HPP
+#define SILL_MATH_UBLAS_SPECIAL_MATRICES_HPP
 
-#include <prl/math/ublas.hpp>
+#include <sill/math/ublas.hpp>
 
-namespace prl {
+namespace sill {
 
   //!\addtogroup math_ublas
   //!@{

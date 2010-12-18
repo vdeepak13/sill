@@ -1,5 +1,5 @@
-#ifndef PRL_ALCHEMY_HPP
-#define PRL_ALCHEMY_HPP
+#ifndef SILL_ALCHEMY_HPP
+#define SILL_ALCHEMY_HPP
 
 #include <string>
 #include <vector>
@@ -11,16 +11,16 @@
 #include <set>
 #include <dirent.h>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/log_table_factor.hpp>
-#include <prl/model/lifted_factor_graph_model.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/parsers/string_functions.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/log_table_factor.hpp>
+#include <sill/model/lifted_factor_graph_model.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/parsers/string_functions.hpp>
 
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
   /**
    * Print a single factor as a single line of text in the alchemy
@@ -718,7 +718,7 @@ namespace prl {
     fout.close();
   }
 } // End of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 
-#endif // PRL_ALCHEMY_HPP
+#endif // SILL_ALCHEMY_HPP

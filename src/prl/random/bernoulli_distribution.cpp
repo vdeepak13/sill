@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include <prl/random/bernoulli_distribution.hpp>
+#include <sill/random/bernoulli_distribution.hpp>
 
-namespace prl {
+namespace sill {
 
   std::ostream& operator<<(std::ostream& out, const bernoulli_distribution& d) {
     out << d.p_;
@@ -14,4 +14,4 @@ namespace prl {
     return in;
   }
 
-} // namespace prl
+} // namespace sill

@@ -1,17 +1,17 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-#include <prl/factor/any_factor.hpp>
-#include <prl/factor/constant_factor.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/moment_gaussian.hpp>
-#include <prl/factor/canonical_gaussian.hpp>
+#include <sill/factor/any_factor.hpp>
+#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-BOOST_CLASS_EXPORT(prl::any_factor);
+BOOST_CLASS_EXPORT(sill::any_factor);
 
-namespace prl {
+namespace sill {
   
   // Serialization
   //============================================================================
@@ -114,7 +114,7 @@ namespace prl {
     return *this;
   }
 
-} // namespace prl
+} // namespace sill
 
 
 

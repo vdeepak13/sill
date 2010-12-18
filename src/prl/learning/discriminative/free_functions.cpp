@@ -1,8 +1,8 @@
-#include <prl/learning/discriminative/free_functions.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   void record2vector(vec& vals, const vector_var_vector& vars,
                      const vector_record& r) {
@@ -27,6 +27,6 @@ namespace prl {
     }
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

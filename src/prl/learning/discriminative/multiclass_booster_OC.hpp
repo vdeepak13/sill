@@ -1,14 +1,14 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_BOOSTER_OC_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_BOOSTER_OC_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_BOOSTER_OC_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_BOOSTER_OC_HPP
 
-#include <prl/learning/discriminative/load_functions.hpp>
-#include <prl/learning/discriminative/multiclass_booster.hpp>
-#include <prl/math/statistics.hpp>
+#include <sill/learning/discriminative/load_functions.hpp>
+#include <sill/learning/discriminative/multiclass_booster.hpp>
+#include <sill/math/statistics.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * MULTICLASS BOOSTER OC PARAMETERS
@@ -359,8 +359,8 @@ namespace prl {
 
   }; // class multiclass_booster_OC
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_MULTICLASS_BOOSTER_OC_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_BOOSTER_OC_HPP

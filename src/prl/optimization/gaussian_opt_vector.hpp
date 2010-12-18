@@ -1,9 +1,9 @@
-#ifndef PRL_GAUSSIAN_OPT_VECTOR_HPP
-#define PRL_GAUSSIAN_OPT_VECTOR_HPP
+#ifndef SILL_GAUSSIAN_OPT_VECTOR_HPP
+#define SILL_GAUSSIAN_OPT_VECTOR_HPP
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Type which parametrizes Gaussian factors, usable for optimization and
@@ -171,7 +171,7 @@ namespace prl {
     //! Inner product with a value of the same size.
     double inner_prod(const gaussian_opt_vector& other) const {
       return (elem_mult_sum(A, other.A)
-              + prl::inner_prod(b, other.b)
+              + sill::inner_prod(b, other.b)
               + elem_mult_sum(C, other.C));
     }
 
@@ -271,8 +271,8 @@ namespace prl {
 
   }; // struct gaussian_opt_vector
 
-}  // namespace prl
+}  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_GAUSSIAN_OPT_VECTOR_HPP
+#endif // SILL_GAUSSIAN_OPT_VECTOR_HPP

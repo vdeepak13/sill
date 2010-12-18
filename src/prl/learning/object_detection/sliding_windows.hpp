@@ -1,28 +1,28 @@
 
-#ifndef PRL_LEARNING_DISCRIMINATIVE_SLIDING_WINDOWS_HPP
-#define PRL_LEARNING_DISCRIMINATIVE_SLIDING_WINDOWS_HPP
+#ifndef SILL_LEARNING_DISCRIMINATIVE_SLIDING_WINDOWS_HPP
+#define SILL_LEARNING_DISCRIMINATIVE_SLIDING_WINDOWS_HPP
 
 #include <boost/random/bernoulli_distribution.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <prl/base/finite_variable.hpp>
-#include <prl/base/vector_variable.hpp>
-#include <prl/learning/dataset/record.hpp>
-#include <prl/learning/discriminative/binary_classifier.hpp>
-#include <prl/learning/discriminative/free_functions.hpp>
-#include <prl/learning/object_detection/image.hpp>
-#include <prl/math/free_functions.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/learning/dataset/record.hpp>
+#include <sill/learning/discriminative/binary_classifier.hpp>
+#include <sill/learning/discriminative/free_functions.hpp>
+#include <sill/learning/object_detection/image.hpp>
+#include <sill/math/free_functions.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file sliding_windows.hpp Code for object detection in images using
  *                           sliding windows.
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * Class which takes a binary confidence-rated classifier for fixed-size
@@ -243,8 +243,8 @@ namespace prl {
 
   };  // class sliding_windows
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_LEARNING_DISCRIMINATIVE_SLIDING_WINDOWS_HPP
+#endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_SLIDING_WINDOWS_HPP

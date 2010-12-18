@@ -2,7 +2,7 @@
 #include <queue>
 #include <assert.h>
 #include <boost/random/mersenne_twister.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
 #include <boost/lexical_cast.hpp>
 
 int main(int argc, char* argv[]) {
@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
   // Insert the same keys into STL queues and PRL queues and make sure
   // they spit out the keys in the same order.
   std::priority_queue<int> std_pq;
-  prl::mutable_queue<int, int> prl_pq;
+  sill::mutable_queue<int, int> prl_pq;
   for (int i = 0; i < n; i++) {
     int x = rng();
     int y = rng();

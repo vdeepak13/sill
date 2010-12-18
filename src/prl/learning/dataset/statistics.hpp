@@ -1,6 +1,6 @@
 
-#ifndef PRL_STATISTICS_HPP
-#define PRL_STATISTICS_HPP
+#ifndef SILL_STATISTICS_HPP
+#define SILL_STATISTICS_HPP
 
 #include <algorithm>
 #include <string>
@@ -9,20 +9,20 @@
 #include <boost/iterator.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/range/concepts.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/learning/dataset/dataset.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/learning/dataset/dataset.hpp>
 
-#include <prl/range/algorithm.hpp>
+#include <sill/range/algorithm.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file statistics.hpp This is a class for computing and storing statistics
  *                      about datasets.
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * The statistics class is associated with (and holds a const reference to)
@@ -229,8 +229,8 @@ namespace prl {
 
   };  // class statistics
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

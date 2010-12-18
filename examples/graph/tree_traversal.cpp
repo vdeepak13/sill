@@ -2,8 +2,8 @@
 
 #include <boost/array.hpp>
 
-#include <prl/graph/undirected_graph.hpp>
-#include <prl/graph/tree_traversal.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/graph/tree_traversal.hpp>
 
 struct write_edge_visitor {
   template <typename Graph>
@@ -21,7 +21,7 @@ struct vertex_printer {
 };
 
 int main() {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   typedef std::pair<size_t, size_t> E;

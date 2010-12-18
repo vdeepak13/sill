@@ -5,14 +5,14 @@
 #include <boost/tuple/tuple.hpp>
 #include <boost/timer.hpp>
 
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/functional.hpp>
-#include <prl/stl_io.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/functional.hpp>
+#include <sill/stl_io.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 int main(int argc, char** argv) {
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   boost::timer t;
@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   // Now do the same with multidimensional tables.
   t.restart();
 
-  typedef prl::dense_table<int> table_type;
+  typedef sill::dense_table<int> table_type;
   typedef std::vector<size_t> shape_type;
 
   const int d = 12;

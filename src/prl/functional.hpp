@@ -1,6 +1,6 @@
 
-#ifndef PRL_FUNCTIONAL_HPP
-#define PRL_FUNCTIONAL_HPP
+#ifndef SILL_FUNCTIONAL_HPP
+#define SILL_FUNCTIONAL_HPP
 
 #include <functional>
 
@@ -12,9 +12,9 @@
 #include <iostream>
 #include <boost/numeric/conversion/bounds.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! A simple functor that returns a constant value, regardless of the input.
   template <typename T>
@@ -355,8 +355,8 @@ namespace prl {
     T operator()(const T& a, const T& b) { return wa*a + wb*b; }
   };
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_FUNCTIONAL_HPP
+#endif // #ifndef SILL_FUNCTIONAL_HPP

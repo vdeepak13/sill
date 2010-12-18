@@ -2,7 +2,7 @@
 #define MPI_STATE_MANAGER_HPP
 
 // forward declaration
-namespace prl {
+namespace sill {
 namespace mpi_state_manager_prot {
 template <typename F>
 class mpi_state_manager_protocol;
@@ -15,18 +15,18 @@ class mpi_state_manager_protocol;
 #include <map>
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/parallel/timer.hpp>
-#include <prl/parallel/binned_scheduling_queue.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/inference/parallel/message_data.hpp>
-#include <prl/inference/parallel/mpi_state_manager_protocol.hpp>
-#include <prl/model/mooij_kappen_derivatives.hpp>
-#include <prl/model/factor_graph_partitioning.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/parallel/timer.hpp>
+#include <sill/parallel/binned_scheduling_queue.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/inference/parallel/message_data.hpp>
+#include <sill/inference/parallel/mpi_state_manager_protocol.hpp>
+#include <sill/model/mooij_kappen_derivatives.hpp>
+#include <sill/model/factor_graph_partitioning.hpp>
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file mpi_state_manager.hpp
@@ -35,7 +35,7 @@ class mpi_state_manager_protocol;
  * cluster BP algorithm
  */
  
-namespace prl {
+namespace sill {
   using namespace mpi_state_manager_prot;
   
   
@@ -826,6 +826,6 @@ namespace prl {
 } // End of namespace
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif // MPI_STATE_MANAGER_HPP

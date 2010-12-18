@@ -1,13 +1,13 @@
-#ifndef PRL_SERIALIZABLE_HPP
-#define PRL_SERIALIZABLE_HPP
+#ifndef SILL_SERIALIZABLE_HPP
+#define SILL_SERIALIZABLE_HPP
 
 #include <string>
 #include <sstream>
 #include <cstring>
 
-#include <prl/serialization/serialize.hpp>
+#include <sill/serialization/serialize.hpp>
 #warning "Deprecated"
-namespace prl {
+namespace sill {
 
 
   /**
@@ -32,6 +32,6 @@ namespace prl {
 
   //char serializable::cstr[10000];
 
-} // namespace prl
+} // namespace sill
 
 #endif

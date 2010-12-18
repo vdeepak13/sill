@@ -1,5 +1,5 @@
-#ifndef PRL_DIRECTED_MULTIGRAPH_HPP
-#define PRL_DIRECTED_MULTIGRAPH_HPP
+#ifndef SILL_DIRECTED_MULTIGRAPH_HPP
+#define SILL_DIRECTED_MULTIGRAPH_HPP
 
 #include <map>
 #include <list>
@@ -10,16 +10,16 @@
 #include <boost/graph/graph_traits.hpp>
 #include <boost/pool/object_pool.hpp>
 
-#include <prl/serialization/serialize.hpp>
-#include <prl/global.hpp>
-#include <prl/graph/boost_graph_helpers.hpp>
-#include <prl/graph/directed_edge.hpp> 
-#include <prl/iterator/map_key_iterator.hpp>
-#include <prl/datastructure/vector_map.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/macros_def.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/global.hpp>
+#include <sill/graph/boost_graph_helpers.hpp>
+#include <sill/graph/directed_edge.hpp> 
+#include <sill/iterator/map_key_iterator.hpp>
+#include <sill/datastructure/vector_map.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A directed graph that permits multiple edges between a pair of vertices.
@@ -87,7 +87,7 @@ namespace prl {
     
     // Binding template arguments
     typedef Vertex          vertex;          //!< The vertex type
-    typedef prl::directed_edge<Vertex> edge; //!< The edge type
+    typedef sill::directed_edge<Vertex> edge; //!< The edge type
     typedef VertexProperty  vertex_property; //!< Data associated with vertices
     typedef EdgeProperty    edge_property;   //!< Data associated with Edges
     
@@ -607,16 +607,16 @@ namespace prl {
     return out;
   } 
 
-} // namespace prl
+} // namespace sill
 
 
 namespace boost {
 
   //! Type declarations that let our graph structure work in BGL algorithms
   template <typename Vertex, typename VP, typename EP>
-  struct graph_traits< prl::directed_multigraph<Vertex, VP, EP> > {
+  struct graph_traits< sill::directed_multigraph<Vertex, VP, EP> > {
     
-    typedef prl::directed_multigraph<Vertex, VP, EP> graph_type;
+    typedef sill::directed_multigraph<Vertex, VP, EP> graph_type;
 
     typedef typename graph_type::vertex             vertex_descriptor;
     typedef typename graph_type::edge               edge_descriptor;
@@ -645,6 +645,6 @@ namespace boost {
 } // namespace boost
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

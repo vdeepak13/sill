@@ -1,8 +1,8 @@
-#include <prl/learning/dataset/symbolic_oracle.hpp>
+#include <sill/learning/dataset/symbolic_oracle.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   // Protected methods
   //==========================================================================
@@ -326,6 +326,6 @@ namespace prl {
     }
   } // next()
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

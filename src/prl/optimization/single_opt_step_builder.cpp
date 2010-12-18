@@ -1,7 +1,7 @@
 
-#include <prl/optimization/single_opt_step_builder.hpp>
+#include <sill/optimization/single_opt_step_builder.hpp>
 
-namespace prl {
+namespace sill {
 
   void single_opt_step_builder::add_options
   (boost::program_options::options_description& desc,

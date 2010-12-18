@@ -7,9 +7,9 @@
  * @todo Make this support more types.
  */
 
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/data_loader.hpp>
-#include <prl/learning/dataset/vector_dataset.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
 
 static int usage() {
   std::cerr << "usage: ./dataset_converter [input .sum filepath]"
@@ -21,7 +21,7 @@ static int usage() {
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
 
   if (argc != 3)
     return usage();

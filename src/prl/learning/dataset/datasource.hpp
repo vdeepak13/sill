@@ -1,16 +1,16 @@
 
-#ifndef PRL_DATASOURCE_HPP
-#define PRL_DATASOURCE_HPP
+#ifndef SILL_DATASOURCE_HPP
+#define SILL_DATASOURCE_HPP
 
 #include <map>
 
-#include <prl/base/assignment.hpp>
-#include <prl/copy_ptr.hpp>
-#include <prl/learning/dataset/datasource_info_type.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/copy_ptr.hpp>
+#include <sill/learning/dataset/datasource_info_type.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Datasource.
@@ -356,8 +356,8 @@ namespace prl {
 
   }; // class datasource
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_DATASOURCE_HPP
+#endif // #ifndef SILL_DATASOURCE_HPP

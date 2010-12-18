@@ -12,24 +12,24 @@
 #include <limits>
 
 // PRL Includes
-#include <prl/inference/interfaces.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/inference/mpi/mpi_adapter.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/math/gdl_enum.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/datastructure/mutable_queue.hpp>
-#include <prl/model/factor_graph_partitioning.hpp>
+#include <sill/inference/interfaces.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/inference/mpi/mpi_adapter.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/math/gdl_enum.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
+#include <sill/model/factor_graph_partitioning.hpp>
 
 // This include should always be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // if this is on, each machine will loop independently, and use distributed
 // consensus in the same way as the MPI_splash_engine
 #define ASYNCHRONOUS_TERMINATION
 
-namespace prl {
+namespace sill {
 
   template<typename F>
   class mpi_round_robin_bp:
@@ -539,7 +539,7 @@ namespace prl {
 
 }; // end of namespace
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #ifdef ASYNCHRONOUS_TERMINATION
 #undef ASYNCHRONOUS_TERMINATION

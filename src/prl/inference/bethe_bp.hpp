@@ -1,20 +1,20 @@
-#ifndef PRL_BETHE_GBP_HPP
-#define PRL_BETHE_GBP_HPP
+#ifndef SILL_BETHE_GBP_HPP
+#define SILL_BETHE_GBP_HPP
 
 #include <vector>
 #include <algorithm>
 #include <map>
 
-#include <prl/global.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/factor/invalid_operation.hpp>
-#include <prl/graph/directed_graph.hpp>
-#include <prl/model/interfaces.hpp>
-#include <prl/datastructure/set_index.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/factor/invalid_operation.hpp>
+#include <sill/graph/directed_graph.hpp>
+#include <sill/model/interfaces.hpp>
+#include <sill/datastructure/set_index.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A belief propagation engine that uses a Bethe approximation.
@@ -197,8 +197,8 @@ namespace prl {
   }; // class bethe_bp
 
   
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

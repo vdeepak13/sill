@@ -1,7 +1,7 @@
 
-#include <prl/learning/learn_crf_factor_builder.hpp>
+#include <sill/learning/learn_crf_factor_builder.hpp>
 
-namespace prl {
+namespace sill {
 
   void learn_crf_factor_builder::add_options
   (boost::program_options::options_description& desc) {
@@ -21,4 +21,4 @@ namespace prl {
     return gcf_params;
   }
 
-}; // namespace prl
+}; // namespace sill

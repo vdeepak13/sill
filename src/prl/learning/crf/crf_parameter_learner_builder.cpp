@@ -1,7 +1,7 @@
 
-#include <prl/learning/crf/crf_parameter_learner_builder.hpp>
+#include <sill/learning/crf/crf_parameter_learner_builder.hpp>
 
-namespace prl {
+namespace sill {
 
   void crf_parameter_learner_builder::add_options
   (boost::program_options::options_description& desc) {
@@ -69,4 +69,4 @@ namespace prl {
     return cpl_params;
   }
 
-}; // namespace prl
+}; // namespace sill

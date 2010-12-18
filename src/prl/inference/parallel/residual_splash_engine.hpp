@@ -3,16 +3,16 @@
 
 #include <list>
 
-#include <prl/range/forward_range.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/inference/parallel/basic_update_rule.hpp>
-#include <prl/inference/parallel/basic_state_manager.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/inference/parallel/basic_update_rule.hpp>
+#include <sill/inference/parallel/basic_state_manager.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
 // This should be last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   template<typename F, typename StateManager>
   class residual_splash_engine {
@@ -100,7 +100,7 @@ namespace prl {
         order.clear();
         // Create a set to track the vertices visited in the traversal
         std::set<vertex_type> visited;
-        prl::mutable_queue<vertex_type, double> queue;
+        sill::mutable_queue<vertex_type, double> queue;
         // The workin the queue
         size_t work_in_queue = 0;
 
@@ -219,9 +219,9 @@ namespace prl {
     }; // end of worker
   }; // End of class residual splash
 
-} // End of namespace prl
+} // End of namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif
 

@@ -1,13 +1,13 @@
 #include <iostream>
 
-#include <prl/global.hpp>
-#include <prl/functional.hpp>
-#include <prl/graph/triangulation.hpp>
-#include <prl/graph/undirected_graph.hpp>
-#include <prl/graph/grid_graphs.hpp>
-#include <prl/graph/min_degree_strategy.hpp>
-#include <prl/graph/constrained_elim_strategy.hpp>
-#include <prl/model/junction_tree.hpp>
+#include <sill/global.hpp>
+#include <sill/functional.hpp>
+#include <sill/graph/triangulation.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/min_degree_strategy.hpp>
+#include <sill/graph/constrained_elim_strategy.hpp>
+#include <sill/model/junction_tree.hpp>
 
 
 //! A function object that extracts the elimination priority from a graph
@@ -22,7 +22,7 @@ struct elim_priority_functor {
 
 int main() {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   // The graph type.  Each vertex is annotated with the elimination priority

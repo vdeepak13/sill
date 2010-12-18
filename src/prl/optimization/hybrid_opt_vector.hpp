@@ -1,9 +1,9 @@
-#ifndef PRL_HYBRID_OPT_VECTOR_HPP
-#define PRL_HYBRID_OPT_VECTOR_HPP
+#ifndef SILL_HYBRID_OPT_VECTOR_HPP
+#define SILL_HYBRID_OPT_VECTOR_HPP
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Optimization vector defined as a list of other optimization vectors.
@@ -293,8 +293,8 @@ namespace prl {
     return out;
   }
 
-};  // namespace prl
+};  // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_HYBRID_OPT_VECTOR_HPP
+#endif // SILL_HYBRID_OPT_VECTOR_HPP

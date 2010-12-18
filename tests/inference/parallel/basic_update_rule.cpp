@@ -10,24 +10,24 @@
 #include <boost/random/uniform_int.hpp>
 
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
 
-#include <prl/factor/random.hpp>
-#include <prl/parallel/pthread_tools.hpp>
+#include <sill/factor/random.hpp>
+#include <sill/parallel/pthread_tools.hpp>
 
 
-#include <prl/inference/parallel/basic_state_manager.hpp>
-#include <prl/inference/parallel/basic_update_rule.hpp>
+#include <sill/inference/parallel/basic_state_manager.hpp>
+#include <sill/inference/parallel/basic_update_rule.hpp>
 
 
 // This should come last
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 // Including the standard and the prl namespaces
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 typedef factor_graph_model<table_factor> factor_graph_model_type;
 typedef basic_state_manager<table_factor> basic_state_manager_type;

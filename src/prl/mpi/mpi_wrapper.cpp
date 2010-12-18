@@ -24,12 +24,12 @@
 #include <cassert>
 #include <cstring>
 
-#include <prl/base/stl_util.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/mpi/mpi_protocols.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/mpi/mpi_protocols.hpp>
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
 
   int build_mpi_tag(mpi_post_office::message &msg) {
@@ -588,4 +588,4 @@ namespace prl {
     x = result;
   }
 }
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

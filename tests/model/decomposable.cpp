@@ -5,15 +5,15 @@
 #include <boost/iterator/indirect_iterator.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <prl/base/universe.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/model/decomposable.hpp>
-#include <prl/model/random.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/model/decomposable.hpp>
+#include <sill/model/random.hpp>
 
 //! It would be nice to have a separate file with models
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   ///////////////////////////// VARIABLES ///////////////////////////

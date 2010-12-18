@@ -1,15 +1,15 @@
-#ifndef PRL_FACTOR_LIST_MODEL_HPP
-#define PRL_FACTOR_LIST_MODEL_HPP
+#ifndef SILL_FACTOR_LIST_MODEL_HPP
+#define SILL_FACTOR_LIST_MODEL_HPP
 
-#include <prl/factor/concepts.hpp>
-#include <prl/model/interfaces.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/model/interfaces.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-#include <prl/range/forward_range.hpp>
+#include <sill/range/forward_range.hpp>
 
 
-namespace prl {
+namespace sill {
 
   /**
    * Implements a factorized model which is simply a list of factors;
@@ -138,6 +138,6 @@ namespace prl {
 
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_FACTOR_LIST_MODEL_HPP
+#endif // SILL_FACTOR_LIST_MODEL_HPP

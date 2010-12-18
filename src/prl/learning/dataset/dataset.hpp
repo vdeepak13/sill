@@ -1,6 +1,6 @@
 
-#ifndef PRL_DATASET_HPP
-#define PRL_DATASET_HPP
+#ifndef SILL_DATASET_HPP
+#define SILL_DATASET_HPP
 
 #include <string>
 #include <vector>
@@ -9,17 +9,17 @@
 #include <boost/iterator.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <prl/base/assignment.hpp>
-#include <prl/base/stl_util.hpp>
-#include <prl/datastructure/dense_table.hpp>
-#include <prl/learning/dataset/datasource.hpp>
-#include <prl/learning/dataset/record.hpp>
-#include <prl/math/matrix.hpp>
-#include <prl/range/algorithm.hpp>
-#include <prl/range/concepts.hpp>
-#include <prl/range/forward_range.hpp>
+#include <sill/base/assignment.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/datastructure/dense_table.hpp>
+#include <sill/learning/dataset/datasource.hpp>
+#include <sill/learning/dataset/record.hpp>
+#include <sill/math/matrix.hpp>
+#include <sill/range/algorithm.hpp>
+#include <sill/range/concepts.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 /**
  * \file dataset.hpp This specifies a base class for datasets.
@@ -45,7 +45,7 @@
  *    - assignment_dataset (MutableDataset)
  */
 
-namespace prl {
+namespace sill {
 
   /**
    * A base class for datasets.
@@ -501,7 +501,7 @@ namespace prl {
     record operator[](size_t i) const;
 
     //! Load datapoint i into assignment a
-    virtual void load_assignment(size_t i, prl::assignment& a) const = 0;
+    virtual void load_assignment(size_t i, sill::assignment& a) const = 0;
 
     //! Element access which does range checking
     //! Note: use records() for more efficient record access.
@@ -827,8 +827,8 @@ namespace prl {
   //! Writes a human-readable representation of the dataset.
   std::ostream& operator<<(std::ostream& out, const dataset& data);
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

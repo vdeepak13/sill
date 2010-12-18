@@ -1,13 +1,13 @@
 
 #include <fstream>
 
-#include <prl/base/string_functions.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/learning/dataset/symbolic.hpp>
+#include <sill/base/string_functions.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/learning/dataset/symbolic.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   namespace symbolic {
 
@@ -422,6 +422,6 @@ namespace prl {
     return params;
   }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

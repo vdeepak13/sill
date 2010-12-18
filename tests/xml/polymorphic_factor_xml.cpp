@@ -1,15 +1,15 @@
-#include <prl/factor/xml/any_factor.hpp>
-#include <prl/factor/xml/constant_factor.hpp>
-#include <prl/factor/xml/table_factor.hpp>
+#include <sill/factor/xml/any_factor.hpp>
+#include <sill/factor/xml/constant_factor.hpp>
+#include <sill/factor/xml/table_factor.hpp>
 
-#include <prl/archive/xml_ofarchive.hpp>
-#include <prl/archive/xml_iarchive.hpp>
+#include <sill/archive/xml_ofarchive.hpp>
+#include <sill/archive/xml_iarchive.hpp>
 
 int main()
 {
-  using namespace prl;
+  using namespace sill;
 
-  typedef prl::any_factor<double> polymorphic;
+  typedef sill::any_factor<double> polymorphic;
   polymorphic::register_factor< tablef >();
   polymorphic::register_factor< constant_factor >();
 

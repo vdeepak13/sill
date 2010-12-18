@@ -15,8 +15,8 @@
 // License along with this library; if not, write to the Free Software
 // Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-#ifndef PRL_SPARSE_TABLE_HPP
-#define PRL_SPARSE_TABLE_HPP
+#ifndef SILL_SPARSE_TABLE_HPP
+#define SILL_SPARSE_TABLE_HPP
 
 #include <utility>
 #include <algorithm>
@@ -31,20 +31,20 @@
 #include <boost/bind.hpp>
 #include <boost/range.hpp>
 
-#include <prl/global.hpp>
-#include <prl/datastructure/table.hpp>
-#include <prl/functional.hpp>
-#include <prl/range/numeric.hpp>
+#include <sill/global.hpp>
+#include <sill/datastructure/table.hpp>
+#include <sill/functional.hpp>
+#include <sill/range/numeric.hpp>
 
-#include <prl/stl_concepts.hpp>
+#include <sill/stl_concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 ////////////////////////////////////////////////////////////////////
 // Needs clean-up
 ///////////////////////////////////////////////////////////////////
 
-namespace prl {
+namespace sill {
 
 
   //! The type used to represent table arity (number of dimensions).
@@ -73,7 +73,7 @@ namespace prl {
    *
    */
   typedef std::vector<table_size_t,
-                      prl::pre_allocator<table_size_t, 4>
+                      sill::pre_allocator<table_size_t, 4>
                      > v_table_index;
 
   /**
@@ -93,7 +93,7 @@ namespace prl {
   //! \todo could refactor dense_table and sparse_table to bring the
   //! common functions including this one into a base class
   inline table_size_t table_size(const table_geometry& geometry) {
-    return prl::accumulate(geometry, 1, std::multiplies<size_t>());
+    return sill::accumulate(geometry, 1, std::multiplies<size_t>());
   }
 
   // The following definition uses the standard allocator:
@@ -131,7 +131,7 @@ namespace prl {
     typedef std::size_t size_type;
 
     //! The type used to represent the shape and indices.
-    typedef std::vector<size_type, prl::pre_allocator<size_type,4> > shape_type;
+    typedef std::vector<size_type, sill::pre_allocator<size_type,4> > shape_type;
 
     //! The type used to represent the number of dimensions.
     typedef typename shape_type::size_type arity_type;
@@ -441,7 +441,7 @@ namespace prl {
      * @return a const reference to the element indexed by i
      */
     inline element get(const v_table_index& i) const {
-#ifdef PRL_SANITY_CHECK
+#ifdef SILL_SANITY_CHECK
       assert(i.size() == arity());
       for (table_arity_t dim = 0; dim < arity(); ++dim) {
         assert(i[dim] >= 0);
@@ -475,7 +475,7 @@ namespace prl {
      * @param elt the new value associated with this index
      */
     inline void set(const v_table_index& i, element elt) {
-#ifdef PRL_SANITY_CHECK
+#ifdef SILL_SANITY_CHECK
       assert(i.size() == arity());
       for (table_arity_t dim = 0; dim < arity(); ++dim) {
         assert(i[dim] >= 0);
@@ -517,7 +517,7 @@ namespace prl {
     }
 
     inline element& operator()(const v_table_index& i) {
-#ifdef PRL_SANITY_CHECK
+#ifdef SILL_SANITY_CHECK
       assert(i.size() == arity());
       for (table_arity_t dim = 0; dim < arity(); ++dim) {
         assert(i[dim] >= 0);
@@ -1951,10 +1951,10 @@ namespace prl {
 
 } // end of namespace: prl
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#ifdef PRL_DENSE_TABLE_HPP
-#include <prl/datastructure/dense_and_sparse_table.hpp>
-#endif // #ifdef PRL_DENSE_TABLE_HPP
+#ifdef SILL_DENSE_TABLE_HPP
+#include <sill/datastructure/dense_and_sparse_table.hpp>
+#endif // #ifdef SILL_DENSE_TABLE_HPP
 
-#endif // #ifndef PRL_SPARSE_TABLE_HPP
+#endif // #ifndef SILL_SPARSE_TABLE_HPP

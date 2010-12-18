@@ -1,9 +1,9 @@
-#ifndef PRL_STL_CONCEPTS
-#define PRL_STL_CONCEPTS
+#ifndef SILL_STL_CONCEPTS
+#define SILL_STL_CONCEPTS
 
 #include <boost/concept_check.hpp>
 
-namespace prl {
+namespace sill {
   using boost::Integer;
   using boost::SignedInteger;
   using boost::UnsignedInteger;
@@ -61,6 +61,6 @@ namespace prl {
     boost::UniqueAssociativeContainer<C>,
     boost::PairAssociativeContainer<C> { };
 
-}  // namespace prl
+}  // namespace sill
 
 #endif

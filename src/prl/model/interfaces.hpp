@@ -1,17 +1,17 @@
-#ifndef PRL_GRAPHICAL_MODEL_HPP
-#define PRL_GRAPHICAL_MODEL_HPP
+#ifndef SILL_GRAPHICAL_MODEL_HPP
+#define SILL_GRAPHICAL_MODEL_HPP
 #include <map>
 
-#include <prl/global.hpp>
-#include <prl/math/logarithmic.hpp>
-#include <prl/factor/concepts.hpp>
-#include <prl/model/markov_graph.hpp>
+#include <sill/global.hpp>
+#include <sill/math/logarithmic.hpp>
+#include <sill/factor/concepts.hpp>
+#include <sill/model/markov_graph.hpp>
 
-#include <prl/range/forward_range.hpp>
+#include <sill/range/forward_range.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup model
   //! @{
@@ -81,7 +81,7 @@ namespace prl {
 
     //! Returns a minimal markov graph that captures the dependencies
     //! in this model
-    virtual prl::markov_graph<variable_type*> markov_graph() const = 0;
+    virtual sill::markov_graph<variable_type*> markov_graph() const = 0;
 
     //! Determines whether x and y are separated, given z
     virtual bool
@@ -91,8 +91,8 @@ namespace prl {
 
   //! @} group model
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

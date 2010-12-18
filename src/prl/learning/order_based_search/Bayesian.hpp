@@ -2,18 +2,18 @@
  * \file Bayesian.hpp Teyssier and Koller Order-Based Search Interface
  */
 
-#ifndef PRL_STRUCTURE_SEARCH_ORDER_BASED_BAYESIAN_HPP
-#define PRL_STRUCTURE_SEARCH_ORDER_BASED_BAYESIAN_HPP
+#ifndef SILL_STRUCTURE_SEARCH_ORDER_BASED_BAYESIAN_HPP
+#define SILL_STRUCTURE_SEARCH_ORDER_BASED_BAYESIAN_HPP
 
 #include <iostream>
 
 #include <cmath>
-#include <prl/learning/order_based_search/Classes.hpp>
-#include <prl/learning/order_based_search/Liste.hpp>
-#include <prl/learning/order_based_search/constants.hpp>
-#include <prl/model/bayesian_graph.hpp>
+#include <sill/learning/order_based_search/Classes.hpp>
+#include <sill/learning/order_based_search/Liste.hpp>
+#include <sill/learning/order_based_search/constants.hpp>
+#include <sill/model/bayesian_graph.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
 char set[26][256] = {"linear.net",
 					"alarm3.net",
@@ -789,13 +789,13 @@ void GreedyDataTimeAnalyse(int g, int timelimit, int nb_iter, int nb_iterstat, i
  * @todo Change this so that it returns the Bayes net model, not just the
  *       model's structure.
  */
-prl::bayesian_graph<prl::finite_variable*>
-GreedyAnalyse(const prl::assignment_dataset& trainStatsDS,
-              const prl::assignment_dataset& testStatsDS,
+sill::bayesian_graph<sill::finite_variable*>
+GreedyAnalyse(const sill::assignment_dataset& trainStatsDS,
+              const sill::assignment_dataset& testStatsDS,
               int timelimit, int search_depth, int deviation,
               int tabu_size, int rmin, int numCandidates,
               int maxParent) {
-  using namespace prl;
+  using namespace sill;
   Statistics	*stats1;
   Statistics	*stats2;
   GreedySearch *search;
@@ -833,6 +833,6 @@ GreedyAnalyse(const prl::assignment_dataset& trainStatsDS,
   return bg;
 }
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // PRL_STRUCTURE_SEARCH_ORDER_BASED_BAYESIAN_HPP
+#endif // SILL_STRUCTURE_SEARCH_ORDER_BASED_BAYESIAN_HPP

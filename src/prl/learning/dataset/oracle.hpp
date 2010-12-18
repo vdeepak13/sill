@@ -1,17 +1,17 @@
 
-#ifndef PRL_ORACLE_HPP
-#define PRL_ORACLE_HPP
+#ifndef SILL_ORACLE_HPP
+#define SILL_ORACLE_HPP
 
 // Note: Include dataset.hpp because of an issue with record_iterator being
 //  within the dataset class, and record requiring dataset being defined so
 //  that record_iterator may be declared a friend.  This could be fixed by
 //  moving record_iterator to outside of the dataset class.
-#include <prl/learning/dataset/dataset.hpp>
-#include <prl/copy_ptr.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+#include <sill/copy_ptr.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * Data oracle interface.
@@ -92,8 +92,8 @@ namespace prl {
 
   }; // class oracle
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
-#endif // #ifndef PRL_ORACLE_HPP
+#endif // #ifndef SILL_ORACLE_HPP

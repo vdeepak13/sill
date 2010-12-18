@@ -1,20 +1,20 @@
-#ifndef PRL_NAMED_UNIVERSE_HPP
-#define PRL_NAMED_UNIVERSE_HPP
+#ifndef SILL_NAMED_UNIVERSE_HPP
+#define SILL_NAMED_UNIVERSE_HPP
 
 #include <string>
 #include <stdexcept>
 
 #include <boost/unordered_set.hpp>
 
-#include <prl/global.hpp>
-#include <prl/map.hpp>
-#include <prl/base/universe.hpp>
-#include <prl/base/process.hpp>
-#include <prl/base/concepts.hpp>
+#include <sill/global.hpp>
+#include <sill/map.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/base/process.hpp>
+#include <sill/base/concepts.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   /**
    * A class that stores variables by name. When the user requests
@@ -142,8 +142,8 @@ namespace prl {
 
   }; // class named_universe
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

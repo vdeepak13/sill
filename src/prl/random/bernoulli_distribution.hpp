@@ -1,10 +1,10 @@
-#ifndef PRL_BERNOULLI_DISTRIBUTION_HPP
-#define PRL_BERNOULLI_DISTRIBUTION_HPP
+#ifndef SILL_BERNOULLI_DISTRIBUTION_HPP
+#define SILL_BERNOULLI_DISTRIBUTION_HPP
 
 #include <cassert>
 #include <iosfwd>
 
-namespace prl {
+namespace sill {
 
   /**
    * Bernoulli distribution: p(true) = p, p(false) = 1-p;
@@ -53,6 +53,6 @@ namespace prl {
   
   }; // class bernoulli_distribution
 
-} // namespace prl
+} // namespace sill
 
 #endif

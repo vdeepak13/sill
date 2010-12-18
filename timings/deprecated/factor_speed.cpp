@@ -6,16 +6,16 @@
 #include <boost/timer.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <prl/factor/table_factor.hpp>
-#include <prl/factor/fixed_factors.hpp>
-#include <prl/factor/random.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/factor/fixed_factors.hpp>
+#include <sill/factor/random.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
 
 const size_t n = 10;
-std::vector< prl::tablef > tf(n);
-std::vector< prl::binary_factor<10> > bf(n);
-std::vector< prl::unary_factor<10> > uf(n);
+std::vector< sill::tablef > tf(n);
+std::vector< sill::binary_factor<10> > bf(n);
+std::vector< sill::unary_factor<10> > uf(n);
 
 
 template <typename Factor, typename Tag>
@@ -44,7 +44,7 @@ double testall(size_t m, Tag tag) {
 
 int main(int argc, char** argv) {
 
-  using namespace prl;
+  using namespace sill;
   using namespace std;
 
   boost::mt19937 rng;

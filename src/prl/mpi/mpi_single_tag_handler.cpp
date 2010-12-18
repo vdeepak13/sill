@@ -24,11 +24,11 @@
 #include <cassert>
 #include <cstring>
 
-#include <prl/mpi/mpi_single_tag_handler.hpp>
+#include <sill/mpi/mpi_single_tag_handler.hpp>
 
 
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
 
   /////////////////////////////////////////////////////////////////////////////
@@ -487,4 +487,4 @@ namespace prl {
   }
 
 }
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

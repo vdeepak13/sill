@@ -1,8 +1,8 @@
-#include <prl/learning/discriminative/logistic_regression.hpp>
+#include <sill/learning/discriminative/logistic_regression.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
     // Protected methods
     //==========================================================================
@@ -335,6 +335,6 @@ namespace prl {
       return true;
     }
 
-} // namespace prl
+} // namespace sill
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>

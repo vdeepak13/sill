@@ -6,12 +6,12 @@
 
 #include <mpi.h>
 
-#include <prl/factors/table_factor.hpp>
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/datastructures/mutable_queue.hpp>
+#include <sill/factors/table_factor.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/datastructures/mutable_queue.hpp>
 
 using namespace std;
-using namespace prl;
+using namespace sill;
 
 // typedefs
  

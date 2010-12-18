@@ -19,20 +19,20 @@
 #include <mpi.h>
 
 // PRL Includes
-#include <prl/model/factor_graph_model.hpp>
-#include <prl/factor/table_factor.hpp>
-#include <prl/mpi/mpi_wrapper.hpp>
-#include <prl/parallel/pthread_tools.hpp>
-#include <prl/model/factor_graph_partitioning.hpp>
-#include <prl/serialization/serialize.hpp>
-#include <prl/mpi/mpi_consensus.hpp>
+#include <sill/model/factor_graph_model.hpp>
+#include <sill/factor/table_factor.hpp>
+#include <sill/mpi/mpi_wrapper.hpp>
+#include <sill/parallel/pthread_tools.hpp>
+#include <sill/model/factor_graph_partitioning.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/mpi/mpi_consensus.hpp>
 
 // Should eventually define these elsewhere
 
 
 // This include should always be last
-#include <prl/macros_def.hpp>
-namespace prl {
+#include <sill/macros_def.hpp>
+namespace sill {
 
   
   /**
@@ -709,6 +709,6 @@ namespace prl {
 
 
 }; // end of namespace
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif // MPI_ADAPTER2

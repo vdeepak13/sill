@@ -1,5 +1,5 @@
-#ifndef PRL_BELIEF_PROPAGATION_HPP
-#define PRL_BELIEF_PROPAGATION_HPP
+#ifndef SILL_BELIEF_PROPAGATION_HPP
+#define SILL_BELIEF_PROPAGATION_HPP
 
 #include <vector>
 #include <algorithm>
@@ -12,15 +12,15 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/exponential_distribution.hpp>
 
-#include <prl/global.hpp>
-#include <prl/factor/norms.hpp>
-#include <prl/factor/random.hpp>
+#include <sill/global.hpp>
+#include <sill/factor/norms.hpp>
+#include <sill/factor/random.hpp>
 
-#include <prl/datastructure/mutable_queue.hpp>
+#include <sill/datastructure/mutable_queue.hpp>
 
-#include <prl/macros_def.hpp>
+#include <sill/macros_def.hpp>
 
-namespace prl {
+namespace sill {
 
   //! \addtogroup inference
   //! @{
@@ -600,9 +600,9 @@ namespace prl {
 
   //! @}
 
-} // namespace prl
+} // namespace sill
 
 
-#include <prl/macros_undef.hpp>
+#include <sill/macros_undef.hpp>
 
 #endif

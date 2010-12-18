@@ -1,5 +1,5 @@
-#ifndef PRL_MATH_UBLAS_INVERSE_HPP
-#define PRL_MATH_UBLAS_INVERSE_HPP
+#ifndef SILL_MATH_UBLAS_INVERSE_HPP
+#define SILL_MATH_UBLAS_INVERSE_HPP
 
 #include <boost/numeric/bindings/lapack/posv.hpp>
 
