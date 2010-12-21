@@ -45,7 +45,7 @@ namespace sill {
     hybrid_opt_vector(const hybrid_opt_vector& other)
       : sub_ov_ptrs(other.sub_ov_ptrs.size(), NULL), own_data_(true) {
       for (size_t i(0); i < other.sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i] = new SubOptVector(other.sub_ov_ptrs[i]);
+        sub_ov_ptrs[i] = new SubOptVector(*(other.sub_ov_ptrs[i]));
     }
 
     //! Assignment operator.  The copy owns its data.

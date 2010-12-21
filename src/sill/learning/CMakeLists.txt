@@ -20,7 +20,7 @@ set(PRL_LEARNING_SOURCES
   decomposable_parameter_learner
   em_mog
   error_measures
-  #learn_crf_factor
+  learn_crf_factor
   learn_factor
   parameter_grid
   PARENT_SCOPE)
