@@ -1,5 +1,5 @@
-#include <sill/random/multinomial_distribution.hpp>
 #include <sill/math/linear_algebra.hpp>
+#include <sill/math/multinomial_distribution.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
 

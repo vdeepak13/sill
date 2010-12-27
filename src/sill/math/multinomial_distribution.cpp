@@ -1,8 +1,9 @@
 #include <iostream>
 #include <cmath>
 #include <cassert>
-#include <sill/random/multinomial_distribution.hpp>
+
 #include <sill/math/linear_algebra.hpp>
+#include <sill/math/multinomial_distribution.hpp>
 
 namespace sill {
 

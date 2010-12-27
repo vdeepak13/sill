@@ -21,7 +21,6 @@ subdirs(
   mpi
   optimization
   parsers
-  random
   synthetic_data
   threading
   serialization

@@ -1,2 +1,0 @@
-link_libraries(itpp)
-add_executable(multinomial_distribution multinomial_distribution)

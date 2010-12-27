@@ -4,5 +4,6 @@ set(PRL_MATH_SOURCES
   linear_algebra
   statistics
   function/logistic_discrete
+  multinomial_distribution
   PARENT_SCOPE
 )
