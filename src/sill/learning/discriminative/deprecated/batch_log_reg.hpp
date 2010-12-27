@@ -11,7 +11,6 @@
 #include <sill/learning/discriminative/binary_classifier.hpp>
 #include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -256,7 +255,7 @@ namespace sill {
         const vec& vecdata = rec.vector();
         for (size_t j = 0; j < w_vec.size(); ++j)
           v += w_vec[j] * vecdata[j];
-        double bin_label = binary_label(findata[class_variable_index]);
+        double bin_label = (findata[class_variable_index] > 0 ? 1 : -1);
         v = ds.weight(i) * eta * bin_label / (1. + exp(bin_label * v));
         // update weights
         for (size_t j = 0; j < finite_indices.size(); ++j) {
@@ -305,7 +304,7 @@ namespace sill {
           const vec& vecdata = rec.vector();
           for (size_t j = 0; j < w_vec.size(); ++j)
             v += w_vec[j] * vecdata[j];
-          double bin_label = binary_label(findata[class_variable_index]);
+          double bin_label = (findata[class_variable_index] > 0 ? 1 : -1);
           train_acc += ( (v > 0) ^ (bin_label == -1) ? ds.weight(i) : 0);
           train_log_like -= ds.weight(i) * log(1. + exp(-bin_label * v));
           if (train_log_like == -std::numeric_limits<double>::infinity())

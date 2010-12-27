@@ -15,7 +15,6 @@
 #include <sill/learning/discriminative/booster.hpp>
 #include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/learning/discriminative/load_functions.hpp>
 
 #include <sill/macros_def.hpp>

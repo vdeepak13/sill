@@ -9,7 +9,6 @@
 #include <sill/learning/dataset/ds_oracle.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/math/linear_algebra.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/optimization/conjugate_gradient.hpp>

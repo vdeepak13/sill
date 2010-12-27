@@ -13,7 +13,6 @@
 #include <sill/learning/discriminative/booster.hpp>
 #include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/learning/discriminative/tree_sampler.hpp>
 #include <sill/stl_io.hpp>

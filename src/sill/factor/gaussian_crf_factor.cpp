@@ -188,8 +188,8 @@ namespace sill {
   double gaussian_crf_factor::logv(const assignment_type& a) const {
     vec y(ov.C.size1(), 0);
     vec x(ov.C.size2(), 0);
-    assignment2vector(y, Y_, a);
-    assignment2vector(x, X_, a);
+    vector_assignment2vector(a, Y_, y);
+    vector_assignment2vector(a, X_, x);
     y = (ov.A * y) - ov.b - (ov.C * x);
     return (-.5) * inner_prod(y, y);
   }
@@ -205,7 +205,7 @@ namespace sill {
   const canonical_gaussian&
   gaussian_crf_factor::condition(const vector_assignment& a) const {
     vec x(ov.C.size2(), 0);
-    assignment2vector(x, X_, a);
+    vector_assignment2vector(a, X_, x);
     return condition(x);
   }
 

@@ -10,7 +10,6 @@
 #include <sill/datastructure/concepts.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
 #include <sill/learning/discriminative/concepts.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/learning/discriminative/load_functions.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>

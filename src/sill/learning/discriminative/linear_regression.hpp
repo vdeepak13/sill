@@ -5,8 +5,8 @@
 #include <sill/base/variable_type_group.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset/record_conversions.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/math/linear_algebra.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/optimization/conjugate_gradient.hpp>
@@ -965,14 +965,14 @@ namespace sill {
     //! Predict the output values y for a new example x.
     //! The values are in the order returned by Yvector().
     vec predict(const record& example) const {
-      record2vector(tmpx, Xvec, example);
+      vector_record2vector(example, Xvec, tmpx);
       return (weights_.A * tmpx + weights_.b);
     }
 
     //! Predict the output values y for a new example x.
     //! The values are in the order returned by Yvector().
     vec predict(const assignment& example) const {
-      assignment2vector(tmpx, Xvec, example);
+      vector_assignment2vector(example, Xvec, tmpx);
       return (weights_.A * tmpx + weights_.b);
     }
 
@@ -985,7 +985,7 @@ namespace sill {
       size_t i(0);
       vec tmpy(Yvec_size, 0.);
       foreach(const record& r, testds.records()) {
-        record2vector(tmpy, Yvec, r);
+        vector_record2vector(r, Yvec, tmpy);
         tmpy -= predict(r);
         double tmpval(testds.weight(i) * inner_prod(tmpy, tmpy));
         totalw += testds.weight(i);
@@ -1019,7 +1019,7 @@ namespace sill {
       size_t i(0);
       vec tmpy(Yvec_size, 0.);
       foreach(const record& r, testds.records()) {
-        record2vector(tmpy, Yvec, r);
+        vector_record2vector(r, Yvec, tmpy);
         tmpy -= predict(r);
         double tmpval(inner_prod(tmpy, tmpy));
         errors[i] = tmpval;

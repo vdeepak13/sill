@@ -5,6 +5,7 @@
 #include <sill/learning/dataset/record_conversions.hpp>
 #include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
 #include <sill/math/free_functions.hpp>
+#include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -566,7 +567,7 @@ namespace sill {
       label_marginal(fy.marginal(make_domain<finite_variable>(label_)));
     finite_assignment tmpa;
     vec r_vector(grad.v.size2());
-    vector_assignment2record(a.vector(), r_vector, vector_seq);
+    vector_assignment2vector(a.vector(), vector_seq, r_vector);
     for (size_t label_val(0); label_val < nclasses_; ++label_val) {
       tmpa[label_] = label_val;
       double label_prob(label_marginal(tmpa));

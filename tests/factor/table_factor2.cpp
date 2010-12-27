@@ -55,7 +55,7 @@ int main() {
   fa_vars.push_back(vars3[0]);
   fa_vars.push_back(vars3[1]);
   std::vector<size_t> fr_data;
-  finite_assignment2record(fa, fr_data, fa_vars);
+  finite_assignment2vector(fa, fa_vars, fr_data);
   finite_record fr(fa_vars);
   fr.set_finite_val(fr_data);
 

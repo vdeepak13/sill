@@ -6,9 +6,22 @@
 namespace sill {
 
   void
-  finite_assignment2record(const finite_assignment& fa,
-                           std::vector<size_t>& findata,
-                           const finite_var_vector& finite_seq) {
+  vector_record2vector(const vector_record& r, const vector_var_vector& vars,
+                       vec& vals) {
+    vals.resize(vector_size(vars));
+    size_t i(0); // index into vals
+    foreach(vector_variable* v, vars) {
+      for (size_t j(0); j < v->size(); ++j) {
+        vals[i] = r.vector(v, j);
+        ++i;
+      }
+    }
+  }
+
+  void
+  finite_assignment2vector(const finite_assignment& fa,
+                           const finite_var_vector& finite_seq,
+                           std::vector<size_t>& findata) {
     if (findata.size() != finite_seq.size())
       findata.resize(finite_seq.size());
     finite_assignment::const_iterator fa_end(fa.end());
@@ -20,23 +33,22 @@ namespace sill {
   }
 
   void
-  vector_assignment2record(const vector_assignment& va,
-                           vec& vecdata,
-                           const vector_var_vector& vector_seq) {
+  vector_assignment2vector(const vector_assignment& va,
+                           const vector_var_vector& vector_seq,
+                           vec& vecdata) {
+    vecdata.resize(vector_size(vector_seq));
     size_t k(0); // index into vecdata
     vector_assignment::const_iterator va_end = va.end();
-    for (size_t i(0); i < vector_seq.size(); i++) {
-      vector_assignment::const_iterator it(va.find(vector_seq[i]));
-      assert(it != va_end);
+    foreach(vector_variable* v, vector_seq) {
+      vector_assignment::const_iterator it(va.find(v));
+      if (it == va_end) {
+        throw std::runtime_error("vector_assignment2vector given vector_seq with variables not appearing in given assignment.");
+      }
       const vec& tmpvec = it->second;
-      if (k + vector_seq[i]->size() > vecdata.size())
-        vecdata.resize(k + vector_seq[i]->size(), true);
-      for (size_t j(0); j < vector_seq[i]->size(); j++)
+      for (size_t j(0); j < v->size(); j++)
         vecdata[k + j] = tmpvec[j];
-      k += vector_seq[i]->size();
+      k += v->size();
     }
-    if (vecdata.size() > k)
-      vecdata.resize(k, true);
   }
 
   void fill_record_with_assignment(record& r, const assignment& a,

@@ -10,7 +10,6 @@
 #include <boost/random/uniform_real.hpp>
 
 #include <sill/learning/discriminative/concepts.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>

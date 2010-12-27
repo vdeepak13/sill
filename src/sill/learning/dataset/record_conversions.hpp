@@ -8,15 +8,23 @@
 namespace sill {
 
   /**
+   * Sets the vals vector to be the values for the variables vars
+   * in the given record.
+   */
+  void
+  vector_record2vector(const vector_record& r, const vector_var_vector& vars,
+                       vec& vals);
+
+  /**
    * Converts the given finite assignment into finite record data.
    * @param fa          Source data.
    * @param findata     Target data.
    * @param finite_seq  Finite variable ordering used for findata.
    */
   void
-  finite_assignment2record(const finite_assignment& fa,
-                           std::vector<size_t>& findata,
-                           const finite_var_vector& finite_seq);
+  finite_assignment2vector(const finite_assignment& fa,
+                           const finite_var_vector& finite_seq,
+                           std::vector<size_t>& findata);
 
   /**
    * Converts the given vector assignment into vector record data.
@@ -25,9 +33,9 @@ namespace sill {
    * @param vector_seq  Vector variable ordering used for vecdata.
    */
   void
-  vector_assignment2record(const vector_assignment& va,
-                           vec& vecdata,
-                           const vector_var_vector& vector_seq);
+  vector_assignment2vector(const vector_assignment& va,
+                           const vector_var_vector& vector_seq,
+                           vec& vecdata);
 
   /**
    * Fills the data in a record with data from the given assignment,

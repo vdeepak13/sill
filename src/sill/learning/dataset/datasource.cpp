@@ -94,13 +94,13 @@ namespace sill {
   void datasource::
   convert_finite_assignment2record(const finite_assignment& fa,
                                    std::vector<size_t>& findata) const {
-    finite_assignment2record(fa, findata, finite_seq);
+    finite_assignment2vector(fa, finite_seq, findata);
   }
 
   void datasource::
   convert_vector_assignment2record(const vector_assignment& va,
                                    vec& vecdata) const {
-    vector_assignment2record(va, vecdata, vector_seq);
+    vector_assignment2vector(va, vector_seq, vecdata);
   }
 
   void datasource::add_finite_variable(finite_variable* v, bool make_class) {

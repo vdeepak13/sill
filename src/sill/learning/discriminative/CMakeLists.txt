@@ -1,7 +1,6 @@
 set(PRL_DISCRIMINATIVE_SOURCES
   all_pairs_batch
   classifier_cascade
-  free_functions
   load_functions
   logistic_regression
   multiclass2multilabel

@@ -9,7 +9,6 @@
 #include <sill/learning/crossval_methods.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/learning/parameter_grid.hpp>
 #include <sill/math/free_functions.hpp>
 #include <sill/math/is_finite.hpp>

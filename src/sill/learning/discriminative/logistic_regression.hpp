@@ -8,7 +8,6 @@
 #include <sill/learning/dataset/ds_oracle.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>

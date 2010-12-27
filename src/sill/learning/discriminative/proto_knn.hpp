@@ -9,7 +9,6 @@
 #include <sill/learning/discriminative/binary_classifier.hpp>
 #include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/learning/discriminative/tree_sampler.hpp>
 #include <sill/math/free_functions.hpp>
 #include <sill/math/matrix.hpp>

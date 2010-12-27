@@ -10,7 +10,6 @@
 #include <sill/base/vector_variable.hpp>
 #include <sill/learning/dataset/record.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
-#include <sill/learning/discriminative/free_functions.hpp>
 #include <sill/learning/object_detection/image.hpp>
 #include <sill/math/free_functions.hpp>
 #include <sill/stl_io.hpp>

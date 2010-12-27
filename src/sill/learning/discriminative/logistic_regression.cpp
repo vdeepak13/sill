@@ -89,7 +89,7 @@ namespace sill {
         double v(confidence(rec));
         const std::vector<size_t>& findata = rec.finite();
         const vec& vecdata = rec.vector();
-        double bin_label = binary_label(findata[label_index_]);
+        double bin_label = (findata[label_index_] > 0 ? 1 : -1);
         train_acc += ((v > 0) ^ (bin_label == -1) ? ds.weight(i) : 0);
         train_log_like -= ds.weight(i) * std::log(1. + exp(-bin_label * v));
         if (train_log_like == -std::numeric_limits<double>::infinity())
@@ -154,7 +154,7 @@ namespace sill {
       double v(confidence(rec));
       const std::vector<size_t>& findata = rec.finite();
       const vec& vecdata = rec.vector();
-      double bin_label = binary_label(findata[label_index_]);
+      double bin_label = (findata[label_index_] > 0 ? 1 : -1);
       train_acc += ((v > 0) ^ (bin_label == -1) ? ex_weight : 0);
       train_log_like -= ex_weight * std::log(1. + exp(-bin_label * v));
       v = ex_weight * bin_label / (1. + exp(bin_label * v));

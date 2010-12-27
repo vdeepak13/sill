@@ -13,10 +13,10 @@
 
 namespace sill {
 
-  // forward declarations
-  double binary_label(double label);
-
   namespace boosting {
+
+    //! Return +1 if label > 0, else -1
+    inline double binary_label(double label) { return (label > 0 ? 1 : -1); }
 
     /////////////////////// OPTIMIZATION OBJECTIVES /////////////////////////
     // These classes define methods for computing weights for weak hypotheses,
