@@ -8,7 +8,7 @@
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/learn_factor.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/model/decomposable.hpp>
 

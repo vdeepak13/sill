@@ -1,5 +1,7 @@
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/math/operations.hpp>
+#include <sill/math/permutations.hpp>
 
 #include <sill/macros_def.hpp>
 

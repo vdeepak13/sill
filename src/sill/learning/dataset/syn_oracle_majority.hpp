@@ -7,7 +7,6 @@
 #include <boost/random/uniform_real.hpp>
 
 #include <sill/learning/dataset/oracle.hpp>
-#include <sill/math/free_functions.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -101,23 +100,6 @@ namespace sill {
 
     // Private methods
     //==========================================================================
-
-    /*
-    //! Returns a permutation of 0,...,n-1
-    std::vector<size_t> randperm(size_t n) {
-      std::vector<size_t> perm(n,0);
-      for (size_t i = 0; i < n; ++i)
-        perm[i] = i;
-      for (size_t i = 0; i < n-1; ++i) {
-        size_t j = (size_t)(floor(uniform_prob(rng) * (n-i))) + i;
-        j = (j == n ? n-1 : j);
-        size_t tmp = perm[i];
-        perm[i] = perm[j];
-        perm[j] = tmp;
-      }
-      return perm;
-    }
-    */
 
     //! Initialize the oracle
     void init();

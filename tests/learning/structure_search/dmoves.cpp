@@ -15,7 +15,7 @@
 #include <sill/learning/structure_search/dmove_move_leaf.hpp>
 #include <sill/learning/structure_search/dmove_push_back_subtree.hpp>
 #include <sill/learning/structure_search/dmove_swap_variables.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>

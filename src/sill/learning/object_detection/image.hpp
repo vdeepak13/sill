@@ -5,7 +5,6 @@
 #include <map>
 
 #include <sill/learning/dataset/data_loader.hpp>
-#include <sill/math/free_functions.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>

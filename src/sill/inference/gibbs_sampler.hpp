@@ -8,7 +8,7 @@
 #include <sill/base/finite_assignment.hpp>
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/model/interfaces.hpp>
 
 //#include <sill/range/transformed.hpp>

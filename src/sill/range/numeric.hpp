@@ -7,6 +7,7 @@
 #include <boost/range/end.hpp>
 
 #include <sill/global.hpp>
+#include <sill/math/operations.hpp>
 
 #include <sill/macros_def.hpp>
 

@@ -1,4 +1,4 @@
-#include <sill/math/math.hpp>
+#include <sill/math/operations.hpp>
 
 #include <sill/variable.hpp>
 #include <sill/model/markov_network.hpp>

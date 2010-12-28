@@ -10,7 +10,7 @@
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/learning/learn_factor.hpp>
 #include <sill/math/constants.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 
 #include <sill/macros_def.hpp>
 

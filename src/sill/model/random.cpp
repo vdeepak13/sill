@@ -1,5 +1,5 @@
 
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>

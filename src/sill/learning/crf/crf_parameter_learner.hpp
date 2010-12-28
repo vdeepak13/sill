@@ -10,7 +10,7 @@
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
 #include <sill/learning/parameter_grid.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/math/is_finite.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/model/crf_model.hpp>

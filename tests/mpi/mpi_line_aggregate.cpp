@@ -6,7 +6,7 @@
 #include <sill/mpi/mpi_line_aggregate.hpp>
 #include <sill/functional/add.hpp>
 #include <sill/parallel/pthread_tools.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 
 boost::mt19937 rng;
 

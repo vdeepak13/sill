@@ -8,7 +8,7 @@
 #include <sill/learning/structure_search/decomposable_search.hpp>
 #include <sill/learning/structure_search/entropy_score.hpp>
 #include <sill/learning/structure_search/dmove_push_back_subtree.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/learning/dataset/data_conversions.hpp>

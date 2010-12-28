@@ -4,6 +4,7 @@
 
 #include <sill/learning/discriminative/load_functions.hpp>
 #include <sill/learning/discriminative/multiclass_booster.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/math/statistics.hpp>
 
 #include <sill/macros_def.hpp>

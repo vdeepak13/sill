@@ -3,7 +3,7 @@
 
 #include <sill/learning/discriminative/linear_regression.hpp>
 #include <sill/learning/parameter_grid.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 
 #include <sill/macros_def.hpp>
 

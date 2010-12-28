@@ -11,17 +11,6 @@ namespace sill {
   //! \addtogroup math_free_functions
   //! @{
 
-  //! Square a value.
-  template <typename T> 
-  T sqr(const T& value) { return value*value; }
-
-  //! Round a value to the nearest integer.
-  //! Note *.5 is rounded to *, but -*.5 is rounded to -(*+1).
-  template <typename T>
-  T round(T value) {
-    return ceil(value - .5);
-  }
-
   //! Returns a random permutation of 0,...,n-1.
   //! If 0 < k < n, then this only returns the first k elements of the
   //! permutation.

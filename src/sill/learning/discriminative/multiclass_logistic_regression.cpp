@@ -4,7 +4,7 @@
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/record_conversions.hpp>
 #include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>

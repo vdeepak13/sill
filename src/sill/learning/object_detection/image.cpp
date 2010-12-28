@@ -1,8 +1,9 @@
 #include <map>
 
+#include <sill/base/stl_util.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/learning/object_detection/image.hpp>
-#include <sill/base/stl_util.hpp>
+#include <sill/math/operations.hpp>
 
 #include <sill/macros_def.hpp>
 

@@ -1,4 +1,5 @@
 #include <sill/learning/object_detection/random_windows_oracle.hpp>
+#include <sill/math/operations.hpp>
 
 #include <sill/macros_def.hpp>
 

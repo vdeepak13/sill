@@ -4,7 +4,6 @@
 #include <sill/learning/dataset/oracle.hpp>
 #include <sill/learning/object_detection/image.hpp>
 #include <sill/learning/object_detection/image_oracle.hpp>
-#include <sill/math/free_functions.hpp>
 
 #include <sill/macros_def.hpp>
 

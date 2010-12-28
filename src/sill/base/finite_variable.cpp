@@ -5,7 +5,7 @@
 #include <sill/base/finite_variable.hpp>
 #include <sill/base/finite_assignment_iterator.hpp>
 #include <sill/base/universe.hpp>
-#include <sill/math/free_functions.hpp>
+#include <sill/math/operations.hpp>
 #include <sill/macros_def.hpp>
 
 namespace sill {

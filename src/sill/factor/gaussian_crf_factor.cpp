@@ -5,7 +5,6 @@
 #include <sill/learning/dataset/record_conversions.hpp>
 #include <sill/learning/parameter_grid.hpp>
 #include <sill/math/constants.hpp>
-#include <sill/math/free_functions.hpp>
 
 #include <sill/macros_def.hpp>
 
