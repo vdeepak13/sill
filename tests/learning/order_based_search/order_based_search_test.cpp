@@ -14,9 +14,6 @@
 #include <cmath>
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/model/bayesian_network.hpp>
-#include <sill/model/free_functions.hpp>
-#include <sill/model/markov_network.hpp>
 #include <sill/inference/belief_propagation.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/dataset/data_loader.hpp>
@@ -24,6 +21,9 @@
 #include <sill/learning/order_based_search/Liste.hpp>
 #include <sill/learning/order_based_search/constants.hpp>
 #include <sill/learning/order_based_search/Bayesian.hpp>
+#include <sill/model/bayesian_network.hpp>
+#include <sill/model/markov_network.hpp>
+#include <sill/model/pairwise_mn_conversion.hpp>
 
 #include <sill/macros_def.hpp>
 

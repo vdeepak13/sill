@@ -1,13 +1,15 @@
 
 #ifndef SILL_CHOW_LIU_HPP
 #define SILL_CHOW_LIU_HPP
+
 #include <set>
 
+#include <sill/iterator/transform_output_iterator.hpp>
 #include <sill/learning/crossval_parameters.hpp>
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/learning/learn_factor.hpp>
 #include <sill/model/decomposable.hpp>
-#include <sill/model/free_functions.hpp>
+#include <sill/model/projections.hpp>
 
 #include <sill/macros_def.hpp>
 

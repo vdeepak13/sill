@@ -1,5 +1,5 @@
 set(PRL_MODEL_SOURCES
-  free_functions
+  pairwise_mn_conversion
   random
   random_crf_builder
   PARENT_SCOPE

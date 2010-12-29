@@ -1,14 +1,15 @@
-#include <sill/model/free_functions.hpp>
+
+#include <sill/model/pairwise_mn_conversion.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
 
   std::pair
-  <pairwise_markov_network<table_factor >,
+  <pairwise_markov_network<table_factor>,
    std::map<finite_variable*, std::vector<finite_variable*> > >
   fm2pairwise_markov_network
-  (const factorized_model<table_factor >& fm, universe& u) {
+  (const factorized_model<table_factor>& fm, universe& u) {
     typedef table_factor factor_type;
     typedef factorized_model<factor_type> fm_type;
     typedef pairwise_markov_network<factor_type> pmn_type;
@@ -71,7 +72,7 @@ namespace sill {
     foreach(factor_type f, factor_list)
       pmn.add_factor(f);
     return std::make_pair(pmn, var_mapping);
-  }
+  } // fm2pairwise_markov_network
 
 } // namespace sill
 

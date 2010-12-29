@@ -12,7 +12,6 @@
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/model/crf_model.hpp>
 #include <sill/model/decomposable.hpp>
-#include <sill/model/free_functions.hpp>
 #include <sill/base/stl_util.hpp>
 
 #include <sill/macros_def.hpp>

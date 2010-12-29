@@ -6,7 +6,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/model/bayesian_network.hpp>
-// #include <sill/model/free_functions.hpp>
+// #include <sill/model/projections.hpp>
 #include <sill/model/markov_network.hpp>
 
 /**
