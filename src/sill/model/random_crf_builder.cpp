@@ -71,11 +71,11 @@ namespace sill {
        "")
       ("variance", po::value<double>(&variance)->default_value(1),
        "")
-      ("YYcorrelation", po::value<double>(&YYcorrelation)->default_value(1),
+      ("YYcorrelation", po::value<double>(&YYcorrelation)->default_value(.3),
        "")
-      ("YXcorrelation", po::value<double>(&YXcorrelation)->default_value(1),
+      ("YXcorrelation", po::value<double>(&YXcorrelation)->default_value(.3),
        "")
-      ("XXcorrelation", po::value<double>(&XXcorrelation)->default_value(1),
+      ("XXcorrelation", po::value<double>(&XXcorrelation)->default_value(.3),
        "");
     desc.add(sub_desc3);
 

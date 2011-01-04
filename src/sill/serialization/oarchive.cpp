@@ -13,7 +13,7 @@
     operator<<(a, static_cast<const typedest>(i));      \
     return a;                                           \
   }
-  
+
 #define GENINTSERIALIZE(typesrc)                              \
   oarchive& operator<<(oarchive& a, const typesrc i) {        \
     serialize_64bit_integer(a, static_cast<int64_t>(i));      \

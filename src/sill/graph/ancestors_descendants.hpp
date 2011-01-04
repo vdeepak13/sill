@@ -30,9 +30,21 @@ namespace sill {
     }
     return result;
   }
-  
+
   /**
-   * Returns the descendants
+   * Returns the ancestors for a vertex.
+   * \ingroup graph_algorithms.
+   */
+  template <typename Graph>
+  std::set<typename Graph::vertex> 
+  ancestors(const typename Graph::vertex& v, const Graph& graph) {
+    std::set<typename Graph::vertex> vset;
+    vset.insert(v);
+    return ancestors(vset, graph);
+  }
+
+  /**
+   * Returns the descendants for a set of vertices.
    * \ingroup graph_algorithms
    */
   template <typename Graph>
@@ -51,6 +63,18 @@ namespace sill {
         }
     }
     return result;
+  }
+
+  /**
+   * Returns the descendants for a vertex.
+   * \ingroup graph_algorithms
+   */
+  template <typename Graph>
+  std::set<typename Graph::vertex>
+  descendants(const typename Graph::vertex& v, const Graph& graph) {
+    std::set<typename Graph::vertex> vset;
+    vset.insert(v);
+    return descendants(vset, graph);
   }
 
 }

@@ -330,6 +330,9 @@ namespace sill {
       else
         return *static_cast<edge_property*>(add_edge(u, v).first.m_property);
     }
+
+    //! Returns a null vertex.
+    static vertex null_vertex() { return Vertex(); }
     
     // Modifications
     //==========================================================================
@@ -346,12 +349,14 @@ namespace sill {
     }
 
     /**
-     * Adds an edge to a graph
-     * \todo Do we require here that u and v already exist? 
-     * If not, we have to make sure that the corresponding vertex_property
-     * gets default-initialized (relevant for primitive datatypes).
-     * \todo return true iff the edge exists
-     * \todo this will memory leak if (u,v) already exists
+     * Adds an edge to a graph.
+     *
+     * \todo Do we require here that source and target already exist? 
+     *       If not, we have to make sure that the corresponding vertex_property
+     *       gets default-initialized (relevant for primitive datatypes).
+     * \todo Is this an old comment?  I don't think it is a problem any more:
+     *       This will memory leak if (source,target) already exists.
+     * \todo Make this more efficient by avoiding duplicate hash lookups.
      */
     std::pair<edge, bool>
     add_edge(const vertex& source, const vertex& target,
@@ -363,7 +368,7 @@ namespace sill {
       }
       // Allocate a new block of memory for the edge_property p
       edge_property* p_ptr = new edge_property(p); 
-      // Add the property as a child of u
+      // Add the property as a child of source
       data_map[source].children[target] = p_ptr;
       data_map[target].parents[source]  = p_ptr;
       // Count the edge

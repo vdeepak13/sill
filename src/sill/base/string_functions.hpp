@@ -26,6 +26,19 @@ namespace sill {
     return o.str();
   }
 
+  //! Convert all letters in a string to lowercase in place.
+  void tolower_inplace(std::string& s);
+
+  //! Convert all letters in a string to uppercase in place.
+  void toupper_inplace(std::string& s);
+
+  //! Convert all instances of character a in string s to character b in place.
+  void swap_characters_inplace(std::string& s, char a, char b);
+
+  //! Convert all non-alphanumeric characters in string s to character c,
+  //! in place.
+  void nonalnum_to_c_inplace(std::string& s, char c);
+
   /**
    * Concatenate the given vector of values (using operator<< to print them),
    * with sep separating them.  (Just like Perl join.)

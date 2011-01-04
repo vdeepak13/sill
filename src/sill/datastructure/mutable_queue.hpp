@@ -110,7 +110,7 @@ namespace sill {
     }
 
     //! Enqueues a new item in the queue.
-    void push(T item, Priority priority) {
+    void push(const T& item, Priority priority) {
       heap.push_back(std::make_pair(item, priority));
       size_t i = size();
       index_map[item] = i;
@@ -140,7 +140,7 @@ namespace sill {
     }
 
     //! Returns the weight associated with a key
-    Priority get(T item) const {
+    Priority get(const T& item) const {
       typename index_map_type::const_iterator iter = index_map.find(item);
       assert(iter != index_map.end());
       size_t i = iter->second;
@@ -148,7 +148,7 @@ namespace sill {
     }
 
     //! Returns the priority associated with a key
-    Priority operator[](T item) const {
+    Priority operator[](const T& item) const {
       return get(item);
     }
 
@@ -156,7 +156,7 @@ namespace sill {
      * Updates the priority associated with a item in the queue. This
      * function fails if the item is not already present.
     */
-    void update(T item, Priority priority) {
+    void update(const T& item, Priority priority) {
       // Verify that the item is currently in the queue
       typename index_map_type::const_iterator iter = index_map.find(item);
       assert(iter != index_map.end());
@@ -175,7 +175,7 @@ namespace sill {
      * of the old priority and the new one. If the item is not in the queue,
      * adds it to the queue.
      */
-    void updating_insert_max(T item, Priority priority) {
+    void updating_insert_max(const T& item, Priority priority) {
       if(!contains(item))
         push(item, priority);
       else{
@@ -198,7 +198,7 @@ namespace sill {
 
     //! Remove an item from the queue.
     //! Note: The item MUST be in the queue.
-    void remove(T item) {
+    void remove(const T& item) {
       // Ensure that the element is in the queue
       typename index_map_type::iterator iter = index_map.find(item);
       assert(iter != index_map.end());
@@ -211,7 +211,7 @@ namespace sill {
     }
 
     //! Remove an item from the queue if it is present.
-    void remove_if_present(T item) {
+    void remove_if_present(const T& item) {
       typename index_map_type::iterator iter = index_map.find(item);
       if (iter == index_map.end())
         return;
@@ -221,6 +221,23 @@ namespace sill {
       heapify(i);
       // erase the element from the index map
       index_map.erase(iter);
+    }
+
+    //! Increment the priority of an item in the queue by inc if it is present.
+    //! @return  True iff the item was present.
+    bool increment_if_present(const T& item, Priority inc) {
+      typename index_map_type::iterator iter = index_map.find(item);
+      if (iter == index_map.end())
+        return false;
+      size_t i = iter->second;
+      Priority new_priority = heap[i].second + inc;
+      heap[i].second = new_priority;
+      while ((i > 1) && (priority_at(parent(i)) < new_priority)) {
+        swap(i, parent(i));
+        i = parent(i);
+      }
+      heapify(i);
+      return true;
     }
 
   }; // class mutable_queue

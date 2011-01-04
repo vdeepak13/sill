@@ -14,6 +14,30 @@ namespace sill {
   // Means, standard errors, medians, and MADs
   //============================================================================
 
+  //! Return the mean for the given vector of values.
+  //! Return 0 for empty vector.
+  template <typename T>
+  double mean(const std::vector<T>& v) {
+    if (v.size() == 0)
+      return 0;
+    double sum = 0;
+    foreach(T val, v)
+      sum += val;
+    return sum / v.size();
+  }
+
+  //! Return the mean for the given vector of values.
+  //! Return 0 for empty vector.
+  template <typename T>
+  double mean(const vector<T>& v) {
+    if (v.size() == 0)
+      return 0;
+    double sum = 0;
+    for (size_t i = 0; i < v.size(); ++i)
+      sum += v[i];
+    return sum / v.size();
+  }
+
   //! Return the <mean, std error> for the given vector of values.
   std::pair<double, double> mean_stderr(const std::vector<double>& vals);
 
@@ -28,7 +52,7 @@ namespace sill {
   //! values.
   std::pair<double, double> median_MAD(const vec& vals);
 
-  // Max and min
+  // Max and min: deterministic tie-breaking
   //============================================================================
 
   /**
@@ -50,16 +74,13 @@ namespace sill {
     Comparator comp;
     T best(*it);
     ++it;
-    size_t best_index(0);
-    size_t i(1);
+    size_t best_index = 0;
+    size_t i = 1;
     while (it != end) {
-      if (comp(*it, best)) {
-        ++it;
-        ++i;
-        continue;
+      if (!comp(*it, best)) {
+        best = *it;
+        best_index = i;
       }
-      best = *it;
-      best_index = i;
       ++it;
       ++i;
     }
@@ -79,6 +100,23 @@ namespace sill {
   size_t min_index(const forward_range<T>& v) {
     return extreme_index<T, std::greater_equal<T> >(v);
   }
+
+  //! Return the max value in the vector.
+  //! If multiple values are maximal, choose the first one.
+  template <typename T>
+  T max(const std::vector<T>& v) {
+    return v[extreme_index<T, std::less_equal<T> >(v)];
+  }
+
+  //! Return the min value in the vector.
+  //! If multiple values are minimal, choose the first one.
+  template <typename T>
+  T min(const std::vector<T>& v) {
+    return v[extreme_index<T, std::greater_equal<T> >(v)];
+  }
+
+  // Max and min: random tie-breaking
+  //============================================================================
 
   /**
    * Return the index of an extreme value in the vector,

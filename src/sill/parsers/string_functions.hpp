@@ -68,7 +68,7 @@ namespace sill {
   inline std::string lcase(const std::string& str) {
     std::string ret = str;
     for (size_t i = 0; i < ret.length(); ++i) {
-      ret[i] = tolower(ret[i]);
+      ret[i] = std::tolower(ret[i]);
     }
     return ret;
   }
