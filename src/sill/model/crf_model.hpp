@@ -88,7 +88,7 @@ namespace sill {
     typedef crf_graph<typename FactorType::output_variable_type,
                       typename FactorType::input_variable_type,
                       typename FactorType::variable_type,
-                      FactorType*> base;
+                      FactorType*> crf_graph_type;
 
     //! Type of assignment for variables in Y.
     typedef typename FactorType::output_assignment_type output_assignment_type;
@@ -116,18 +116,18 @@ namespace sill {
     typedef typename FactorType::output_factor_type output_factor_type;
 
     // Graph types
-    typedef typename base::vertex vertex;
-    typedef typename base::edge edge;
-    typedef typename base::vertex_property vertex_property;
+    typedef typename crf_graph_type::vertex vertex;
+    typedef typename crf_graph_type::edge edge;
+    typedef typename crf_graph_type::vertex_property vertex_property;
 
     // Graph iterators
-    typedef typename base::vertex_iterator     vertex_iterator;
-    typedef typename base::neighbor_iterator   neighbor_iterator;
-    typedef typename base::edge_iterator       edge_iterator;
-    typedef typename base::in_edge_iterator    in_edge_iterator;
-    typedef typename base::out_edge_iterator   out_edge_iterator;
-    typedef typename base::neighbor2_iterator  neighbor2_iterator;
-    typedef typename base::variable_vertex_iterator variable_vertex_iterator;
+    typedef typename crf_graph_type::vertex_iterator     vertex_iterator;
+    typedef typename crf_graph_type::neighbor_iterator   neighbor_iterator;
+    typedef typename crf_graph_type::edge_iterator       edge_iterator;
+    typedef typename crf_graph_type::in_edge_iterator    in_edge_iterator;
+    typedef typename crf_graph_type::out_edge_iterator   out_edge_iterator;
+    typedef typename crf_graph_type::neighbor2_iterator  neighbor2_iterator;
+    typedef typename crf_graph_type::variable_vertex_iterator variable_vertex_iterator;
 
     //! Iterator over factors (permitting only const access).
     class factor_iterator
@@ -482,151 +482,6 @@ namespace sill {
 
     }; // struct opt_variables
 
-    // Private data members and methods
-    // =========================================================================
-  private:
-
-    // Import method from base class.
-    using base::simplify_unary_helper;
-
-    //! All the factors.
-    std::vector<crf_factor> factors_;
-
-    //! OptimizationVector which contains pointers to the factors' weights.
-    opt_variables weights_;
-
-    /**
-     * This makes multiple calls which compute P(Y | X = x) more efficient.
-     * It allows this CRF to make use of the same underlying decomposable
-     * graph for inference without redoing unnecessary computation.
-     *
-     * Note: Methods which do conditioning must check to make sure this is
-     *       valid and recompute it if not.
-     *       Methods which change the CRF structure must invalidate this.
-     *       See the conditioned_model_valid bit.
-     */
-    mutable decomposable<output_factor_type> conditioned_model;
-
-    //! Mapping returned by conditioned_model_vertex_mapping().
-    //! This let decomposable::replace_factors() avoid searching for
-    //! clique covers when it is called to condition this CRF.
-    mutable std::vector<typename decomposable<output_factor_type>::vertex>
-      conditioned_model_vertex_map_;
-
-    //! Indicates if the above model's structure is valid.
-    mutable bool conditioned_model_valid;
-
-    //! Functor used to make a transformed range for conditioning factors.
-    struct factor_conditioner_r
-      : public std::unary_function<const crf_factor&,const output_factor_type&>{
-      const input_record_type* r_ptr;
-      mutable const output_factor_type* tmpf_ptr;
-      factor_conditioner_r()
-        : r_ptr(NULL), tmpf_ptr(NULL) { }
-      explicit factor_conditioner_r(const input_record_type& r)
-        : r_ptr(&r), tmpf_ptr(NULL) { }
-      const output_factor_type& operator()(const crf_factor& f) const {
-        assert(r_ptr);
-        tmpf_ptr = &(f.condition(*r_ptr));
-        return (*tmpf_ptr);
-      }
-    }; // struct factor_conditioner_r
-
-    //! Functor used to make a transformed range for conditioning factors.
-    struct factor_conditioner_a
-      : public std::unary_function<const crf_factor&,const output_factor_type&>{
-      const assignment_type* a_ptr;
-      mutable const output_factor_type* tmpf_ptr;
-      factor_conditioner_a()
-        : a_ptr(NULL), tmpf_ptr(NULL) { }
-      explicit factor_conditioner_a(const assignment_type& a)
-        : a_ptr(&a), tmpf_ptr(NULL) { }
-      const output_factor_type& operator()(const crf_factor& f) const {
-        assert(a_ptr);
-        tmpf_ptr = &(f.condition(*a_ptr));
-        return (*tmpf_ptr);
-      }
-    }; // struct factor_conditioner_a
-
-    //! Sets the conditioned_model to be valid for the given datapoint.
-    void condition_model(const assignment_type& a) const {
-      if (debug) {
-        // Check to make sure each factor is normalizable.
-        foreach(const crf_factor& f, factors()) {
-          const output_factor_type& tmpf = f.condition(a);
-          if (!tmpf.is_normalizable()) {
-            std::cerr << "crf_model::condition_model() tried to condition"
-                      << " a CRF factor and got an unnormalizable result.\n"
-                      << "CRF factor:\n"
-                      << f << "\n"
-                      << "resulting factor:\n"
-                      << tmpf << std::endl;
-            throw normalization_error("crf_model::condition_model() ran into a factor which could not be normalized after conditioning.");
-          }
-        }
-      }
-      if (conditioned_model_valid) {
-        conditioned_model.replace_factors
-          (make_transformed(factors(), factor_conditioner_a(a)),
-           conditioned_model_vertex_map_);
-      } else {
-        conditioned_model.clear();
-        conditioned_model *=
-          make_transformed(factors(), factor_conditioner_a(a));
-        conditioned_model_valid = true;
-        set_conditioned_model_vertex_mapping(conditioned_model_vertex_map_);
-      }
-    }
-
-    //! Sets the conditioned_model to be valid for the given datapoint.
-    void condition_model(const input_record_type& r) const {
-      if (debug) {
-        // Check to make sure each factor is normalizable.
-        foreach(const crf_factor& f, factors()) {
-          const output_factor_type& tmpf = f.condition(r);
-          if (!tmpf.is_normalizable()) {
-            std::cerr << "crf_model::condition_model() tried to condition"
-                      << " a CRF factor and got an unnormalizable result.\n"
-                      << "CRF factor:\n"
-                      << f << "\n"
-                      << "resulting factor:\n"
-                      << tmpf << std::endl;
-            throw normalization_error("crf_model::condition_model() ran into a factor which could not be normalized after conditioning.");
-          }
-        }
-      }
-      if (conditioned_model_valid) {
-        conditioned_model.replace_factors
-          (make_transformed(factors(), factor_conditioner_r(r)),
-           conditioned_model_vertex_map_);
-      } else {
-        conditioned_model.clear();
-        conditioned_model *=
-          make_transformed(factors(), factor_conditioner_r(r));
-        conditioned_model_valid = true;
-        set_conditioned_model_vertex_mapping(conditioned_model_vertex_map_);
-      }
-    }
-
-    //! See conditioned_model_vertex_mapping().
-    void set_conditioned_model_vertex_mapping
-    (std::vector<typename decomposable<output_factor_type>::vertex>& vm) const {
-      typedef typename decomposable<output_factor_type>::vertex cm_vertex_type;
-      assert(conditioned_model_valid);
-      vm.clear();
-      foreach(const crf_factor& f, factors()) {
-        cm_vertex_type
-          v(conditioned_model.find_clique_cover(f.output_arguments()));
-        assert(v != conditioned_model.null_vertex());
-        vm.push_back(v);
-      }
-    }
-
-  protected:
-
-    using base::Y_;
-    using base::X_;
-
     // Constructors and destructors
     // =========================================================================
   public:
@@ -636,16 +491,30 @@ namespace sill {
      * Use the add_factor method to add factors and variables.
      */
     crf_model()
-      : base(), conditioned_model_valid(false) {
+      : crf_graph_type(), conditioned_model_valid(false) {
       if (debug)
         std::cerr << "WARNING: crf_model.debug is set to TRUE"
                   << " (which reduces efficiency significantly)." << std::endl;
       weights_.own_data = false;
     }
 
+    /**
+     * Creates a CRF model with the given structure, with default-initialized
+     * factors.
+     */
+    crf_model(const crf_graph_type& structure) {
+      std::vector<crf_factor> fctrs;
+      foreach(const vertex& v, structure.factor_vertices()) {
+        fctrs.push_back(crf_factor(structure.output_arguments(v),
+                                   structure.input_arguments(v)));
+      }
+      this->add_factors(fctrs);
+      weights_.own_data = false;
+    }
+
     //! Copy constructor.
     crf_model(const crf_model& crf)
-      : base(crf), factors_(crf.factors_),
+      : crf_graph_type(crf), factors_(crf.factors_),
         conditioned_model_valid(crf.conditioned_model_valid) {
       if (debug)
         std::cerr << "WARNING: crf_model.debug is set to TRUE"
@@ -666,7 +535,7 @@ namespace sill {
 
     //! Assignment operator.
     crf_model& operator=(const crf_model& crf) {
-      base::operator=(crf);
+      crf_graph_type::operator=(crf);
       factors_ = crf.factors_;
       weights_.clear();
       foreach(crf_factor& f, factors_) {
@@ -682,20 +551,8 @@ namespace sill {
     }
 
     //! Returns the factors in this model.
-    const std::vector<crf_factor>& factors() const {
+    const std::list<crf_factor>& factors() const {
       return factors_;
-    }
-
-    //! Fixes the value of factor i (for parameter learning).
-    void fix_factor_value(size_t i) {
-      assert(i < factors_.size());
-      factors_[i].fixed_value() = true;
-    }
-
-    //! Unfixes the value of factor i (for parameter learning).
-    void unfix_factor_value(size_t i) {
-      assert(i < factors_.size());
-      factors_[i].fixed_value() = false;
     }
 
     /**
@@ -720,13 +577,13 @@ namespace sill {
     bool set_log_space(bool log_space) {
       bool worked(true);
       if (log_space) {
-        for (size_t i(0); i < factors_.size(); ++i) {
-          if (!(factors_[i].convert_to_log_space()))
+        foreach(crf_factor& f, factors_) {
+          if (!(f.convert_to_log_space()))
             worked = false;
         }
       } else {
-        for (size_t i(0); i < factors_.size(); ++i) {
-          if (!(factors_[i].convert_to_real_space()))
+        foreach(crf_factor& f, factors_) {
+          if (!(f.convert_to_real_space()))
             worked = false;
         }
       }
@@ -964,7 +821,7 @@ namespace sill {
     // Mutating methods
     // =========================================================================
 
-    using base::add_factor;
+    using crf_graph_type::add_factor;
 
     /**
      * Add a factor to this factor graph.
@@ -979,7 +836,7 @@ namespace sill {
       factors_.push_back(factor);
       if (!factor.fixed_value())
         weights_.factor_weights_.push_back(&(factors_.back().weights()));
-      return this->base::add_factor(factor.output_arguments(),
+      return this->crf_graph_type::add_factor(factor.output_arguments(),
                                     factor.input_arguments_ptr(),
                                     &(factors_.back()));
     }
@@ -995,14 +852,14 @@ namespace sill {
         factors_.push_back(f);
         if (!f.fixed_value())
           weights_.factor_weights_.push_back(&(factors_.back().weights()));
-        base::add_factor_no_check(f.output_arguments(),
+        crf_graph_type::add_factor_no_check(f.output_arguments(),
                                   f.input_arguments_ptr(),
                                   &(factors_.back()));
       }
       // Check to make sure Y,X stay separate.
       if (!set_disjoint(Y_, X_)) {
         throw std::invalid_argument
-          (std::string("crf_graph::add_factor() given overlapping Y,X domains:")
+          (std::string("crf_model::add_factor() given overlapping Y,X domains:")
            + "\nY: " + to_string(Y_) + "\nX: " + to_string(X_) + "\n");
       }
     }
@@ -1011,7 +868,7 @@ namespace sill {
     void clear() {
       factors_.clear();
       weights_.clear();
-      this->base::clear();
+      this->crf_graph_type::clear();
       conditioned_model_valid = false;
     }
 
@@ -1043,9 +900,9 @@ namespace sill {
     //! @todo This should also check to see if there are 2 unary factors
     //!       for a variable.
     void simplify_unary() {
-      std::list<crf_factor*> rf_tmp(base::simplify_unary_helper());
+      std::list<crf_factor*> rf_tmp(crf_graph_type::simplify_unary_helper());
       std::set<const crf_factor*> removed_factors(rf_tmp.begin(), rf_tmp.end());
-      std::vector<crf_factor> new_factors_;
+      std::list<crf_factor> new_factors_;
       foreach(const crf_factor& f, factors_) {
         if (removed_factors.count(&f) == 0) {
           new_factors_.push_back(f);
@@ -1062,13 +919,180 @@ namespace sill {
     //! Prints the arguments and factors of the model.
     template <typename OutputStream>
     void print(OutputStream& out) const {
-      base::print(out);
+      crf_graph_type::print(out);
       out << "Factors:\n";
       foreach(const crf_factor& f, factors())
         out << f;
     }
 
     // NOTE: See crf_graph for more methods I could potentially add.
+
+    // UNSAFE mutating methods
+    // WARNING: Do not use these unless you know what you are doing.
+    // =========================================================================
+
+    /**
+     * Mutable access to the factors in this model.
+     * WARNING: Changing the factor arguments can cause fatal errors!
+     *          This should only be used for, e.g., calling
+     *          (factor).fixed_value().
+     */
+    std::list<crf_factor>& factors() {
+      return factors_;
+    }
+
+    // Protected data
+    // =========================================================================
+  protected:
+
+    using crf_graph_type::Y_;
+    using crf_graph_type::X_;
+
+    // Private types
+    // =========================================================================
+  private:
+
+    //! Functor used to make a transformed range for conditioning factors.
+    struct factor_conditioner_r
+      : public std::unary_function<const crf_factor&,const output_factor_type&>{
+      const input_record_type* r_ptr;
+      mutable const output_factor_type* tmpf_ptr;
+      factor_conditioner_r()
+        : r_ptr(NULL), tmpf_ptr(NULL) { }
+      explicit factor_conditioner_r(const input_record_type& r)
+        : r_ptr(&r), tmpf_ptr(NULL) { }
+      const output_factor_type& operator()(const crf_factor& f) const {
+        assert(r_ptr);
+        tmpf_ptr = &(f.condition(*r_ptr));
+        return (*tmpf_ptr);
+      }
+    }; // struct factor_conditioner_r
+
+    //! Functor used to make a transformed range for conditioning factors.
+    struct factor_conditioner_a
+      : public std::unary_function<const crf_factor&,const output_factor_type&>{
+      const assignment_type* a_ptr;
+      mutable const output_factor_type* tmpf_ptr;
+      factor_conditioner_a()
+        : a_ptr(NULL), tmpf_ptr(NULL) { }
+      explicit factor_conditioner_a(const assignment_type& a)
+        : a_ptr(&a), tmpf_ptr(NULL) { }
+      const output_factor_type& operator()(const crf_factor& f) const {
+        assert(a_ptr);
+        tmpf_ptr = &(f.condition(*a_ptr));
+        return (*tmpf_ptr);
+      }
+    }; // struct factor_conditioner_a
+
+    // Private data
+    // =========================================================================
+
+    //! All the factors.
+    std::list<crf_factor> factors_;
+
+    //! OptimizationVector which contains pointers to the factors' weights.
+    opt_variables weights_;
+
+    /**
+     * This makes multiple calls which compute P(Y | X = x) more efficient.
+     * It allows this CRF to make use of the same underlying decomposable
+     * graph for inference without redoing unnecessary computation.
+     *
+     * Note: Methods which do conditioning must check to make sure this is
+     *       valid and recompute it if not.
+     *       Methods which change the CRF structure must invalidate this.
+     *       See the conditioned_model_valid bit.
+     */
+    mutable decomposable<output_factor_type> conditioned_model;
+
+    //! Mapping returned by conditioned_model_vertex_mapping().
+    //! This let decomposable::replace_factors() avoid searching for
+    //! clique covers when it is called to condition this CRF.
+    mutable std::vector<typename decomposable<output_factor_type>::vertex>
+      conditioned_model_vertex_map_;
+
+    //! Indicates if the above model's structure is valid.
+    mutable bool conditioned_model_valid;
+
+    // Private methods
+    // =========================================================================
+
+    // Import method from base class.
+    using crf_graph_type::simplify_unary_helper;
+
+    //! Sets the conditioned_model to be valid for the given datapoint.
+    void condition_model(const assignment_type& a) const {
+      if (debug) {
+        // Check to make sure each factor is normalizable.
+        foreach(const crf_factor& f, factors()) {
+          const output_factor_type& tmpf = f.condition(a);
+          if (!tmpf.is_normalizable()) {
+            std::cerr << "crf_model::condition_model() tried to condition"
+                      << " a CRF factor and got an unnormalizable result.\n"
+                      << "CRF factor:\n"
+                      << f << "\n"
+                      << "resulting factor:\n"
+                      << tmpf << std::endl;
+            throw normalization_error("crf_model::condition_model() ran into a factor which could not be normalized after conditioning.");
+          }
+        }
+      }
+      if (conditioned_model_valid) {
+        conditioned_model.replace_factors
+          (make_transformed(factors(), factor_conditioner_a(a)),
+           conditioned_model_vertex_map_);
+      } else {
+        conditioned_model.clear();
+        conditioned_model *=
+          make_transformed(factors(), factor_conditioner_a(a));
+        conditioned_model_valid = true;
+        set_conditioned_model_vertex_mapping(conditioned_model_vertex_map_);
+      }
+    }
+
+    //! Sets the conditioned_model to be valid for the given datapoint.
+    void condition_model(const input_record_type& r) const {
+      if (debug) {
+        // Check to make sure each factor is normalizable.
+        foreach(const crf_factor& f, factors()) {
+          const output_factor_type& tmpf = f.condition(r);
+          if (!tmpf.is_normalizable()) {
+            std::cerr << "crf_model::condition_model() tried to condition"
+                      << " a CRF factor and got an unnormalizable result.\n"
+                      << "CRF factor:\n"
+                      << f << "\n"
+                      << "resulting factor:\n"
+                      << tmpf << std::endl;
+            throw normalization_error("crf_model::condition_model() ran into a factor which could not be normalized after conditioning.");
+          }
+        }
+      }
+      if (conditioned_model_valid) {
+        conditioned_model.replace_factors
+          (make_transformed(factors(), factor_conditioner_r(r)),
+           conditioned_model_vertex_map_);
+      } else {
+        conditioned_model.clear();
+        conditioned_model *=
+          make_transformed(factors(), factor_conditioner_r(r));
+        conditioned_model_valid = true;
+        set_conditioned_model_vertex_mapping(conditioned_model_vertex_map_);
+      }
+    }
+
+    //! See conditioned_model_vertex_mapping().
+    void set_conditioned_model_vertex_mapping
+    (std::vector<typename decomposable<output_factor_type>::vertex>& vm) const {
+      typedef typename decomposable<output_factor_type>::vertex cm_vertex_type;
+      assert(conditioned_model_valid);
+      vm.clear();
+      foreach(const crf_factor& f, factors()) {
+        cm_vertex_type
+          v(conditioned_model.find_clique_cover(f.output_arguments()));
+        assert(v != conditioned_model.null_vertex());
+        vm.push_back(v);
+      }
+    }
 
   }; // crf_model
 

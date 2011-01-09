@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   // Dataset parameters
   size_t nsamples = 10000;
   size_t n = 50; // length of width-2 chain decomposable model
-  unsigned oracle_seed = 1284392;
+  unsigned oracle_seed = time(NULL);
 
   universe u;
   boost::mt11213b rng(oracle_seed);
@@ -76,3 +76,5 @@ int main(int argc, char** argv) {
 
   return 0;
 }
+
+#include <sill/macros_undef.hpp>

@@ -14,6 +14,18 @@ namespace sill {
       return std::make_pair(filepath.substr(0,i), filepath.substr(i+1));
   }
 
+  std::string tolower(const std::string& s) {
+    std::string t(s);
+    tolower_inplace(t);
+    return t;
+  }
+
+  std::string toupper(const std::string& s) {
+    std::string t(s);
+    toupper_inplace(t);
+    return t;
+  }
+
   void tolower_inplace(std::string& s) {
     for (size_t i(0); i < s.size(); ++i)
       s[i] = std::tolower(s[i]);
@@ -22,6 +34,14 @@ namespace sill {
   void toupper_inplace(std::string& s) {
     for (size_t i(0); i < s.size(); ++i)
       s[i] = std::toupper(s[i]);
+  }
+
+  std::string chop_whitespace(const std::string& s) {
+    size_t first_nonws = s.find_first_not_of(" \t\n\v\f\r");
+    if (first_nonws == std::string::npos)
+      return std::string();
+    size_t last_nonws = s.find_last_not_of(" \t\n\v\f\r");
+    return s.substr(first_nonws, last_nonws + 1 - first_nonws);
   }
 
   void swap_characters_inplace(std::string& s, char a, char b) {

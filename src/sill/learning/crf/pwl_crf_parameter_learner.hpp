@@ -88,7 +88,7 @@ namespace sill {
     typedef typename crf_model_type::output_factor_type output_factor_type;
 
     //! Graph type
-    typedef typename crf_model_type::base graph_type;
+    typedef typename crf_model_type::crf_graph_type crf_graph_type;
 
     struct parameters {
 
@@ -185,7 +185,7 @@ namespace sill {
       return std::make_pair(r_ptr->log_expected_value(*ds_ptr), r_ptr);
     } // factor_score()
 
-    void build(boost::shared_ptr<dataset> ds_ptr, const graph_type& graph) {
+    void build(boost::shared_ptr<dataset> ds_ptr, const crf_graph_type& graph) {
       if (!params.crf_factor_params_ptr)
         params.crf_factor_params_ptr.reset
           (new typename crf_factor::parameters());
@@ -197,7 +197,7 @@ namespace sill {
                   << " computing all factors..."
                   << std::endl;
       }
-      foreach(const typename graph_type::vertex& v, graph.factor_vertices()) {
+      foreach(const typename crf_graph_type::vertex& v, graph.factor_vertices()) {
         std::pair<double, crf_factor*>
           score_f(factor_score(ds_ptr, graph.output_arguments(v),
                                graph.input_arguments_ptr(v), rng));
@@ -223,7 +223,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     pwl_crf_parameter_learner
-    (boost::shared_ptr<dataset> ds_ptr, const graph_type& graph,
+    (boost::shared_ptr<dataset> ds_ptr, const crf_graph_type& graph,
      parameters params = parameters())
       : params(params), total_score_(0) {
       build(ds_ptr, graph);

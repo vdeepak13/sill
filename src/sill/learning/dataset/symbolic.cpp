@@ -145,7 +145,7 @@ namespace sill {
               << "FORMAT=1\n";
         if (class_var_vec.size() != 0) {
           f_out << "CLASS_VARIABLES="
-                << string_join(class_var_vec, " ") << "\n";
+                << string_join(" ", class_var_vec) << "\n";
         }
         f_out.flush();
         f_out.close();

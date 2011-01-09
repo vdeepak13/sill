@@ -602,6 +602,32 @@ namespace sill {
     }
 
     /**
+     * Expected log likelihood E[P(X)], where P(X) is this model and
+     * the expectation is w.r.t. the given dataset.
+     */
+    double expected_log_likelihood(const dataset& ds, double base) const {
+      if (ds.size() == 0)
+        return 0;
+      double ll = 0;
+      if (!includes(ds.variables(), args)) {
+        throw std::runtime_error("decomposable::expected_log_likelihood currently requires that the given dataset includes all variables in the decomposable model.");
+      }
+      foreach(const record& r, ds.records()) {
+        ll += this->log_likelihood(r, base);
+      }
+      return ll / ds.size();
+    }
+
+    /**
+     * Expected log likelihood E[P(X)], where P(X) is this model and
+     * the expectation is w.r.t. the given dataset.
+     * This version uses log base e.
+     */
+    double expected_log_likelihood(const dataset& ds) const {
+      return expected_log_likelihood(ds, std::exp(1));
+    }
+
+    /**
      * Computes the expected conditional log likelihood E[P(Y|X)],
      * where the expectation is w.r.t. the given dataset and this distribution
      * represents P(Y,X).
@@ -819,6 +845,10 @@ namespace sill {
      * Compute the max probability assignment.
      */
     assignment_type max_prob_assignment() const {
+      if (num_vertices() == 1) {
+        // Handle special case with 1 vertex/factor.
+        return arg_max(jt[*(vertices().first)]);
+      }
       std::map<vertex, F> v2f;
       foreach(vertex v, vertices())
         v2f[v] = jt[v];
@@ -834,8 +864,8 @@ namespace sill {
     assignment_type sample(RandomNumberGenerator& rng) const {
       assignment_type a;
       flow_functor_sampling<RandomNumberGenerator> ffs(a, rng);
-      post_order_traversal(*this, jt.root(), ffs);
       ffs.sample_vertex(jt.root(), *this);
+      pre_order_traversal(*this, jt.root(), ffs);
       return a;
     }
 
@@ -1697,7 +1727,7 @@ namespace sill {
       //! When applied to an edge, this samples the unsampled variables in
       //! the source vertex.
       void operator()(edge e, const decomposable& dm) {
-        sample_vertex(e.source(), dm);
+        sample_vertex(e.target(), dm);
       }
 
     }; // struct flow_functor_sampling

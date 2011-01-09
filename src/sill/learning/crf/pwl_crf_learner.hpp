@@ -388,7 +388,8 @@ namespace sill {
     //==========================================================================
 
     //! Returns the current model structure.
-    const typename crf_model<crf_factor>::base& current_graph() const {
+    const typename crf_model<crf_factor>::crf_graph_type&
+    current_graph() const {
       return model_;
     }
 

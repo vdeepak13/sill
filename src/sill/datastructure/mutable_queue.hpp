@@ -179,7 +179,21 @@ namespace sill {
       if(!contains(item))
         push(item, priority);
       else{
-        double effective_priority = std::max(get(item), priority);
+        Priority effective_priority = std::max(get(item), priority);
+        update(item, effective_priority);
+      }
+    }
+
+    /**
+     * If item is already in the queue, sets its priority to the sum
+     * of the old priority and the new one.
+     * If the item is not in the queue, adds it to the queue.
+     */
+    void updating_insert_sum(const T& item, Priority priority) {
+      if(!contains(item))
+        push(item, priority);
+      else {
+        Priority effective_priority = get(item) + priority;
         update(item, effective_priority);
       }
     }

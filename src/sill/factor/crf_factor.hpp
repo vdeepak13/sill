@@ -145,20 +145,6 @@ namespace sill {
     //! Type which parametrizes this factor, used in optimization and learning.
     typedef OptVector optimization_vector;
 
-    // Protected data members
-    //==========================================================================
-  protected:
-
-    //! Y variables
-    output_domain_type Ydomain_;
-
-    //! X variables
-    copy_ptr<input_domain_type> Xdomain_ptr_;
-
-    //! If true, then this factor's value stays fixed in crf_parameter_learner.
-    //! (default after construction = false)
-    bool fixed_value_;
-
     // Public methods: Constructors
     // =========================================================================
   public:
@@ -303,6 +289,41 @@ namespace sill {
     //! This uses log-space or real-space, whatever is currently set,
     //! but it should only be used with log-space.
     virtual optimization_vector& weights() = 0;
+
+    // Protected data members
+    //==========================================================================
+  protected:
+
+    //! Y variables
+    output_domain_type Ydomain_;
+
+    //! X variables
+    copy_ptr<input_domain_type> Xdomain_ptr_;
+
+    //! If true, then this factor's value stays fixed in crf_parameter_learner.
+    //! (default after construction = false)
+    bool fixed_value_;
+
+    // Protected methods
+    //===============================================================
+
+    //! Check validity of shuffling of output, input variables.
+    //! @return True iff union(Y,X) = union(new_Y,new_X).
+    bool valid_output_input_relabeling(const output_domain_type& new_Y,
+                                       const input_domain_type& new_X) const {
+      if (new_Y.size() + new_X.size() !=
+          output_arguments().size() + input_arguments().size()) {
+        return false;
+      }
+      domain_type args(arguments());
+      foreach(output_variable_type* v, new_Y)
+        args.erase(v);
+      foreach(input_variable_type* v, new_X)
+        args.erase(v);
+      if (args.size() != 0)
+        return false;
+      return true;
+    }
 
   }; // class crf_factor
 

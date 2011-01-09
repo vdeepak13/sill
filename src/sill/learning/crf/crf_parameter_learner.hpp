@@ -1192,30 +1192,26 @@ namespace sill {
 
     /*
      * Initializes a CRF model learner using the given graph structure.
-     * The features are computed from data as described above.
      */
-    /*
-    crf_parameter_learner(const crf_graph<>& graph,
-                         boost::shared_ptr<dataset> ds_ptr,
-                         const parameters& params = parameters())
-      : params(params), ds_ptr(ds_ptr), ds_it(ds_ptr->begin()),
-        ds_end(ds_ptr->end()), iteration_(0),
-        obj_functor_ptr(NULL), grad_functor_ptr(NULL),
-        gradient_descent_ptr(NULL), conjugate_gradient_ptr(NULL),
-        total_train_weight(0) {
+    crf_parameter_learner(const typename crf_model_type::crf_graph_type& graph,
+                          boost::shared_ptr<dataset> ds_ptr,
+                          const parameters& params = parameters())
+      : params(params),
+        ds_ptr(ds_ptr), ds_it(ds_ptr->begin()), ds_end(ds_ptr->end()),
+        crf_(graph), crf_tmp_weights(crf_.weights()),
+        iteration_(0),
+        everything_functor_ptr(NULL), stochastic_everything_functor_ptr(NULL),
+        gradient_method_ptr(NULL), stochastic_gradient_ptr(NULL),
+        total_train_weight(0),
+        init_train_obj(std::numeric_limits<double>::max()),
+        train_obj(std::numeric_limits<double>::max()),
+        my_objective_count_(0), my_gradient_count_(0),
+        my_stochastic_gradient_count_(0),
+        my_hessian_diag_count_(0), my_everything_no_hd_count_(0),
+        my_everything_with_hd_count_(0) {
       init();
-      // Add features to model.
-      boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
-      foreach(const crf_graph<>::vertex& v, graph.factor_vertices()) {
-        crf_.add_factor
-          (crf_factor::train_default(ds_ptr, graph.output_arguments(v), graph.Xfinite(v),
-                                      graph.Xvector(v), params.factor_params,
-                                      unif_int(rng)));
-      }
-      // Set the weights.
-      initialize_finish(true);
+      init_finish(true);
     }
-    */
 
     /**
      * Initializes a CRF model learner using the given model,
@@ -1411,6 +1407,40 @@ namespace sill {
       }
       assert(best_lambda.size() == crf_factor_reg_type::nlambdas);
       return best_lambda;
+    }
+
+    /**
+     * Choose regularization parameters via n-fold cross validation.
+     *
+     * @param reg_params  (Return value.) regularization settings tried
+     * @param means       (Return value.) means[i] = avg score for reg_params[i]
+     * @param stderrs     (Return value.) corresponding std errors of scores
+     * @param cv_params   Parameters specifying how to do cross validation.
+     * @param structure   CRF structure.
+     * @param ds          Training data.
+     * @param params      Parameters for this class.
+     * @param score_type  0: log likelihood, 1: per-label accuracy,
+     *                    2: all-or-nothing label accuracy,
+     *                    3: mean squared error
+     * @param random_seed This uses this random seed, not the one in the
+     *                    algorithm parameters.
+     *
+     * @return  chosen regularization parameters
+     *
+     * @todo Change this to sort lambdas and do them in decreasing order,
+     *       using previous results to warm-start each optimization.
+     */
+    static
+    vec choose_lambda
+    (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
+     const crossval_parameters<crf_factor_reg_type::nlambdas>& cv_params,
+     const typename crf_model_type::crf_graph_type& structure,
+     const dataset& ds, const parameters& params, size_t score_type,
+     unsigned random_seed) {
+      crf_model_type model(structure);
+      return choose_lambda(reg_params, means, stderrs,
+                           cv_params, model, false, ds,
+                           params, score_type, random_seed);
     }
 
   }; // crf_parameter_learner

@@ -80,6 +80,24 @@ namespace sill {
       : base(), log_space_(false) { }
 
     /**
+     * Constructor for a factor with default parameters.
+     * @param Y           Output arguments.
+     * @param X           Input arguments.
+     * @param log_space_  Indicates if parameters are in log-space.
+     *                    (default = true)
+     */
+    table_crf_factor(const output_domain_type& Y_,
+                     const input_domain_type& X_,
+                     bool log_space_ = true)
+      : base(Y_, copy_ptr<finite_domain>(new finite_domain(X_))),
+        f(set_union(Y_,X_),0), log_space_(log_space_), conditioned_f(Y_,0) {
+      if (f.f.arguments().size() != Y_.size() + X_.size()) {
+        throw std::invalid_argument
+          ("table_crf_factor constructor given Y,X which overlap.");
+      }
+    }
+
+    /**
      * Constructor.
      * @param f           table factor defining this factor
      * @param Y           Y variables; other variables are assumed to be in X

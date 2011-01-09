@@ -44,8 +44,11 @@ namespace sill {
     explicit table_factor_opt_vector(const table_factor& f)
       : f(f) { }
 
-    table_factor_opt_vector(size_type s, double default_val)
+    table_factor_opt_vector(const size_type& s, double default_val)
       : f(s, default_val) { }
+
+    table_factor_opt_vector(const finite_domain& vars, double default_val)
+      : f(vars, default_val) { }
 
     // Getters and non-math setters
     //--------------------------------------------------------------------------

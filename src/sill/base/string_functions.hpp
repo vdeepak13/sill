@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include <sill/range/forward_range.hpp>
+
 namespace sill {
 
   /**
@@ -26,11 +28,20 @@ namespace sill {
     return o.str();
   }
 
+  //! Convert all letters in a string to lowercase.
+  std::string tolower(const std::string& s);
+
+  //! Convert all letters in a string to uppercase.
+  std::string toupper(const std::string& s);
+
   //! Convert all letters in a string to lowercase in place.
   void tolower_inplace(std::string& s);
 
   //! Convert all letters in a string to uppercase in place.
   void toupper_inplace(std::string& s);
+
+  //! Remove leading and trailing whitespace.
+  std::string chop_whitespace(const std::string& s);
 
   //! Convert all instances of character a in string s to character b in place.
   void swap_characters_inplace(std::string& s, char a, char b);
@@ -42,17 +53,40 @@ namespace sill {
   /**
    * Concatenate the given vector of values (using operator<< to print them),
    * with sep separating them.  (Just like Perl join.)
-   * @param  vals  Values to concatenate.
    * @param  sep   String with which to separate the values.
+   * @param  vals  Values to concatenate.
    */
   template <typename T>
-  std::string string_join(const std::vector<T>& vals, const std::string& sep) {
+  std::string string_join(const std::string& sep, const std::vector<T>& vals) {
     if (vals.size() == 0)
       return std::string();
     std::ostringstream o;
     for (size_t i(0); i < vals.size() - 1; ++i)
       o << vals[i] << sep;
     o << vals[vals.size() - 1];
+    return o.str();
+  }
+
+  /**
+   * Concatenate the given range of values (using operator<< to print them),
+   * with sep separating them.  (Just like Perl join.)
+   * @param  sep   String with which to separate the values.
+   * @param  vals  Values to concatenate.
+   */
+  template <typename T>
+  std::string
+  string_join(const std::string& sep, const forward_range<T>& vals) {
+    typename forward_range<T>::const_iterator it = vals.begin();
+    typename forward_range<T>::const_iterator end = vals.end();
+    if (it == end)
+      return std::string();
+    std::ostringstream o;
+    while (it != end) {
+      o << *it;
+      ++it;
+      if (it != end)
+        o << sep;
+    }
     return o.str();
   }
 

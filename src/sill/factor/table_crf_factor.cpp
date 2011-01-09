@@ -12,16 +12,7 @@ namespace sill {
   void
   table_crf_factor::relabel_outputs_inputs(const output_domain_type& new_Y,
                                            const input_domain_type& new_X) {
-    if (new_Y.size() + new_X.size() !=
-        output_arguments().size() + input_arguments().size()) {
-      throw std::invalid_argument("table_crf_factor::relabel_outputs_inputs given new_Y,new_X whose size did not match the old Y,X.");
-    }
-    domain_type args(arguments());
-    foreach(output_variable_type* v, new_Y)
-      args.erase(v);
-    foreach(input_variable_type* v, new_X)
-      args.erase(v);
-    if (args.size() != 0) {
+    if (!valid_output_input_relabeling(new_Y,new_X)) {
       throw std::invalid_argument("table_crf_factor::relabel_outputs_inputs given new_Y,new_X whose union did not equal the union of the old Y,X.");
     }
     Ydomain_ = new_Y;

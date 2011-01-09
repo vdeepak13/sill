@@ -8,6 +8,7 @@ add_executable(moment_matching moment_matching.cpp)
 add_executable(nonlinear_gaussian nonlinear_gaussian.cpp)
 # add_executable(table_factor table_factor.cpp)
 add_executable(table_factor_comparison table_factor_comparison.cpp)
-add_executable(table_factor2 table_factor2)
+add_executable(table_factor2 table_factor2.cpp)
+add_executable(table_factor_sampling_test table_factor_sampling_test.cpp)
 # add_executable(serialization2 serialization2)
 # serialization, serialization2 - should be tested in factors
