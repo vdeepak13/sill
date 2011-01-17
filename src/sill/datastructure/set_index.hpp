@@ -101,6 +101,16 @@ namespace sill {
       empty_sets.swap(other.empty_sets);
     }
 
+    //! Serialize members
+    void save(oarchive & ar) const {
+      ar << element_sets << empty_sets;
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      ar >> element_sets >> empty_sets;
+    }
+
     // Queries
     //==========================================================================
     

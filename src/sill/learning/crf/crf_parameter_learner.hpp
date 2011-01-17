@@ -1219,9 +1219,9 @@ namespace sill {
      * @param keep_weights  If false, the model weights are re-initialized.
      */
     crf_parameter_learner(const crf_model_type& model,
-                         boost::shared_ptr<dataset> ds_ptr,
-                         bool keep_weights,
-                         const parameters& params = parameters())
+                          boost::shared_ptr<dataset> ds_ptr,
+                          bool keep_weights,
+                          const parameters& params = parameters())
       : params(params),
         ds_ptr(ds_ptr), ds_it(ds_ptr->begin()), ds_end(ds_ptr->end()),
         crf_(model), crf_tmp_weights(crf_.weights()),

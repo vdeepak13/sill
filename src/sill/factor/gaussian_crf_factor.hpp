@@ -137,70 +137,8 @@ namespace sill {
 
     }; // struct parameters
 
-    // Protected data and methods
-    // =========================================================================
-  protected:
-
-    optimization_vector ov;
-
-    //! Y variables
-    vector_var_vector Y_;
-
-    //! X variables
-    vector_var_vector X_;
-
-    //! If true, then whenever methods taking records are called,
-    //! it is assumed that records of exactly the same type are being given.
-    //! This will then use the stored indices Y_indices_, X_indices_ to
-    //! access data in the records.
-    bool fixed_records_;
-
-    //! See fixed_records_; Y_indices_ = indices of Y_ in records.
-    ivec Y_indices_;
-
-    //! See fixed_records_; X_indices_ = indices of X_ in records.
-    ivec X_indices_;
-
-    //! Temporary used to avoid reallocation for conditioning.
-    //! If this CRF factor has no arguments (i.e., is a constant factor),
-    //! then this stored its value. // TO DO: ELIMINATE THIS HACK.
-    mutable canonical_gaussian conditioned_f;
-
-    //! Get Y,X values from record.
-    void get_yx_values(const vector_record& r, vec& y, vec& x) const {
-      if (fixed_records_) {
-        const vec& rvec = r.vector();
-        y = rvec(Y_indices_);
-        x = rvec(X_indices_);
-      } else {
-        r.vector_values(y, Y_);
-        r.vector_values(x, X_);
-      }
-    }
-
-    //! Get Y values from record.
-    void get_y_values(const vector_record& r, vec& y) const {
-      if (fixed_records_) {
-        const vec& rvec = r.vector();
-        y = rvec(Y_indices_);
-      } else {
-        r.vector_values(y, Y_);
-      }
-    }
-
-    //! Get Y,X values from record.
-    void get_x_values(const vector_record& r, vec& x) const {
-      if (fixed_records_) {
-        const vec& rvec = r.vector();
-        x = rvec(X_indices_);
-      } else {
-        r.vector_values(x, X_);
-      }
-    }
-
     // Public methods: Constructors, getters, helpers
     // =========================================================================
-  public:
 
     //! Default constructor.
     gaussian_crf_factor();
@@ -254,6 +192,11 @@ namespace sill {
      * Constructor from a constant factor.
      */
     explicit gaussian_crf_factor(const constant_factor& cf);
+
+    /**
+     * Constructor from a constant.
+     */
+    explicit gaussian_crf_factor(double c);
 
     //! @return  vector of output variables in Y for this factor
     const vector_var_vector& output_arg_list() const;
@@ -608,6 +551,78 @@ namespace sill {
     void add_regularization_hessian_diag(optimization_vector& hd,
                                          const regularization_type& reg,
                                          double w) const;
+
+    // Public methods: Operators
+    // =========================================================================
+
+    /**
+     * Multiplication with another factor.
+     * @param other  Factor f(Y_other,X_other), where Y_other must be disjoint
+     *               from this factor's Y and X_other disjoint from this
+     *               factor's X.
+     */
+    gaussian_crf_factor& operator*=(const gaussian_crf_factor& other);
+
+    // Protected data and methods
+    // =========================================================================
+  protected:
+
+    optimization_vector ov;
+
+    //! Y variables
+    vector_var_vector Y_;
+
+    //! X variables
+    vector_var_vector X_;
+
+    //! If true, then whenever methods taking records are called,
+    //! it is assumed that records of exactly the same type are being given.
+    //! This will then use the stored indices Y_indices_, X_indices_ to
+    //! access data in the records.
+    bool fixed_records_;
+
+    //! See fixed_records_; Y_indices_ = indices of Y_ in records.
+    ivec Y_indices_;
+
+    //! See fixed_records_; X_indices_ = indices of X_ in records.
+    ivec X_indices_;
+
+    //! Temporary used to avoid reallocation for conditioning.
+    //! If this CRF factor has no arguments (i.e., is a constant factor),
+    //! then this stored its value. // TO DO: ELIMINATE THIS HACK.
+    mutable canonical_gaussian conditioned_f;
+
+    //! Get Y,X values from record.
+    void get_yx_values(const vector_record& r, vec& y, vec& x) const {
+      if (fixed_records_) {
+        const vec& rvec = r.vector();
+        y = rvec(Y_indices_);
+        x = rvec(X_indices_);
+      } else {
+        r.vector_values(y, Y_);
+        r.vector_values(x, X_);
+      }
+    }
+
+    //! Get Y values from record.
+    void get_y_values(const vector_record& r, vec& y) const {
+      if (fixed_records_) {
+        const vec& rvec = r.vector();
+        y = rvec(Y_indices_);
+      } else {
+        r.vector_values(y, Y_);
+      }
+    }
+
+    //! Get Y,X values from record.
+    void get_x_values(const vector_record& r, vec& x) const {
+      if (fixed_records_) {
+        const vec& rvec = r.vector();
+        x = rvec(X_indices_);
+      } else {
+        r.vector_values(x, X_);
+      }
+    }
 
   };  // class gaussian_crf_factor
 

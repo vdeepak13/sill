@@ -27,7 +27,7 @@ namespace sill {
     //! Minimum values for factor regularization parameters. (>= 0)
     //! NOTE: If you use the create_parameter_grid() methods, then you should
     //!       set this to be > 0.
-    //!  (default = 0)
+    //!  (default = 0.000001)
     vec minvals;
 
     //! Maximum values for factor regularization parameters. (>= 0)
@@ -48,7 +48,7 @@ namespace sill {
     bool log_scale;
 
     crossval_parameters()
-      : nfolds(10), minvals(N,0), maxvals(N,1), nvals(N,10),
+      : nfolds(10), minvals(N,0.000001), maxvals(N,1), nvals(N,10),
         zoom(0), log_scale(true) { }
 
     //! Return true iff the parameters are valid.

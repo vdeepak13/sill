@@ -8,6 +8,7 @@
 #include <sill/factor/table_crf_factor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/crf/crf_parameter_learner_builder.hpp>
+#include <sill/learning/crf/pwl_crf_parameter_learner.hpp>
 #include <sill/learning/crossval_builder.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/generate_datasets.hpp>
@@ -28,7 +29,7 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
          size_t ntrain, size_t ntest,
          bool do_cv, const sill::vec& fixed_lambda, boost::mt11213b& rng,
          typename sill::crf_parameter_learner<F>::parameters& cpl_params,
-         sill::crossval_builder& cv_builder) {
+         sill::crossval_builder& cv_builder, bool init_with_pwl) {
 
   using namespace sill;
   using namespace std;
@@ -37,9 +38,11 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
 
   boost::uniform_int<int> unif_int(0,std::numeric_limits<int>::max());
 
+  cout << "True model for P(Y,X):\n" << YXmodel << "\n" << endl;
+
   // Generate a dataset
-  cout << "Sampling " << (ntrain+ntest) << " training samples from the model"
-       << endl;
+  cout << "Sampling " << ntrain << " training samples and "
+       << ntest << " test samples from the model" << endl;
   boost::shared_ptr<vector_assignment_dataset>
     train_ds_ptr(new vector_assignment_dataset(ds_info, ntrain));
   generate_dataset(*train_ds_ptr, YXmodel, ntrain, rng);
@@ -50,31 +53,56 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
   double true_test_ll = YgivenXmodel.expected_log_likelihood(test_ds);
 
   cout << "Doing parameter learning" << endl;
+  crf_model<F> init_model;
+  if (init_with_pwl) {
+    typename pwl_crf_parameter_learner<F>::parameters pcpl_params;
+    pcpl_params.crf_factor_cv = false;
+//    pcpl_params.cv_params.nfolds = 2;
+//    pcpl_params.cv_params.nvals = 4;
+    pcpl_params.random_seed = unif_int(rng);
+    pwl_crf_parameter_learner<F> pcpl(train_ds_ptr, YgivenXmodel, pcpl_params);
+    init_model = pcpl.model();
+  }
   vec means, stderrs;
   std::vector<regularization_type> reg_params;
   if (do_cv) {
     crossval_parameters<regularization_type::nlambdas>
       cv_params(cv_builder.get_parameters<regularization_type::nlambdas>());
     cv_params.nfolds = std::min(ntrain, cv_params.nfolds);
-    cpl_params.lambdas =
-      crf_parameter_learner<F>::choose_lambda
-      (reg_params, means, stderrs, cv_params, YgivenXmodel, false,
-       *train_ds_ptr, cpl_params, 0, unif_int(rng));
+    if (init_with_pwl) {
+      cpl_params.lambdas =
+        crf_parameter_learner<F>::choose_lambda
+        (reg_params, means, stderrs, cv_params, init_model, true,
+         *train_ds_ptr, cpl_params, 0, unif_int(rng));
+    } else {
+      cpl_params.lambdas =
+        crf_parameter_learner<F>::choose_lambda
+        (reg_params, means, stderrs, cv_params, YgivenXmodel, false,
+         *train_ds_ptr, cpl_params, 0, unif_int(rng));
+    }
     cout << "Used cross-validation to choose lambdas = "
          << cpl_params.lambdas << endl;
   } else {
     cpl_params.lambdas = fixed_lambda;
   }
-  crf_parameter_learner<F>
-    param_learner(YgivenXmodel, train_ds_ptr, false, cpl_params);
-  double train_ll = 0.;
-  foreach(const assignment& a, train_ds_ptr->assignments())
-    train_ll += param_learner.current_model().log_likelihood(a);
-  train_ll /= train_ds_ptr->size();
-  double test_ll = 0.;
-  foreach(const assignment& a, test_ds.assignments())
-    test_ll += param_learner.current_model().log_likelihood(a);
-  test_ll /= test_ds.size();
+  crf_model<F> learned_model;
+  size_t cpl_iterations;
+  size_t cpl_obj_calls_per_iter;
+  if (init_with_pwl) {
+    crf_parameter_learner<F>
+      param_learner(init_model, train_ds_ptr, true, cpl_params);
+    learned_model = param_learner.current_model();
+    cpl_iterations = param_learner.iteration();
+    cpl_obj_calls_per_iter = param_learner.objective_calls_per_iteration();
+  } else {
+    crf_parameter_learner<F>
+      param_learner(YgivenXmodel, train_ds_ptr, false, cpl_params);
+    learned_model = param_learner.current_model();
+    cpl_iterations = param_learner.iteration();
+    cpl_obj_calls_per_iter = param_learner.objective_calls_per_iteration();
+  }
+  double train_ll = learned_model.expected_log_likelihood(*train_ds_ptr);
+  double test_ll = learned_model.expected_log_likelihood(test_ds);
 
   if (do_cv) {
     cout << "Cross-validation results:\n"
@@ -88,9 +116,8 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
          << endl;
   }
 
-  cout << "crf_parameter_learner made " << param_learner.iteration()
-       << " calls to gradient, with "
-       << param_learner.objective_calls_per_iteration()
+  cout << "crf_parameter_learner made " << cpl_iterations
+       << " calls to gradient, with " << cpl_obj_calls_per_iter
        << " avg calls to objective per gradient call."
        << endl;
 
@@ -123,6 +150,7 @@ int main(int argc, char** argv) {
   vec fixed_lambda; // if not doing CV
   crossval_builder cv_builder;
   //  Other parameters
+  bool init_with_pwl;
   unsigned random_seed;
 
   namespace po = boost::program_options;
@@ -152,6 +180,9 @@ int main(int argc, char** argv) {
      "Fixed lambda (1 or 2 values, depending on factor type)");
   //  Other parameters
   desc.add_options()
+    ("init_with_pwl",
+     po::bool_switch(&init_with_pwl),
+     "If set, initialize parameters with piecewise likelihood estimates.")
     ("random_seed",
      po::value<unsigned>(&random_seed)->default_value(time(NULL)),
      "Random seed. (default=time)");
@@ -205,16 +236,18 @@ int main(int argc, char** argv) {
     finite_var_vector X(Y_X_and_map.get<1>());
     finite_var_vector YX(Y);
     YX.insert(YX.end(), X.begin(), X.end());
-    cout << "True model for P(Y,X):\n" << YXmodel << "\n" << endl;
+    datasource_info_type ds_info(YX);
+    /*
     datasource_info_type ds_info;
     ds_info.finite_seq = YX;
     ds_info.var_type_order =
       std::vector<variable::variable_typenames>
       (YX.size(), variable::FINITE_VARIABLE);
+    */
 
     run_test<table_crf_factor>
       (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, do_cv, fixed_lambda, rng,
-       cpl_params, cv_builder);
+       cpl_params, cv_builder, init_with_pwl);
   } else if (factor_type == "gaussian") {
     decomposable<canonical_gaussian> YXmodel;
     crf_model<gaussian_crf_factor> YgivenXmodel;
@@ -229,16 +262,18 @@ int main(int argc, char** argv) {
     vector_var_vector X(Y_X_and_map.get<1>());
     vector_var_vector YX(Y);
     YX.insert(YX.end(), X.begin(), X.end());
-    cout << "True model for P(Y,X):\n" << YXmodel << "\n" << endl;
+    datasource_info_type ds_info(YX);
+    /*
     datasource_info_type ds_info;
     ds_info.vector_seq = YX;
     ds_info.var_type_order =
       std::vector<variable::variable_typenames>
       (YX.size(), variable::VECTOR_VARIABLE);
+    */
 
     run_test<gaussian_crf_factor>
       (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, do_cv, fixed_lambda, rng,
-       cpl_params, cv_builder);
+       cpl_params, cv_builder, init_with_pwl);
   } else {
     assert(false);
   }

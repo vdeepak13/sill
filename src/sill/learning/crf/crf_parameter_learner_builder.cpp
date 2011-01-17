@@ -4,11 +4,13 @@
 namespace sill {
 
   void crf_parameter_learner_builder::add_options
-  (boost::program_options::options_description& desc) {
+  (boost::program_options::options_description& desc,
+   const std::string& desc_prefix) {
+
     namespace po = boost::program_options;
 
     po::options_description
-      sub_desc1(std::string("CRF Parameter Learner Options: Learning"));
+      sub_desc1(desc_prefix + "CRF Parameter Learner Options: Learning");
     sub_desc1.add_options()
       ("regularization",
        po::value<size_t>(&(cpl_params.regularization))->default_value(2),

@@ -126,6 +126,9 @@ namespace sill {
   gaussian_crf_factor::gaussian_crf_factor(const constant_factor& cf)
     : base(), fixed_records_(false), conditioned_f(cf) { }
 
+  gaussian_crf_factor::gaussian_crf_factor(double c)
+    : base(), fixed_records_(false), conditioned_f(c) { }
+
   const vector_var_vector& gaussian_crf_factor::output_arg_list() const {
     return Y_;
   }
@@ -746,6 +749,24 @@ namespace sill {
     default:
       throw std::invalid_argument("table_crf_factor::regularization_penalty() given bad regularization argument.");
     }
+  }
+
+  // Public methods: Operators
+  // =========================================================================
+
+  gaussian_crf_factor&
+  gaussian_crf_factor::operator*=(const gaussian_crf_factor& other) {
+    if (!set_disjoint(this->output_arguments(), other.input_arguments()) ||
+        !set_disjoint(this->input_arguments(), other.output_arguments())) {
+      throw std::runtime_error("gaussian_crf_factor::operator*= tried to multiply two factors with at least one variable common to one factor's Y and the other factor's X.");
+    }
+    // TO DO: Implement this more efficiently, and maintain fixed_record_ if
+    //        it was set for both this and other.
+    moment_gaussian this_mg(this->get_gaussian());
+    moment_gaussian other_mg(other.get_gaussian());
+    this_mg *= other_mg;
+    this->operator=(gaussian_crf_factor(this_mg));
+    return *this;
   }
 
 }  // namespace sill

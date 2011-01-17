@@ -19,7 +19,7 @@
 using namespace sill;
 
 /**
- * \file crf_graph.cpp CRF graph test
+ * \file crf_graph_test.cpp CRF graph test
  */
 int main() {
 

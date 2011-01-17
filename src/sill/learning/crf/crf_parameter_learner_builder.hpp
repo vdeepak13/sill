@@ -23,7 +23,8 @@ namespace sill {
      * Once the Options Description is used to parse argv, this struct will
      * hold the specified values.
      */
-    void add_options(boost::program_options::options_description& desc);
+    void add_options(boost::program_options::options_description& desc,
+                     const std::string& desc_prefix = "");
 
     //! Return the CRF Parameter Learner options specified in this builder.
     const crf_parameter_learner_parameters& get_parameters();

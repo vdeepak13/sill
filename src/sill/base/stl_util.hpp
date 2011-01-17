@@ -336,6 +336,32 @@ namespace sill {
     return out;
   }
 
+  // Functions on vectors
+  //============================================================================
+
+  //! Returns a subvector of v specified by the complement of the given indices.
+  //! @param indices_sorted  Specifies if the given indices are sorted in
+  //!                        in increasing order.
+  template <typename T, typename IndexType>
+  std::vector<T> remove_subvector(const std::vector<T>& v,
+                                  const std::vector<IndexType>& indices,
+                                  bool indices_sorted = false) {
+    std::vector<T> newv;
+    if (indices_sorted) {
+      size_t indices_i = 0;
+      for (size_t i = 0; i < v.size(); ++i) {
+        if (i < indices.size() &&
+            i == indices[indices_i]) {
+          ++indices_i;
+        } else {
+          newv.push_back(v[i]);
+        }
+      }
+    } else {
+      throw std::runtime_error("remove_subvector not yet fully implemented!");
+    }
+  } // remove_subvector
+
 }; // end of namespace sill
 
 #include <sill/macros_undef.hpp>

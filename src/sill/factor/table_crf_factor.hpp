@@ -59,21 +59,8 @@ namespace sill {
 
     }; // struct parameters
 
-    // Protected data
-    // =========================================================================
-  protected:
-
-    table_factor_opt_vector f;
-
-    //! If true, the data is stored in log-space.
-    bool log_space_;
-
-    //! Temporary used to avoid reallocation for conditioning.
-    mutable table_factor conditioned_f;
-
     // Public methods: Constructors, getters, helpers
     // =========================================================================
-  public:
 
     //! Default constructor.
     table_crf_factor()
@@ -140,6 +127,19 @@ namespace sill {
      */
     void relabel_outputs_inputs(const output_domain_type& new_Y,
                                 const input_domain_type& new_X);
+
+    //! Serialize members
+    void save(oarchive & ar) const {
+      base::save(ar);
+      ar << f << log_space_ << conditioned_f;
+      // Serialize conditioned_f since it is needed for constant factors.
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      base::load(ar);
+      ar >> f >> log_space_ >> conditioned_f;
+    }
 
     // Public methods: Probabilistic queries
     // =========================================================================
@@ -409,6 +409,29 @@ namespace sill {
     void add_regularization_hessian_diag(optimization_vector& hd,
                                          const regularization_type& reg,
                                          double w) const;
+
+    // Public methods: Operators
+    // =========================================================================
+
+    /**
+     * Multiplication with another factor.
+     * @param other  Factor f(Y_other,X_other), where Y_other must be disjoint
+     *               from this factor's Y and X_other disjoint from this
+     *               factor's X.
+     */
+    table_crf_factor& operator*=(const table_crf_factor& other);
+
+    // Protected data
+    // =========================================================================
+  protected:
+
+    table_factor_opt_vector f;
+
+    //! If true, the data is stored in log-space.
+    bool log_space_;
+
+    //! Temporary used to avoid reallocation for conditioning.
+    mutable table_factor conditioned_f;
 
   };  // class table_crf_factor
 

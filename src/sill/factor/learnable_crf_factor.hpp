@@ -96,6 +96,9 @@ namespace sill {
 
     virtual ~learnable_crf_factor() { }
 
+    using base::save;
+    using base::load;
+
     // Public methods: Learning methods
     // =========================================================================
 

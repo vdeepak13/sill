@@ -160,6 +160,16 @@ namespace sill {
 
     virtual ~crf_factor() { }
 
+    //! Serialize members
+    void save(oarchive & ar) const {
+      ar << Ydomain_ << (*Xdomain_ptr_) << fixed_value_;
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      ar >> Ydomain_ >> (*Xdomain_ptr_) >> fixed_value_;
+    }
+
     // Public methods: Getters and helpers
     // =========================================================================
 
@@ -290,6 +300,29 @@ namespace sill {
     //! but it should only be used with log-space.
     virtual optimization_vector& weights() = 0;
 
+    // Public methods: Other
+    // =========================================================================
+
+    //! Check validity of shuffling of output, input variables.
+    //! @return True iff union(old_Y,old_X) = union(new_Y,new_X).
+    static bool
+    valid_output_input_relabeling(const output_domain_type& old_Y,
+                                  const input_domain_type& old_X,
+                                  const output_domain_type& new_Y,
+                                  const input_domain_type& new_X) {
+      if (new_Y.size() + new_X.size() != old_Y.size() + old_X.size())
+        return false;
+      domain_type args(old_Y);
+      args.insert(old_X.begin(), old_X.end());
+      foreach(output_variable_type* v, new_Y)
+        args.erase(v);
+      foreach(input_variable_type* v, new_X)
+        args.erase(v);
+      if (args.size() != 0)
+        return false;
+      return true;
+    }
+
     // Protected data members
     //==========================================================================
   protected:
@@ -303,27 +336,6 @@ namespace sill {
     //! If true, then this factor's value stays fixed in crf_parameter_learner.
     //! (default after construction = false)
     bool fixed_value_;
-
-    // Protected methods
-    //===============================================================
-
-    //! Check validity of shuffling of output, input variables.
-    //! @return True iff union(Y,X) = union(new_Y,new_X).
-    bool valid_output_input_relabeling(const output_domain_type& new_Y,
-                                       const input_domain_type& new_X) const {
-      if (new_Y.size() + new_X.size() !=
-          output_arguments().size() + input_arguments().size()) {
-        return false;
-      }
-      domain_type args(arguments());
-      foreach(output_variable_type* v, new_Y)
-        args.erase(v);
-      foreach(input_variable_type* v, new_X)
-        args.erase(v);
-      if (args.size() != 0)
-        return false;
-      return true;
-    }
 
   }; // class crf_factor
 

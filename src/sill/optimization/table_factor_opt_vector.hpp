@@ -50,6 +50,16 @@ namespace sill {
     table_factor_opt_vector(const finite_domain& vars, double default_val)
       : f(vars, default_val) { }
 
+    //! Serialize members
+    void save(oarchive & ar) const {
+      ar << f;
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      ar >> f;
+    }
+
     // Getters and non-math setters
     //--------------------------------------------------------------------------
 

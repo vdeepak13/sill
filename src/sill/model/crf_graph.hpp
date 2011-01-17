@@ -103,6 +103,40 @@ namespace sill {
           delete(Y);
       }
 
+      //! Serialize members.
+      //! NOTE: This does NOT save the vertex property;
+      //!       the caller must save that info separately.
+      void save(oarchive & ar) const {
+        if (v) { // variable vertex
+          ar << true << v;
+        } else if (Y && X_ptr) { // factor vertex
+          ar << false << *Y << *X_ptr;
+        } else {
+          throw std::runtime_error("crf_graph_vertex_info::save called for vertex which was neither a variable vertex nor a factor vertex.");
+        }
+      }
+
+      //! Deserialize members
+      //! NOTE: This does NOT load the vertex property;
+      //!       the caller must load that info separately.
+      void load(iarchive & ar) {
+        if (Y) {
+          delete(Y);
+          Y = NULL;
+        }
+        if (X_ptr)
+          X_ptr.reset();
+        bool var_vertex;
+        ar >> var_vertex;
+        if (var_vertex) {
+          ar >> v;
+        } else {
+          Y = new output_domain_type();
+          X_ptr.reset(new input_domain_type());
+          ar >> *Y >> *X_ptr;
+        }
+      }
+
       //! Assignment operator.
       crf_graph_vertex_info& operator=(const crf_graph_vertex_info& info) {
         if (Y) {
@@ -318,74 +352,26 @@ namespace sill {
 
     }; // class neighbor2_iterator
 
-    // Protected data members and methods
-    // =========================================================================
-  protected:
-
-    //! A map from output variables to their variable vertices.
-    std::map<output_variable_type*, vertex> variable_index_;
-
-    //! List of factor vertices.
-    std::list<vertex> factor_vertices_;
-
-    //! The underlying graph.
-    graph_type graph;
-
-    //! The next vertex id
-    size_t next_vertex;
-
-    //! Output variables Y
-    output_domain_type Y_;
-
-    //! Input variables X
-    input_domain_type X_;
-
-    //! Mapping: input variable x --> number of factors using x
-    //! This is needed to make remove_factor() efficient.
-    std::map<input_variable_type*, size_t> X_counts;
-
-    //! Removes unnecessary unary vertices.
-    //! @return  VertexProperty values for removed vertices.
-    std::list<VertexProperty> simplify_unary_helper() {
-      std::list<VertexProperty> removed_properties;
-      std::set<vertex> remove_vertices_;
-      foreach(const vertex& u, factor_vertices_) {
-        if (output_arguments(u).size() == 1) {
-          foreach(const vertex& v, neighbors2(u)) {
-            if ((output_arguments(v).size() > 1) &&
-                includes(input_arguments(v), input_arguments(u))) {
-              remove_vertices_.insert(u);
-              break;
-            }
-          }
-        }
-      }
-      foreach(const vertex& u, remove_vertices_) {
-        removed_properties.push_back(graph[u].property);
-        graph.remove_vertex(u);
-      }
-      for (typename std::list<vertex>::iterator it(factor_vertices_.begin());
-           it != factor_vertices_.end(); ) {
-        if (remove_vertices_.count(*it) != 0) {
-          typename std::list<vertex>::iterator it2(it);
-          ++it;
-          factor_vertices_.erase(it2);
-        } else {
-          ++it;
-        }
-      }
-      return removed_properties;
-    }
-
     // Constructors and destructors
     //==========================================================================
-  public:
 
     /**
      * Creates a CRF graph with no factors and no variables.
      * Use the add_factor method to add factors and variables.
      */
     crf_graph() : next_vertex(0) { }
+
+    //! Serialize members
+    void save(oarchive & ar) const {
+      ar << variable_index_ << factor_vertices_ << graph << next_vertex
+         << Y_ << X_ << X_counts;
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      ar >> variable_index_ >> factor_vertices_ >> graph >> next_vertex
+         >> Y_ >> X_ >> X_counts;
+    }
 
     // Graph accessors
     // =========================================================================
@@ -969,7 +955,66 @@ namespace sill {
           ++(X_counts_it->second);
       }
       return vert;
-    }
+    } // add_factor_nocheck
+
+    // Protected data members and methods
+    // =========================================================================
+  protected:
+
+    //! A map from output variables to their variable vertices.
+    std::map<output_variable_type*, vertex> variable_index_;
+
+    //! List of factor vertices.
+    std::list<vertex> factor_vertices_;
+
+    //! The underlying graph.
+    graph_type graph;
+
+    //! The next vertex id
+    size_t next_vertex;
+
+    //! Output variables Y
+    output_domain_type Y_;
+
+    //! Input variables X
+    input_domain_type X_;
+
+    //! Mapping: input variable x --> number of factors using x
+    //! This is needed to make remove_factor() efficient.
+    std::map<input_variable_type*, size_t> X_counts;
+
+    //! Removes unnecessary unary vertices.
+    //! @return  VertexProperty values for removed vertices.
+    std::list<VertexProperty> simplify_unary_helper() {
+      std::list<VertexProperty> removed_properties;
+      std::set<vertex> remove_vertices_;
+      foreach(const vertex& u, factor_vertices_) {
+        if (output_arguments(u).size() == 1) {
+          foreach(const vertex& v, neighbors2(u)) {
+            if ((output_arguments(v).size() > 1) &&
+                includes(input_arguments(v), input_arguments(u))) {
+              remove_vertices_.insert(u);
+              break;
+            }
+          }
+        }
+      }
+      foreach(const vertex& u, remove_vertices_) {
+        removed_properties.push_back(graph[u].property);
+        graph.remove_vertex(u);
+      }
+      for (typename std::list<vertex>::iterator it(factor_vertices_.begin());
+           it != factor_vertices_.end(); ) {
+        if (remove_vertices_.count(*it) != 0) {
+          typename std::list<vertex>::iterator it2(it);
+          ++it;
+          factor_vertices_.erase(it2);
+        } else {
+          ++it;
+        }
+      }
+      return removed_properties;
+    } // simplify_unary_helper
 
   }; // crf_graph
 

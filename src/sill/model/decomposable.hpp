@@ -188,6 +188,16 @@ namespace sill {
       args.swap(other.args);
     }
 
+    //! Serialize members
+    void save(oarchive & ar) const {
+      ar << args << jt;
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      ar >> args >> jt;
+    }
+
     // Graph accessors
     // =========================================================================
     //! Returns an ordered set of all vertices

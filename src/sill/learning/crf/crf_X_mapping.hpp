@@ -117,6 +117,87 @@ namespace sill {
      X_map2_)
       : X_map_type_(2), X_map2_(X_map2_) { }
 
+    //! Serialize members
+    void save(oarchive & ar) const {
+      ar << X_map_type_;
+      switch (X_map_type_) {
+      case 0:
+        {
+          ar << X_map_.size();
+          typename
+            std::map<output_domain_type, copy_ptr<input_domain_type> >
+            ::const_iterator it = X_map_.begin();
+          while (it != X_map_.end()) {
+            ar << it->first << *(it->second);
+            ++it;
+          }
+        }
+        break;
+      case 1:
+        ar << *all_X_;
+        break;
+      case 2:
+        {
+          ar << X_map2_.size();
+          typename
+            std::map<output_variable_type*, copy_ptr<input_domain_type> >
+            ::const_iterator it = X_map2_.begin();
+          while (it != X_map2_.end()) {
+            ar << it->first << *(it->second);
+            ++it;
+          }
+        }
+        break;
+      default:
+        throw std::runtime_error
+          ("crf_X_mapping::save called on instance with invalid X_map_type_");
+      }
+    } // save
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      X_map_.clear();
+      all_X_.reset();
+      X_map2_.clear();
+
+      ar >> X_map_type_;
+      switch (X_map_type_) {
+      case 0:
+        {
+          size_t mapsize;
+          ar >> mapsize;
+          output_domain_type outdom;
+          input_domain_type indom;
+          for (size_t i = 0; i < mapsize; ++i) {
+            ar >> outdom >> indom;
+            X_map_[outdom] =
+              copy_ptr<input_domain_type>(new input_domain_type(indom));
+          }
+        }
+        break;
+      case 1:
+        all_X_.reset(new input_domain_type());
+        ar >> *all_X_;
+        break;
+      case 2:
+        {
+          size_t mapsize;
+          ar >> mapsize;
+          output_variable_type* outvar;
+          input_domain_type indom;
+          for (size_t i = 0; i < mapsize; ++i) {
+            ar >> outvar >> indom;
+            X_map2_[outvar] =
+              copy_ptr<input_domain_type>(new input_domain_type(indom));
+          }
+        }
+        break;
+      default:
+        throw std::runtime_error
+          ("crf_X_mapping::load read invalid X_map_type_");
+      }
+    } // load
+
     // Public methods: Getters
     //==========================================================================
 

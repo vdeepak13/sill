@@ -57,7 +57,18 @@ namespace sill {
       jt_vertex_info(const std::set<Node>& clique,
                      const VertexProperty& property = VertexProperty())
         : clique(clique), property(property), marked() { }
-    };
+
+      //! Serialize members
+      void save(oarchive & ar) const {
+        ar << clique << property << marked;
+      }
+
+      //! Deserialize members
+      void load(iarchive & ar) {
+        ar >> clique >> property >> marked;
+      }
+
+    }; // struct jt_vertex_info
 
     template <typename Node, typename VP>
     std::ostream& operator<<(std::ostream& out,
@@ -96,7 +107,20 @@ namespace sill {
       jt_edge_info(const std::set<Node>& separator,
                    const EdgeProperty& property = EdgeProperty())
         : separator(separator), property(property), marked(marked) { }
-    };
+
+      //! Serialize members
+      void save(oarchive & ar) const {
+        ar << separator << property << marked << forward_reachable
+           << reverse_reachable;
+      }
+
+      //! Deserialize members
+      void load(iarchive & ar) {
+        ar >> separator >> property >> marked >> forward_reachable
+           >> reverse_reachable;
+      }
+
+    }; // struct jt_edge_info
 
     template <typename Node, typename EdgeProperty>
     std::ostream& operator<<(std::ostream& out,
@@ -372,6 +396,16 @@ namespace sill {
 
     operator std::string() const {
       std::ostringstream out; out << *this; return out.str();
+    }
+
+    //! Serialize members
+    void save(oarchive & ar) const {
+      ar << clique_index << graph << next_vertex;
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      ar >> clique_index >> graph >> next_vertex;
     }
 
     // Graph accessors

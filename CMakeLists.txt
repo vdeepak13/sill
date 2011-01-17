@@ -85,39 +85,6 @@ set(MPI_CXX true CACHE BOOL
 # Math library
 find_package(IT++)
 
-# CUDA libraries (required only for GPU code)
-#   The SDK and the Thrust library must be installed.
-#   If CUDA libraries are not found, ignore the following commands:
-#     cuda_add_executable
-set(CUDA_NVCC_FLAGS_Debug "-g -D_DEBUG -G")
-mark_as_advanced(CUDA_NVCC_FLAGS_Debug)
-find_package(CUDA)
-# Check for the CUDA SDK.
-if(CUDA_FOUND)
-  if(CUDA_SDK_ROOT_DIR)
-    message(STATUS "CUDA SDK found: " ${CUDA_SDK_ROOT_DIR})
-  else(CUDA_SDK_ROOT_DIR)
-    message(STATUS "CUDA_SDK_ROOT_DIR not found! CUDA will be set to not found. Install the SDK, or define the directory explicitly if it exists.")
-    set(CUDA_FOUND "")
-  endif(CUDA_SDK_ROOT_DIR)
-endif(CUDA_FOUND)
-# Check for CUDA Thrust.
-if(CUDA_FOUND)
-  find_package(CUDAThrust QUIET)
-  if(CUDATHRUST_FOUND)
-    message(STATUS "CUDA Thrust found: " ${CUDATHRUST_INCLUDE_DIR})
-  else(CUDATHRUST_FOUND)
-    message(STATUS "CUDA Thrust not found.  Some executables will not be compiled.")
-  endif(CUDATHRUST_FOUND)
-endif(CUDA_FOUND)
-if(CUDA_FOUND)
-  message(STATUS "CUDA Found: " ${CUDA_VERSION})
-else(CUDA_FOUND)
-  message(STATUS "CUDA Not Found! GPU executables will not be compiled.")
-  macro(CUDA_ADD_EXECUTABLE cuda_target)
-  endmacro(CUDA_ADD_EXECUTABLE cuda_target)
-endif(CUDA_FOUND)
-
 # OpenCV (optional)
 # If OpenCV is not found, projects/qsgm/vision/ compiles to throw an error.
 find_package(OpenCV)

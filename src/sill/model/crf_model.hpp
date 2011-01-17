@@ -264,6 +264,37 @@ namespace sill {
         }
       }
 
+      //! Serialize members
+      void save(oarchive & ar) const {
+        ar << own_data;
+        if (own_data) {
+          ar << factor_weights_.size();
+          foreach(typename crf_factor::optimization_vector* ov_ptr,
+                  factor_weights_)
+            ar << *ov_ptr;
+        }
+      }
+
+      //! Deserialize members
+      void load(iarchive & ar) {
+        if (own_data) {
+          foreach(typename crf_factor::optimization_vector* ov, factor_weights_)
+            delete(ov);
+          factor_weights_.clear();
+        }
+        ar >> own_data;
+        if (own_data) {
+          size_t fw_size;
+          ar >> fw_size;
+          factor_weights_.resize(fw_size, NULL);
+          foreach(typename crf_factor::optimization_vector* ov_ptr,
+                  factor_weights_) {
+            ov_ptr = new typename crf_factor::optimization_vector();
+            ar >> *ov_ptr;
+          }
+        }
+      }
+
       // Getters and non-math setters
       //------------------------------------------------------------------------
 
@@ -530,8 +561,61 @@ namespace sill {
       }
     }
 
+    //! Serialize members
+    void save(oarchive & ar) const {
+      crf_graph_type::save(ar);
+      ar << factors_;
+      // Save mapping for reconstructing graph data:
+      //  vertex --> index in factors_
+      std::map<vertex, size_t> v2f;
+      {
+        std::map<const crf_factor*, size_t> fptr2index;
+        size_t i = 0;
+        foreach(const crf_factor& f, factors_) {
+          fptr2index[&f] = i;
+          ++i;
+        }
+        foreach(const vertex& v, this->factor_vertices()) {
+          v2f[v] =
+            safe_get(fptr2index, (const crf_factor*)(this->operator[](v)));
+        }
+      }
+      ar << v2f;
+    } // save
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      crf_graph_type::load(ar);
+      ar >> factors_;
+      weights_.own_data = false;
+      weights_.factor_weights_.clear();
+      foreach(crf_factor& f, factors_) {
+        if (!f.fixed_value())
+          weights_.factor_weights_.push_back(&(f.weights()));
+      }
+      conditioned_model_valid = false;
+      // Reconstruct graph data.
+      std::map<vertex, size_t> v2f; //  vertex --> index in factors_
+      ar >> v2f;
+      std::vector<crf_factor*> fptrs(factors_.size(), NULL);
+      size_t i = 0;
+      foreach(crf_factor& f, factors_) {
+        fptrs[i] = &f;
+        ++i;
+      }
+      foreach(const vertex& v, this->factor_vertices()) {
+        this->operator[](v) = fptrs[safe_get(v2f, v)];
+      }
+    } // load
+
     // Getters and helpers
     // =========================================================================
+
+    using crf_graph_type::size;
+    using crf_graph_type::num_arguments;
+    using crf_graph_type::arguments;
+    using crf_graph_type::output_arguments;
+    using crf_graph_type::input_arguments;
 
     //! Assignment operator.
     crf_model& operator=(const crf_model& crf) {
@@ -837,8 +921,8 @@ namespace sill {
       if (!factor.fixed_value())
         weights_.factor_weights_.push_back(&(factors_.back().weights()));
       return this->crf_graph_type::add_factor(factor.output_arguments(),
-                                    factor.input_arguments_ptr(),
-                                    &(factors_.back()));
+                                              factor.input_arguments_ptr(),
+                                              &(factors_.back()));
     }
 
     /**
@@ -853,8 +937,8 @@ namespace sill {
         if (!f.fixed_value())
           weights_.factor_weights_.push_back(&(factors_.back().weights()));
         crf_graph_type::add_factor_no_check(f.output_arguments(),
-                                  f.input_arguments_ptr(),
-                                  &(factors_.back()));
+                                            f.input_arguments_ptr(),
+                                            &(factors_.back()));
       }
       // Check to make sure Y,X stay separate.
       if (!set_disjoint(Y_, X_)) {
@@ -914,6 +998,29 @@ namespace sill {
         if (!f.fixed_value())
           weights_.factor_weights_.push_back(&(f.weights()));
       }
+    }
+
+    /**
+     * Relabels outputs Y, inputs X so that:
+     *  - inputs may become outputs (if variable_type = output_variable_type)
+     *  - outputs may become inputs (if variable_type = input_variable_type).
+     * The entire argument set must remain the same, i.e.,
+     * union(Y,X) must equal union(new_Y, new_X).
+     */
+    void relabel_outputs_inputs(const output_domain_type& new_Y,
+                                const input_domain_type& new_X) {
+      if (!crf_factor::valid_output_input_relabeling
+          (output_arguments(), input_arguments(), new_Y, new_X)) {
+        throw std::invalid_argument("crf_model::relabel_outputs_inputs given new_Y,new_X whose union did not equal the union of the old Y,X.");
+      }
+      std::list<crf_factor> new_factors(factors_);
+      foreach(crf_factor& f, new_factors) {
+        domain_type f_args(f.arguments());
+        f.relabel_outputs_inputs(set_intersect(new_Y, f_args),
+                                 set_intersect(new_X, f_args));
+      }
+      this->clear();
+      this->add_factors(new_factors);
     }
 
     //! Prints the arguments and factors of the model.

@@ -8,10 +8,9 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/gaussian_crf_factor.hpp>
-#include <sill/factor/log_reg_crf_factor.hpp>
 #include <sill/iterator/subset_iterator.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/learn_crf_factor.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/base/stl_util.hpp>
 

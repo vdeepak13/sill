@@ -12,7 +12,8 @@ namespace sill {
   void
   table_crf_factor::relabel_outputs_inputs(const output_domain_type& new_Y,
                                            const input_domain_type& new_X) {
-    if (!valid_output_input_relabeling(new_Y,new_X)) {
+    if (!valid_output_input_relabeling(output_arguments(), input_arguments(),
+                                       new_Y,new_X)) {
       throw std::invalid_argument("table_crf_factor::relabel_outputs_inputs given new_Y,new_X whose union did not equal the union of the old Y,X.");
     }
     Ydomain_ = new_Y;
@@ -332,6 +333,40 @@ namespace sill {
     default:
       throw std::invalid_argument("table_crf_factor::regularization_penalty() given bad regularization argument.");
     }
+  }
+
+  // Public methods: Operators
+  // =========================================================================
+
+  table_crf_factor&
+  table_crf_factor::operator*=(const table_crf_factor& other) {
+    if (!set_disjoint(this->output_arguments(), other.input_arguments()) ||
+        !set_disjoint(this->input_arguments(), other.output_arguments())) {
+      throw std::runtime_error("table_crf_factor::operator*= tried to multiply two factors with at least one variable common to one factor's Y and the other factor's X.");
+    }
+    if (log_space_) {
+      if (other.log_space()) {
+        f.f += other.f.f;
+      } else {
+        // TO DO: This copy could be avoided.
+        table_factor other_f_f(other.f.f);
+        other_f_f.update(logarithm<double>());
+        f.f += other_f_f;
+      }
+    } else {
+      if (other.log_space()) {
+        convert_to_log_space();
+        f.f += other.f.f;
+        convert_to_real_space();
+      } else {
+        f.f *= other.f.f;
+      }
+    }
+    Ydomain_.insert(other.output_arguments().begin(),
+                    other.output_arguments().end());
+    Xdomain_ptr_->insert(other.input_arguments().begin(),
+                         other.input_arguments().end());
+    return *this;
   }
 
 }  // namespace sill
