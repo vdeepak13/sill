@@ -164,6 +164,7 @@ namespace sill {
     void initialize
     (const junction_tree<variable_type*, VertProp, EdgeProp>& structure,
      const std::vector<F>& marginals) {
+
       jt.initialize(structure);
       args.clear();
       assert(marginals.size() == jt.num_vertices());
@@ -1490,6 +1491,24 @@ namespace sill {
       foreach(edge e, edges())
         jt[e].normalize();
     }
+
+    /**
+     * Reorder factor variables to support more efficient calibration.
+     *  - Start with the root node; keep its variables in the current order.
+     *  - Do a search from the root node; at each edge u --> v,
+     *     - Order the separator vars in the same order as in u.
+     *     - Order v's vars with the separator vars first (as the least
+     *       significant vars) and the new vars second.
+     *     - Note: For models with cliques of size > 2, the separator's vars
+     *       may not be contiguous in u's var order;
+     *       i.e., u may have order (A,B,C) while the separator has order (A,C).
+     * This ordering means that, during calibration,
+     *  - During the post-order traversal, we go from v to u along edge e:
+     *     - Divide [u] /= [e] (and multiply analogously)
+     *        - RIGHT HERE NOW
+     *     - Get marginal over [e] of [v].
+     *  - During the pre-order traversal,
+     */
 
     // Private member class definitions
     //==========================================================================

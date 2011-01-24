@@ -19,7 +19,7 @@
 
 #include <sill/macros_def.hpp>
 
-// #define EXPERIMENTAL
+#define EXPERIMENTAL
 
 namespace sill {
 
@@ -58,6 +58,9 @@ namespace sill {
     //==========================================================================
   private:
     class offset_functor;
+#ifdef EXPERIMENTAL
+    class offset_iterator;
+#endif
 
     //! The dimensions of this table
     shape_type shape_;
@@ -67,6 +70,10 @@ namespace sill {
 
     //! The elements of this table, stored in a linear sequence.
     std::vector<T> elts;
+
+    offset_iterator off_it1;
+
+    offset_iterator off_it2;
 
   public: // temporary hack by Anton
     //! The offset calculator which maps indices for this table's
@@ -283,10 +290,15 @@ namespace sill {
               const shape_type& x_dim_map, const shape_type& y_dim_map,
               JoinOp op) {
       concept_assert((BinaryFunction<JoinOp,T,T,T>));
-      #ifdef EXPERIMENTAL
+#ifdef EXPERIMENTAL
             // Get offset calculators for the two input tables.
-      offset_iterator x_offset(x.shape(), this->arity(), x_dim_map);
-      offset_iterator y_offset(y.shape(), this->arity(), y_dim_map);
+//      offset_iterator x_offset(x.shape(), this->shape(), x_dim_map);
+//      offset_iterator y_offset(y.shape(), this->shape(), y_dim_map);
+
+      offset_iterator& x_offset = off_it1;
+      offset_iterator& y_offset = off_it2;
+      x_offset.reset(x.shape(), this->shape(), x_dim_map);
+      y_offset.reset(y.shape(), this->shape(), y_dim_map);
 
       // Iterate over the cells of this table, computing the value
       // using the corresponding cells of the input tables.
@@ -296,7 +308,7 @@ namespace sill {
         ++x_offset;
         ++y_offset;
       }
-      #else
+#else
       // Get offset calculators for the two input tables.
       offset_functor x_offset(x.shape(), this->arity(), x_dim_map);
       offset_functor y_offset(y.shape(), this->arity(), y_dim_map);
@@ -306,7 +318,7 @@ namespace sill {
       foreach(const shape_type& index, indices())
         (*this)(index) = op(x.elts[x_offset(index)],
                             y.elts[y_offset(index)]);
-      #endif
+#endif
     }
 
     //! implements Table::join_with
@@ -315,10 +327,14 @@ namespace sill {
                    JoinOp op) {
       concept_assert((BinaryFunction<JoinOp,T,T,T>));
 
-      #ifdef EXPERIMENTAL
+#ifdef EXPERIMENTAL
       // Get an offset calculator for y.
-      offset_iterator y_offset(y.shape(), this->arity(), y_dim_map);
-      offset_iterator this_offset(base::shape());
+//      offset_iterator y_offset(y.shape(), this->shape(), y_dim_map);
+//      offset_iterator this_offset(this->shape());
+      offset_iterator& y_offset = off_it1;
+      offset_iterator& this_offset = off_it2;
+      y_offset.reset(y.shape(), this->shape(), y_dim_map);
+      this_offset.reset(this->shape());
       // Iterate over the cells of this table, computing the value
       // using the corresponding cell of y.
 
@@ -327,7 +343,7 @@ namespace sill {
         ++y_offset;
         ++this_offset;
       }
-      #else
+#else
 
       // Get an offset calculator for y.
       offset_functor y_offset(y.shape(), this->arity(), y_dim_map);
@@ -337,7 +353,7 @@ namespace sill {
       foreach(const shape_type& index, indices()) {
         (*this)(index) = op((*this)(index), y.elts[y_offset(index)]);
       }
-      #endif
+#endif
     }
 
     //! implements Table::aggregate
@@ -347,7 +363,9 @@ namespace sill {
       concept_assert((BinaryFunction<AggOp,T,T,T>));
       #ifdef EXPERIMENTAL
       // Get an offset calculator that maps x indexes to z offsets.
-      offset_iterator z_offset(this->shape(), x.arity(), dim_map);
+//      offset_iterator z_offset(this->shape(), x.shape(), dim_map);
+      offset_iterator& z_offset = off_it1;
+      z_offset.reset(this->shape(), x.shape(), dim_map);
       // Iterate over the cells of the input table, computing the
       // aggregate.
       foreach(const shape_type& x_index, x.indices()) {
@@ -478,6 +496,59 @@ namespace sill {
       }
     }
 
+    /**
+     * More efficient version of restrict which expects this table to be
+     * aligned with x as follows:
+     *  - If x has dimensions [d1, d2, ..., dk], with d1 being the least
+     *    significant digit,
+     *  - Then this table must have dimensions [d1, d2, ..., dl] with l <= k.
+     *    The value l is determined by this table's current dimensions.
+     *
+     * @param x
+     *        Input table.
+     * @param restrict_map  
+     *        An object such that restrict_map[i] >= x.size(i) if
+     *        dimension i of x is not to be restricted and
+     *        restrict_map[i] = j if x is to be restricted to value j
+     *        in dimension i.
+     *        For this version of restrict, the first l elements of restrict_map
+     *        are ignored.
+     */ 
+    void restrict_aligned(const dense_table& x,
+                          const shape_type& restrict_map) {
+      size_t l = this->arity();
+      if (x.arity() < l)
+        throw std::invalid_argument
+          (std::string("dense_table::restrict_aligned(x, restrict_map)") +
+           " was given x with fewer dimensions than this table.");
+      if (x.arity() != restrict_map.size())
+        throw std::invalid_argument
+          (std::string("dense_table::restrict_aligned(x, restrict_map)") +
+           " was given x, restrict_map with non-matching dimensions.");
+      for (size_t i = 0; i < l; ++i) {
+        if (shape_[i] != x.size(i))
+          throw std::invalid_argument
+            (std::string("dense_table::restrict_aligned(x, restrict_map)") +
+             " was called on a table with dimensions not matching x.");
+      }
+
+      // Calculate offset for remaining elements.
+      size_t off = 0;
+      for (size_t i = l; i < x.arity(); ++i) {
+        if (restrict_map[i] >= x.size(i))
+          throw std::invalid_argument
+            (std::string("dense_table::restrict_aligned(x, restrict_map)") +
+             " was given restrict_map which did not restrict all required" +
+             " dimensions.");
+        off += x.offset.get_multiplier(i) * restrict_map[i];
+      }
+
+      // Copy elements from x at offset to this table.
+      for (size_t i = 0; i < this->size(); ++i)
+        elts[i] = x.elts[off + i];
+
+    } // restrict_aligned
+
     // Iterators
     //==========================================================================
   public:
@@ -581,9 +652,9 @@ namespace sill {
        *        indicate no restriction
        *
        */
-      bool increment(shape_type& index,
-                     const shape_type& geometry,
-                     const shape_type& restrict_map) {
+      static bool increment(shape_type& index,
+                            const shape_type& geometry,
+                            const shape_type& restrict_map) {
         assert(index.size() == geometry.size());
         assert(index.size() == restrict_map.size());
 
@@ -646,7 +717,6 @@ namespace sill {
     }; // class index_iterator
 
   private:
-    //  public: //temporary hack -anton
 
     /**
      * An offset calculator is an object that translates table indices
@@ -659,7 +729,7 @@ namespace sill {
     class offset_functor {
 
       //! The multiplier associated with the index in each dimension.
-      shape_type multiplier;
+      shape_type multiplier_;
 
     public:
 
@@ -668,10 +738,10 @@ namespace sill {
        * associated with a table with the supplied geometry.
        */
       offset_functor(const shape_type& geometry)
-        : multiplier(geometry.size(), 1) {
+        : multiplier_(geometry.size(), 1) {
         // Calculate the multipliers.
-        for (size_t i = 1; i < multiplier.size(); ++i)
-          multiplier[i] = multiplier[i - 1] * geometry[i - 1];
+        for (size_t i = 1; i < multiplier_.size(); ++i)
+          multiplier_[i] = multiplier_[i - 1] * geometry[i - 1];
       }
 
       /**
@@ -701,47 +771,47 @@ namespace sill {
        *         The values in this map must be in the range
        *         [0, index_dim).
        */
-    offset_functor(const shape_type& geometry,
-                   size_t index_dim,
-                   const shape_type& pos_map)
-      : multiplier(index_dim, 0) {
-      // Calculate the multipliers, one per tuple position.
-      if (geometry.empty()) return;
-      const size_t size = geometry.size();
-      multiplier[pos_map[0]] = 1;
-      for (size_t i = 1; i < size; ++i)
-        multiplier[pos_map[i]] = multiplier[pos_map[i - 1]] * geometry[i - 1];
-    }
+      offset_functor(const shape_type& geometry,
+                     size_t index_dim,
+                     const shape_type& pos_map)
+        : multiplier_(index_dim, 0) {
+        // Calculate the multipliers, one per tuple position.
+        if (geometry.empty())
+          return;
+        multiplier_[pos_map[0]] = 1;
+        for (size_t i = 1; i < geometry.size(); ++i)
+          multiplier_[pos_map[i]] = multiplier_[pos_map[i-1]] * geometry[i-1];
+      }
 
-    /**
-     * Calculates the offset associated with the supplied table index.
-     *
-     * \todo This code is often used in the context of repeatedly
-     * incrementing an index and computing its offset.  This code does
-     * not take into account the fact that when a table index is
-     * incremented, most of the positions may not change.  To approach
-     * the optimal overhead of native nested loops we should exploit
-     * this.
-     */
+      /**
+       * Calculates the offset associated with the supplied table index.
+       *
+       * \todo This code is often used in the context of repeatedly
+       * incrementing an index and computing its offset.  This code does
+       * not take into account the fact that when a table index is
+       * incremented, most of the positions may not change.  To approach
+       * the optimal overhead of native nested loops we should exploit
+       * this.
+       */
       size_t operator()(const shape_type& index) const {
         size_t offset = 0;
-        for (size_t d = 0; d < multiplier.size(); ++d)
-          offset += multiplier[d] * index[d];
+        for (size_t d = 0; d < multiplier_.size(); ++d)
+          offset += multiplier_[d] * index[d];
         return offset;
       }
 
       size_t get_multiplier(size_t d) const{
-        return multiplier[d];
+        return multiplier_[d];
       }
 
       //! Calculates the index associated with the supplied offset.
       shape_type index(size_t offset) const {
-        shape_type ind(multiplier.size());
+        shape_type ind(multiplier_.size());
         // must use int here to avoid wrap-around
-        for(int d = multiplier.size()-1; d >= 0; --d) {
-          assert(multiplier[d] != 0);
-          ind[d] = offset / multiplier[d];
-          offset = offset % multiplier[d];
+        for(int d = multiplier_.size()-1; d >= 0; --d) {
+          assert(multiplier_[d] != 0);
+          ind[d] = offset / multiplier_[d];
+          offset = offset % multiplier_[d];
         }
         return ind;
       }
@@ -757,41 +827,83 @@ namespace sill {
       //! The multiplier associated with the index in each dimension.
       shape_type multiplier;
 
-      //! max values of each table entry
-      const shape_type& geometry;
+      //! Geometry of the table for which offsets are calculated.
+//      const shape_type* geometry_ptr;
 
-      //! Current 'index' position of the iterator
+      //! Geometry of the table whose indices are being iterated over;
+      //! this geometry corresponds to the below indices.
+      const shape_type* indices_geometry_ptr;
+
+      //! Current 'index' position of the iterator.
       shape_type indices;
 
-      //! number of dimensions
-      size_t numdims;
-
      public:
+      offset_iterator()
+        : offset(0), indices_geometry_ptr(NULL) { }
+
       offset_iterator(const shape_type& geometry)
-        : multiplier(geometry.size(), 1),
-          geometry(geometry),
-          indices(geometry.size(), 0),
-          numdims(geometry.size()) {
+        : offset(0),
+          multiplier(geometry.size(), 1),
+//          geometry_ptr(&geometry),
+          indices_geometry_ptr(&geometry),
+          indices(geometry.size(), 0) {
         // Calculate the multipliers.
-        offset = 0;
         for (size_t i = 1; i < multiplier.size(); ++i)
           multiplier[i] = multiplier[i - 1] * geometry[i - 1];
       }
 
       offset_iterator(const shape_type& geometry,
-                      size_t index_dim,
+                      const shape_type& indices_geometry,
                       const shape_type& pos_map)
-        : multiplier(index_dim, 0),
-          geometry(geometry),
-          indices(index_dim, 0),
-          numdims(index_dim) {
+        : offset(0),
+          multiplier(indices_geometry.size(), 0),
+//          geometry_ptr(&geometry),
+          indices_geometry_ptr(&indices_geometry),
+          indices(indices_geometry.size(), 0) {
         // Calculate the multipliers, one per tuple position.
-        if (geometry.empty()) return;
-        const size_t size = geometry.size();
-        multiplier[pos_map[0]] = 1;
+        if (!geometry.empty()) {
+          multiplier[pos_map[0]] = 1;
+          for (size_t i = 1; i < geometry.size(); ++i)
+            multiplier[pos_map[i]] = multiplier[pos_map[i-1]] * geometry[i-1];
+        }
+      }
+
+      //! Like a constructor, but avoids reallocation when possible.
+      void reset(const shape_type& geometry) {
         offset = 0;
-        for (size_t i = 1; i < size; ++i)
-          multiplier[pos_map[i]] = multiplier[pos_map[i - 1]] * geometry[i - 1];
+        if (multiplier.size() != geometry.size())
+          multiplier.resize(geometry.size());
+        indices_geometry_ptr = &geometry;
+        if (indices.size() != geometry.size())
+          indices.resize(geometry.size());
+        foreach(size_t& i, indices)
+          i = 0;
+        if (multiplier.size() > 0) {
+          multiplier[0] = 1;
+          for (size_t i = 1; i < multiplier.size(); ++i)
+            multiplier[i] = multiplier[i - 1] * geometry[i - 1];
+        }
+      }
+
+      //! Like a constructor, but avoids reallocation when possible.
+      void reset(const shape_type& geometry,
+                 const shape_type& indices_geometry,
+                 const shape_type& pos_map) {
+        offset = 0;
+        if (multiplier.size() != indices_geometry.size())
+          multiplier.resize(indices_geometry.size());
+        foreach(size_t& i, multiplier)
+          i = 0;
+        indices_geometry_ptr = &indices_geometry;
+        if (indices.size() != indices_geometry.size())
+          indices.resize(indices_geometry.size());
+        foreach(size_t& i, indices)
+          i = 0;
+        if (!geometry.empty()) {
+          multiplier[pos_map[0]] = 1;
+          for (size_t i = 1; i < geometry.size(); ++i)
+            multiplier[pos_map[i]] = multiplier[pos_map[i-1]] * geometry[i-1];
+        }
       }
 
       /**
@@ -808,6 +920,7 @@ namespace sill {
         return offset;
       }
 
+      /*
       //! Calculates the index associated with the supplied offset.
       shape_type index(size_t offset) const {
         shape_type ind(multiplier.size());
@@ -819,19 +932,23 @@ namespace sill {
         }
         return ind;
       }
+      */
 
-
+      //! Increment to next index.
+      //! If this iterator is at the end of the indices, then this does nothing.
       offset_iterator& operator++() {
-        indices[0] = indices[0] + 1;
+        if (this->end())
+          return *this;
+        ++indices[0];
         offset = offset + multiplier[0];
-        for (size_t i = 0; i < numdims - 1; ++i) {
-          if (__builtin_expect((indices[i] >= geometry[i]), 0)) {
-            offset = offset - indices[i] * multiplier[i];
-            offset = offset + multiplier[i+1];
+        for (size_t i = 0; i < indices_geometry_ptr->size() - 1; ++i) {
+          if (__builtin_expect
+              ((indices[i] >= indices_geometry_ptr->operator[](i)), 0)) {
+            offset -= indices[i] * multiplier[i];
+            offset += multiplier[i+1];
             indices[i] = 0;
-            indices[i+1]++;
-          }
-          else {
+            ++indices[i+1];
+          } else {
             break;
           }
         }
@@ -839,7 +956,8 @@ namespace sill {
       }
 
       bool end() {
-        return indices[numdims-1] >= geometry[numdims-1];
+        return (indices.size() == 0 ||
+                indices.back() >= indices_geometry_ptr->back());
       }
     }; // class offset_iterator
 
@@ -860,6 +978,10 @@ namespace sill {
   }
 
 } // namespace sill
+
+#ifdef EXPERIMENTAL
+#undef EXPERIMENTAL
+#endif
 
 #include <sill/macros_undef.hpp>
 

@@ -69,6 +69,10 @@ namespace sill {
     typedef typename variable_type_group<input_variable_type>::domain_type
     input_domain_type;
 
+    //! Vector of input variables.
+    typedef typename variable_type_group<input_variable_type>::var_vector_type
+    input_var_vector_type;
+
     //! The type that represents an assignment to input variables.
     typedef typename variable_type_group<input_variable_type>::assignment_type
     input_assignment_type;
@@ -93,6 +97,10 @@ namespace sill {
      */
     typedef typename OutputFactor::domain_type output_domain_type;
 
+    //! Vector of output variables.
+    typedef typename variable_type_group<output_variable_type>::var_vector_type
+    output_var_vector_type;
+
     //! The type that represents an assignment to output variables.
     typedef typename OutputFactor::assignment_type output_assignment_type;
 
@@ -116,6 +124,10 @@ namespace sill {
      */
     typedef typename variable_type_group<variable_type>::domain_type
     domain_type;
+
+    //! Vector of variables.
+    typedef typename variable_type_group<variable_type>::var_vector_type
+    var_vector_type;
 
     //! The type that represents an assignment to X,Y.
     typedef typename variable_type_group<variable_type>::assignment_type

@@ -18,6 +18,7 @@ namespace sill {
     }
     Ydomain_ = new_Y;
     Xdomain_ptr_->operator=(new_X);
+    optimize_variable_order();
   }
 
   // Public methods: Probabilistic queries
@@ -47,7 +48,7 @@ namespace sill {
 
   const table_factor&
   table_crf_factor::condition(const finite_record& r) const {
-    f.f.restrict(conditioned_f, r, input_arguments(), true);
+    f.f.restrict_aligned(r, restrict_map, conditioned_f);
     if (log_space_)
       conditioned_f.update(exponent<double>());
     return conditioned_f;
@@ -65,6 +66,7 @@ namespace sill {
     f.f /= num_removed_Y_assignments;
     if (!was_in_log_space)
       convert_to_real_space();
+    optimize_variable_order();
     return *this;
   }
 
@@ -90,6 +92,7 @@ namespace sill {
       Ydomain_.erase(v);
     if (!was_in_log_space)
       convert_to_real_space();
+    optimize_variable_order();
     return *this;
   }
 
@@ -103,6 +106,7 @@ namespace sill {
       Ydomain_.erase(v);
     f.f.marginal(new_f, set_union(Ydomain_, *Xdomain_ptr_));
     f.f = new_f;
+    optimize_variable_order();
     return *this;
   }
 
@@ -117,6 +121,7 @@ namespace sill {
       Ydomain_.erase(v);
     foreach(finite_variable* v, X_part)
       Xdomain_ptr_->erase(v);
+    optimize_variable_order();
     return *this;
   }
 
@@ -131,6 +136,7 @@ namespace sill {
       Ydomain_.erase(v);
     foreach(finite_variable* v, X_part)
       Xdomain_ptr_->erase(v);
+    optimize_variable_order();
     return *this;
   }
 
@@ -191,6 +197,7 @@ namespace sill {
     default:
       assert(false);
     }
+    optimize_variable_order();
     return *this;
   }
 
@@ -220,7 +227,7 @@ namespace sill {
   (table_factor_opt_vector& grad, const finite_record& r,
    const table_factor& fy, double w) const {
     assert(set_equal(Ydomain_, fy.arguments()));
-    finite_assignment fa(r.finite_assignment());
+    finite_assignment fa(r.assignment(input_arguments()));
     if (log_space_) {
       foreach(const finite_assignment& fa2, assignments(Ydomain_)) {
         finite_assignment::const_iterator fa2_end(fa2.end());
@@ -366,8 +373,59 @@ namespace sill {
                     other.output_arguments().end());
     Xdomain_ptr_->insert(other.input_arguments().begin(),
                          other.input_arguments().end());
+    optimize_variable_order();
     return *this;
   }
+
+  // Private methods
+  // =========================================================================
+
+  void table_crf_factor::optimize_variable_order() {
+    // Check if Y precedes X in f's argument sequence.
+    bool good_order = true;
+    if (output_arguments().size() != f.f.arguments().size()) {
+      good_order = false;
+    } else {
+      for (size_t i = 0; i < output_arguments().size(); ++i) {
+        if (!output_arguments().count(f.f.arg_list()[i])) {
+          good_order = false;
+          break;
+        }
+      }
+    }
+    if (!good_order) {
+      output_var_vector_type Y_vec(output_arguments().begin(),
+                                   output_arguments().end());
+      var_vector_type YX_vec(Y_vec);
+      YX_vec.insert(YX_vec.end(),
+                    input_arguments().begin(), input_arguments().end());
+      table_factor_opt_vector new_f(YX_vec, 0);
+      foreach(const finite_assignment& fa, f.f.assignments())
+        new_f.f(fa) = f.f(fa);
+      f = new_f;
+      conditioned_f = table_factor(Y_vec, 0);
+    } else {
+      // Make sure conditioned_f's arguments are in the same order as f.f.
+      if (conditioned_f.arguments().size() != output_arguments().size()) {
+        good_order = false;
+      } else {
+        for (size_t i = 0; i < output_arguments().size(); ++i) {
+          if (f.f.arg_list()[i] != conditioned_f.arg_list()[i]) {
+            good_order = false;
+            break;
+          }
+        }
+      }
+      if (!good_order) {
+        output_var_vector_type Y_vec(output_arguments().size(), NULL);
+        for (size_t i = 0; i < output_arguments().size(); ++i)
+          Y_vec[i] = f.f.arg_list()[i];
+        conditioned_f = table_factor(Y_vec, 0);
+      }
+    }
+    if (restrict_map.size() != f.f.arguments().size())
+      restrict_map = table_factor::shape_type(f.f.arguments().size(), 0);
+  } // optimize_variable_order
 
 }  // namespace sill
 

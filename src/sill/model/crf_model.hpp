@@ -1170,7 +1170,9 @@ namespace sill {
                       << f << "\n"
                       << "resulting factor:\n"
                       << tmpf << std::endl;
-            throw normalization_error("crf_model::condition_model() ran into a factor which could not be normalized after conditioning.");
+            throw normalization_error
+              (std::string("crf_model::condition_model ran into a factor") +
+               " which could not be normalized after conditioning.");
           }
         }
       }
@@ -1196,7 +1198,17 @@ namespace sill {
       foreach(const crf_factor& f, factors()) {
         cm_vertex_type
           v(conditioned_model.find_clique_cover(f.output_arguments()));
-        assert(v != conditioned_model.null_vertex());
+        if (v == conditioned_model.null_vertex()) {
+          std::cerr << "crf_model::set_conditioned_model_vertex_mapping"
+                    << " could not find a clique cover in conditioned_model"
+                    << " for this factor:\n"
+                    << f
+                    << "conditioned_model.arguments: "
+                    << conditioned_model.arguments() << std::endl;
+          throw std::runtime_error
+            (std::string("crf_model::set_conditioned_model_vertex_mapping") +
+             " failed due to internal error!");
+        }
         vm.push_back(v);
       }
     }

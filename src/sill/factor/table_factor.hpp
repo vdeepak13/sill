@@ -61,11 +61,12 @@ namespace sill {
     //! implements Factor::collapse_type
     typedef table_factor collapse_type;
 
+    //! The type of shape / index of the underlying table
+    typedef table_type::shape_type shape_type;
+
     // Private data members
     //==========================================================================
   private:
-    //! The type of shape / index of the underlying table
-    typedef table_type::shape_type shape_type;
 
     //! The type that maps variables to table indices
     typedef std::map<finite_variable*, size_t> var_index_map;
@@ -175,7 +176,6 @@ namespace sill {
       initialize(arguments, default_value);
     }
 
-    ~table_factor() { }
     //! SWIG constructor
     explicit table_factor(const finite_var_vector& arguments,
                           result_type default_value = 0.0)
@@ -200,6 +200,8 @@ namespace sill {
     explicit table_factor(const constant_factor& factor) {
       initialize(arguments(), factor.value);
     }
+
+    ~table_factor() { }
 
     //! Conversion to a constant factor. The argument set of this factor
     //! must be empty (otherwise, an assertion violation is thrown).
@@ -606,6 +608,23 @@ namespace sill {
     void restrict(table_factor& f, const finite_record& r,
                   const finite_domain& r_vars, bool strict = false) const;
 
+    /**
+     * Restrict which stores the result in the given factor f whose argument
+     * order must be aligned with this factor as follows:
+     *  - If this factor has argument order [v1, v2, ..., vk],
+     *    with v1 being the least significant variable,
+     *  - Then f must have argument order [v1, v2, ..., vl] with l <= k.
+     *    The value l is determined by the given f.
+     *
+     * @param restrict_map  Pre-allocated restrict map of length matching
+     *                      this factor's underlying table.
+     * @param f             (Return value) This factor must have been
+     *                      pre-allocated.
+     */
+    void restrict_aligned(const finite_record& r,
+                          shape_type& restrict_map,
+                          table_factor& f) const;
+
     //! implements Factor::combine_in
     table_factor& combine_in(const table_factor& y, op_type op);
 
@@ -813,8 +832,6 @@ namespace sill {
       return factor;
     }
 
-    
-
     //! Combines two factors and collapse
     template <typename CombineOp, typename AggOp>
     static double combine_collapse(const table_factor& x, const table_factor& y,
@@ -835,7 +852,6 @@ namespace sill {
                                   combine_op, agg_op, initialvalue);
     }
 
-
     /**
      * Performs a combine and finds the first pair of values that satisfy
      * the given predicate
@@ -846,19 +862,19 @@ namespace sill {
     static boost::optional< std::pair<result_type, result_type> >
     combine_find(const table_factor& x, const table_factor& y, Pred predicate) {
       concept_assert((BinaryPredicate<Pred, result_type, result_type>));
-      var_index_map var_index = make_index_map(set_union(x.arguments(), y.arguments()));
+      var_index_map
+        var_index(make_index_map(set_union(x.arguments(), y.arguments())));
       return dense_table<result_type>::join_find(x.table(), y.table(),
                             make_dim_map(x.arg_seq, var_index),
                             make_dim_map(y.arg_seq, var_index),
                             predicate);
-
     }
 
     //! Converts table index (subscripts) to an assignment
     finite_assignment assignment(const shape_type& index) const;
 
-  // Operator Overloads 
-  //============================================================================
+    // Operator Overloads 
+    //==========================================================================
 
     /** Elementwise addition of two table factors. 
      *  i.e. 
@@ -876,7 +892,6 @@ namespace sill {
      */
     table_factor& operator-=(const table_factor& y);
 
-
     /** Elementwise multiplication of two table factors. 
      *  i.e. 
      *  A *= B
@@ -884,7 +899,7 @@ namespace sill {
      *  The resulting table_factor will have arguments union(arg(A), arg(B))
      */
     table_factor& operator*=(const table_factor& y);
-     
+
     /** Elementwise division of two table factors. 
      *  i.e. 
      *  A /= B
@@ -892,8 +907,8 @@ namespace sill {
      *  The resulting table_factor will have arguments union(arg(A), arg(B))
      */
     table_factor& operator/=(const table_factor& y);
-  
-      /** Elementwise logical AND of two table factors. 
+
+    /** Elementwise logical AND of two table factors. 
      *  i.e. 
      *  A.logical_and(B)
      *  will perform the operation A(i,j,k...) = A(i,j,k...) && B(i,j,k,...)
@@ -901,13 +916,14 @@ namespace sill {
      */
     table_factor& logical_and(const table_factor& y);
   
-      /** Elementwise logical OR of two table factors. 
+    /** Elementwise logical OR of two table factors. 
      *  i.e. 
      *  A.logical_or(B)
      *  will perform the operation A(i,j,k...) = A(i,j,k...) || B(i,j,k,...)
      *  The resulting table_factor will have arguments union(arg(A), arg(B))
      */
     table_factor& logical_or(const table_factor& y);
+
     /** Elementwise maximum of two table factors. 
      *  i.e. 
      *  A.elementwise_max(B)

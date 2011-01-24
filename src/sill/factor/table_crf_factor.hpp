@@ -77,11 +77,18 @@ namespace sill {
                      const input_domain_type& X_,
                      bool log_space_ = true)
       : base(Y_, copy_ptr<finite_domain>(new finite_domain(X_))),
-        f(set_union(Y_,X_),0), log_space_(log_space_), conditioned_f(Y_,0) {
-      if (f.f.arguments().size() != Y_.size() + X_.size()) {
+        log_space_(log_space_) {
+      if (intersection_size(Y_, X_) != 0) {
         throw std::invalid_argument
           ("table_crf_factor constructor given Y,X which overlap.");
       }
+      output_var_vector_type Y_vec(Y_.begin(), Y_.end());
+      var_vector_type YX_vec(Y_vec);
+      YX_vec.insert(YX_vec.end(), X_.begin(), X_.end());
+      f = table_factor_opt_vector(YX_vec, 0);
+      conditioned_f = table_factor(Y_vec, 0);
+      if (restrict_map.size() != f.f.arguments().size())
+        restrict_map = table_factor::shape_type(f.f.arguments().size(), 0);
     }
 
     /**
@@ -95,12 +102,22 @@ namespace sill {
       : base(Y_,
              copy_ptr<finite_domain>
              (new finite_domain(set_difference(f.arguments(), Y_)))),
-        f(f), log_space_(log_space_), conditioned_f(Y_, 0.) {
+        log_space_(log_space_) {
       if (!includes(f.arguments(), Y_)) {
-        std::cerr << "table_crf_factor constructor: f arguments "
-                  << "do not include Y" << std::endl;
-        assert(false);
+        throw std::invalid_argument
+          (std::string("table_crf_factor constructor: f arguments ") +
+           "do not include Y.");
       }
+      output_var_vector_type Y_vec(Y_.begin(), Y_.end());
+      var_vector_type YX_vec(Y_vec);
+      YX_vec.insert(YX_vec.end(), this->input_arguments().begin(),
+                    this->input_arguments().end());
+      this->f = table_factor_opt_vector(YX_vec, 0);
+      foreach(const finite_assignment& fa, f.assignments())
+        this->f.f(fa) = f(fa);
+      conditioned_f = table_factor(Y_vec, 0);
+      if (restrict_map.size() != this->f.f.arguments().size())
+        restrict_map = table_factor::shape_type(this->f.f.arguments().size(),0);
     }
 
     //! Constructor from a constant factor.
@@ -425,6 +442,12 @@ namespace sill {
     // =========================================================================
   protected:
 
+    //! Temporary used to avoid reallocation for table factor calls.
+    mutable table_factor::shape_type restrict_map;
+
+    //! Underlying table_factor.
+    //! The argument sequence of the table factor is (Y,X),
+    //! with Y being the least significant variables for indexing.
     table_factor_opt_vector f;
 
     //! If true, the data is stored in log-space.
@@ -432,6 +455,14 @@ namespace sill {
 
     //! Temporary used to avoid reallocation for conditioning.
     mutable table_factor conditioned_f;
+
+    // Private methods
+    // =========================================================================
+  private:
+
+    //! Resize restrict_map, and reorder the variables in f and conditioned_f
+    //! to support fast conditioning.
+    void optimize_variable_order();
 
   };  // class table_crf_factor
 

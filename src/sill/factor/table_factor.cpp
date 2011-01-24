@@ -157,7 +157,7 @@ namespace sill {
                             make_restrict_map(arg_seq, a, a_vars),
                             make_dim_map(f.arg_seq, var_index));
     }
-  }
+  } // restrict
 
   void
   table_factor::restrict(table_factor& f, const finite_record& r) const {
@@ -188,7 +188,7 @@ namespace sill {
                             make_restrict_map(arg_seq, r),
                             make_dim_map(f.arg_seq, var_index));
     }
-  }
+  } // restrict
 
   void table_factor::
   restrict(table_factor& f, const finite_record& r,
@@ -202,7 +202,10 @@ namespace sill {
       else {
         if (!r.has_variable(v)) {
           if (strict) {
-            throw std::invalid_argument("table_factor::restrict(f,r,r_vars,strict) was given strict=true, but intersect(f.arguments(), r_vars) contained a variable which did not appear in keys(r).");
+            throw std::invalid_argument
+              (std::string("table_factor::restrict(f,r,r_vars,strict)") +
+               " was given strict=true, but intersect(f.arguments(), r_vars)" +
+               " contained a variable which did not appear in keys(r).");
           }
           retained.push_back(v);
         }
@@ -228,7 +231,31 @@ namespace sill {
                             make_restrict_map(arg_seq, r, r_vars),
                             make_dim_map(f.arg_seq, var_index));
     }
-  }
+  } // restrict
+
+  void table_factor::restrict_aligned(const finite_record& r,
+                                      shape_type& restrict_map,
+                                      table_factor& f) const {
+    if (this->arg_seq.size() != restrict_map.size()) {
+      throw std::invalid_argument
+        (std::string("table_factor::restrict_aligned(r, restrict_map, f)") +
+         " given restrict_map with length not matching this table_factor.");
+    }
+    if (this->arg_seq.size() < f.arg_seq.size()) {
+      throw std::invalid_argument
+        (std::string("table_factor::restrict_aligned(r, restrict_map, f)") +
+         " given f with dimensions not matching this table_factor.");
+    }
+    for (size_t i = 0; i < f.arg_seq.size(); ++i) {
+      if (f.arg_seq[i] != this->arg_seq[i])
+        throw std::invalid_argument
+          (std::string("table_factor::restrict_aligned(r, restrict_map, f)") +
+           " given f with argument sequence not matching this table_factor.");
+    }
+    for (size_t i = f.arg_seq.size(); i < this->arg_seq.size(); ++i)
+      restrict_map[i] = r.finite(this->arg_seq[i]);
+    f.table_data.restrict_aligned(this->table(), restrict_map);
+  } // restrict_aligned
 
   table_factor&
   table_factor::combine_in(const table_factor& y, op_type op) {
@@ -404,9 +431,9 @@ namespace sill {
   // Private helper functions
   //==========================================================================
 
-  void table_factor::initialize(
-                          const forward_range<finite_variable*>& arguments,
-                          result_type default_value) {
+  void
+  table_factor::initialize(const forward_range<finite_variable*>& arguments,
+                           result_type default_value) {
     using namespace boost;
 // I replaced this line with a manual copy, which is much faster.
 //    arg_seq.assign(boost::begin(arguments), boost::end(arguments));
@@ -428,7 +455,7 @@ namespace sill {
 
   table_factor::shape_type
   table_factor::make_dim_map(const finite_var_vector& vars,
-                                    const var_index_map& to_map) {
+                             const var_index_map& to_map) {
     // return make_vector(to_map.values(vars)); <-- slow
     dense_table<result_type>::shape_type map(vars.size());
     for(size_t i = 0; i < vars.size(); i++) {
@@ -653,8 +680,10 @@ namespace sill {
     table_factor::table_type::const_iterator it = min_element(f.values());
     return f.assignment(f.table().index(it));
   }
+
   // Operator Overloads
   // =====================================================================
+
   table_factor& table_factor::operator+=(const table_factor& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
@@ -683,7 +712,7 @@ namespace sill {
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      std::multiplies<table_factor::result_type>());
+                           std::multiplies<table_factor::result_type>());
     } else {
       // Revert to the standard implementation
       *this = combine(*this, y, std::multiplies<table_factor::result_type>());

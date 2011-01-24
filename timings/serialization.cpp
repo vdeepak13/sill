@@ -5,78 +5,87 @@
 #include <boost/timer.hpp>
 #include <boost/lexical_cast.hpp>
 
-class oarchive{
-public:
-  std::ostream* o;
-  size_t bytes_;
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/vector.hpp>
+#include <sill/serialization/map.hpp>
+#include <sill/serialization/list.hpp>
+#include <sill/serialization/set.hpp>
 
-  oarchive(std::ostream& os)
-    : o(&os), bytes_() {}
-
-  ~oarchive() { }
-
-  size_t bytes() { 
-    return bytes_;
-  }
-};
-
-inline void check(std::ostream* out) {
-  if (out->fail()) {
-    throw std::runtime_error("oarchive: Stream operation failed!");
-  }
-}
-
-oarchive& serialize_plain(oarchive& a, const double i) {
-  a.o->write(reinterpret_cast<const char*>(&i), sizeof(double));
-  check(a.o);
-  return a;
-}
-
-inline oarchive& serialize_inlined(oarchive& a, const double i) {
-  a.o->write(reinterpret_cast<const char*>(&i), sizeof(double));
-  check(a.o);
-  return a;
-}
-
-inline oarchive& serialize_counting(oarchive& a, const double i) {
-  a.o->write(reinterpret_cast<const char*>(&i), sizeof(double));
-  a.bytes_ += sizeof(double);
-  check(a.o);
-  return a;
-}
-
+using namespace sill;
 
 int main(int argc, char** argv) {
   using namespace std;
 
+  if (argc != 3) {
+    cerr << "usage: ./serialization [iterations to run each test for]"
+         << " [buffer size]"
+         << endl;
+    return 1;
+  }
+
   size_t n = boost::lexical_cast<size_t>(argv[1]);
+  size_t BUFFER_SIZE = boost::lexical_cast<size_t>(argv[2]);
 
   {
-    boost::timer t;
-    ofstream out("/dev/null");
+    ofstream out("serialization.tmp");
+//    char* buf = new char[BUFFER_SIZE];
+//    out.rdbuf()->pubsetbuf(buf, BUFFER_SIZE);
     oarchive oar(out);
+    const size_t NUM_ELEMENTS = 1000;
+    std::map<size_t,size_t> mymap;
+    for (size_t i = 0; i < NUM_ELEMENTS; ++i)
+      mymap[i] = i+1;
+    boost::timer t;
     for(size_t i = 0; i < n; i++)
-      serialize_plain(oar, 0.0);
-    cout << "Plain: " << t.elapsed() << " s" << endl;
+      oar << mymap;
+    out.close();
+    double elapsed = t.elapsed();
+    cout << "Serialized map with " << NUM_ELEMENTS << " elements " << n
+         << " times in " << elapsed << " seconds" << endl;
+//    delete [] buf;
+//    buf = NULL;
+
+    ifstream in("serialization.tmp");
+    iarchive iar(in);
+    mymap.clear();
+    t.restart();
+    for (size_t i = 0; i < n; ++i)
+      iar >> mymap;
+    in.close();
+    elapsed = t.elapsed();
+    cout << "Deserialized map with " << NUM_ELEMENTS << " elements " << n
+         << " times in " << elapsed << " seconds" << endl;
   }
 
   {
-    boost::timer t;
-    ofstream out("/dev/null");
+    ofstream out("serialization.tmp");
+//    char* buf = new char[BUFFER_SIZE];
+//    out.rdbuf()->pubsetbuf(buf, BUFFER_SIZE);
     oarchive oar(out);
+    const size_t NUM_ELEMENTS = 1000;
+    std::vector<std::pair<size_t,size_t> > myvec;
+    for (size_t i = 0; i < NUM_ELEMENTS; ++i)
+      myvec.push_back(std::make_pair(i, i+1));
+    boost::timer t;
     for(size_t i = 0; i < n; i++)
-      serialize_inlined(oar, 0.0);
-    cout << "Inlined: " << t.elapsed() << " s" << endl;
-  }
+      oar << myvec;
+    out.close();
+    double elapsed = t.elapsed();
+    cout << "Serialized vec of pairs with " << NUM_ELEMENTS << " elements " << n
+         << " times in " << elapsed << " seconds" << endl;
+//    delete [] buf;
+//    buf = NULL;
 
-  {
-    boost::timer t;
-    ofstream out("/dev/null");
-    oarchive oar(out);
-    for(size_t i = 0; i < n; i++)
-      serialize_counting(oar, 0.0);
-    cout << "Counting bytes: " << t.elapsed() << " s" << endl;
-    cout << oar.bytes() << endl;
+    ifstream in("serialization.tmp");
+    iarchive iar(in);
+    myvec.clear();
+    t.restart();
+    for (size_t i = 0; i < n; ++i)
+      iar >> myvec;
+    in.close();
+    elapsed = t.elapsed();
+    cout << "Deserialized vec with " << NUM_ELEMENTS << " elements " << n
+         << " times in " << elapsed << " seconds" << endl;
   }
 
 }

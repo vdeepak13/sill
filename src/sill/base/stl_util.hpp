@@ -90,13 +90,13 @@ namespace sill {
   bool set_disjoint(const std::set<T>& a, const std::set<T>& b) {
     return (intersection_size(a,b) == 0);
   }
-  
+
   template <typename T>
   bool set_equal(const std::set<T>& a, const std::set<T>& b) {
     if (a.size() != b.size()) return false;
     return a == b; // defined in <set>
   }
-  
+
   template <typename T>
   bool includes(const std::set<T>& a, const std::set<T>& b) {
     return std::includes(a.begin(), a.end(), b.begin(), b.end());
@@ -111,7 +111,7 @@ namespace sill {
   bool is_superset(const std::set<T>& a,const std::set<T>& b) {
     return includes(a, b);
   }
-  
+
   //! Writes a human representation of the set to the supplied stream.
   //! \relates set
   template <typename T>
