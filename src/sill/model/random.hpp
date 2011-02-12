@@ -103,7 +103,7 @@ namespace sill {
    *                 (and initial state probabilities)
    * @param alpha_em Dirichlet parameter for choosing emission probabilities
    * @return  <hidden variables, emission variables>, in order;
-   *          Note there is 1 more hidden variable than there are emission.
+   *          Note there is 1 more hidden variable than there are emissions.
    */
   template <typename F, typename Engine>
   std::pair<std::vector<typename F::variable_type*>,

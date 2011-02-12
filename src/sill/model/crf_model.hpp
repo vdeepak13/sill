@@ -1140,7 +1140,9 @@ namespace sill {
                       << f << "\n"
                       << "resulting factor:\n"
                       << tmpf << std::endl;
-            throw normalization_error("crf_model::condition_model() ran into a factor which could not be normalized after conditioning.");
+            throw normalization_error
+              (std::string("crf_model::condition_model() ran into") +
+               " a factor which could not be normalized after conditioning.");
           }
         }
       }

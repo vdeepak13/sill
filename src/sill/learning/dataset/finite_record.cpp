@@ -29,6 +29,15 @@ namespace sill {
     return a;
   }
 
+  void
+  finite_record::
+  add_assignment(const finite_domain& X, sill::finite_assignment& a) const {
+    foreach(finite_variable* v, X) {
+      size_t v_index(safe_get(*finite_numbering_ptr, v));
+      a[v] = fin_ptr->operator[](v_index);
+    }
+  }
+
   finite_var_vector finite_record::finite_list() const {
     finite_var_vector flist(finite_numbering_ptr->size(), NULL);
     for (std::map<finite_variable*,size_t>::const_iterator

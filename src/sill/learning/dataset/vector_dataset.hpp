@@ -105,10 +105,11 @@ namespace sill {
     //! @param vector_vars     vector variables in data
     //! @param var_type_order  Order of variable types in datasource's
     //!                        natural order
-    vector_dataset(const finite_var_vector& finite_vars,
-                   const vector_var_vector& vector_vars,
-                   const std::vector<variable::variable_typenames>& var_type_order,
-                   size_t nreserved = 1)
+    vector_dataset
+    (const finite_var_vector& finite_vars,
+     const vector_var_vector& vector_vars,
+     const std::vector<variable::variable_typenames>& var_type_order,
+     size_t nreserved = 1)
       : base(finite_vars, vector_vars, var_type_order) {
       init(nreserved);
     }

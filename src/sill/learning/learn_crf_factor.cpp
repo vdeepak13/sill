@@ -3,6 +3,7 @@
 
 #include <sill/macros_def.hpp>
 
+
 // Macro for specializing learn_crf_factor to hybrid_crf_factor instances.
 // (Specialization definition)
 #define GEN_LEARN_CRF_FACTOR_HYBRID_DEF(F)                              \
@@ -48,6 +49,7 @@
     return new hybrid_crf_factor<F>(Y_, X_ptr_, subfactor_ptrs, x2_vec, \
                                     x2_multipliers);                    \
   }
+
 
 /**
  * Macro for specializing learn_crf_factor_cv to hybrid_crf_factor instances.
@@ -128,6 +130,7 @@
                                     x2_multipliers);                    \
   }
 
+
 namespace sill {
 
   // Definitions: Learning CRF Factors with Fixed Regularization
@@ -151,6 +154,7 @@ namespace sill {
                                     params.reg.lambdas[0]),
        Y_, false);
   } // learn_crf_factor<table_crf_factor>
+
 
   //! Specialization: log_reg_crf_factor
   template <>
@@ -213,6 +217,7 @@ namespace sill {
                                                 (stats, m2m_params)),
        params.smoothing / ds_ptr->size(), Y_, X_ptr_);
   } // learn_crf_factor<log_reg_crf_factor>()
+
 
   //! Specialization: gaussian_crf_factor
   template <>
@@ -297,7 +302,9 @@ namespace sill {
     return gcf_ptr;
   } // learn_crf_factor<gaussian_crf_factor>()
 
+
   GEN_LEARN_CRF_FACTOR_HYBRID_DEF(gaussian_crf_factor)
+
 
   // Definitions: Learning CRF Factors with Regularization Chosen via CV
   //============================================================================
@@ -548,6 +555,7 @@ namespace sill {
 
   }; // namespace impl
 
+
   template <>
   gaussian_crf_factor*
   learn_crf_factor_cv<gaussian_crf_factor>
@@ -590,7 +598,9 @@ namespace sill {
 
   } // learn_crf_factor_cv<gaussian_crf_factor>()
 
+
   GEN_LEARN_CRF_FACTOR_CV_HYBRID_DEF(gaussian_crf_factor)
+
 
 }; // namespace sill
 

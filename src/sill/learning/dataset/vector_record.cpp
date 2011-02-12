@@ -11,16 +11,16 @@ namespace sill {
     return (vector_numbering_ptr->count(v) != 0);
   }
 
-    sill::vector_assignment vector_record::vector_assignment() const {
-      sill::vector_assignment a;
-      foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
-        vec v(p.first->size());
-        for(size_t j = 0; j < p.first->size(); ++j)
-          v[j] = vec_ptr->operator[](j+p.second);
-        a[p.first] = v;
-      }
-      return a;
+  sill::vector_assignment vector_record::vector_assignment() const {
+    sill::vector_assignment a;
+    foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
+      vec v(p.first->size());
+      for(size_t j = 0; j < p.first->size(); ++j)
+        v[j] = vec_ptr->operator[](j+p.second);
+      a[p.first] = v;
     }
+    return a;
+  }
 
   sill::vector_assignment
   vector_record::assignment(const vector_domain& X) const {
@@ -33,6 +33,18 @@ namespace sill {
       a[v] = val;
     }
     return a;
+  }
+
+  void
+  vector_record::
+  add_assignment(const vector_domain& X, sill::vector_assignment& a) const {
+    foreach(vector_variable* v, X) {
+      size_t v_index(safe_get(*vector_numbering_ptr, v));
+      vec val(v->size());
+      for(size_t j(0); j < v->size(); ++j)
+        val[j] = vec_ptr->operator[](v_index + j);
+      a[v] = val;
+    }
   }
 
   vector_var_vector vector_record::vector_list() const {

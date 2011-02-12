@@ -441,7 +441,11 @@ namespace sill {
         try {
           last_objective_ = cpl.my_stochastic_gradient(grad, x);
         } catch (normalization_error exc) {
-          throw normalization_error((std::string("crf_parameter_learner::stochastic_everything_functor::gradient() could not normalize the CRF; consider using more regularization (Message from normalization attempt: ") + exc.what() + ")").c_str());
+          throw normalization_error
+            (std::string("crf_parameter_learner::stochastic_everything_functor")
+             + "::gradient() could not normalize the CRF; consider using more"
+             + " regularization (Message from normalization attempt: "
+             + exc.what() + ")");
         }
       }
 
@@ -478,7 +482,9 @@ namespace sill {
     mutable crf_model_type crf_;
 
     //! Mapping returned by crf_.conditioned_model_vertex_mapping().
-    std::vector<typename decomposable<typename crf_factor::output_factor_type>::vertex> conditioned_model_vertex_map_;
+    std::vector
+    <typename decomposable<typename crf_factor::output_factor_type>::vertex>
+    conditioned_model_vertex_map_;
 
     //! Temp storage for copies of the CRF factor weights.
     mutable opt_variables crf_tmp_weights;
@@ -546,7 +552,12 @@ namespace sill {
         if (params.lambdas.size() == 1) {
           regularization.lambdas = params.lambdas[0];
         } else {
-          throw std::invalid_argument("crf_parameter_learner was given parameters with regularization parameters (lambdas) of length " + to_string(params.lambdas.size()) + " but needed lambdas of length " + to_string(regularization.lambdas.size()));
+          throw std::invalid_argument
+            (std::string("crf_parameter_learner was given parameters with")
+             + " regularization parameters (lambdas) of length "
+             + to_string(params.lambdas.size())
+             + " but needed lambdas of length "
+             + to_string(regularization.lambdas.size()));
         }
       } else {
         regularization.lambdas = params.lambdas;
@@ -661,7 +672,9 @@ namespace sill {
       if (init_weights) {
         if (params.perturb > 0) {
           throw std::invalid_argument
-            ("crf_parameter_learner told to init weights, but random initialization has not yet been implemented.");
+            (std::string("crf_parameter_learner") +
+             " told to init weights, but random initialization has not yet" +
+             " been implemented.");
           // NOTE: I need to add a values() function to the OptimizationVector concept to do this.
           /*
           boost::uniform_real<double> uniform(- params.perturb, params.perturb);
@@ -682,7 +695,10 @@ namespace sill {
       try {
         crf_.condition(*ds_it);
       } catch (normalization_error exc) {
-        throw normalization_error((std::string("crf_parameter_learner::init_finish() could not normalize the CRF given the initial parameter settings (Message from normalization attempt: ") + exc.what() + ")").c_str());
+        throw normalization_error
+          (std::string("crf_parameter_learner::init_finish()") +
+           " could not normalize the CRF given the initial parameter settings" +
+           " (Message from normalization attempt: " + exc.what() + ")");
       }
       conditioned_model_vertex_map_ = crf_.conditioned_model_vertex_mapping();
 
@@ -1160,7 +1176,9 @@ namespace sill {
                     << "means: " << means << "\n"
                     << "stderrs: " << stderrs << "\n"
                     << std::endl;
-          throw std::runtime_error("crf_parameter_learner::choose_lambda_cv() ran into numerical problems for all possible lambda settings.");
+          throw std::runtime_error
+            (std::string("crf_parameter_learner::choose_lambda_cv()") +
+             " ran into numerical problems for all possible lambda settings.");
         }
         if (params_.debug > 0) {
           std::cerr << "crf_parameter_learner::choose_lambda_cv()\n"

@@ -146,6 +146,12 @@ namespace sill {
     //! @param X  All of these variables must be in this record.
     sill::vector_assignment assignment(const vector_domain& X) const;
 
+    //! For the given variables X, add their values in this record to
+    //! the given assignment.
+    //! @param X  All of these variables must be in this record.
+    void
+    add_assignment(const vector_domain& X, sill::vector_assignment& a) const;
+
     //! Returns the number of vector variables.
     size_t num_vector() const {
       return vector_numbering_ptr->size();

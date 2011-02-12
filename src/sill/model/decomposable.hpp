@@ -371,7 +371,13 @@ namespace sill {
 
     // Probabilistic model queries
     //==========================================================================
-    // returns domain rather than const domain& to implement factorized_model
+
+    //! Number of arguments in this model.
+    size_t num_arguments() const {
+      return args.size();
+    }
+
+    //! returns domain rather than const domain& to implement factorized_model
     domain_type arguments() const {
       return args;
     }
@@ -854,8 +860,10 @@ namespace sill {
 
     /**
      * Compute the max probability assignment.
+     *
+     * Note: This is virtual to support approx_decomposable (experimental).
      */
-    assignment_type max_prob_assignment() const {
+    virtual assignment_type max_prob_assignment() const {
       if (num_vertices() == 1) {
         // Handle special case with 1 vertex/factor.
         return arg_max(jt[*(vertices().first)]);
@@ -1449,9 +1457,9 @@ namespace sill {
       calibrate();
     }
 
-    // Private member functions
+    // Protected member functions
     //==========================================================================
-  private:
+  protected:
 
     //! Returns a reference to the clique potential associated with a vertex.
     factor_type& potential(vertex v) {
@@ -1468,24 +1476,30 @@ namespace sill {
      *
      * The current implementation uses a breadth-first search,
      * passing a flow along each edge as it is added to the search tree.
+     *
+     * Note: This is virtual to support approx_decomposable (experimental).
      */
-    void distribute_evidence(vertex v) {
+    virtual void distribute_evidence(vertex v) {
       pre_order_traversal(*this, v, flow_functor());
     }
 
     /**
      * Recalibrates the model by passing flows using the message
      * passing protocol.
+     *
+     * Note: This is virtual to support approx_decomposable (experimental).
      */
-    void calibrate() {
+    virtual void calibrate() {
       mpp_traversal(*this, flow_functor());
     }
 
     /**
      * Normalizes this decomposable model; all clique and separator
      * marginals are normalized.
+     *
+     * Note: This is virtual to support approx_decomposable (experimental).
      */
-    void normalize() {
+    virtual void normalize() {
       foreach(vertex v, vertices())
         jt[v].normalize();
       foreach(edge e, edges())
@@ -1510,9 +1524,9 @@ namespace sill {
      *  - During the pre-order traversal,
      */
 
-    // Private member class definitions
+    // Protected member class definitions
     //==========================================================================
-  private:
+  protected:
 
     /**
      * A functor which passes flows through the junction tree.
@@ -1542,7 +1556,9 @@ namespace sill {
                     << dm.jt[e] << endl
                     << "target potential: " << endl
                     << dm.jt[v] << endl;
-          throw normalization_error("decomposable::flow_functor::operator() ran into factor which could not be normalized.");
+          throw normalization_error
+            (std::string("decomposable::flow_functor::operator()") +
+             " ran into factor which could not be normalized.");
         }
       }
     };
@@ -1585,7 +1601,9 @@ namespace sill {
                     << dm.marginal(e) << endl
                     << "target potential: " << endl
                     << v2f[v] << endl;
-          throw normalization_error("decomposable::flow_functor_mpa::operator() ran into factor which could not be normalized.");
+          throw normalization_error
+            (std::string("decomposable::flow_functor_mpa::operator()") +
+             " ran into factor which could not be normalized.");
         }
       }
     };  // struct flow_functor_mpa1

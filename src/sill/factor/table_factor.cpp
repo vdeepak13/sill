@@ -688,7 +688,7 @@ namespace sill {
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      std::plus<table_factor::result_type>());
+                           std::plus<table_factor::result_type>());
     } else {
       // Revert to the standard implementation
       *this = combine(*this, y, std::plus<table_factor::result_type>());
@@ -700,7 +700,7 @@ namespace sill {
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      std::minus<table_factor::result_type>());
+                           std::minus<table_factor::result_type>());
     } else {
       // Revert to the standard implementation
       *this = combine(*this, y, std::minus<table_factor::result_type>());

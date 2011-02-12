@@ -147,6 +147,24 @@ namespace sill {
     //! @param X  All of these variables must be in this record.
     sill::vector_assignment assignment(const vector_domain& X) const;
 
+    //! For the given variables X, add their values in this record to
+    //! the given assignment.
+    //! @param X  All of these variables must be in this record.
+    void
+    add_assignment(const domain& X, sill::assignment& a) const;
+
+    //! For the given variables X, add their values in this record to
+    //! the given assignment.
+    //! @param X  All of these variables must be in this record.
+    void
+    add_assignment(const finite_domain& X, sill::finite_assignment& a) const;
+
+    //! For the given variables X, add their values in this record to
+    //! the given assignment.
+    //! @param X  All of these variables must be in this record.
+    void
+    add_assignment(const vector_domain& X, sill::vector_assignment& a) const;
+
     //! Write the record to the given output stream.
     template <typename CharT, typename Traits>
     void write(std::basic_ostream<CharT, Traits>& out) const {

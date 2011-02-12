@@ -329,20 +329,17 @@ namespace sill {
 
 #ifdef EXPERIMENTAL
       // Get an offset calculator for y.
-//      offset_iterator y_offset(y.shape(), this->shape(), y_dim_map);
-//      offset_iterator this_offset(this->shape());
       offset_iterator& y_offset = off_it1;
       offset_iterator& this_offset = off_it2;
       y_offset.reset(y.shape(), this->shape(), y_dim_map);
       this_offset.reset(this->shape());
       // Iterate over the cells of this table, computing the value
       // using the corresponding cell of y.
-
-      while(!this_offset.end()) {
+      do {
         elts[this_offset()] = op(elts[this_offset()], y.elts[y_offset()]);
         ++y_offset;
         ++this_offset;
-      }
+      } while(!y_offset.end() && !this_offset.end());
 #else
 
       // Get an offset calculator for y.
@@ -361,7 +358,7 @@ namespace sill {
     template <typename AggOp>
     void aggregate(const dense_table& x, const shape_type& dim_map, AggOp op) {
       concept_assert((BinaryFunction<AggOp,T,T,T>));
-      #ifdef EXPERIMENTAL
+#ifdef EXPERIMENTAL
       // Get an offset calculator that maps x indexes to z offsets.
 //      offset_iterator z_offset(this->shape(), x.shape(), dim_map);
       offset_iterator& z_offset = off_it1;
@@ -374,7 +371,7 @@ namespace sill {
         ++z_offset;
       }
 
-      #else
+#else
       // Get an offset calculator that maps x indexes to z offsets.
       offset_functor z_offset(this->shape(), x.arity(), dim_map);
       // Iterate over the cells of the input table, computing the
@@ -383,7 +380,7 @@ namespace sill {
         size_t offset = z_offset(x_index);
         elts[offset] = op(elts[offset], x(x_index));
       }
-      #endif
+#endif
     }
 
     //! Aggregates all dimensions of the table and returns the result

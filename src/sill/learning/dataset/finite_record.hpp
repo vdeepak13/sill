@@ -128,6 +128,12 @@ namespace sill {
     //! @param X  All of these variables must be in this record.
     sill::finite_assignment assignment(const finite_domain& X) const;
 
+    //! For the given variables X, add their values in this record to
+    //! the given assignment.
+    //! @param X  All of these variables must be in this record.
+    void
+    add_assignment(const finite_domain& X, sill::finite_assignment& a) const;
+
     //! Returns the number of finite variables.
     size_t num_finite() const {
       return finite_numbering_ptr->size();

@@ -445,7 +445,8 @@ namespace sill {
   public:
 
     //! Constructs an empty dataset
-    dataset() : base(), weighted(false) { }
+    dataset()
+      : base(), nrecords(0), weighted(false) { }
 
     //! Constructs the dataset with the given sequence of variables
     //! @param finite_vars     finite variables in data
