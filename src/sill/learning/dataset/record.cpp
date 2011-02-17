@@ -5,6 +5,21 @@
 
 namespace sill {
 
+  // Constructors
+  //==========================================================================
+
+  bool record::operator==(const record& other) const {
+    if (finite_record::operator==(other) &&
+        vector_record::operator==(other))
+      return true;
+    else
+      return false;
+  }
+
+  bool record::operator!=(const record& other) const {
+    return !operator==(other);
+  }
+
   // Getters and helpers
   //==========================================================================
 

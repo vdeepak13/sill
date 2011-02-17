@@ -76,12 +76,12 @@ namespace sill {
     size_t id() const {
       return id_;
     }
-    
+
     //! Serializes this variable and all attached information. 
     //! This performs a deep serialization of this variable as opposed to 
     //! just storing an ID. 
     virtual void save(oarchive& ar) const;
-    
+
     //! deserializes this variable and all attached information. 
     //! This performs a deep deserialization. If this variable is part of a 
     //! process, the archive must be provided with the universe. 
@@ -89,8 +89,8 @@ namespace sill {
     virtual void load(iarchive& ar);
 
     //! An enumeration over all variable types
-    enum variable_typenames{FINITE_VARIABLE, VECTOR_VARIABLE};
-    
+    enum variable_typenames {FINITE_VARIABLE, VECTOR_VARIABLE};
+
     //! Returns the dynamic type of this variable as an enumeration
     variable_typenames get_variable_type() const;
 
@@ -339,32 +339,36 @@ namespace sill {
 
 //! @}
 
-/**
-  * Outputs a human-readable representation of a variable to stream
-  * \relates variable
-  */
-std::ostream& operator<<(std::ostream& out, variable* h);
+  /**
+   * Outputs a human-readable representation of a variable to stream
+   * \relates variable
+   */
+  std::ostream& operator<<(std::ostream& out, variable* h);
 
-//! Serializes the variable* pointer. This only serializes an id.
-//! The deserializer will look for the id in the universe
-oarchive& operator<<(oarchive& ar, variable* const &v );
+  //! Serializes the variable* pointer. This only serializes an id.
+  //! The deserializer will look for the id in the universe
+  oarchive& operator<<(oarchive& ar, variable* const &v );
 
-//! Deserializes a variable* pointer by reading an id from the archive.
-//! The archive must have an attached universe
-iarchive& operator>>(iarchive& ar, variable* &v);
+  //! Deserializes a variable* pointer by reading an id from the archive.
+  //! The archive must have an attached universe
+  iarchive& operator>>(iarchive& ar, variable* &v);
 
-//! This serializes the pointer variable* while also storing the dynamic
-//! type information to correctly reconstruct the variable datatype on 
-//! deserialization.
-void dynamic_deep_serialize(oarchive &a, variable* const &i);
+  //! Serializes a variable type.
+  oarchive& operator<<(oarchive& ar, const variable::variable_typenames& t);
 
-//! This deserializes the pointer variable*, reconstructing the original
-//! datatype of the variable.
-void dynamic_deep_deserialize(iarchive &a, variable* &i);
+  //! Deserializes a variable type.
+  iarchive& operator>>(iarchive& ar, variable::variable_typenames& t);
+
+  //! This serializes the pointer variable* while also storing the dynamic
+  //! type information to correctly reconstruct the variable datatype on 
+  //! deserialization.
+  void dynamic_deep_serialize(oarchive &a, variable* const &i);
+
+  //! This deserializes the pointer variable*, reconstructing the original
+  //! datatype of the variable.
+  void dynamic_deep_deserialize(iarchive &a, variable* &i);
+
 } // namespace sill
-
-
-
 
 #include <sill/macros_undef.hpp>
 

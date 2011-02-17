@@ -116,11 +116,7 @@ namespace sill {
   public:
 
     //! Empty datasource
-    datasource()
-      : finite_numbering_ptr_(new std::map<finite_variable*, size_t>()),
-        dfinite(0),
-        vector_numbering_ptr_(new std::map<vector_variable*, size_t>()),
-        dvector(0) { }
+    datasource();
 
     //! Constructs the datasource with the given sequence of variables.
     //! @param finite_vars     finite variables in data
@@ -129,16 +125,7 @@ namespace sill {
     //!                        natural order
     datasource(const finite_var_vector& finite_vars,
                const vector_var_vector& vector_vars,
-               const std::vector<variable::variable_typenames>& var_type_order)
-      : finite_vars(finite_vars.begin(), finite_vars.end()), 
-        finite_seq(finite_vars),
-        finite_numbering_ptr_(new std::map<finite_variable*, size_t>()),
-        vector_vars(vector_vars.begin(), vector_vars.end()), 
-        vector_seq(vector_vars),
-        vector_numbering_ptr_(new std::map<vector_variable*, size_t>()),
-        var_type_order(var_type_order) {
-      initialize();
-    }
+               const std::vector<variable::variable_typenames>& var_type_order);
 
     //! Constructs the datasource with the given sequence of variables.
     //! @param finite_vars     finite variables in data
@@ -147,33 +134,23 @@ namespace sill {
     //!                        natural order
     datasource(const forward_range<finite_variable*>& finite_vars,
                const forward_range<vector_variable*>& vector_vars,
-               const std::vector<variable::variable_typenames>& var_type_order)
-      : finite_vars(boost::begin(finite_vars), boost::end(finite_vars)),
-        finite_seq(boost::begin(finite_vars), boost::end(finite_vars)),
-        finite_numbering_ptr_(new std::map<finite_variable*, size_t>()),
-        vector_vars(boost::begin(vector_vars), boost::end(vector_vars)),
-        vector_seq(boost::begin(vector_vars), boost::end(vector_vars)),
-        vector_numbering_ptr_(new std::map<vector_variable*, size_t>()),
-        var_type_order(var_type_order) {
-      initialize();
-    }
+               const std::vector<variable::variable_typenames>& var_type_order);
 
     //! Constructs the datasource with the given sequence of variables.
     //! @param var_info    info from calling datasource_info()
-    explicit datasource(const datasource_info_type& info)
-      : finite_vars(info.finite_seq.begin(), info.finite_seq.end()), 
-        finite_seq(info.finite_seq),
-        finite_numbering_ptr_(new std::map<finite_variable*, size_t>()),
-        finite_class_vars(info.finite_class_vars),
-        vector_vars(info.vector_seq.begin(), info.vector_seq.end()), 
-        vector_seq(info.vector_seq),
-        vector_numbering_ptr_(new std::map<vector_variable*, size_t>()),
-        vector_class_vars(info.vector_class_vars),
-        var_type_order(info.var_type_order) {
-      initialize();
+    explicit datasource(const datasource_info_type& info) {
+      reset(info);
     }
 
     virtual ~datasource() { }
+
+    //! Resets this datasource with the given variable info.
+    //! @param var_info    info from calling datasource_info()
+    void reset(const datasource_info_type& info);
+
+    virtual void save(oarchive& a) const;
+
+    virtual void load(iarchive& a);
 
     // Variables
     //==========================================================================
@@ -194,6 +171,9 @@ namespace sill {
     const vector_domain& vector_variables() const {
       return vector_vars;
     }
+
+    //! Constructs and returns the list of variables for this dataset.
+    var_vector variable_list() const;
 
     //! Returns the finite variables in the natural order
     const finite_var_vector& finite_list() const {
@@ -316,7 +296,7 @@ namespace sill {
     // General info and helpers
     //==========================================================================
 
-    //! Returns a tuple with all variable type and order information.
+    //! Returns all variable type and order information.
     datasource_info_type datasource_info() const {
       return datasource_info_type(finite_seq, vector_seq, var_type_order,
                                   finite_class_vars, vector_class_vars);

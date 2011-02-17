@@ -5,6 +5,19 @@
 
 namespace sill {
 
+  // Constructors
+  //==========================================================================
+
+  void dataset::save(oarchive& a) const {
+    base::save(a);
+    a << nrecords << weighted << weights_;
+  }
+
+  void dataset::load(iarchive& a) {
+    base::load(a);
+    a >> nrecords >> weighted >> weights_;
+  }
+
   // Getters and queries
   //==========================================================================
 
@@ -136,6 +149,120 @@ namespace sill {
     }
     cov /= (nrecords - 1);
   }
+
+  std::ostream&
+  dataset::print(std::ostream& out, const std::string& format) const {
+    if (format == "default") {
+      out << "Data set (";
+      out << finite_seq << " "
+          << vector_seq << ")" << std::endl;
+      for(size_t i = 0; i < nrecords; i++) {
+        record r(operator[](i));
+        foreach(size_t f, r.finite())
+          out << f << " ";
+        out << "| ";
+        foreach(double v, r.vector())
+          out << v << " ";
+        out << std::endl;
+      }
+    } else if (format == "vars") {
+      foreach(finite_variable* v, finite_seq)
+        out << v->name() << "\t" << v->get_variable_type() << "\t"
+            << v->size() << "\n";
+      foreach(vector_variable* v, vector_seq)
+        out << v->name() << "\t" << v->get_variable_type() << "\t"
+            << v->size() << "\n";
+    } else if (format == "tabbed") {
+      foreach(const record& r, records()) {
+        foreach(size_t f, r.finite())
+          out << f << "\t";
+        foreach(double v, r.vector())
+          out << v << "\t";
+        out << "\n";
+      }
+    } else if (format == "tabbed_weighted") {
+      size_t i(0);
+      foreach(const record& r, records()) {
+        foreach(size_t f, r.finite())
+          out << f << "\t";
+        foreach(double v, r.vector())
+          out << v << "\t";
+        out << weight(i) << "\n";
+      }
+    } else {
+      throw std::invalid_argument
+        ("dataset::print() given invalid format parameter: " + format);
+    }
+    return out;
+  } // print
+
+  std::istream&
+  dataset::load(std::istream& in, const std::string& format) {
+    if (format == "default") {
+      throw std::runtime_error("dataset::load NOT YET FULLY IMPLEMENTED.");
+    } else if (format == "vars") {
+      throw std::runtime_error("dataset::load NOT YET FULLY IMPLEMENTED.");
+    } else if (format == "tabbed") {
+      clear();
+      std::string line;
+      std::istringstream is;
+      double d;
+      size_t s;
+      std::vector<size_t> fvals(num_finite());
+      vec vvals(vector_dim());
+      while (in.good()) {
+        getline(in, line);
+        if (line.size() == 0)
+          continue;
+        is.clear();
+        is.str(line);
+        size_t f_i = 0;
+        size_t v_i = 0;
+        for (size_t i = 0; i < num_variables(); ++i) {
+          bool bad_parse = false;
+          switch (var_type_order[i]) {
+          case variable::FINITE_VARIABLE:
+            if (!(is >> s) ||
+                s >= finite_seq[f_i]->size()) {
+              bad_parse = true;
+              break;
+            }
+            fvals[f_i] = s;
+            ++f_i;
+            break;
+          case variable::VECTOR_VARIABLE:
+            for (size_t j = 0; j < vector_seq[v_i]->size(); ++j) {
+              if (!(is >> d)) {
+                bad_parse = true;
+                break;
+              }
+              vvals[v_i + j] = d;
+            }
+            ++v_i;
+            break;
+          default:
+            assert(false);
+          }
+          if (bad_parse) {
+            throw std::runtime_error("dataset::load (tabbed) had bad parse!");
+          }
+        }
+        if (f_i == 0 && v_i == 0)
+          continue;
+        if (f_i != num_finite() || v_i != num_vector()) {
+          throw std::runtime_error
+            ("dataset::load (tabbed) had bad parse (incomplete record)!");
+        }
+        insert(fvals, vvals);
+      }
+    } else if (format == "tabbed_weighted") {
+      throw std::runtime_error("dataset::load NOT YET FULLY IMPLEMENTED.");
+    } else {
+      throw std::invalid_argument
+        ("dataset::load() given invalid format parameter: " + format);
+    }
+    return in;
+  } // load
 
   // Mutating operations
   //==========================================================================

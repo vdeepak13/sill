@@ -4,6 +4,21 @@
 
 namespace sill {
 
+  // Constructors
+  //==========================================================================
+
+  bool finite_record::operator==(const finite_record& other) const {
+    if (*finite_numbering_ptr == *(other.finite_numbering_ptr) &&
+        finite() == other.finite())
+      return true;
+    else
+      return false;
+  }
+
+  bool finite_record::operator!=(const finite_record& other) const {
+    return !operator==(other);
+  }
+
   // Getters and helpers
   //==========================================================================
 

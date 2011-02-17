@@ -82,6 +82,9 @@ namespace sill {
     for (size_t i = 0; i < procvsize; ++i) {
       process *p;
       sill::dynamic_deep_deserialize(a, p);
+      if (!p) {
+        throw std::runtime_error("universe::load loaded NULL process pointer.");
+      }
       procs_vector.push_back(p);
       procs[p->name()] = p;
     }
@@ -91,6 +94,10 @@ namespace sill {
     for (size_t i = 0; i < varsvsize; ++i) {
       variable *v;
       sill::dynamic_deep_deserialize(a, v);
+      if (!v) {
+        throw std::runtime_error
+          ("universe::load loaded NULL variable pointer.");
+      }
       vars_vector.push_back(v);
       vars[v->name()] = v;
     }

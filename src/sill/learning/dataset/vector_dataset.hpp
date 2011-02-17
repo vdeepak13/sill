@@ -31,7 +31,6 @@ namespace sill {
    *
    * \author Joseph Bradley
    * \ingroup learning_dataset
-   * \todo serialization
    */
   class vector_dataset : public dataset {
 
@@ -136,6 +135,10 @@ namespace sill {
       init(nreserved);
     }
 
+    void save(oarchive& a) const;
+
+    void load(iarchive& a);
+
     // Getters and helpers
     //==========================================================================
 
@@ -165,6 +168,8 @@ namespace sill {
 
     //! Returns an iterator over the records of this dataset
     record_iterator begin() const;
+
+    using base::load;
 
     // Mutating operations
     //==========================================================================
@@ -203,13 +208,6 @@ namespace sill {
     //! on the unit sphere.
     //! @param vars  Only apply normalization to these variables.
     void normalize2(const vector_var_vector& vars);
-
-    //! Clears the dataset of all records.
-    //! NOTE: This should not be called if views of the data exist!
-    //!       (This is unsafe but very useful for avoiding reallocation.)
-    void clear() {
-      nrecords = 0;
-    }
 
     using base::randomize;
 

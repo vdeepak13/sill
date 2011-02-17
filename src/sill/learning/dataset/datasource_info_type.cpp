@@ -15,6 +15,17 @@ namespace sill {
       var_type_order(var_type_order),
       finite_class_vars(finite_class_vars),
       vector_class_vars(vector_class_vars) {
+    // TO DO: CHECK CONSISTENCY
+  }
+
+  datasource_info_type::datasource_info_type
+  (const forward_range<finite_variable*>& finite_seq,
+   const forward_range<vector_variable*>& vector_seq,
+   const std::vector<variable::variable_typenames>& var_type_order)
+    : finite_seq(finite_seq.begin(), finite_seq.end()),
+      vector_seq(vector_seq.begin(), vector_seq.end()),
+      var_type_order(var_type_order) {
+    // TO DO: CHECK CONSISTENCY
   }
 
   datasource_info_type::
@@ -48,6 +59,33 @@ namespace sill {
       var_type_order(vector_seq.size(), variable::VECTOR_VARIABLE) {
   }
   */
+
+  void datasource_info_type::save(oarchive& a) const {
+    a << finite_seq << vector_seq << var_type_order
+      << finite_class_vars << vector_class_vars;
+  }
+
+  void datasource_info_type::load(iarchive& a) {
+    a >> finite_seq >> vector_seq >> var_type_order
+      >> finite_class_vars >> vector_class_vars;
+  }
+
+  bool
+  datasource_info_type::operator==(const datasource_info_type& other) const {
+    if (finite_seq == other.finite_seq &&
+        vector_seq == other.vector_seq &&
+        var_type_order == other.var_type_order &&
+        finite_class_vars == other.finite_class_vars &&
+        vector_class_vars == other.vector_class_vars)
+      return true;
+    else
+      return false;
+  }
+
+  bool
+  datasource_info_type::operator!=(const datasource_info_type& other) const {
+    return !operator==(other);
+  }
 
 }; // namespace sill
 

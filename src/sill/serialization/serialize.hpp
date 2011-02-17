@@ -2,4 +2,5 @@
 #define SILL_SERIALIZE_HPP
 #include <sill/serialization/iarchive.hpp>
 #include <sill/serialization/oarchive.hpp>
+#include <sill/serialization/vector.hpp>
 #endif //PRL_SERIALIZE_HPP

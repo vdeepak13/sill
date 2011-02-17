@@ -80,6 +80,18 @@ namespace sill {
     return ar;
   }
 
+  oarchive& operator<<(oarchive& ar, const variable::variable_typenames& t) {
+    ar << static_cast<size_t>(t);
+    return ar;
+  }
+
+  iarchive& operator>>(iarchive& ar, variable::variable_typenames& t) {
+    size_t i;
+    ar >> i;
+    t = static_cast<variable::variable_typenames>(i);
+    return ar;
+  }
+
   void dynamic_deep_serialize(oarchive& a, variable* const& i) {
     a << (i == NULL);
     if (i == NULL) return;

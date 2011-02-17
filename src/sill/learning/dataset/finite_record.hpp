@@ -108,6 +108,9 @@ namespace sill {
       }
     }
 
+    bool operator==(const finite_record& other) const;
+
+    bool operator!=(const finite_record& other) const;
 
     // Getters and helpers
     //==========================================================================

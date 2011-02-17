@@ -117,6 +117,9 @@ namespace sill {
     record(const record& rec) : finite_record(rec), vector_record(rec) {
     }
 
+    bool operator==(const record& other) const;
+
+    bool operator!=(const record& other) const;
 
     // Getters and helpers
     //==========================================================================

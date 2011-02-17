@@ -119,6 +119,9 @@ namespace sill {
     decomposable(const std::vector<F>& factors);
   #endif
 
+    //! Virtual destructor to support approx_decomposable (experimental).
+    virtual ~decomposable() { }
+
     /**
      * Initializes the decomposable model to the given set of clique marginals
      * and normalizes the model.

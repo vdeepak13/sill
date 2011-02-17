@@ -42,6 +42,19 @@ namespace sill {
       vector_data[i].resize(dvector);
   }
 
+  // Constructors
+  //==========================================================================
+
+  void vector_dataset::save(oarchive& a) const {
+    base::save(a);
+    a << finite_data << vector_data;
+  }
+
+  void vector_dataset::load(iarchive& a) {
+    base::load(a);
+    a >> finite_data >> vector_data;
+  }
+
   // Getters and helpers
   //==========================================================================
 

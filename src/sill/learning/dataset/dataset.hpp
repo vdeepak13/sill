@@ -54,7 +54,6 @@ namespace sill {
    *
    * \author Joseph Bradley, Stanislav Funiak
    * \ingroup learning_dataset
-   * \todo serialization
    */
   class dataset : public datasource {
 
@@ -480,6 +479,10 @@ namespace sill {
 
     virtual ~dataset() { }
 
+    virtual void save(oarchive& a) const;
+
+    virtual void load(iarchive& a);
+
     // Getters and queries
     //==========================================================================
 
@@ -688,53 +691,27 @@ namespace sill {
      *  - "tabbed_weighted": Print tab-delimited data, as for Matlab, and
      *       include record weights as a last column.
      */
-    template <typename Char, typename Traits>
-    std::basic_ostream<Char,Traits>&
-    print(std::basic_ostream<Char,Traits>& out,
-          const std::string& format = "default") const {
-      if (format == "default") {
-        out << "Data set (";
-        out << finite_seq << " "
-            << vector_seq << ")" << std::endl;
-        for(size_t i = 0; i < nrecords; i++) {
-          record r(operator[](i));
-          foreach(size_t f, r.finite())
-            out << f << " ";
-          out << "| ";
-          foreach(double v, r.vector())
-            out << v << " ";
-          out << std::endl;
-        }
-      } else if (format == "vars") {
-        foreach(finite_variable* v, finite_seq)
-          out << v->name() << "\t" << v->get_variable_type() << "\t"
-              << v->size() << "\n";
-        foreach(vector_variable* v, vector_seq)
-          out << v->name() << "\t" << v->get_variable_type() << "\t"
-              << v->size() << "\n";
-      } else if (format == "tabbed") {
-        foreach(const record& r, records()) {
-          foreach(size_t f, r.finite())
-            out << f << "\t";
-          foreach(double v, r.vector())
-            out << v << "\t";
-          out << "\n";
-        }
-      } else if (format == "tabbed_weighted") {
-        size_t i(0);
-        foreach(const record& r, records()) {
-          foreach(size_t f, r.finite())
-            out << f << "\t";
-          foreach(double v, r.vector())
-            out << v << "\t";
-          out << weight(i) << "\n";
-        }
-      } else {
-        throw std::invalid_argument
-          ("dataset::print() given invalid format parameter: " + format);
-      }
-      return out;
-    }
+    std::ostream&
+    print(std::ostream& out, const std::string& format = "default") const;
+
+    /**
+     * Loads data from an input stream.
+     * Existing data is erased.
+     *
+     * The 'format' parameter can be one of these formats:
+     *  - "default": Print variables, then data in compact, readable format.
+     *     - NOT YET IMPLEMENTED
+     *  - "vars": Print 3 columns: variable name, type, arity.
+     *     - NOT YET IMPLEMENTED
+     *  - "tabbed": Print tab-delimited data, as for Matlab.
+     *     - This uses the dataset's current variable layout;
+     *       the tabbed data must match this layout.
+     *  - "tabbed_weighted": Print tab-delimited data, as for Matlab, and
+     *       include record weights as a last column.
+     *     - NOT YET IMPLEMENTED
+     */
+    std::istream&
+    load(std::istream& in, const std::string& format);
 
     // Mutating operations
     //==========================================================================
@@ -819,6 +796,12 @@ namespace sill {
     //! Set a single weight of record i (with bound checking).
     //! This may only be called if the dataset is already weighted.
     void set_weight(size_t i, double weight_);
+
+    //! Clears the dataset of all records.
+    //! NOTE: This should not be called if views of the data exist!
+    void clear() {
+      nrecords = 0;
+    }
 
   }; // class dataset
 

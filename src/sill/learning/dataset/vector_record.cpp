@@ -4,6 +4,21 @@
 
 namespace sill {
 
+  // Constructors
+  //==========================================================================
+
+  bool vector_record::operator==(const vector_record& other) const {
+    if (*vector_numbering_ptr == *(other.vector_numbering_ptr) &&
+        vector() == other.vector())
+      return true;
+    else
+      return false;
+  }
+
+  bool vector_record::operator!=(const vector_record& other) const {
+    return !operator==(other);
+  }
+
   // Getters and helpers
   //==========================================================================
 

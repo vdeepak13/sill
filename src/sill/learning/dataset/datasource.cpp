@@ -127,6 +127,82 @@ namespace sill {
     var_type_order.push_back(variable::VECTOR_VARIABLE);
   }
 
+  // Constructors
+  //==========================================================================
+
+  datasource::datasource() {
+    datasource_info_type ds_info;
+    reset(ds_info);
+  }
+
+  datasource::
+  datasource(const finite_var_vector& finite_vars,
+             const vector_var_vector& vector_vars,
+             const std::vector<variable::variable_typenames>& var_type_order) {
+    datasource_info_type ds_info(finite_vars, vector_vars, var_type_order);
+    reset(ds_info);
+  }
+
+  datasource::
+  datasource(const forward_range<finite_variable*>& finite_vars,
+             const forward_range<vector_variable*>& vector_vars,
+             const std::vector<variable::variable_typenames>& var_type_order) {
+    datasource_info_type ds_info(finite_vars, vector_vars, var_type_order);
+    reset(ds_info);
+  }
+
+  void datasource::reset(const datasource_info_type& info) {
+    finite_vars.clear();
+    finite_vars.insert(info.finite_seq.begin(), info.finite_seq.end());
+    finite_seq = info.finite_seq;
+    finite_numbering_ptr_.reset(new std::map<finite_variable*, size_t>());
+    finite_class_vars = info.finite_class_vars;
+
+    vector_vars.clear();
+    vector_vars.insert(info.vector_seq.begin(), info.vector_seq.end());
+    vector_seq = info.vector_seq;
+    vector_numbering_ptr_.reset(new std::map<vector_variable*, size_t>());
+    vector_class_vars = info.vector_class_vars;
+
+    var_type_order = info.var_type_order;
+
+    initialize();
+  }
+
+  void datasource::save(oarchive& a) const {
+    a << datasource_info();
+  }
+
+  void datasource::load(iarchive& a) {
+    datasource_info_type ds_info;
+    a >> ds_info;
+    reset(ds_info);
+  }
+
+  // Variables
+  //==========================================================================
+
+  var_vector datasource::variable_list() const {
+    var_vector vars(num_variables(), NULL);
+    size_t f_i = 0;
+    size_t v_i = 0;
+    for (size_t i = 0; i < num_variables(); ++i) {
+      switch (var_type_order[i]) {
+      case variable::FINITE_VARIABLE:
+        vars[i] = finite_seq[f_i];
+        ++f_i;
+        break;
+      case variable::VECTOR_VARIABLE:
+        vars[i] = vector_seq[v_i];
+        ++v_i;
+        break;
+      default:
+        assert(false);
+      }
+    }
+    assert(f_i == num_finite() && v_i == num_vector());
+    return vars;
+  }
 
   // Getters and helpers
   //==========================================================================

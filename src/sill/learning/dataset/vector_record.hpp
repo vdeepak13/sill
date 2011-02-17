@@ -126,6 +126,9 @@ namespace sill {
       }
     }
 
+    bool operator==(const vector_record& other) const;
+
+    bool operator!=(const vector_record& other) const;
 
     // Getters and helpers
     //==========================================================================
