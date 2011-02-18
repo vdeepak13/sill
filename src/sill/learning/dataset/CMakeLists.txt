@@ -2,6 +2,7 @@ set(PRL_DATASET_SOURCES
   assignment_dataset
   data_loader
   dataset
+  dataset_statistics
   dataset_view
   datasource
   datasource_info_type
@@ -10,7 +11,6 @@ set(PRL_DATASET_SOURCES
   finite_record_iterator
   record
   record_conversions
-  statistics
   symbolic
   symbolic_oracle
   syn_oracle_knorm

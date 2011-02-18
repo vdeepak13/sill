@@ -3,7 +3,7 @@
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/filtering_booster_OC.hpp>
 #include <sill/learning/discriminative/boosters.hpp>
@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
   ds_train.set_record_range(0, ntrain);
   dataset_view ds_test(*ds_ptr);
   ds_test.set_record_range(ntrain, ntrain + ntest);
-  statistics stats_train(ds_train);
+  dataset_statistics stats_train(ds_train);
 
   finite_variable* class_var = ds_train.finite_class_variables().front();
   size_t class_var_index = ds_train.record_index(class_var);

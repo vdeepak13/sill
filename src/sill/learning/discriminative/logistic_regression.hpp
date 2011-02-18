@@ -294,7 +294,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit logistic_regression(statistics& stats,
+    explicit logistic_regression(dataset_statistics& stats,
                                  logistic_regression_parameters params
                                  = logistic_regression_parameters())
       : base(stats.get_dataset()), params(params),
@@ -346,7 +346,7 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(statistics& stats) const {
+    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<binary_classifier>
         bptr(new logistic_regression(stats, this->params));
       return bptr;
@@ -471,7 +471,7 @@ namespace sill {
 
     //! Resets the data source to be used in future rounds of training.
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    void reset_datasource(statistics& stats) { assert(false); }
+    void reset_datasource(dataset_statistics& stats) { assert(false); }
     */
 
     // Save and load methods

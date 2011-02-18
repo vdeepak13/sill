@@ -4,13 +4,14 @@
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset/assignment_dataset.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 
 #include <sill/macros_def.hpp>
 
 /**
- * \file dataset.cpp Test of the statistics class using assignment_dataset.
+ * \file dataset.cpp Test of the dataset_statistics class using
+ *                   assignment_dataset.
  */
 int main(int argc, char* argv[]) {
 
@@ -25,10 +26,10 @@ int main(int argc, char* argv[]) {
   assignment_dataset& ds = *ds_ptr;
   cout << "Dataset:\n" << ds << endl;
 
-  // Print the data, along with its order statistics.
+  // Print the data, along with its order dataset_statistics.
   cout << "Computing order stats and, for each vector variable, printing "
        << "the record values in increasing order:\n" << endl;
-  statistics stats(ds);
+  dataset_statistics stats(ds);
   stats.compute_order_stats();
   const std::vector<std::vector<size_t> >& order_stats = stats.order_stats();
   const vector_var_vector& vector_list = ds.vector_list();

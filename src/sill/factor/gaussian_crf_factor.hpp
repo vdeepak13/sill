@@ -5,7 +5,7 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/learnable_crf_factor.hpp>
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/learning/discriminative/linear_regression.hpp>
 #include <sill/math/linear_algebra_errors.hpp>
 #include <sill/optimization/gaussian_opt_vector.hpp>

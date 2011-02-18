@@ -199,7 +199,7 @@ namespace sill {
     }
     ds_view.set_variable_indices(finite_indices, vector_indices);
     ds_view.set_finite_class_variables(Y_);
-    statistics stats(ds_view);
+    dataset_statistics stats(ds_view);
     // Train multilabel logistic regressor
     multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
     mlr_params.regularization = params.reg.regularization;

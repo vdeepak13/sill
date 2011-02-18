@@ -149,7 +149,7 @@ namespace sill {
     // Protected methods
     //==========================================================================
 
-    void build(statistics& stats) {
+    void build(dataset_statistics& stats) {
       const dataset& ds = stats.get_dataset();
 
       params.set_smoothing(ds.size(), label_->size());
@@ -357,7 +357,7 @@ namespace sill {
      * @param stats     a statistics class for the training dataset
      * @param params    algorithm parameters
      */
-    explicit stump(statistics& stats,
+    explicit stump(dataset_statistics& stats,
                    stump_parameters params = stump_parameters())
       : base(stats.get_dataset()), params(params) {
       build(stats);
@@ -373,12 +373,12 @@ namespace sill {
       : base(o), params(params) {
       boost::shared_ptr<vector_dataset>
         ds_ptr(oracle2dataset<vector_dataset>(o,n));
-      statistics stats(*ds_ptr);
+      dataset_statistics stats(*ds_ptr);
       build(stats);
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(statistics& stats) const {
+    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<binary_classifier>
         bptr(new stump<Objective>(stats, this->params));
       return bptr;

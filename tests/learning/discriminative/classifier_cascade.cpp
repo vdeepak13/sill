@@ -3,7 +3,7 @@
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>

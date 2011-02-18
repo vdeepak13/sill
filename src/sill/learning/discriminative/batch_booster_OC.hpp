@@ -106,10 +106,10 @@ namespace sill {
 
     //! For loading saved classifier without associated data or
     //! for learning from an oracle.
-    statistics* stats_ptr;
+    dataset_statistics* stats_ptr;
 
     //! Stats for dataset
-    statistics& stats;
+    dataset_statistics& stats;
 
     //! Dataset (from stats)
     const dataset& ds;
@@ -201,7 +201,7 @@ namespace sill {
     explicit batch_booster_OC(batch_booster_OC_parameters params
                               = batch_booster_OC_parameters())
       : base(params), params(params), ntrain(0),
-        ds_ptr(new vector_dataset()), stats_ptr(new statistics(*ds_ptr)),
+        ds_ptr(new vector_dataset()), stats_ptr(new dataset_statistics(*ds_ptr)),
         stats(*stats_ptr), ds(*ds_ptr) { }
 
     /**
@@ -209,7 +209,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param params        algorithm parameters
      */
-    explicit batch_booster_OC(statistics& stats,
+    explicit batch_booster_OC(dataset_statistics& stats,
                               batch_booster_OC_parameters params
                               = batch_booster_OC_parameters())
       : base(stats.get_dataset(), params), params(params),
@@ -233,7 +233,7 @@ namespace sill {
                      = batch_booster_OC_parameters())
       : base(o, params), params(params),
         ds_ptr(new vector_dataset(o.datasource_info())),
-        stats_ptr(new statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
+        stats_ptr(new dataset_statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
       for (size_t i = 0; i < n; ++i) {
         if (o.next())
           ds_ptr->insert(o.current().finite(), o.current().vector());
@@ -259,7 +259,7 @@ namespace sill {
     }
 
     //! Train a new multiclass classifier of this type with the given data.
-    boost::shared_ptr<multiclass_classifier> create(statistics& stats) const {
+    boost::shared_ptr<multiclass_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<multiclass_classifier>
         bptr(new batch_booster_OC<Objective>(stats, this->params));
       return bptr;
@@ -333,12 +333,12 @@ namespace sill {
           indices[i] = resampler.sample();
         dataset_view ds_view2(ds_view);
         ds_view2.set_record_indices(indices);
-        statistics stats_view(ds_view2);
+        dataset_statistics stats_view(ds_view2);
         base_hypotheses.push_back(params.weak_learner->create(stats_view));
       } else {
         // Do not use resampling
         ds_view.set_weights(resampler.distribution());
-        statistics stats_view(ds_view);
+        dataset_statistics stats_view(ds_view);
         base_hypotheses.push_back(params.weak_learner->create(stats_view));
       }
 
@@ -414,7 +414,7 @@ namespace sill {
     }
 
     //! Resets the data source to be used in future rounds of training.
-    void reset_datasource(statistics& stats) {
+    void reset_datasource(dataset_statistics& stats) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }

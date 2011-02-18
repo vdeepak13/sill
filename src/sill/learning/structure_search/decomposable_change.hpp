@@ -2,7 +2,7 @@
 #ifndef SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP
 #define SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP
 
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/structure_search/decomposable_score_functor.hpp>
 #include <sill/model/learnt_decomposable.hpp>
 
@@ -56,7 +56,7 @@ namespace sill {
     //!       for validity as well.
     virtual bool map_score_functor(decomposable_score_functor<F>& func,
                                    const learnt_decomposable<F>& model,
-                                   statistics& stats) const = 0;
+                                   dataset_statistics& stats) const = 0;
 
     //! Given a model, check to see if the move is still valid.
     virtual bool valid(const learnt_decomposable<F>& model) const = 0;
@@ -67,7 +67,7 @@ namespace sill {
     //! @return list of clique changes, providing a generic description of
     //!         the changes to the model
     virtual std::vector<clique_change>
-    commit(learnt_decomposable<F>& model, statistics& stats) const = 0;
+    commit(learnt_decomposable<F>& model, dataset_statistics& stats) const = 0;
 
   }; // class decomposable_change
 

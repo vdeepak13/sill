@@ -2,7 +2,7 @@
 #ifndef SILL_OPTIMIZATION_CHECK_FUNCTORS_HPP
 #define SILL_OPTIMIZATION_CHECK_FUNCTORS_HPP
 
-#include <sill/learning/parameter_grid.hpp>
+#include <sill/learning/validation/parameter_grid.hpp>
 #include <sill/optimization/concepts.hpp>
 
 #include <sill/macros_def.hpp>

@@ -234,7 +234,7 @@ namespace sill {
     }
 
     //! Warning: This should not be used for this class!
-    boost::shared_ptr<binary_classifier> create(statistics& stats) const {
+    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
       assert(false);
       return boost::shared_ptr<binary_classifier>();
     }

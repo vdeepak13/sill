@@ -9,7 +9,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/crf/crf_parameter_learner_builder.hpp>
 #include <sill/learning/crf/pwl_crf_parameter_learner.hpp>
-#include <sill/learning/crossval_builder.hpp>
+#include <sill/learning/validation/crossval_builder.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/generate_datasets.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>

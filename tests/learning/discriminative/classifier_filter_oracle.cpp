@@ -3,7 +3,7 @@
 #include <sill/learning/dataset/classifier_filter_oracle.hpp>
 #include <sill/learning/dataset/ds_oracle.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/stump.hpp>
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
   boost::shared_ptr<vector_dataset> ds_train_ptr
     = oracle2dataset<vector_dataset>(knorm, ntrain);
   vector_dataset& ds_train = *ds_train_ptr;
-  statistics stats(ds_train);
+  dataset_statistics stats(ds_train);
 
   stump<> s(stats);
 

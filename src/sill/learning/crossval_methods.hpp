@@ -5,9 +5,9 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/learning/dataset/dataset.hpp>
-#include <sill/learning/parameter_grid.hpp>
+#include <sill/learning/validation/parameter_grid.hpp>
 #include <sill/math/vector.hpp>
 
 #include <sill/macros_def.hpp>
@@ -41,7 +41,7 @@ namespace sill {
    *                          and returns the best lambda found.
    * @tparam N                dimensionality of lambda vector
    */
-  template <typename CrossvalFunctor, int N>
+  template <typename CrossvalFunctor, size_t N>
   vec crossval_zoom(std::vector<vec>& lambdas, vec& means, vec& stderrs,
                     const crossval_parameters<N>& cv_params,
                     const CrossvalFunctor& cv_functor, unsigned random_seed) {
@@ -99,7 +99,7 @@ namespace sill {
     return lambdas[best_i];
   } // crossval_zoom
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

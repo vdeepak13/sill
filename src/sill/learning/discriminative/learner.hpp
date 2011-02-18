@@ -143,7 +143,7 @@ namespace sill {
 
     //! Resets the data source to be used in future rounds of training.
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    virtual void reset_datasource(statistics& stats) {
+    virtual void reset_datasource(dataset_statistics& stats) {
       assert(false);
     }
 

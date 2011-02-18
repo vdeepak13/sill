@@ -357,7 +357,7 @@ namespace sill {
      * @param stats     a statistics class for the training dataset
      * @param params    algorithm parameters
      */
-    explicit filtering_booster(statistics& stats,
+    explicit filtering_booster(dataset_statistics& stats,
                                filtering_booster_parameters params
                                = filtering_booster_parameters())
       : base(stats.get_dataset(), params),
@@ -376,7 +376,7 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(statistics& stats) const {
+    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<binary_classifier>
         bptr(new filtering_booster<Objective>(stats, this->params));
       return bptr;
@@ -476,7 +476,7 @@ namespace sill {
       // Train the weak learner
       params.weak_learner->random_seed
         (boost::uniform_int<int>(0, std::numeric_limits<int>::max())(rng));
-      statistics stats(ds);
+      dataset_statistics stats(ds);
       base_hypotheses.push_back(params.weak_learner->create(stats));
 
       // Compute the weak learner's edge (by n_t or adaptive sampling)
@@ -601,7 +601,7 @@ namespace sill {
       // TODO: IMPLEMENT THIS
     }
     //! Resets the data source to be used in future rounds of training.
-    void reset_datasource(statistics& stats) {
+    void reset_datasource(dataset_statistics& stats) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }

@@ -468,7 +468,7 @@ namespace sill {
       fold_test.set_cross_validation_fold(fold, nfolds, true);
       for (size_t j(0); j < lambdas.size(); ++j) {
         params.lambda = lambdas[j][0];
-        statistics stats(fold_train);
+        dataset_statistics stats(fold_train);
         multiclass_logistic_regression mlr(stats, params);
         size_t i(0);
         double val(0);

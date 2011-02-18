@@ -17,7 +17,7 @@ namespace sill {
       base_train_acc.resize(nclasses_-1);
     }
 
-    void all_pairs_batch::build(statistics& stats) {
+    void all_pairs_batch::build(dataset_statistics& stats) {
       assert(params.binary_label != NULL);
       const dataset& ds = stats.get_dataset();
       init(ds);
@@ -50,7 +50,7 @@ namespace sill {
           dataset_view ds_view(ds, true);
           ds_view.set_binary_indicator(label_, params.binary_label, j);
           ds_view.set_record_indices(ind);
-          statistics stats_view(ds_view);
+          dataset_statistics stats_view(ds_view);
           params.base_learner->random_seed
             (boost::uniform_int<int>(0, std::numeric_limits<int>::max())(rng));
           if (i == 1 && base_classifiers[i].size() == 5)
@@ -101,7 +101,7 @@ namespace sill {
           distrib.clear();
           foreach(size_t k, ind)
             distrib.push_back(ds.weight(k));
-          statistics stats_view(ds_view);
+          dataset_statistics stats_view(ds_view);
           params.base_learner->random_seed
             (boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
 // (fix this)          base_classifiers[i].push_back(params.base_learner->createB(stats_view, distrib));

@@ -1,6 +1,6 @@
 
-#ifndef SILL_STATISTICS_HPP
-#define SILL_STATISTICS_HPP
+#ifndef SILL_DATASET_STATISTICS_HPP
+#define SILL_DATASET_STATISTICS_HPP
 
 #include <algorithm>
 #include <string>
@@ -18,16 +18,16 @@
 #include <sill/macros_def.hpp>
 
 /**
- * \file statistics.hpp This is a class for computing and storing statistics
- *                      about datasets.
+ * \file dataset_statistics.hpp This is a class for computing and storing
+ *                              statistics about datasets.
  */
 
 namespace sill {
 
   /**
-   * The statistics class is associated with (and holds a const reference to)
-   * a single dataset.  It may be used to compute and (optionally) store
-   * statistics about the data.  It currently supports:
+   * The dataset_statistics class is associated with (and holds a const
+   * reference to) a single dataset.  It may be used to compute and
+   * (optionally) store statistics about the data.  It currently supports:
    *  - order statistics
    *  - mutual information
    *  - marginals
@@ -38,7 +38,7 @@ namespace sill {
    * @todo Hold data in pointers to save space.
    * @todo Include distribution (or reference to it) in this class.
    */
-  class statistics {
+  class dataset_statistics {
 
     // Public type declarations
     //==========================================================================
@@ -107,7 +107,7 @@ namespace sill {
     //==========================================================================
   public:
 
-    explicit statistics(const dataset& ds)
+    explicit dataset_statistics(const dataset& ds)
       : ds(ds) { }
 
     //! Return associated dataset.
@@ -227,10 +227,10 @@ namespace sill {
     static vec
     vector_var_max(const dataset& data, const vector_var_vector& vars);
 
-  };  // class statistics
+  };  // class dataset_statistics
 
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
 
-#endif
+#endif // SILL_DATASET_STATISTICS_HPP

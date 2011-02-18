@@ -133,10 +133,10 @@ namespace sill {
 
     //! For loading saved classifier without associated data or
     //! for learning from an oracle.
-    statistics* stats_ptr;
+    dataset_statistics* stats_ptr;
 
     //! Stats for dataset
-    statistics& stats;
+    dataset_statistics& stats;
 
     //! Dataset (from stats)
     const dataset& ds;
@@ -208,14 +208,14 @@ namespace sill {
     explicit batch_booster(batch_booster_parameters params
                            = batch_booster_parameters())
       : base(params), params(params), ds_ptr(new vector_dataset()),
-        stats_ptr(new statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) { }
+        stats_ptr(new dataset_statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) { }
 
     /**
      * Constructor for a binary batch booster.
      * @param stats         a statistics class for the training dataset
      * @param params        algorithm parameters
      */
-    explicit batch_booster(statistics& stats,
+    explicit batch_booster(dataset_statistics& stats,
                            batch_booster_parameters params
                            = batch_booster_parameters())
       : base(stats.get_dataset(), params),
@@ -237,7 +237,7 @@ namespace sill {
                   batch_booster_parameters params = batch_booster_parameters())
       : base(o, params),
         params(params), ds_ptr(new vector_dataset(o.datasource_info())),
-        stats_ptr(new statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
+        stats_ptr(new dataset_statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
       for (size_t i = 0; i < n; ++i) {
         if (o.next())
           ds_ptr->insert(o.current().finite(), o.current().vector());
@@ -261,7 +261,7 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(statistics& stats) const {
+    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<binary_classifier>
         bptr(new batch_booster<Objective>(stats, this->params));
       return bptr;
@@ -348,7 +348,7 @@ namespace sill {
           std::cerr << "True training set class distribution: (" << zeros
                     << ", " << ones << ")" << std::endl;
         }
-        statistics stats_view(ds_view);
+        dataset_statistics stats_view(ds_view);
         base_hypotheses.push_back(params.weak_learner->create(stats_view));
         // TODO: Eventually, we should store WL predictions so we don't
         //       call predict() twice (once for edges and once to update
@@ -379,7 +379,7 @@ namespace sill {
         // Do not use resampling
         dataset_view ds_view(ds);
         ds_view.set_weights(resampler.distribution());
-        statistics stats_view(ds_view);
+        dataset_statistics stats_view(ds_view);
         base_hypotheses.push_back(params.weak_learner->create(stats_view));
         edge = base_hypotheses.back()->train_accuracy() - .5;
       }
@@ -465,7 +465,7 @@ namespace sill {
     }
 
     //! Resets the data source to be used in future rounds of training.
-    void reset_datasource(statistics& stats) {
+    void reset_datasource(dataset_statistics& stats) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }

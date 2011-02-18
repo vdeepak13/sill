@@ -3,7 +3,7 @@
 #define SILL_OBJECT_DETECTION_HAAR_HPP
 
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
@@ -545,7 +545,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit haar(statistics& stats, haar_parameters params = haar_parameters())
+    explicit haar(dataset_statistics& stats, haar_parameters params = haar_parameters())
       : base(stats.get_dataset()), params(params) {
       build(stats.get_dataset(), make_constant<double>(1));
     }
@@ -563,7 +563,7 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(statistics& stats) const {
+    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<binary_classifier>
         bptr(new haar<Objective>(stats, this->params));
       return bptr;

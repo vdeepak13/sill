@@ -4,7 +4,7 @@
 
 #include <sill/assignment.hpp>
 #include <sill/learning/dataset/dataset.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>

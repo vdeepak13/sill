@@ -1,5 +1,5 @@
 
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/learn_factor.hpp>
 
 #include <sill/macros_def.hpp>
@@ -9,7 +9,7 @@ namespace sill {
     // Public methods: order statistics
     //==========================================================================
 
-    void statistics::compute_order_stats(size_t v) {
+    void dataset_statistics::compute_order_stats(size_t v) {
       if (ds.empty())
         return;
       if (order_stats_.size() != ds.vector_dim())
@@ -23,7 +23,7 @@ namespace sill {
                 order_stats_functor(ds, v));
     }
 
-    void statistics::compute_order_stats() {
+    void dataset_statistics::compute_order_stats() {
       if (ds.empty())
         return;
       for (size_t v = 0; v < ds.vector_dim(); v++)
@@ -33,7 +33,7 @@ namespace sill {
     // Public methods: mutual information
     //==========================================================================
 
-    void statistics::compute_mutual_info
+    void dataset_statistics::compute_mutual_info
     (size_t i, size_t j, double smoothing) {
       if (smoothing < 0)
         smoothing = .01 / ds.size();
@@ -59,7 +59,7 @@ namespace sill {
         fij.mutual_information(make_domain(vi), make_domain(vj));
     }
 
-    void statistics::compute_mutual_info(double smoothing) {
+    void dataset_statistics::compute_mutual_info(double smoothing) {
       if (ds.empty())
         return;
       for (size_t i = 0; i < ds.num_finite() - 1; ++i)
@@ -71,13 +71,13 @@ namespace sill {
   //==========================================================================
 
   const table_factor&
-  statistics::marginal(const finite_domain& d, double smoothing) const {
+  dataset_statistics::marginal(const finite_domain& d, double smoothing) const {
     if (!(marginal_map.count(d)))
       marginal_map[d] = learn_marginal<table_factor>(d, ds, smoothing);
     return marginal_map[d];
   }
 
-  void statistics::clear_marginals() const {
+  void dataset_statistics::clear_marginals() const {
     marginal_map.clear();
   }
 
@@ -85,7 +85,7 @@ namespace sill {
   //==========================================================================
 
   vec
-  statistics::vector_var_min(const dataset& data,
+  dataset_statistics::vector_var_min(const dataset& data,
                              const vector_var_vector& vars){
     vec mins(vector_size(vars));
     vec vals(mins.size());
@@ -100,7 +100,7 @@ namespace sill {
   }
 
   vec
-  statistics::vector_var_max(const dataset& data,
+  dataset_statistics::vector_var_max(const dataset& data,
                              const vector_var_vector& vars){
     vec maxs(vector_size(vars));
     vec vals(maxs.size());

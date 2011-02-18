@@ -12,7 +12,7 @@
 #include <sill/model/random.hpp>
 
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
   syn_oracle_bayes_net<table_factor> bn_oracle(bn);
   boost::shared_ptr<vector_dataset>
     ds_ptr(oracle2dataset<vector_dataset>(bn_oracle,n_records));
-  statistics stats(*ds_ptr);
+  dataset_statistics stats(*ds_ptr);
 
   // Choose some random variables for evidence
   finite_assignment evidence;

@@ -5,7 +5,7 @@
 #include <algorithm>
 
 #include <sill/functional.hpp>
-#include <sill/learning/crossval_parameters.hpp>
+#include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/learning/dataset/ds_oracle.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
@@ -814,7 +814,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     explicit multiclass_logistic_regression
-    (statistics& stats,
+    (dataset_statistics& stats,
      multiclass_logistic_regression_parameters params
      = multiclass_logistic_regression_parameters())
       : base(stats.get_dataset()), params(params),
@@ -891,7 +891,7 @@ namespace sill {
     }
 
     //! Train a new multiclass classifier of this type with the given data.
-    boost::shared_ptr<multiclass_classifier> create(statistics& stats) const {
+    boost::shared_ptr<multiclass_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<multiclass_classifier>
         bptr(new multiclass_logistic_regression(stats, this->params));
       return bptr;
@@ -1143,7 +1143,7 @@ namespace sill {
 
     //! Resets the data source to be used in future rounds of training.
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    void reset_datasource(statistics& stats) { assert(false); }
+    void reset_datasource(dataset_statistics& stats) { assert(false); }
     */
 
     // Save and load methods

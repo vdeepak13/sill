@@ -350,7 +350,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit proto_knn(statistics& stats,
+    explicit proto_knn(dataset_statistics& stats,
               proto_knn_parameters params = proto_knn_parameters())
       : base(stats.get_dataset()), params(params),
         finite_seq(stats.get_dataset().finite_list()),
@@ -378,7 +378,7 @@ namespace sill {
      * @param sampler       a tree sampler for the dataset distribution
      * @param parameters    algorithm parameters
      */
-    proto_knn(statistics& stats, const tree_sampler& sampler,
+    proto_knn(dataset_statistics& stats, const tree_sampler& sampler,
               proto_knn_parameters params = proto_knn_parameters())
       : base(stats.get_dataset(), Objective::confidence_rated()), params(params),
         finite_seq(stats.get_dataset().finite_list()),
@@ -418,7 +418,7 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(statistics& stats) const {
+    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<binary_classifier>
         bptr(new proto_knn<Objective>(stats, this->params));
       return bptr;

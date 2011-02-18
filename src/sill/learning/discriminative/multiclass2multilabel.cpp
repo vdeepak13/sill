@@ -54,7 +54,7 @@ namespace sill {
       dataset_view ds_view(orig_ds, true);
       ds_view.set_merged_variables(orig_ds.finite_class_variables(),
                                    params.new_label);
-      statistics stats(ds_view);
+      dataset_statistics stats(ds_view);
 
       boost::mt11213b rng(static_cast<unsigned>(params.random_seed));
       params.base_learner->random_seed

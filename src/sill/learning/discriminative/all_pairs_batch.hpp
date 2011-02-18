@@ -130,7 +130,7 @@ namespace sill {
     void init(const datasource& ds);
 
     //! Train learner.
-    void build(statistics& stats);
+    void build(dataset_statistics& stats);
 
     /*
     //! Train learner.
@@ -157,7 +157,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit all_pairs_batch(statistics& stats,
+    explicit all_pairs_batch(dataset_statistics& stats,
                              all_pairs_batch_parameters params
                              = all_pairs_batch_parameters())
       : base(stats.get_dataset()), params(params) {
@@ -176,12 +176,12 @@ namespace sill {
     : base(o), params(params) {
       boost::shared_ptr<vector_dataset>
         ds_ptr(oracle2dataset<vector_dataset>(o,n));
-      statistics stats(*ds_ptr);
+      dataset_statistics stats(*ds_ptr);
       build(stats);
     }
 
     //! Train a new multiclass classifier of this type with the given data.
-    boost::shared_ptr<multiclass_classifier> create(statistics& stats) const {
+    boost::shared_ptr<multiclass_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<multiclass_classifier>
         bptr(new all_pairs_batch(stats, this->params));
       return bptr;

@@ -6,7 +6,7 @@
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/data_loader.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
   vector_dataset& ds_test = *ds_test_ptr;
   finite_variable* class_var = ds_train.finite_class_variables().front();
 
-  statistics stats(ds_train);
+  dataset_statistics stats(ds_train);
 
   cout << "Marginal over training set class variables:\n"
        << learn_marginal<table_factor>(make_domain(class_var), ds_train)

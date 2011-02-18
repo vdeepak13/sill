@@ -3,7 +3,7 @@
 #define SILL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP
 
 #include <sill/learning/dataset/oracle.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -274,7 +274,7 @@ namespace sill {
     typedef typename C::parameters parameters;
 
     // TODO: Is there a way to put templated functions in concept_usage()?
-    BatchLearner(const statistics& stats, parameters params);
+    BatchLearner(const dataset_statistics& stats, parameters params);
 
   };
 

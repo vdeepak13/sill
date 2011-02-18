@@ -2,7 +2,7 @@
 #ifndef SILL_LEARNING_DISCRIMINATIVE_BINARY_CLASSIFIER_HPP
 #define SILL_LEARNING_DISCRIMINATIVE_BINARY_CLASSIFIER_HPP
 
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/discriminative/singlelabel_classifier.hpp>
 
 #include <sill/macros_def.hpp>
@@ -58,7 +58,7 @@ namespace sill {
 
     //! Train a new binary classifier of this type with the given data.
     virtual boost::shared_ptr<binary_classifier>
-    create(statistics& stats) const = 0;
+    create(dataset_statistics& stats) const = 0;
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle

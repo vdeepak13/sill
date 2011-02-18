@@ -1,5 +1,5 @@
 
-#include <sill/learning/parameter_grid.hpp>
+#include <sill/learning/validation/parameter_grid.hpp>
 
 #include <sill/macros_def.hpp>
 

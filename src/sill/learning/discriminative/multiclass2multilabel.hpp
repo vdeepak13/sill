@@ -147,7 +147,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit multiclass2multilabel(statistics& stats,
+    explicit multiclass2multilabel(dataset_statistics& stats,
                                    multiclass2multilabel_parameters params
                                    = multiclass2multilabel_parameters())
       : base(stats.get_dataset()), params(params),
@@ -184,7 +184,7 @@ namespace sill {
     }
 
     //! Train a new multilabel classifier of this type with the given data.
-    boost::shared_ptr<multilabel_classifier> create(statistics& stats) const {
+    boost::shared_ptr<multilabel_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<multilabel_classifier>
         bptr(new multiclass2multilabel(stats, this->params));
       return bptr;

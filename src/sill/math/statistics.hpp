@@ -38,6 +38,30 @@ namespace sill {
     return sum / v.size();
   }
 
+  //! Return the median for the given vector of values.
+  //! Return 0 for empty vector.
+  template <typename T>
+  T median(const std::vector<T>& v) {
+    if (v.size() == 0)
+      return 0;
+    std::vector<T> sorted(v);
+    std::sort(sorted.begin(), sorted.end());
+    size_t median_i(sorted.size() / 2);
+    return sorted[median_i];
+  }
+
+  //! Return the median for the given vector of values.
+  //! Return 0 for empty vector.
+  template <typename T>
+  T median(const vector<T>& v) {
+    if (v.size() == 0)
+      return 0;
+    vector<T> sorted(v);
+    std::sort(sorted.begin(), sorted.end());
+    size_t median_i(sorted.size() / 2);
+    return sorted[median_i];
+  }
+
   //! Return the <mean, std error> for the given vector of values.
   std::pair<double, double> mean_stderr(const std::vector<double>& vals);
 
@@ -51,6 +75,40 @@ namespace sill {
   //! Return the <median, Median Absolute Deviation> for the given vector of
   //! values.
   std::pair<double, double> median_MAD(const vec& vals);
+
+  namespace statistics {
+
+    enum generalized_mean_enum { MEAN, MEDIAN };
+
+  } // namespace statistics
+
+  //! Return the generalized mean of type GM of the given values.
+  template <typename T>
+  T generalized_mean(const vector<T>& v,
+                     const statistics::generalized_mean_enum& gm) {
+    switch (gm) {
+    case statistics::MEAN:
+      return mean(v);
+    case statistics::MEDIAN:
+      return median(v);
+    default:
+      throw std::invalid_argument("generalized_mean(v,gm) given bad gm value.");
+    }
+  }
+
+  //! Return the generalized mean of type GM of the given values.
+  template <typename T>
+  T generalized_mean(const std::vector<T>& v,
+                     const statistics::generalized_mean_enum& gm) {
+    switch (gm) {
+    case statistics::MEAN:
+      return mean(v);
+    case statistics::MEDIAN:
+      return median(v);
+    default:
+      throw std::invalid_argument("generalized_mean(v,gm) given bad gm value.");
+    }
+  }
 
   // Max and min: deterministic tie-breaking
   //============================================================================
@@ -251,20 +309,39 @@ namespace sill {
   //============================================================================
 
   namespace impl {
-    //! Used for function sorted_indices()
+
+    //! Used for function sorted_indices(vec)
     class sorted_indices_comparator {
       const vec& v;
     public:
       explicit sorted_indices_comparator(const vec& v) : v(v) { }
       bool operator()(size_t a, size_t b) const { return (v[a] < v[b]); }
     }; // class sorted_indices_comparator
+
+    //! Used for function sorted_indices(std::vector<vec>)
+    class sorted_indices_comparator2 {
+      const std::vector<vec>& v;
+    public:
+      explicit sorted_indices_comparator2(const std::vector<vec>& v) : v(v) { }
+      bool operator()(size_t a, size_t b) const {
+        size_t min_size = std::min<size_t>(v[a].size(), v[b].size());
+        for (size_t i = 0; i < min_size; ++i) {
+          if (v[a][i] != v[b][i])
+            return (v[a][i] < v[b][i]);
+        }
+        return (v[a].size() < v[b].size());
+      }
+    }; // class sorted_indices_comparator2
+
   } // namespace impl
 
   //! Given a vector of values, return a list of indices which give the values
-  //! in sorted order.
-  //! @todo Once paraml has been merged back with the trunk and we have
-  //!       decided how to handle ranges, put this somewhere else.
+  //! in increasing order.
   std::vector<size_t> sorted_indices(const vec& v);
+
+  //! Given a vector of vecs, return a list of indices which give the vecs
+  //! in lexigraphical order (increasing).
+  std::vector<size_t> sorted_indices(const std::vector<vec>& v);
 
 } // end of namespace: prl
 

@@ -2,7 +2,7 @@
 #ifndef SILL_CROSSVAL_PARAMETERS_HPP
 #define SILL_CROSSVAL_PARAMETERS_HPP
 
-#include <sill/math/vector.hpp>
+#include <sill/math/statistics.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -24,21 +24,21 @@ namespace sill {
     //!  (default = 10)
     size_t nfolds;
 
-    //! Minimum values for factor regularization parameters. (>= 0)
+    //! Minimum values for regularization parameters. (>= 0)
     //! NOTE: If you use the create_parameter_grid() methods, then you should
     //!       set this to be > 0.
     //!  (default = 0.000001)
     vec minvals;
 
-    //! Maximum values for factor regularization parameters. (>= 0)
+    //! Maximum values for regularization parameters. (>= 0)
     //!  (default = 1)
     vec maxvals;
 
-    //! Number of factor regularization values to try in each dimension. (>= 1)
+    //! Number of regularization values to try in each dimension. (>= 1)
     //!  (default = 10)
     ivec nvals;
 
-    //! If true, iteratively try extra factor regularization values around
+    //! If true, iteratively try extra regularization values around
     //! the current best value for this many iterations.
     //!  (default = 0)
     size_t zoom;
@@ -47,9 +47,14 @@ namespace sill {
     //!  (default = true)
     bool log_scale;
 
+    //! Specifies how to combine multiple runs/folds of CV to choose
+    //! the best result.
+    //!  (default = statistics::MEAN)
+    statistics::generalized_mean_enum run_combo_type;
+
     crossval_parameters()
       : nfolds(10), minvals(N,0.000001), maxvals(N,1), nvals(N,10),
-        zoom(0), log_scale(true) { }
+        zoom(0), log_scale(true), run_combo_type(statistics::MEAN) { }
 
     //! Return true iff the parameters are valid.
     bool valid() const {

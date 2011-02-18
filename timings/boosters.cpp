@@ -4,7 +4,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/logistic_regression.hpp>
@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     = oracle2dataset<vector_dataset>(knorm, ntest);
   vector_dataset& ds_train = *ds_train_ptr;
   vector_dataset& ds_test = *ds_test_ptr;
-  statistics stats(ds_train);
+  dataset_statistics stats(ds_train);
 
   typedef stump<> wl_type;
   boost::shared_ptr<binary_classifier> wl_ptr(new wl_type());

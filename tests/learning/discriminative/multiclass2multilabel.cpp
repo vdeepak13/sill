@@ -4,7 +4,7 @@
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/data_loader.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
@@ -58,7 +58,7 @@ int main(int argc, char* argv[]) {
     new_class_vars_size *= v->size();
   finite_variable* new_merged_var = u.new_finite_variable(new_class_vars_size);
 
-  statistics stats(ds_train);
+  dataset_statistics stats(ds_train);
 
   multiclass_logistic_regression_parameters mlr_params;
   mlr_params.init_iterations = ntrain * 10;

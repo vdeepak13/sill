@@ -110,7 +110,7 @@ namespace sill {
         }
 
       // Train a new classifier
-      statistics stats(base_ds);
+      dataset_statistics stats(base_ds);
       if (base_classifiers.size() >= params.base_classifiers.size()) {
         params.base_classifiers.back()->random_seed
           (boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));

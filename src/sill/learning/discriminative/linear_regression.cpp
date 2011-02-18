@@ -2,7 +2,7 @@
 #include <stdexcept>
 
 #include <sill/learning/discriminative/linear_regression.hpp>
-#include <sill/learning/parameter_grid.hpp>
+#include <sill/learning/validation/parameter_grid.hpp>
 #include <sill/math/permutations.hpp>
 
 #include <sill/macros_def.hpp>

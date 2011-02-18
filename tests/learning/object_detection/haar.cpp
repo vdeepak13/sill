@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
   ds_train.set_record_range(0, data_ptr->size() / 2);
   dataset_view ds_test(*data_ptr);
   ds_test.set_record_range(data_ptr->size() / 2, data_ptr->size());
-  statistics stats(ds_train);
+  dataset_statistics stats(ds_train);
 
   timer.restart();
   haar<> h(stats);

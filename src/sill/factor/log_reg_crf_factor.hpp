@@ -3,9 +3,9 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/learnable_crf_factor.hpp>
-#include <sill/learning/crossval_parameters.hpp>
 #include <sill/learning/discriminative/multiclass2multilabel.hpp>
 #include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
+#include <sill/learning/validation/crossval_parameters.hpp>
 
 #include <sill/macros_def.hpp>
 

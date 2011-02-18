@@ -3,7 +3,7 @@
 #include <sill/factor/operations.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/record_conversions.hpp>
-#include <sill/learning/parameter_grid.hpp>
+#include <sill/learning/validation/parameter_grid.hpp>
 #include <sill/math/constants.hpp>
 
 #include <sill/macros_def.hpp>

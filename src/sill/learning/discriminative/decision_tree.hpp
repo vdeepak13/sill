@@ -215,7 +215,7 @@ namespace sill {
       stump_parameters stump_params;
       stump_params.smoothing = params.smoothing;
       stump_params.random_seed = uniform_int(rng);
-      statistics stats(train_view);
+      dataset_statistics stats(train_view);
       treenode* node = new treenode(stump_type(stats, stump_params));
 
       // Split the data into those labeled 0/1 by the stump.
@@ -304,7 +304,7 @@ namespace sill {
     /**
      *
      */
-    void build(statistics& stats) {
+    void build(dataset_statistics& stats) {
       params.set_smoothing(stats.get_dataset().size(), label_->size());
       assert(params.valid());
       rng.seed(static_cast<unsigned>(params.random_seed));
@@ -340,7 +340,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit decision_tree(statistics& stats,
+    explicit decision_tree(dataset_statistics& stats,
                            decision_tree_parameters params
                            = decision_tree_parameters())
       : base(stats.get_dataset()), params(params), root(NULL) {
@@ -358,7 +358,7 @@ namespace sill {
       : base(o), params(params), root(NULL) {
       boost::shared_ptr<vector_dataset>
         ds_ptr(oracle2dataset<vector_dataset>(o,n));
-      statistics stats(*ds_ptr);
+      dataset_statistics stats(*ds_ptr);
       build(stats);
     }
 
@@ -368,7 +368,7 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(statistics& stats) const {
+    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<binary_classifier>
         bptr(new decision_tree<Objective>(stats, this->params));
       return bptr;

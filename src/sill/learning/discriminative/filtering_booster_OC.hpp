@@ -391,7 +391,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit filtering_booster_OC(statistics& stats,
+    explicit filtering_booster_OC(dataset_statistics& stats,
                                   filtering_booster_OC_parameters params
                                   = filtering_booster_OC_parameters())
       : base(stats.get_dataset(), params), params(params),
@@ -410,7 +410,7 @@ namespace sill {
     }
 
     //! Train a new multiclass classifier of this type with the given data.
-    boost::shared_ptr<multiclass_classifier> create(statistics& stats) const {
+    boost::shared_ptr<multiclass_classifier> create(dataset_statistics& stats) const {
       boost::shared_ptr<multiclass_classifier>
         bptr(new filtering_booster_OC<Objective>(stats, this->params));
       return bptr;
@@ -521,7 +521,7 @@ namespace sill {
         (boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
       dataset_view ds_view(ds);
       ds_view.set_binary_coloring(label_, params.binary_label, coloring);
-      statistics stats(ds_view);
+      dataset_statistics stats(ds_view);
       base_hypotheses.push_back(params.weak_learner->create(stats));
 
       // Compute edge and alpha
@@ -664,7 +664,7 @@ namespace sill {
       // TODO: IMPLEMENT THIS
     }
     //! Resets the data source to be used in future rounds of training.
-    void reset_datasource(statistics& stats) {
+    void reset_datasource(dataset_statistics& stats) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }

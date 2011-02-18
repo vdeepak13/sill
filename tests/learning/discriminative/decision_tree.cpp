@@ -2,7 +2,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/statistics.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/concepts.hpp>
@@ -30,7 +30,7 @@ int main(int argc, char* argv[]) {
   boost::shared_ptr<vector_dataset> ds_test_ptr
     = oracle2dataset<vector_dataset>(majority, ntest);
   vector_dataset& ds_test = *ds_test_ptr;
-  statistics stats(ds_train);
+  dataset_statistics stats(ds_train);
 
   decision_tree<> s(stats);
 
