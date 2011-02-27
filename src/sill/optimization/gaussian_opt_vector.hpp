@@ -59,7 +59,18 @@ namespace sill {
       : A(A), b(b), C(C) {
       if (!valid_size())
         throw std::invalid_argument
-          ("gaussian_opt_vector constructor: dimensions do not match each other.");
+          (std::string("gaussian_opt_vector constructor:") +
+           " dimensions do not match each other.");
+    }
+
+    //! Serialize members
+    void save(oarchive & ar) const {
+      ar << A << b << C;
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      ar >> A >> b >> C;
     }
 
     // Getters and non-math setters

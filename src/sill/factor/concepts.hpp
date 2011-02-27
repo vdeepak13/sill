@@ -651,7 +651,7 @@ namespace sill {
     static F*
     learn_crf_factor_cv
     (std::vector<regularization_type>& reg_params, vec& means, vec& stderrs,
-     const crossval_parameters<regularization_type::nlambdas>& cv_params,
+     const crossval_parameters& cv_params,
      boost::shared_ptr<dataset> ds_ptr,
      const output_domain_type& Y_, copy_ptr<input_domain_type> X_ptr_,
      unsigned random_seed, const parameters& params);
@@ -723,8 +723,7 @@ namespace sill {
     static vec& vec_ref;
     static const vec& vec_const_ref;
 
-    static const crossval_parameters<regularization_type::nlambdas>&
-      cv_params_const_ref;
+    static const crossval_parameters& cv_params_const_ref;
 
   }; // struct LearnableCRFfactor
 

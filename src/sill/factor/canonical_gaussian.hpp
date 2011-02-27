@@ -36,40 +36,13 @@ namespace sill {
     //! implements Factor::combine_ops
     static const unsigned combine_ops = 1 << product_op | 1 << divides_op;
 
-    // Private data members
+    // Public methods for serialization
     //==========================================================================
-  private:
-    //! A list of arguments in their natural order
-    vector_var_vector arg_list;
-
-    //! The information matrix
-    mat lambda;
-
-    //! The information vector
-    vec eta;
-
   public:
-    //! The multiplicative constant
-    double log_mult;
 
     void save(oarchive& ar) const;
 
     void load(iarchive& ar);
-
-  private:
-
-    /**
-     * Initializes this indices for the given arguments and checks
-     * matrix dimensions.
-     * \paran use_default
-     *        if true, resets the information matrix/vector to zero.
-     */
-    void initialize(const forward_range<vector_variable*>& args,
-                    bool use_default);
-
-    friend canonical_gaussian combine(const canonical_gaussian& x,
-                                      const canonical_gaussian& y,
-                                      op_type op);
 
     // Constructors and conversion operators
     //==========================================================================
@@ -142,58 +115,36 @@ namespace sill {
     //==========================================================================
 
     //! Returns the argument list of this Gaussian
-    const vector_var_vector& argument_list() const {
-      return arg_list;
-    }
+    const vector_var_vector& argument_list() const;
 
     //! Returns the number of dimensions of this Gaussian
-    size_t size() const {
-      return eta.size();
-    }
+    size_t size() const;
 
     //! Returns the information matrix in the natural order
-    const mat& inf_matrix() const {
-      return lambda;
-    }
+    const mat& inf_matrix() const;
     
     //! Returns the information matrix in the natural order
     //! The caller must not alter the matrix dimensions
-    mat& inf_matrix() {
-      return lambda;
-    }
+    mat& inf_matrix();
 
     //! Returns the information vector in the natural order
-    const vec& inf_vector() const { 
-      return eta;
-    }
+    const vec& inf_vector() const;
 
     //! Returns the information vector in the natural order
     //! The caller must not alter the vector dimensions
-    vec& inf_vector() {
-      return eta;
-    }
+    vec& inf_vector();
 
     //! Returns the log multiplier.
-    double log_multiplier() const {
-      return log_mult;
-    }
+    double log_multiplier() const;
 
     //! Returns the log multiplier.
-    double& log_multiplier() {
-      return log_mult;
-    }
+    double& log_multiplier();
 
     //! Returns the information matrix for a subset of the arguments
-    mat inf_matrix(const vector_var_vector& args) const {
-      ivec ind(indices(args));
-      return lambda(ind, ind);
-    }
+    mat inf_matrix(const vector_var_vector& args) const;
 
     //! Returns the information vector for a subset of the arguments
-    vec inf_vector(const vector_var_vector& args) const {
-      ivec ind(this->indices(args));
-      return eta(ind);
-    }
+    vec inf_vector(const vector_var_vector& args) const;
 
     // Comparison operators
     //==========================================================================
@@ -208,7 +159,7 @@ namespace sill {
     //! Returns true if the first factor precedes the second in the
     //! lexicographical ordering.
     bool operator<(const canonical_gaussian& other) const;
-  
+
     // Factor operations
     //==========================================================================
 
@@ -231,39 +182,53 @@ namespace sill {
      *         variables is singular.
      * \todo fix the log-likelihood
      */
-    canonical_gaussian collapse(const vector_domain& retain, op_type op) const;
     canonical_gaussian collapse(op_type op, const vector_domain& retain) const;
+//    canonical_gaussian collapse(const vector_domain& retain, op_type op) const;
 
     //! Performs a collapse operation, storing result in factor cg.
     //! Avoids reallocation if possible.
-    void collapse(canonical_gaussian& cg, const vector_domain& retain,
-                  op_type op) const;
+    void collapse(op_type op, const vector_domain& retain,
+                  canonical_gaussian& cg) const;
+
+    //! Performs a collapse operation, storing result in factor cg.
+    //! Avoids reallocation if possible.
+    //! This version does not update the normalization constant.
+    void collapse_unnormalized(op_type op,
+                               const vector_domain& retain,
+                               canonical_gaussian& cg) const;
 
     //! implements Factor::restrict
     canonical_gaussian restrict(const vector_assignment& a) const;
+  
+    /**
+     * Restrict which stores the result in the given factor f.
+     * TO DO: Avoid reallocation if f has been pre-allocated.
+     *
+     * @param r_vars  Only restrict away arguments of this factor which
+     *                appear in both keys(r) and r_vars.
+     * @param strict  Require that all variables which are in
+     *                intersect(f.arguments(), r_vars) appear in keys(r).
+     *                (default = false)
+     */
+    void restrict(canonical_gaussian& f, const vector_record& r,
+                  const vector_domain& r_vars, bool strict = false) const;
   
     //! implements Factor::subst_args
     canonical_gaussian& subst_args(const vector_var_map& map);
 
     //! implements DistributionFactor::marginal
-    canonical_gaussian marginal(const vector_domain& retain) const {
-      return collapse(retain, sum_op);
-    }
+    canonical_gaussian marginal(const vector_domain& retain) const;
 
     //! Computes marginal, storing result in factor f.
     //! If f is pre-allocated, this avoids reallocation.
-    void marginal(canonical_gaussian& cg, const vector_domain& retain) const {
-      collapse(cg, retain, sum_op);
-    }
+    void marginal(canonical_gaussian& cg, const vector_domain& retain) const;
 
     //! If this factor represents P(A,B), then this returns P(A|B).
     //! @todo Make this more efficient.
     canonical_gaussian conditional(const vector_domain& B) const;
 
     //! implements DistributionFactor::is_normalizable
-    bool is_normalizable() const {
-      return true;
-    }
+    bool is_normalizable() const;
 
     //! Returns the normalization constant
     double norm_constant() const;
@@ -334,6 +299,42 @@ namespace sill {
      *          it was not and was adjusted.
      */
     bool enforce_psd(const vec& mean);
+
+    // Private data members
+    //==========================================================================
+  private:
+    //! A list of arguments in their natural order
+    vector_var_vector arg_list;
+
+    //! The information matrix
+    mat lambda;
+
+    //! The information vector
+    vec eta;
+
+    //! The multiplicative constant
+    double log_mult;
+
+    // Private methods
+    //==========================================================================
+
+    /**
+     * Initializes this indices for the given arguments and checks
+     * matrix dimensions.
+     * \paran use_default
+     *        if true, resets the information matrix/vector to zero.
+     */
+    void initialize(const forward_range<vector_variable*>& args,
+                    bool use_default);
+
+    friend canonical_gaussian combine(const canonical_gaussian& x,
+                                      const canonical_gaussian& y,
+                                      op_type op);
+
+    void collapse_(op_type op,
+                   const vector_domain& retain,
+                   bool renormalize,
+                   canonical_gaussian& cg) const;
 
   }; // class canonical_gaussian
 

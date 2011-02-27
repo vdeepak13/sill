@@ -1,16 +1,15 @@
 #include <stdexcept>
 
-#include <sill/math/constants.hpp>
-#include <sill/math/linear_algebra.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/vector_variable.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
-#include <sill/factor/invalid_operation.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
+#include <sill/math/constants.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/vector.hpp>
-#include <sill/base/vector_variable.hpp>
-#include <sill/base/stl_util.hpp>
 #include <sill/range/algorithm.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -121,18 +120,21 @@ namespace sill {
 
   moment_gaussian::moment_gaussian(const canonical_gaussian& cg)
     : gaussian_factor(cg.arguments()), head_list(cg.arg_list),
-      coeff(cg.eta.size(),0), likelihood(1)
-  {
-    this->var_range = cg.var_range;
-    //size_t n = cg.eta.size();
-    //cov.resize(n, n, false);
-    bool result = inv(cg.lambda, cov);
-    if (!result) {
-      throw invalid_operation("The canonical_gaussian does not represent a valid marginal distribution.");
+      coeff(cg.eta.size(),0), likelihood(cg.log_multiplier(), log_tag()) {
+    // TO DO: Is likelihood set correctly?
+    if (head_list.size() != 0) {
+      this->var_range = cg.var_range;
+      //size_t n = cg.eta.size();
+      //cov.resize(n, n, false);
+      bool result = inv(cg.lambda, cov);
+      if (!result) {
+        throw invalid_operation
+          (std::string("The canonical_gaussian does not represent a valid") +
+           " marginal distribution.");
+      }
+      //cmean.resize(n, false);
+      cmean = cov * cg.eta;
     }
-    //cmean.resize(n, false);
-    cmean = cov * cg.eta;
-    // TODO: fix log_lik
   }
 
   moment_gaussian::operator constant_factor() const {
@@ -164,6 +166,7 @@ namespace sill {
 
   // Factor operations
   //============================================================================
+
   logarithmic<double>
   moment_gaussian::operator()(const vector_assignment& a) const {
     if (!marginal())
@@ -203,7 +206,7 @@ namespace sill {
   }
 
   moment_gaussian
-  moment_gaussian::collapse(const vector_domain& retain, op_type op) const {
+  moment_gaussian::collapse(op_type op, const vector_domain& retain) const {
     check_supported(op, collapse_ops);
     // collapse must not eliminate any tail variables
     //assert(vector_domain(tail_list).subset_of(retain));
@@ -264,12 +267,16 @@ namespace sill {
     double logl = 0;
     logl -= 0.5 * inner_prod(dy, ls_solve_chol(cov(iy,iy), dy));
     logl -= 0.5 * (dy.size()*log(2*pi()) + logdet(cov(iy,iy)));
-    return moment_gaussian
-      (x,
-       new_cmean(ix) + invyy_covyx.transpose()*dy,
-       cov(ix, ix) - cov(ix,iy) * invyy_covyx,
-       likelihood * logarithmic<double>(logl, log_tag()));
-  }
+    if (x.size() == 0)
+      return moment_gaussian
+        (likelihood * logarithmic<double>(logl, log_tag()));
+    else
+      return moment_gaussian
+        (x,
+         new_cmean(ix) + invyy_covyx.transpose()*dy,
+         cov(ix, ix) - cov(ix,iy) * invyy_covyx,
+         likelihood * logarithmic<double>(logl, log_tag()));
+  } // restrict(a)
 
   moment_gaussian&
   moment_gaussian::add_parameters(const moment_gaussian& f, double w) {
@@ -314,9 +321,11 @@ namespace sill {
       else
         new_tail.push_back(v);
     }
-    if (new_tail.size() != B.size())
+    if (new_tail.size() != B.size()) {
       throw std::runtime_error
-        ("moment_gaussian::conditional() given set B with variables not in the factor");
+        (std::string("moment_gaussian::conditional()") +
+         " given set B with variables not in the factor");
+    }
     ivec ia(indices(new_head));
     ivec ib(indices(new_tail));
     mat cov_ab_cov_b_inv;
@@ -330,7 +339,7 @@ namespace sill {
                            cmean(ia) - cov_ab_cov_b_inv * cmean(ib),
                            cov(ia,ia) - cov_ab_cov_b_inv * cov(ib,ia),
                            new_tail, cov_ab_cov_b_inv, 1);
-  }
+  } // conditional
 
   double moment_gaussian::entropy(double base) const {
     if (!marginal())
@@ -395,10 +404,11 @@ namespace sill {
     result.cov.set_submatrix(xh, yh, covyx.transpose());
     result.cov.set_submatrix(yh, yh, covyy);
     return result;
-  }
+  } // direct_combination
 
   // Free functions
   //============================================================================
+
   std::ostream& operator<<(std::ostream& out, const moment_gaussian& mg) {
     out << "#F(MG|" << mg.head() << "|\n"
         << "      " << mg.mean() << "|\n"
@@ -408,16 +418,20 @@ namespace sill {
           << "      " << mg.tail() << "|\n"
           << "      " << mg.coefficients();
     }
-    out << "|\n      " << mg.likelihood << ")";
+    out << "|\n      " << mg.norm_constant() << ")";
     return out;
   }
 
   moment_gaussian
   combine(const moment_gaussian& x, const moment_gaussian& y, op_type op) {
     factor::check_supported(op, product_op);
-    if (x.marginal() && set_disjoint(vector_domain(y.head().begin(), y.head().end()),x.args))
+    if (x.marginal() &&
+        set_disjoint(vector_domain(y.head().begin(), y.head().end()),
+                     x.args))
       return moment_gaussian::direct_combination(x, y);
-    else if (y.marginal() && set_disjoint(vector_domain(x.head().begin(), x.head().end()), y.args))
+    else if (y.marginal() &&
+             set_disjoint(vector_domain(x.head().begin(), x.head().end()),
+                          y.args))
       return moment_gaussian::direct_combination(y, x);
     else
       throw std::invalid_argument("Cannot directly combine moment Gaussians");

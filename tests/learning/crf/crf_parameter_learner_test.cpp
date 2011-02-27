@@ -8,8 +8,10 @@
 #include <sill/factor/table_crf_factor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/crf/crf_parameter_learner_builder.hpp>
+#include <sill/learning/crf/crf_validation_functor.hpp>
 #include <sill/learning/crf/pwl_crf_parameter_learner.hpp>
 #include <sill/learning/validation/crossval_builder.hpp>
+#include <sill/learning/validation/validation_framework.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/generate_datasets.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
@@ -43,13 +45,12 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
   // Generate a dataset
   cout << "Sampling " << ntrain << " training samples and "
        << ntest << " test samples from the model" << endl;
-  boost::shared_ptr<vector_assignment_dataset>
-    train_ds_ptr(new vector_assignment_dataset(ds_info, ntrain));
-  generate_dataset(*train_ds_ptr, YXmodel, ntrain, rng);
+  vector_assignment_dataset train_ds(ds_info, ntrain);
+  generate_dataset(train_ds, YXmodel, ntrain, rng);
   vector_assignment_dataset test_ds(ds_info, ntest);
   generate_dataset(test_ds, YXmodel, ntest, rng);
 
-  double true_train_ll = YgivenXmodel.expected_log_likelihood(*train_ds_ptr);
+  double true_train_ll = YgivenXmodel.expected_log_likelihood(train_ds);
   double true_test_ll = YgivenXmodel.expected_log_likelihood(test_ds);
 
   cout << "Doing parameter learning" << endl;
@@ -60,61 +61,51 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
 //    pcpl_params.cv_params.nfolds = 2;
 //    pcpl_params.cv_params.nvals = 4;
     pcpl_params.random_seed = unif_int(rng);
-    pwl_crf_parameter_learner<F> pcpl(train_ds_ptr, YgivenXmodel, pcpl_params);
+    pwl_crf_parameter_learner<F> pcpl(train_ds, YgivenXmodel, pcpl_params);
     init_model = pcpl.model();
   }
-  vec means, stderrs;
-  std::vector<regularization_type> reg_params;
   if (do_cv) {
-    crossval_parameters<regularization_type::nlambdas>
-      cv_params(cv_builder.get_parameters<regularization_type::nlambdas>());
+    crossval_parameters
+      cv_params(cv_builder.get_parameters(regularization_type::nlambdas));
     cv_params.nfolds = std::min(ntrain, cv_params.nfolds);
-    if (init_with_pwl) {
-      cpl_params.lambdas =
-        crf_parameter_learner<F>::choose_lambda
-        (reg_params, means, stderrs, cv_params, init_model, true,
-         *train_ds_ptr, cpl_params, 0, unif_int(rng));
-    } else {
-      cpl_params.lambdas =
-        crf_parameter_learner<F>::choose_lambda
-        (reg_params, means, stderrs, cv_params, YgivenXmodel, false,
-         *train_ds_ptr, cpl_params, 0, unif_int(rng));
-    }
-    cout << "Used cross-validation to choose lambdas = "
-         << cpl_params.lambdas << endl;
+    crf_validation_functor<F>
+      crf_val_func((init_with_pwl ? init_model : YgivenXmodel),
+                   cpl_params, init_with_pwl);
+    validation_framework
+      val_frame(train_ds, cv_params, crf_val_func, unif_int(rng));
+    cpl_params.lambdas = val_frame.best_lambdas();
+
+    cout << "Cross-validation results:\n"
+         << "lambdas: ";
+    foreach(const vec& lambdas, val_frame.lambdas())
+      cout << lambdas << " ";
+    cout << "\n"
+         << "means: " << val_frame.means() << "\n"
+         << "stderrs: " << val_frame.stderrs() << "\n"
+         << "Chose lambdas = " << cpl_params.lambdas << "\n"
+         << endl;
   } else {
     cpl_params.lambdas = fixed_lambda;
   }
+  cpl_params.random_seed = unif_int(rng);
   crf_model<F> learned_model;
   size_t cpl_iterations;
   size_t cpl_obj_calls_per_iter;
   if (init_with_pwl) {
     crf_parameter_learner<F>
-      param_learner(init_model, train_ds_ptr, true, cpl_params);
+      param_learner(init_model, train_ds, true, cpl_params);
     learned_model = param_learner.current_model();
     cpl_iterations = param_learner.iteration();
     cpl_obj_calls_per_iter = param_learner.objective_calls_per_iteration();
   } else {
     crf_parameter_learner<F>
-      param_learner(YgivenXmodel, train_ds_ptr, false, cpl_params);
+      param_learner(YgivenXmodel, train_ds, false, cpl_params);
     learned_model = param_learner.current_model();
     cpl_iterations = param_learner.iteration();
     cpl_obj_calls_per_iter = param_learner.objective_calls_per_iteration();
   }
-  double train_ll = learned_model.expected_log_likelihood(*train_ds_ptr);
+  double train_ll = learned_model.expected_log_likelihood(train_ds);
   double test_ll = learned_model.expected_log_likelihood(test_ds);
-
-  if (do_cv) {
-    cout << "Cross-validation results:\n"
-         << "lambdas: ";
-    foreach(const regularization_type& reg, reg_params)
-      cout << reg.lambdas << " ";
-    cout << "\n"
-         << "means: " << means << "\n"
-         << "stderrs: " << stderrs << "\n"
-         << "Chose lambdas = " << cpl_params.lambdas << "\n"
-         << endl;
-  }
 
   cout << "crf_parameter_learner made " << cpl_iterations
        << " calls to gradient, with " << cpl_obj_calls_per_iter
@@ -129,7 +120,7 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
        << train_ll << endl;
   cout << "CRF's avg test data log likelihood after parameter learning: "
        << test_ll << endl;
-}
+} // run_test
 
 int main(int argc, char** argv) {
 
@@ -155,7 +146,7 @@ int main(int argc, char** argv) {
 
   namespace po = boost::program_options;
   po::options_description
-    desc("Allowed options for crf_parameter_learner_test");
+    desc("Allowed options for crf_parameter_learner_test2");
 
   desc.add_options()
     ("help", "Print help message.");

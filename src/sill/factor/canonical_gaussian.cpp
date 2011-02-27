@@ -158,6 +158,51 @@ namespace sill {
     initialize(args, false);
   }
 
+  // Accessors
+  //==========================================================================
+
+  const vector_var_vector& canonical_gaussian::argument_list() const {
+    return arg_list;
+  }
+
+  size_t canonical_gaussian::size() const {
+    return eta.size();
+  }
+
+  const mat& canonical_gaussian::inf_matrix() const {
+    return lambda;
+  }
+    
+  mat& canonical_gaussian::inf_matrix() {
+    return lambda;
+  }
+
+  const vec& canonical_gaussian::inf_vector() const { 
+    return eta;
+  }
+
+  vec& canonical_gaussian::inf_vector() {
+    return eta;
+  }
+
+  double canonical_gaussian::log_multiplier() const {
+    return log_mult;
+  }
+
+  double& canonical_gaussian::log_multiplier() {
+    return log_mult;
+  }
+
+  mat canonical_gaussian::inf_matrix(const vector_var_vector& args) const {
+    ivec ind(indices(args));
+    return lambda(ind, ind);
+  }
+
+  vec canonical_gaussian::inf_vector(const vector_var_vector& args) const {
+    ivec ind(this->indices(args));
+    return eta(ind);
+  }
+
   // Comparison operators
   //============================================================================
   bool canonical_gaussian::operator==(const canonical_gaussian& other) const {
@@ -222,89 +267,31 @@ namespace sill {
   }
 
   canonical_gaussian
-  canonical_gaussian::collapse(const vector_domain& retain, op_type op) const {
+  canonical_gaussian::collapse(op_type op, const vector_domain& retain) const {
     canonical_gaussian cg;
-    collapse(cg, retain, op);
+    collapse(op, retain, cg);
     return cg;
   }
 
-  void canonical_gaussian::collapse(canonical_gaussian& cg,
+  void canonical_gaussian::collapse(op_type op,
                                     const vector_domain& retain,
-                                    op_type op) const {
-    check_supported(op, collapse_ops);
+                                    canonical_gaussian& cg) const {
+    collapse_(op, retain, true, cg);
+  } // collapse(op, retain, cg)
 
-    if (retain.size() == 0) {
-      cg.var_range.clear();
-      cg.args.clear();
-      cg.arg_list.clear();
-      cg.lambda.resize(0,0);
-      cg.eta.resize(0);
-      cg.log_mult = log_mult - log_norm_constant();
-      return;
-    }
-    vector_var_vector x, y; // retained, marginalized out
-    foreach(vector_variable* v, arg_list) {
-      if (retain.count(v) == 0)
-        y.push_back(v);
-      else
-        x.push_back(v);
-    }
-    if (y.empty()) {
-      if (cg.arg_list == x) {
-        cg.lambda = lambda;
-        cg.eta = eta;
-        cg.log_mult = log_mult;
-      } else {
-        cg = *this;
-      }
-    } else {
-      ivec ix(indices(x));
-      ivec iy(indices(y));
-      mat invyy_lamyx;
-      bool info = ls_solve_chol(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
-      if (!info) {
-        // Try solving via LU factorization if Cholesky did not work.
-        // Note: ls_solve_chol failed on some symmetric matrices with
-        //       positive determinants, so it's possible the IT++
-        //       implementation is buggy.
-        //       (ls_solve has worked in these cases so far.)
-        info = ls_solve(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
-        if (!info) {
-          if (iy.size() * ix.size() < 16 &&
-              iy.size() * iy.size() < 16)
-            std::cerr << "Lambda(iy,iy):\n" << lambda(iy,iy) << "\n"
-                      << "Lambda(iy,ix):\n" << lambda(iy,ix) << std::endl;
-          throw invalid_operation
-            ("Cholesky and LU factorizations failed in canonical_gaussian::collapse");
-        }
-      }
-      // LOG MULTIPLIER DOES NOT NORMALLY NEED TO BE SET; ADD OPTION?
-      double old_log_norm_constant(log_norm_constant());
-      if (cg.arg_list == x) {
-        cg.lambda = lambda(ix,ix) - lambda(ix,iy) * invyy_lamyx;
-        cg.eta = eta(ix) - invyy_lamyx.transpose() * eta(iy);
-      } else {
-        cg.reset(x,
-                 lambda(ix,ix) - lambda(ix,iy) * invyy_lamyx,
-                 eta(ix) - invyy_lamyx.transpose() * eta(iy));
-      }
-      cg.log_mult = log_mult - old_log_norm_constant + cg.log_norm_constant();
-    }
-  }
-
-  canonical_gaussian
-  canonical_gaussian::collapse(op_type op, const vector_domain& retain) const {
-    return collapse(retain, op);
-  }
+  void
+  canonical_gaussian::collapse_unnormalized(op_type op,
+                                            const vector_domain& retain,
+                                            canonical_gaussian& cg) const {
+    collapse_(op, retain, false, cg);
+  } // collapse_unnormalized
 
   canonical_gaussian
   canonical_gaussian::restrict(const vector_assignment& a) const {
-    vector_domain bound_vars = keys(a);
-
     // Determine the retained (x) and the restricted variables (y)
     vector_var_vector x, y;
     foreach(vector_variable* v, arg_list) {
-      if (bound_vars.count(v) == 0)
+      if (a.count(v) == 0)
         x.push_back(v);
       else
         y.push_back(v);
@@ -328,7 +315,53 @@ namespace sill {
          eta(ix) - lambda(ix, iy)*vy,
          log_mult + inner_prod(eta(iy), vy)
          - 0.5*(vy * (lambda(iy,iy)*vy))); // TODO: check. Joseph: OK, I think.
-  }
+  } // restrict(a)
+
+  void canonical_gaussian::
+  restrict(canonical_gaussian& f, const vector_record& r,
+           const vector_domain& r_vars, bool strict) const {
+    // Determine the retained (x) and the restricted variables (y)
+    vector_var_vector x, y;
+    foreach(vector_variable* v, arg_list) {
+      if (r_vars.count(v) == 0) {
+        x.push_back(v);
+      } else {
+        if (!r.has_variable(v)) {
+          if (strict) {
+            throw std::invalid_argument
+              (std::string("canonical_gaussian::restrict(f,r,r_vars,strict)") +
+               " was given strict=true, but intersect(f.arguments(), r_vars)" +
+               " contained a variable which did not appear in keys(r).");
+          }
+          x.push_back(v);
+        } else {
+          y.push_back(v);
+        }
+      }
+    }
+
+    // If the arguments of x are disjoint from the bound variables,
+    // we can simply return a copy of the factor
+    if (y.size() == 0)
+      f = *this;
+
+    ivec ix = indices(x);
+    ivec iy = indices(y);
+    vec vy;
+    r.vector_values(vy, y);
+    assert(vy.size()==iy.size());
+
+    if (x.size() == 0) {
+      f = canonical_gaussian(log_mult + inner_prod(eta(iy), vy)
+                             - 0.5*(vy * (lambda(iy,iy)*vy)));
+    } else {
+      f = canonical_gaussian(x,
+                             lambda(ix, ix),
+                             eta(ix) - lambda(ix, iy)*vy,
+                             log_mult + inner_prod(eta(iy), vy)
+                             - 0.5*(vy * (lambda(iy,iy)*vy)));
+    }
+  } // restrict(f, r, r_vars, strict)
 
   canonical_gaussian&
   canonical_gaussian::subst_args(const vector_var_map& map) {
@@ -343,10 +376,25 @@ namespace sill {
   }
 
   canonical_gaussian
+  canonical_gaussian::marginal(const vector_domain& retain) const {
+    return collapse(sum_op, retain);
+  }
+
+  void
+  canonical_gaussian::
+  marginal(canonical_gaussian& cg, const vector_domain& retain) const {
+    collapse(sum_op, retain, cg);
+  }
+
+  canonical_gaussian
   canonical_gaussian::conditional(const vector_domain& B) const {
     assert(includes(arguments(), B));
     canonical_gaussian PB(marginal(B));
     return (*this) / PB;
+  }
+
+  bool canonical_gaussian::is_normalizable() const {
+    return true;
   }
 
   double canonical_gaussian::norm_constant() const {
@@ -495,6 +543,74 @@ namespace sill {
     }
   }
 
+  void canonical_gaussian::collapse_(op_type op,
+                                     const vector_domain& retain,
+                                     bool renormalize,
+                                     canonical_gaussian& cg) const {
+    check_supported(op, collapse_ops);
+
+    if (retain.size() == 0) {
+      cg.var_range.clear();
+      cg.args.clear();
+      cg.arg_list.clear();
+      cg.lambda.resize(0,0);
+      cg.eta.resize(0);
+      if (renormalize)
+        cg.log_mult = log_mult - log_norm_constant();
+      return;
+    }
+    vector_var_vector x, y; // retained, marginalized out
+    foreach(vector_variable* v, arg_list) {
+      if (retain.count(v) == 0)
+        y.push_back(v);
+      else
+        x.push_back(v);
+    }
+    if (y.empty()) {
+      if (cg.arg_list == x) {
+        cg.lambda = lambda;
+        cg.eta = eta;
+        cg.log_mult = log_mult;
+      } else {
+        cg = *this;
+      }
+    } else {
+      ivec ix(indices(x));
+      ivec iy(indices(y));
+      mat invyy_lamyx;
+      bool info = ls_solve_chol(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
+      if (!info) {
+        // Try solving via LU factorization if Cholesky did not work.
+        // Note: ls_solve_chol failed on some symmetric matrices with
+        //       positive determinants, so it's possible the IT++
+        //       implementation is buggy.
+        //       (ls_solve has worked in these cases so far.)
+        info = ls_solve(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
+        if (!info) {
+          if (iy.size() * ix.size() < 16 &&
+              iy.size() * iy.size() < 16)
+            std::cerr << "Lambda(iy,iy):\n" << lambda(iy,iy) << "\n"
+                      << "Lambda(iy,ix):\n" << lambda(iy,ix) << std::endl;
+          throw invalid_operation
+            (std::string("canonical_gaussian::collapse:") +
+             " Cholesky and LU factorizations failed.");
+        }
+      }
+      double old_log_norm_constant = (renormalize ? log_norm_constant() : 0);
+      if (cg.arg_list == x) {
+        cg.lambda = lambda(ix,ix) - lambda(ix,iy) * invyy_lamyx;
+        cg.eta = eta(ix) - invyy_lamyx.transpose() * eta(iy);
+      } else {
+        cg.reset(x,
+                 lambda(ix,ix) - lambda(ix,iy) * invyy_lamyx,
+                 eta(ix) - invyy_lamyx.transpose() * eta(iy));
+      }
+      if (renormalize) {
+        cg.log_mult = log_mult - old_log_norm_constant + cg.log_norm_constant();
+      }
+    }
+  } // collapse_
+
   // Free functions
   //==========================================================================
   canonical_gaussian combine(const canonical_gaussian& x,
@@ -530,7 +646,7 @@ namespace sill {
     return canonical_gaussian(cg.argument_list(),
                               cg.inf_matrix() * a,
                               cg.inf_vector() * a,
-                              cg.log_mult * a);
+                              cg.log_multiplier() * a);
   }
 
   vector_assignment arg_max(const canonical_gaussian& cg) {
@@ -552,7 +668,7 @@ namespace sill {
     out << "#F(CG|" << cg.argument_list()
         << "|" << cg.inf_matrix()
         << "|" << cg.inf_vector()
-        << "|" << cg.log_mult << ")";
+        << "|" << cg.log_multiplier() << ")";
     return out;
   }
 

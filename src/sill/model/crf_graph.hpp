@@ -411,6 +411,12 @@ namespace sill {
       return graph.neighbors(u);
     }
 
+    //! Returns the vertices adjacent to variable u.
+    std::pair<neighbor_iterator, neighbor_iterator>
+    neighbors(output_variable_type* u) const {
+      return graph.neighbors(variable2vertex(u));
+    }
+
     //! Returns the vertices at distance 2 from u.
     //! (For variable vertices, this returns variable vertices sharing factors;
     //!  for factor vertices, this returns factor vertices sharing variables.)

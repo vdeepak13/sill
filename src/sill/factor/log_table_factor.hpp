@@ -419,8 +419,8 @@ namespace sill {
      */
     template <typename AggOp>
     log_table_factor collapse(AggOp agg_op, 
-                           result_type initialvalue,
-                           const finite_domain& retained) const {
+                              result_type initialvalue,
+                              const finite_domain& retained) const {
       // If the retained arguments contain the arguments of this factor,
       // we can simply return a copy
       if (includes(retained, arguments())) return *this;
@@ -449,8 +449,8 @@ namespace sill {
      * and avoids reallocation if possible.
      */
     template <typename AggOp>
-    void collapse(log_table_factor& f, AggOp agg_op, result_type initialvalue,
-                  const finite_domain& retained) const {
+    void collapse(AggOp agg_op, result_type initialvalue,
+                  const finite_domain& retained, log_table_factor& f) const {
       finite_var_vector newargs;
       foreach(finite_variable* v, arg_seq)
         if (retained.count(v) != 0)
@@ -490,7 +490,7 @@ namespace sill {
      */
     template <typename AggOp>
     result_type collapse(AggOp agg_op, 
-                     result_type initialvalue) const {
+                         result_type initialvalue) const {
       return table_data.aggregate(agg_op, initialvalue);
     }
 
@@ -543,15 +543,15 @@ namespace sill {
     //! Computes the maximum for each assignment to the given variables
     log_table_factor maximum(const finite_domain& retain) const {
       return collapse(sill::maximum<result_type>(), 
-                       result_type(0.0),
-                       retain);
+                      result_type(0.0),
+                      retain);
     }
 
     //! Computes the minimum for each assignment to the given variables
     log_table_factor minimum(const finite_domain& retain) const {
       return collapse(sill::minimum<result_type>(), 
-                       result_type(std::numeric_limits<double>::infinity()),
-                       retain);
+                      result_type(std::numeric_limits<double>::infinity()),
+                      retain);
     }
 
     //! Returns the maximum value in the factor
@@ -597,7 +597,7 @@ namespace sill {
     double relative_entropy(const log_table_factor& f) const {
       assert(this->arguments() == f.arguments());
       double res = combine_collapse(*this, f, kld_operator<result_type>(), 
-                                  std::plus<result_type>(), 0.0);
+                                    std::plus<result_type>(), 0.0);
       if (res < 0) res = 0;
       return res;
     }

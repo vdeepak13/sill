@@ -203,6 +203,11 @@ namespace sill {
       this->operator=(0.);
     }
 
+    //! Element-wise square root.
+    void elem_square_root() {
+      f.update(square_root<double>());
+    }
+
     //! Print info about this vector (for debugging).
     void print_info(std::ostream& out) const {
       out << "PRINT_INFO TO BE IMPLEMENTED\n";

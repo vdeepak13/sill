@@ -55,8 +55,8 @@ namespace sill {
         // compute the prior restricted to the integration point p[i]
         moment_gaussian restricted = prior.restrict(a);
         if (max_range != inf()) {
-          restricted.likelihood += pdf(normal, p[i] + max_range);
-          restricted.likelihood += pdf(normal, p[i] - max_range);
+          restricted.norm_constant() += pdf(normal, p[i] + max_range);
+          restricted.norm_constant() += pdf(normal, p[i] - max_range);
         }
         // approximate the joint at the integration point p[i]
         moment_gaussian fi = approx()(ng.restrict(a), restricted);
@@ -65,13 +65,13 @@ namespace sill {
                                       vec(1, p[i]),
                                       mat(1, 1, 1e-8));
         //std::cerr << mix[i] << std::endl;
-        norm += restricted.likelihood;
+        norm += restricted.norm_constant();
       }
       assert(norm > 0);
-      mix *= constant_factor(prior.likelihood / norm);
+      mix *= constant_factor(prior.norm_constant() / norm);
       //std::cout << mix << std::endl;
       for(size_t i = 0; i < mix.size(); i++)
-        std::cerr << p[i] << ':' << mix[i].likelihood << ' ';
+        std::cerr << p[i] << ':' << mix[i].norm_constant() << ' ';
       std::cerr << std::endl;
       moment_gaussian result = project(mix);
       // std::cerr << "Projection: " << result << std::endl;

@@ -14,7 +14,10 @@ namespace sill {
                                            const input_domain_type& new_X) {
     if (!valid_output_input_relabeling(output_arguments(), input_arguments(),
                                        new_Y,new_X)) {
-      throw std::invalid_argument("table_crf_factor::relabel_outputs_inputs given new_Y,new_X whose union did not equal the union of the old Y,X.");
+      throw std::invalid_argument
+        (std::string("table_crf_factor::relabel_outputs_inputs") +
+         " given new_Y,new_X whose union did not equal the union of the" +
+         " old Y,X.");
     }
     Ydomain_ = new_Y;
     Xdomain_ptr_->operator=(new_X);
@@ -205,6 +208,14 @@ namespace sill {
   table_crf_factor::combine_in(const constant_factor& other, op_type op) {
     throw std::runtime_error
       ("table_crf_factor::combine_in NOT FULLY IMPLEMENTED!");
+  }
+
+  table_crf_factor& table_crf_factor::square_root() {
+    if (log_space_)
+      f /= 2;
+    else
+      f.elem_square_root();
+    return *this;
   }
 
   // Public: Learning methods from learnable_crf_factor interface

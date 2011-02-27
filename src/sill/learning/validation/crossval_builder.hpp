@@ -39,9 +39,9 @@ namespace sill {
                      const std::string& desc_prefix = "");
 
     //! Return the CV options specified in this builder.
-    template <size_t N>
-    crossval_parameters<N> get_parameters() {
-      crossval_parameters<N> params;
+    //! @param N   Dimensionality of parameter vector.
+    crossval_parameters get_parameters(size_t N) {
+      crossval_parameters params(N);
       params.nfolds = nfolds;
       if (minvals.size() == N) {
         params.minvals = minvals;

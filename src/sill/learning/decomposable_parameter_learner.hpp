@@ -180,14 +180,14 @@ namespace sill {
     static
     double choose_lambda
     (std::vector<double>& reg_params, vec& means, vec& stderrs,
-     const crossval_parameters<1>& cv_params,
+     const crossval_parameters& cv_params,
      const typename model_type::jt_type& structure, const dataset& ds,
      const parameters& params, size_t score_type, unsigned random_seed) {
       assert(score_type < 4);
       choose_lambda_helper clh(structure, ds, score_type, params);
       std::vector<vec> lambdas;
       vec best_lambda =
-        crossval_zoom<choose_lambda_helper, 1>
+        crossval_zoom<choose_lambda_helper>
         (lambdas, means, stderrs, cv_params, clh, random_seed);
       reg_params.clear();
       foreach(const vec& v, lambdas) {

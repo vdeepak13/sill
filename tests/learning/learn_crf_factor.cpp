@@ -26,7 +26,7 @@ create_finite_var_data
 (sill::finite_var_vector& Y, sill::finite_var_vector& X,
  sill::finite_var_vector& YX, sill::table_factor& truth_YX,
  sill::table_factor& truth_Y_given_X, sill::table_factor& truth_X,
- boost::shared_ptr<sill::vector_assignment_dataset>& ds_ptr,
+ sill::vector_assignment_dataset& train_ds,
  sill::vector_assignment_dataset& test_ds,
  size_t ntrain, size_t ntest, size_t Ysize, size_t Xsize,
  sill::universe& u, boost::mt11213b& rng) {
@@ -64,13 +64,13 @@ create_finite_var_data
 
   // Generate a dataset
   cout << "Sampling " << (ntrain+ntest) << " samples from the model" << endl;
-  ds_ptr.reset(new vector_assignment_dataset
-               (YX, vector_var_vector(),
-                std::vector<variable::variable_typenames>
-                (YX.size(), variable::FINITE_VARIABLE)));
+  train_ds =
+    vector_assignment_dataset(YX, vector_var_vector(),
+                              std::vector<variable::variable_typenames>
+                              (YX.size(), variable::FINITE_VARIABLE));
   for (size_t i(0); i < ntrain; ++i) {
     finite_assignment fa(truth_YX.sample(rng));
-    ds_ptr->insert(assignment(fa));
+    train_ds.insert(assignment(fa));
   }
   test_ds =
     vector_assignment_dataset(YX, vector_var_vector(),
@@ -90,9 +90,9 @@ test_learn_crf_factor
 (double& learn_crf_factor_time, F* & f1,
  const typename sill::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
  const typename sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
- boost::shared_ptr<sill::vector_assignment_dataset> ds_ptr,
+ const sill::vector_assignment_dataset& train_ds,
  const sill::vector_assignment_dataset& test_ds, bool do_cv,
- const sill::crossval_parameters<F::regularization_type::nlambdas>& cv_params,
+ const sill::crossval_parameters& cv_params,
  typename F::parameters& f_params, boost::mt11213b& rng) {
 
   using namespace std;
@@ -112,13 +112,13 @@ test_learn_crf_factor
   boost::timer timer;
   if (do_cv) {
     f1 = learn_crf_factor_cv<F>
-      (reg_params, means, stderrs, cv_params, ds_ptr,
+      (reg_params, means, stderrs, cv_params, train_ds,
        make_domain<output_variable_type>(Y),
        copy_ptr<input_domain_type>(new input_domain_type(X.begin(), X.end())),
        f_params, unif_int(rng));
   } else {
     f1 = learn_crf_factor<F>
-      (ds_ptr, make_domain<output_variable_type>(Y),
+      (train_ds, make_domain<output_variable_type>(Y),
        copy_ptr<input_domain_type>(new input_domain_type(X.begin(), X.end())),
        f_params, unif_int(rng));
   }
@@ -142,12 +142,12 @@ test_learn_crf_factor
        << (*f1) << endl;
 
   double f_ll(0);
-  foreach(const record& r, ds_ptr->records()) {
+  foreach(const record& r, train_ds.records()) {
     typename F::output_factor_type f(f1->condition(r));
     f.normalize();
     f_ll += f.logv(r);
   }
-  f_ll /= ds_ptr->size();
+  f_ll /= train_ds.size();
   double f_test_ll(0);
   foreach(const record& r, test_ds.records()) {
     typename F::output_factor_type f(f1->condition(r));
@@ -169,10 +169,10 @@ test_crf_parameter_learner
  sill::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
  const typename
  sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
- boost::shared_ptr<sill::vector_assignment_dataset> ds_ptr,
+ const sill::vector_assignment_dataset& train_ds,
  const sill::vector_assignment_dataset& test_ds, bool do_cv,
  size_t cpl_method, size_t line_search_type,
- const sill::crossval_parameters<F::regularization_type::nlambdas>& cv_params,
+ const sill::crossval_parameters& cv_params,
  boost::mt11213b& rng) {
 
   using namespace std;
@@ -215,11 +215,11 @@ test_crf_parameter_learner
     cpl_params.lambdas =
       crf_parameter_learner<F>::choose_lambda
       (cpl_reg_params, cpl_means, cpl_stderrs, cv_params,
-       tmp_true_model, false, *ds_ptr, cpl_params, 0, unif_int(rng));
+       tmp_true_model, false, train_ds, cpl_params, 0, unif_int(rng));
   } else {
     cpl_params.lambdas = .01;
   }
-  crf_parameter_learner<F> cpl(tmp_true_model, ds_ptr, false, cpl_params);
+  crf_parameter_learner<F> cpl(tmp_true_model, train_ds, false, cpl_params);
   cpl_time = timer.elapsed();
 
   if (do_cv) {
@@ -247,10 +247,10 @@ test_crf_parameter_learner
        << endl;
 
   double cpl_ll(0);
-  foreach(const record& r, ds_ptr->records()) {
+  foreach(const record& r, train_ds.records()) {
     cpl_ll += cpl.current_model().log_likelihood(r);
   }
-  cpl_ll /= ds_ptr->size();
+  cpl_ll /= train_ds.size();
   double cpl_test_ll(0);
   foreach(const record& r, test_ds.records()) {
     cpl_test_ll += cpl.current_model().log_likelihood(r);
@@ -263,7 +263,7 @@ test_crf_parameter_learner
 template <typename F>
 static void
 print_results
-(const sill::vector_assignment_dataset& ds,
+(const sill::vector_assignment_dataset& train_ds,
  const sill::vector_assignment_dataset& test_ds,
  const sill::vector_assignment_dataset& orig_ds,
  const sill::vector_assignment_dataset& orig_test_ds,
@@ -282,7 +282,7 @@ print_results
   foreach(const record& r, orig_ds.records()) {
     joint_ll += truth_YX.logv(r);
   }
-  joint_ll /= ds.size();
+  joint_ll /= orig_ds.size();
   double true_ll(0);
   foreach(const record& r, orig_ds.records()) {
     typename F::output_factor_type
@@ -291,7 +291,7 @@ print_results
     f.normalize();
     true_ll += f.logv(r);
   }
-  true_ll /= ds.size();
+  true_ll /= orig_ds.size();
 
   double joint_test_ll(0);
   foreach(const record& r, orig_test_ds.records()) {
@@ -408,15 +408,16 @@ int main(int argc, char** argv) {
     table_factor truth_YX;
     table_factor truth_Y_given_X;
     table_factor truth_X;
-    boost::shared_ptr<vector_assignment_dataset> ds_ptr;
+    vector_assignment_dataset train_ds;
     vector_assignment_dataset test_ds;
 
     create_finite_var_data(Y, X, YX, truth_YX, truth_Y_given_X, truth_X,
-                           ds_ptr, test_ds,
+                           train_ds, test_ds,
                            ntrain, ntest, Ysize, Xsize, u, rng);
 
     // CRF factor cross validation parameters
-    crossval_parameters<table_crf_factor::regularization_type::nlambdas> cv_params;
+    crossval_parameters
+      cv_params(table_crf_factor::regularization_type::nlambdas);
     cv_params.nfolds = 2;
     cv_params.minvals = .001;
     cv_params.maxvals = 20.;
@@ -432,17 +433,17 @@ int main(int argc, char** argv) {
     table_crf_factor* f1 = NULL;
     std::pair<double,double> tcf_train_test_ll =
       test_learn_crf_factor<table_crf_factor>
-      (learn_crf_factor_time, f1, Y, X, ds_ptr, test_ds,
+      (learn_crf_factor_time, f1, Y, X, train_ds, test_ds,
        do_cv, cv_params, tcf_params, rng);
     std::pair<double,double> cpl_train_test_ll =
       test_crf_parameter_learner<table_crf_factor>
-      (cpl_time, *f1, Y, X, ds_ptr, test_ds,
+      (cpl_time, *f1, Y, X, train_ds, test_ds,
        do_cv, cpl_method, line_search_type, cv_params, rng);
     delete(f1);
     f1 = NULL;
 
     print_results<table_crf_factor>
-      (*ds_ptr, test_ds, *ds_ptr, test_ds,
+      (train_ds, test_ds, train_ds, test_ds,
        X, truth_YX, truth_Y_given_X, learn_crf_factor_time, cpl_time,
        tcf_train_test_ll, cpl_train_test_ll);
 
@@ -454,16 +455,16 @@ int main(int argc, char** argv) {
     table_factor truth_YX;
     table_factor truth_Y_given_X;
     table_factor truth_X;
-    boost::shared_ptr<vector_assignment_dataset> ds_ptr;
+    vector_assignment_dataset train_ds;
     vector_assignment_dataset test_ds;
 
     create_finite_var_data(Y, X, YX, truth_YX, truth_Y_given_X, truth_X,
-                           ds_ptr, test_ds,
+                           train_ds, test_ds,
                            ntrain, ntest, Ysize, Xsize, u, rng);
 
     // CRF factor cross validation parameters
-    crossval_parameters<log_reg_crf_factor::regularization_type::nlambdas>
-      cv_params;
+    crossval_parameters
+      cv_params(log_reg_crf_factor::regularization_type::nlambdas);
     cv_params.nfolds = 2;
     cv_params.minvals = .001;
     cv_params.maxvals = 20.;
@@ -481,17 +482,17 @@ int main(int argc, char** argv) {
     log_reg_crf_factor* f1 = NULL;
     std::pair<double,double> tcf_train_test_ll =
       test_learn_crf_factor<log_reg_crf_factor>
-      (learn_crf_factor_time, f1, Y, Xalt, ds_ptr, test_ds,
+      (learn_crf_factor_time, f1, Y, Xalt, train_ds, test_ds,
        do_cv, cv_params, lrcf_params, rng);
     std::pair<double,double> cpl_train_test_ll =
       test_crf_parameter_learner<log_reg_crf_factor>
-      (cpl_time, *f1, Y, Xalt, ds_ptr, test_ds,
+      (cpl_time, *f1, Y, Xalt, train_ds, test_ds,
        do_cv, cpl_method, line_search_type, cv_params, rng);
     delete(f1);
     f1 = NULL;
 
     print_results<log_reg_crf_factor>
-      (*ds_ptr, test_ds, *ds_ptr, test_ds,
+      (train_ds, test_ds, train_ds, test_ds,
        Xalt, truth_YX, truth_Y_given_X, learn_crf_factor_time, cpl_time,
        tcf_train_test_ll, cpl_train_test_ll);
 
@@ -503,8 +504,8 @@ int main(int argc, char** argv) {
     // Fixed learning parameters
     bool normalize_data = false;
     // Gaussian CRF factor cross validation parameters
-    crossval_parameters<gaussian_crf_factor::regularization_type::nlambdas>
-      cv_params;
+    crossval_parameters
+      cv_params(gaussian_crf_factor::regularization_type::nlambdas);
     cv_params.nfolds = 2;
     cv_params.minvals = .001;
     cv_params.maxvals = 20.;
@@ -546,14 +547,12 @@ int main(int argc, char** argv) {
 
     // Generate a dataset
     cout << "Sampling " << (ntrain+ntest) << " samples from the model" << endl;
-    boost::shared_ptr<vector_assignment_dataset>
-      ds_ptr(new vector_assignment_dataset
-             (finite_var_vector(), YX, 
-              std::vector<variable::variable_typenames>
-              (YX.size(), variable::VECTOR_VARIABLE)));
+    vector_assignment_dataset train_ds(finite_var_vector(), YX, 
+                                       std::vector<variable::variable_typenames>
+                                       (YX.size(), variable::VECTOR_VARIABLE));
     for (size_t i(0); i < ntrain; ++i) {
       vector_assignment fa(truth_YX.sample(rng));
-      ds_ptr->insert(assignment(fa));
+      train_ds.insert(assignment(fa));
     }
     vector_assignment_dataset
       test_ds(finite_var_vector(), YX, 
@@ -563,15 +562,15 @@ int main(int argc, char** argv) {
       vector_assignment fa(truth_YX.sample(rng));
       test_ds.insert(assignment(fa));
     }
-    vector_assignment_dataset orig_ds(ds_ptr->datasource_info());
-    foreach(const record& r, ds_ptr->records())
+    vector_assignment_dataset orig_ds(train_ds.datasource_info());
+    foreach(const record& r, train_ds.records())
       orig_ds.insert(r);
     vector_assignment_dataset orig_test_ds(test_ds.datasource_info());
     foreach(const record& r, test_ds.records())
       orig_test_ds.insert(r);
 
     if (normalize_data) {
-      std::pair<vec, vec> means_stddevs(ds_ptr->normalize());
+      std::pair<vec, vec> means_stddevs(train_ds.normalize());
       test_ds.normalize(means_stddevs.first, means_stddevs.second);
     }
 
@@ -580,17 +579,17 @@ int main(int argc, char** argv) {
     gaussian_crf_factor* f1 = NULL;
     std::pair<double,double> gcf_train_test_ll =
       test_learn_crf_factor<gaussian_crf_factor>
-      (learn_crf_factor_time, f1, Y, X, ds_ptr, test_ds,
+      (learn_crf_factor_time, f1, Y, X, train_ds, test_ds,
        do_cv, cv_params, gcf_params, rng);
     std::pair<double,double> cpl_train_test_ll =
       test_crf_parameter_learner<gaussian_crf_factor>
-      (cpl_time, *f1, Y, X, ds_ptr, test_ds,
+      (cpl_time, *f1, Y, X, train_ds, test_ds,
        do_cv, cpl_method, line_search_type, cv_params, rng);
     delete(f1);
     f1 = NULL;
 
     print_results<gaussian_crf_factor>
-      (*ds_ptr, test_ds, orig_ds, orig_test_ds,
+      (train_ds, test_ds, orig_ds, orig_test_ds,
        X, truth_YX, truth_Y_given_X, learn_crf_factor_time, cpl_time,
        gcf_train_test_ll, cpl_train_test_ll);
 

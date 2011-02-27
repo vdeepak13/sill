@@ -66,7 +66,7 @@ namespace sill {
     bool crf_factor_cv;
 
     //! Parameters specifying how to do cross validation.
-    crossval_parameters<crf_factor_reg_type::nlambdas> cv_params;
+    crossval_parameters cv_params;
 
     //! If true, record score info for edges for which weights are computed.
     //!  (default = false)
@@ -208,7 +208,7 @@ namespace sill {
     mutable boost::uniform_int<int> unif_int;
 
     //! Training data.
-    boost::shared_ptr<dataset> ds_ptr;
+    const dataset& ds;
 
     //! Output variables.
     output_domain_type Yvars_;
@@ -269,12 +269,12 @@ namespace sill {
         return boost::shared_ptr<crf_factor>
           (learn_crf_factor_cv<crf_factor>
            (reg_params, means, stderrs,
-            params.cv_params, ds_ptr, Y, X_mapping_[Y],
+            params.cv_params, ds, Y, X_mapping_[Y],
             *(params.crf_factor_params_ptr), unif_int(rng)));
       } else {
         return boost::shared_ptr<crf_factor>
           (learn_crf_factor<crf_factor>
-           (ds_ptr, Y, X_mapping_[Y], *(params.crf_factor_params_ptr),
+           (ds, Y, X_mapping_[Y], *(params.crf_factor_params_ptr),
             unif_int(rng)));
       }
     }
@@ -287,9 +287,8 @@ namespace sill {
       assert(params.valid());
       rng.seed(params.random_seed);
       unif_int = boost::uniform_int<int>(0,std::numeric_limits<int>::max());
-      assert(ds_ptr);
-      assert(ds_ptr->size() > 0);
-      assert(includes(ds_ptr->variables(), Yvars_));
+      assert(ds.size() > 0);
+      assert(includes(ds.variables(), Yvars_));
 
       switch (learning_mode_) {
       case 0:
@@ -367,7 +366,7 @@ namespace sill {
      *       which can be used later to compute edge scores given X = x.
      *       See, e.g., templated_tree_crf.
      *
-     * @param ds_ptr         Training dataset.
+     * @param ds             Training dataset.
      * @param Yvars          Y variables which will be used by this functor.
      * @param X_mapping_     Map specifying which X vars to use for each factor.
      *                       Note this type supports automatic conversions from
@@ -375,10 +374,10 @@ namespace sill {
      * @param learning_mode  0 = regular; 1 = templated.
      */
     pwl_crf_weights
-    (boost::shared_ptr<dataset> ds_ptr, const output_domain_type& Yvars_,
+    (const dataset& ds, const output_domain_type& Yvars_,
      const crf_X_mapping<crf_factor>& X_mapping_, bool learning_mode_,
      parameters params = parameters())
-      : params(params), learning_mode_(learning_mode_), ds_ptr(ds_ptr),
+      : params(params), learning_mode_(learning_mode_), ds(ds),
         Yvars_(Yvars_), X_mapping_(X_mapping_) {
       init();
     }
@@ -493,11 +492,11 @@ namespace sill {
         edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds_ptr->records()) {
+      foreach(const record& r, ds.records()) {
         tmp_fctr = r_ptr->condition(r);
         tmp_fctr.normalize();
-        edge_score[0] += ds_ptr->weight(i) * tmp_fctr.logv(r);
-        total_ds_weight += ds_ptr->weight(i);
+        edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);
+        total_ds_weight += ds.weight(i);
         ++i;
       }
       assert(total_ds_weight > 0);
@@ -541,17 +540,17 @@ namespace sill {
         vertex_part_map_[y12pair] = std::make_pair(r1_ptr, r2_ptr);
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds_ptr->records()) {
+      foreach(const record& r, ds.records()) {
         tmp_fctr = r_ptr->condition(r);
         tmp_fctr.normalize();
-        edge_score[0] += ds_ptr->weight(i) * tmp_fctr.logv(r);
+        edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);
         tmp_fctr = r1_ptr->condition(r);
         tmp_fctr.normalize();
-        edge_score[1] -= ds_ptr->weight(i) * tmp_fctr.logv(r);
+        edge_score[1] -= ds.weight(i) * tmp_fctr.logv(r);
         tmp_fctr = r2_ptr->condition(r);
         tmp_fctr.normalize();
-        edge_score[2] -= ds_ptr->weight(i) * tmp_fctr.logv(r);
-        total_ds_weight += ds_ptr->weight(i);
+        edge_score[2] -= ds.weight(i) * tmp_fctr.logv(r);
+        total_ds_weight += ds.weight(i);
         ++i;
       }
       assert(total_ds_weight > 0);
@@ -586,13 +585,13 @@ namespace sill {
         edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds_ptr->records()) {
+      foreach(const record& r, ds.records()) {
         tmp_fctr = r_ptr->condition(r);
         tmp_fctr.normalize();
-        edge_score[0] += ds_ptr->weight(i) * tmp_fctr.logv(r);
-        edge_score[1] -= ds_ptr->weight(i) * tmp_fctr.marginal(Y1).logv(r);
-        edge_score[2] -= ds_ptr->weight(i) * tmp_fctr.marginal(Y2).logv(r);
-        total_ds_weight += ds_ptr->weight(i);
+        edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);
+        edge_score[1] -= ds.weight(i) * tmp_fctr.marginal(Y1).logv(r);
+        edge_score[2] -= ds.weight(i) * tmp_fctr.marginal(Y2).logv(r);
+        total_ds_weight += ds.weight(i);
         ++i;
       }
       assert(total_ds_weight > 0);

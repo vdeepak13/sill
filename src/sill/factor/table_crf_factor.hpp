@@ -272,6 +272,9 @@ namespace sill {
     //! @return This modified factor.
 //    table_crf_factor& combine_in_left(const constant_factor& cf, op_type op);
 
+    //! Set this factor to the square root of its value.
+    table_crf_factor& square_root();
+
     // Public: Learning-related methods from crf_factor interface
     // =========================================================================
 

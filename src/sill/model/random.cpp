@@ -74,6 +74,12 @@ namespace sill {
                                            strength_baseD);
       YgivenXmodel.add_factor
         (table_crf_factor(f, make_domain<finite_variable>(Yvars[0]), false));
+      if (n == 1) {
+        f =
+          random_range_discrete_factor<table_factor>
+          (make_domain(Xvars[0]), rng, -XXstrengthD, XXstrengthD);
+        Xmodel *= f;
+      }
       for (size_t i(1); i < n; ++i) {
         // Choose which existing vertex j to attach to.
         size_t j((model_choice == "chain") ?
@@ -263,6 +269,12 @@ namespace sill {
     moment_gaussian f(make_binary_conditional_gaussian
                       (Yvars[0],Xvars[0], b_max, c_max, rng));
     YgivenXmodel.add_factor(gaussian_crf_factor(f));
+    if (n == 1) {
+      f =
+        make_marginal_gaussian_factor
+        (make_vector(Xvars[0]), b_max, variance, variance / 2, rng);
+      Xmodel *= canonical_gaussian(f);
+    }
     for (size_t i(1); i < n; ++i) {
       // Choose which existing vertex j to attach to.
       size_t j((model_choice == "chain") ?

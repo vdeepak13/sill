@@ -197,9 +197,9 @@ namespace sill {
     // More efficient set difference: the domain of the factor is
     // supposed to be small, but evidence size can be very large.
     foreach(finite_variable* v, arg_seq) {
-      if (r_vars.count(v) == 0)
+      if (r_vars.count(v) == 0) {
         retained.push_back(v);
-      else {
+      } else {
         if (!r.has_variable(v)) {
           if (strict) {
             throw std::invalid_argument
@@ -301,7 +301,7 @@ namespace sill {
 
   void
   table_factor::marginal(table_factor& f, const finite_domain& retain) const {
-    collapse(f, std::plus<result_type>(), 0, retain);
+    collapse(std::plus<result_type>(), 0, retain, f);
   }
 
   table_factor table_factor::conditional(const finite_domain& B) const {
@@ -540,8 +540,36 @@ namespace sill {
   // Combine and collapse operations
   //==========================================================================
 
+  table_factor::result_type table_factor::collapse(op_type op) const {
+    switch(op) {
+      case sum_op:
+        return collapse(std::plus<result_type>(), 0.0);
+      case minus_op:
+        /* not well defined */
+        return collapse(std::minus<result_type>(), 0.0); 
+      case product_op:
+        return collapse(std::multiplies<result_type>(), 1.0);
+      case divides_op:
+        /* not well defined */
+        return collapse(safe_divides<result_type>(), 1.0);
+      case max_op:
+        return collapse(sill::maximum<result_type>(), 
+                        -std::numeric_limits<double>::infinity());
+      case min_op:
+        return collapse(sill::minimum<result_type>(), 
+                        std::numeric_limits<double>::infinity());
+      case and_op:
+        return collapse(sill::logical_and<result_type>(), 1.0);
+      case or_op:
+        return collapse(sill::logical_or<result_type>(), 0.0);
+      default:
+        assert(false); /* Should never reach here */
+        return 0.0;
+    }
+  }
+
   table_factor table_factor::collapse(op_type op, 
-                                       const finite_domain& retained) const {
+                                      const finite_domain& retained) const {
     switch(op) {
       case sum_op:
         return collapse(std::plus<result_type>(), 0.0, retained);
@@ -568,32 +596,12 @@ namespace sill {
         return *this;
     }
   }
-  table_factor::result_type table_factor::collapse(op_type op) const {
-    switch(op) {
-      case sum_op:
-        return collapse(std::plus<result_type>(), 0.0);
-      case minus_op:
-        /* not well defined */
-        return collapse(std::minus<result_type>(), 0.0); 
-      case product_op:
-        return collapse(std::multiplies<result_type>(), 1.0);
-      case divides_op:
-        /* not well defined */
-        return collapse(safe_divides<result_type>(), 1.0);
-      case max_op:
-        return collapse(sill::maximum<result_type>(), 
-                         -std::numeric_limits<double>::infinity());
-      case min_op:
-        return collapse(sill::minimum<result_type>(), 
-                         std::numeric_limits<double>::infinity());
-      case and_op:
-        return collapse(sill::logical_and<result_type>(), 1.0);
-      case or_op:
-        return collapse(sill::logical_or<result_type>(), 0.0);
-      default:
-        assert(false); /* Should never reach here */
-        return 0.0;
-    }
+
+  void table_factor::collapse_unnormalized(op_type op,
+                                           const finite_domain& retained,
+                                           table_factor& f) const {
+    // TO DO: AVOID REALLOCATION
+    f = collapse(op, retained);
   }
 
   table_factor combine(const table_factor& x,

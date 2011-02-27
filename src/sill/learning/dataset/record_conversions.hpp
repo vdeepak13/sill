@@ -16,10 +16,16 @@ namespace sill {
                        vec& vals);
 
   /**
+   * Adds the given vector x matching vector variables X to the assignment.
+   */
+  void add_vector2vector_assignment(const vector_var_vector& X, const vec& x,
+                                    vector_assignment& va);
+
+  /**
    * Converts the given finite assignment into finite record data.
    * @param fa          Source data.
-   * @param findata     Target data.
    * @param finite_seq  Finite variable ordering used for findata.
+   * @param findata     Target data.
    */
   void
   finite_assignment2vector(const finite_assignment& fa,
@@ -29,8 +35,8 @@ namespace sill {
   /**
    * Converts the given vector assignment into vector record data.
    * @param fa          Source data.
-   * @param vecdata     Target data.
    * @param vector_seq  Vector variable ordering used for vecdata.
+   * @param vecdata     Target data.
    */
   void
   vector_assignment2vector(const vector_assignment& va,

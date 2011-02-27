@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
   size_t method = 2;
   size_t regularization = 1;
   bool normalize_data = true;
-  crossval_parameters<1> cv_params;
+  crossval_parameters cv_params(1);
   cv_params.nfolds = 10;
   cv_params.minvals = .001;
   cv_params.maxvals = 100;

@@ -128,7 +128,7 @@ namespace sill {
         oldmessage = (*out_msg);
 //        std::cout << "Exclude: " << (*neighbor_inmsg[i]);
         if (neighbors[i].is_variable()) {
-          (*out_msg) = blf->collapse(make_domain(&neighbors[i].variable()), csr_.cross_op);
+          (*out_msg) = blf->collapse(csr_.cross_op, make_domain(&neighbors[i].variable()));
           out_msg->combine_in(*(neighbor_inmsg[i]), divides_op);
         }
         else {

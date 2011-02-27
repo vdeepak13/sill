@@ -5,45 +5,39 @@
 
 namespace sill {
 
-  // Protected methods required by record
-  //==========================================================================
-
-  void vector_dataset::load_assignment(size_t i, sill::assignment& a) const {
-    assert(i < nrecords);
-    convert_finite_record2assignment(finite_data[i], a.finite());
-    convert_vector_record2assignment(vector_data[i], a.vector());
-  }
-
-  void vector_dataset::load_record(size_t i, record& r) const {
-    if (r.fin_own)
-      r.fin_ptr->operator=(finite_data[i]);
-    else
-      r.fin_ptr = &(finite_data[i]);
-    if (r.vec_own)
-      r.vec_ptr->operator=(vector_data[i]);
-    else
-      r.vec_ptr = &(vector_data[i]);
-  }
-
-  void vector_dataset::load_assignment_pointer(size_t i, assignment** a) const {
-    assert(false);
-  }
-
-  // Protected methods
-  //==========================================================================
-
-  void vector_dataset::init(size_t nreserved) {
-    //      assert(nreserved > 0);
-    finite_data.resize(nreserved);
-    for (size_t i = 0; i < nreserved; ++i)
-      finite_data[i].resize(num_finite());
-    vector_data.resize(nreserved);
-    for (size_t i = 0; i < nreserved; ++i)
-      vector_data[i].resize(dvector);
-  }
-
   // Constructors
   //==========================================================================
+
+  vector_dataset::vector_dataset() : base() { }
+
+  vector_dataset::vector_dataset
+  (const finite_var_vector& finite_vars,
+   const vector_var_vector& vector_vars,
+   const std::vector<variable::variable_typenames>& var_type_order,
+   size_t nreserved)
+    : base(finite_vars, vector_vars, var_type_order) {
+    init(nreserved);
+  }
+
+  vector_dataset::vector_dataset
+  (const forward_range<finite_variable*>& finite_vars,
+   const forward_range<vector_variable*>& vector_vars,
+   const std::vector<variable::variable_typenames>& var_type_order,
+   size_t nreserved)
+    : base(finite_vars, vector_vars, var_type_order) {
+    init(nreserved);
+  }
+
+  vector_dataset::vector_dataset(const datasource_info_type& info)
+    : base(info) {
+    init(1);
+  }
+
+  vector_dataset::vector_dataset(const datasource_info_type& info,
+                                 size_t nreserved)
+    : base(info) {
+    init(nreserved);
+  }
 
   void vector_dataset::save(oarchive& a) const {
     base::save(a);
@@ -57,6 +51,20 @@ namespace sill {
 
   // Getters and helpers
   //==========================================================================
+
+  size_t vector_dataset::capacity() const {
+    return finite_data.size();
+  }
+
+  size_t vector_dataset::finite(size_t i, size_t j) const {
+    assert(i < nrecords && j < num_finite());
+    return finite_data[i][j];
+  }
+
+  double vector_dataset::vector(size_t i, size_t j) const {
+    assert(i < nrecords && j < dvector);
+    return vector_data[i][j];
+  }
 
   std::pair<vector_dataset::record_iterator, vector_dataset::record_iterator>
   vector_dataset::records() const {
@@ -213,6 +221,52 @@ namespace sill {
         weights_[j] = weight_tmp;
       }
     }
+  }
+
+  // Protected methods required by record
+  //==========================================================================
+
+  void vector_dataset::load_assignment(size_t i, sill::assignment& a) const {
+    assert(i < nrecords);
+    convert_finite_record2assignment(finite_data[i], a.finite());
+    convert_vector_record2assignment(vector_data[i], a.vector());
+  }
+
+  void vector_dataset::load_record(size_t i, record& r) const {
+    if (r.fin_own)
+      r.fin_ptr->operator=(finite_data[i]);
+    else
+      r.fin_ptr = &(finite_data[i]);
+    if (r.vec_own)
+      r.vec_ptr->operator=(vector_data[i]);
+    else
+      r.vec_ptr = &(vector_data[i]);
+  }
+
+  void
+  vector_dataset::load_finite(size_t i, std::vector<size_t>& findata) const {
+    findata = finite_data[i];
+  }
+
+  void vector_dataset::load_vector(size_t i, vec& vecdata) const {
+    vecdata = vector_data[i];
+  }
+
+  void vector_dataset::load_assignment_pointer(size_t i, assignment** a) const {
+    assert(false);
+  }
+
+  // Protected methods
+  //==========================================================================
+
+  void vector_dataset::init(size_t nreserved) {
+    //      assert(nreserved > 0);
+    finite_data.resize(nreserved);
+    for (size_t i = 0; i < nreserved; ++i)
+      finite_data[i].resize(num_finite());
+    vector_data.resize(nreserved);
+    for (size_t i = 0; i < nreserved; ++i)
+      vector_data[i].resize(dvector);
   }
 
 } // namespace sill

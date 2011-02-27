@@ -1003,7 +1003,7 @@ namespace sill {
       // must marginalize out all variables except the the target
       // variable.  
       if(source.is_factor()) {
-        new_msg_ = new_msg_.collapse(make_domain(&target.variable()), csr_.cross_op);
+        new_msg_ = new_msg_.collapse(csr_.cross_op, make_domain(&target.variable()));
       }
       // Normalize the message
       new_msg_.normalize();

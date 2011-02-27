@@ -112,7 +112,7 @@ namespace sill {
       bool crf_factor_cv;
 
       //! Parameters specifying how to do cross validation.
-      crossval_parameters<factor_reg_type::nlambdas> cv_params;
+      crossval_parameters cv_params;
 
       /**
        * Used to make the algorithm deterministic
@@ -162,7 +162,7 @@ namespace sill {
     //! Returns the score for the factor Phi(Yvars, X_Yvars),
     //! plus the trained factor.
     std::pair<double, crf_factor*>
-    factor_score(boost::shared_ptr<dataset> ds_ptr,
+    factor_score(const dataset& ds,
                  const output_domain_type& Yvars,
                  copy_ptr<input_domain_type> Xvars_ptr,
                  boost::mt11213b& rng) const {
@@ -173,18 +173,18 @@ namespace sill {
         r_ptr =
           learn_crf_factor_cv<crf_factor>
           (reg_params, means, stderrs, params.cv_params,
-           ds_ptr, Yvars, Xvars_ptr, *(params.crf_factor_params_ptr),
+           ds, Yvars, Xvars_ptr, *(params.crf_factor_params_ptr),
            boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
       } else {
         r_ptr =
           learn_crf_factor<crf_factor>
-          (ds_ptr, Yvars, Xvars_ptr, *(params.crf_factor_params_ptr),
+          (ds, Yvars, Xvars_ptr, *(params.crf_factor_params_ptr),
            boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
       }
-      return std::make_pair(r_ptr->log_expected_value(*ds_ptr), r_ptr);
+      return std::make_pair(r_ptr->log_expected_value(ds), r_ptr);
     } // factor_score()
 
-    void build(boost::shared_ptr<dataset> ds_ptr, const crf_graph_type& graph) {
+    void build(const dataset& ds, const crf_graph_type& graph) {
       if (!params.crf_factor_params_ptr)
         params.crf_factor_params_ptr.reset
           (new typename crf_factor::parameters());
@@ -196,9 +196,10 @@ namespace sill {
                   << " computing all factors..."
                   << std::endl;
       }
-      foreach(const typename crf_graph_type::vertex& v, graph.factor_vertices()) {
+      foreach(const typename crf_graph_type::vertex& v,
+              graph.factor_vertices()) {
         std::pair<double, crf_factor*>
-          score_f(factor_score(ds_ptr, graph.output_arguments(v),
+          score_f(factor_score(ds, graph.output_arguments(v),
                                graph.input_arguments_ptr(v), rng));
         if (params.DEBUG > 1)
           std::cerr << "  Computed factor; PWL = " << score_f.first
@@ -217,15 +218,15 @@ namespace sill {
      * Constructor for a learner for a model for P(Y | X).
      * This is given a CRF graph and parametrizes the CRF model.
      *
-     * @param ds_ptr        Training dataset.
+     * @param ds            Training dataset.
      * @param graph         CRF graph.
      * @param parameters    algorithm parameters
      */
     pwl_crf_parameter_learner
-    (boost::shared_ptr<dataset> ds_ptr, const crf_graph_type& graph,
+    (const dataset& ds, const crf_graph_type& graph,
      parameters params = parameters())
       : params(params), total_score_(0) {
-      build(ds_ptr, graph);
+      build(ds, graph);
     }
 
     // Getters and helper methods

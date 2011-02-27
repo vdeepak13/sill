@@ -55,7 +55,7 @@ namespace sill {
     */
       
     vector_var_vector args = concat(ng.tail_list(), ng.head_list());
-    moment_gaussian joint(args, mean, cov, prior.likelihood);
+    moment_gaussian joint(args, mean, cov, prior.norm_constant());
     return joint.restrict(ng.assignment());
   }
     

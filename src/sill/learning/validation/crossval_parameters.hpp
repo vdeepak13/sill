@@ -4,21 +4,16 @@
 
 #include <sill/math/statistics.hpp>
 
-#include <sill/macros_def.hpp>
-
 namespace sill {
 
   /**
    * Struct which holds options for a function which chooses a vector
    * of parameters via cross validation.
-   *
-   * @param N  length of the parameter vector
    */
-  template <size_t N>
   struct crossval_parameters {
 
-    //! Length of the parameter vector
-    static const size_t dim = N;
+    //! Length of the parameter vector.
+    size_t dim;
 
     //! Number of cross validation folds for choosing regularization. (> 1)
     //!  (default = 10)
@@ -52,35 +47,18 @@ namespace sill {
     //!  (default = statistics::MEAN)
     statistics::generalized_mean_enum run_combo_type;
 
-    crossval_parameters()
-      : nfolds(10), minvals(N,0.000001), maxvals(N,1), nvals(N,10),
-        zoom(0), log_scale(true), run_combo_type(statistics::MEAN) { }
+    //! Constructor which sets dim = 1.
+    crossval_parameters();
+
+    //! Constructor.
+    //! @param dim  Length of the parameter vector.
+    crossval_parameters(size_t dim);
 
     //! Return true iff the parameters are valid.
-    bool valid() const {
-      if (nfolds <= 1)
-        return false;
-      if (minvals.size() != N)
-        return false;
-      if (maxvals.size() != N)
-        return false;
-      if (nvals.size() != N)
-        return false;
-      for (size_t i(0); i < N; ++i) {
-        if (minvals(i) < 0)
-          return false;
-        if (maxvals(i) < minvals(i))
-          return false;
-        if (nvals(i) <= 0)
-          return false;
-      }
-      return true;
-    }
+    bool valid() const;
 
   }; // struct crossval_parameters
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif // #ifndef SILL_CROSSVAL_PARAMETERS_HPP

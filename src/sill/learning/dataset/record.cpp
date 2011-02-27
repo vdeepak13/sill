@@ -8,6 +8,11 @@ namespace sill {
   // Constructors
   //==========================================================================
 
+  record::record(const datasource_info_type& ds_info)
+    : finite_record(ds_info.finite_seq),
+      vector_record(ds_info.vector_seq, vector_size(ds_info.vector_seq)) {
+  }
+
   bool record::operator==(const record& other) const {
     if (finite_record::operator==(other) &&
         vector_record::operator==(other))

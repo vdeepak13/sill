@@ -147,7 +147,8 @@ namespace sill {
       // Compute the arguments
       args.clear();
       foreach(vertex v, vertices()) {
-        args = set_union(args, clique(v));
+//        args = set_union(args, clique(v));
+        args.insert(clique(v).begin(), clique(v).end());
       }
 
       calibrate(); // Do this since the factors might not be marginals.
@@ -903,6 +904,43 @@ namespace sill {
     }
 
     /**
+     * Computes the expected mean squared error (mean over variables) of Y,
+     * conditioned on X, where the expectation is w.r.t. the given dataset
+     * and this distribution represents P(Y,X).
+     *
+     * Note: This is equivalent to expected_per_label_accuracy for finite data.
+     *
+     * @param ds   Dataset with values for a subset of the variables of the
+     *             distribution.
+     *             If this assigns values to variables not in this model,
+     *             then those variables are ignored.
+     * @param X    Variables (which MUST be a subset of this model's arguments)
+     *             to condition on.
+     *
+     * @return  expected mean squared error, or 0 if dataset is empty
+     *
+     * @todo Add support for when this model represents P(Y,X,Z).
+     */
+    double expected_mean_squared_error(const dataset& ds,
+                                       const domain_type& X) const {
+      if (ds.size() == 0)
+        return 0;
+      double pla(0);
+      if (!includes(ds.variables(), args)) {
+        throw std::runtime_error
+          (std::string("decomposable::expected_mean_squared_error") +
+           " currently requires that the given dataset includes all variables"+
+           " in the decomposable model.");
+      }
+      foreach(const record& r, ds.records()) {
+        decomposable tmp_model(*this);
+        tmp_model.condition(r.assignment(X));
+        pla += tmp_model.mean_squared_error(r);
+      }
+      return pla / ds.size();
+    }
+
+    /**
      * Computes the per-label accuracy (average over X variables).
      *
      * @param a    an assignment to X
@@ -1041,9 +1079,10 @@ namespace sill {
 
       // Compute the new set of arguments.
       domain_type new_args = args;
-      
+
       foreach(const domain_type& clique, cliques) {
-        new_args = set_union(new_args, clique);
+//        new_args = set_union(new_args, clique);
+        new_args.insert(clique.begin(), clique.end());
       }
 
       // Create a graph with the cliques of this decomposable model.
@@ -1185,6 +1224,7 @@ namespace sill {
 
       // Recalibrate and renormalize the model.
       calibrate();
+
       normalize();
       return *this;
     }
@@ -1543,9 +1583,24 @@ namespace sill {
 
         // Compute the new separator potential using u and
         // update v's potential with ratio of the new and the old separator
+        /*
+        std::cerr << "BEFORE:\n" // DEBUGGING
+                  << "dm.clique(u): " << dm.clique(u) << "\n"
+                  << "dm.separator(e): " << dm.separator(e) << "\n"
+                  << "dm.clique(v): " << dm.clique(v) << "\n"
+                  << "dm.jt[u]: " << dm.jt[u] << "\n"
+                  << "dm.jt[e]: " << dm.jt[e] << "\n"
+                  << "dm.jt[v]: " << dm.jt[v] << std::endl;
+        */
         dm.jt[v] /= dm.jt[e];
-        dm.jt[u].marginal(dm.jt[e], dm.separator(e));
+//        dm.jt[u].marginal(dm.jt[e], dm.separator(e));
+        dm.jt[u].collapse_unnormalized(sum_op, dm.separator(e), dm.jt[e]);
         dm.jt[v] *= dm.jt[e];
+        /*
+        std::cerr << "AFTER:\n" // DEBUGGING
+                  << "dm.jt[v]: " << dm.jt[v] << "\n"
+                  << "dm.jt[e]: " << dm.jt[e] << std::endl;
+        */
 
         /* DEBUG */
         // Note: this would fail for Gaussian factors which may not be

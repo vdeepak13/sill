@@ -771,6 +771,25 @@ namespace sill {
     }
 
     /**
+     * Computes the expected mean squared error (mean over Y variables),
+     * where the expectation is over samples in the given dataset.
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     *
+     * @return  expected mean squared error, or 0 if the dataset is empty.
+     */
+    double expected_mean_squared_error(const dataset& ds) const {
+      if (ds.size() == 0)
+        return 0;
+      double mse(0);
+      foreach(const record_type& r, ds.records()) {
+        const decomposable<output_factor_type>& tmpmodel
+          = this->condition(r);
+        mse += tmpmodel.mean_squared_error(r);
+      }
+      return (mse / ds.size());
+    }
+
+    /**
      * Computes the per-label accuracy (average over Y variables).
      * WARNING: This assumes that the model P(Y | X = x) is tractable!
      * @param a    an assignment to Y,X
@@ -1070,7 +1089,9 @@ namespace sill {
         : r_ptr(&r), tmpf_ptr(NULL) { }
       const output_factor_type& operator()(const crf_factor& f) const {
         assert(r_ptr);
+//        std::cerr << "FACTOR_CONDITIONER_R\n" << "f:\n" << f << std::flush; // DEBUGGING
         tmpf_ptr = &(f.condition(*r_ptr));
+//        std::cerr << "*tmpf_ptr:\n" << (*tmpf_ptr) << "\n" << std::endl; // DEBUGGING
         return (*tmpf_ptr);
       }
     }; // struct factor_conditioner_r

@@ -187,7 +187,7 @@ namespace sill {
     nonlinear_gaussian& combine_in(const nonlinear_gaussian& other, op_type op);
 
     //! implements Factor::collapse
-    nonlinear_gaussian collapse(const vector_domain& retain, op_type op) const;
+    nonlinear_gaussian collapse(op_type op, const vector_domain& retain) const;
 
     //! implements Factor::restrict
     //! \todo this function needs to be tested

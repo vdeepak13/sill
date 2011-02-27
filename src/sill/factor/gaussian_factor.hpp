@@ -94,51 +94,85 @@ namespace sill {
 
     //! Returns an array of indices for the given list of variables
     ivec indices(const vector_var_vector& vars) const {
-      ivec ind(vector_size(vars));
-      size_t n = 0;
-      foreach(vector_variable* v, vars) {
-        const irange& range = safe_get(var_range, v);
-        for(size_t i = 0; i < range.size(); i++)
-          ind[n++] = range(i);
-      }
+      ivec ind;
+      indices(vars, ind);
       return ind;
     }
 
     //! Sets 'ind' to an array of indices for the given list of variables.
-    void indices(const vector_var_vector& vars, ivec& ind) const {
-      size_t n(vector_size(vars));
+    //! @param strict  If true, require that this factor include all of vars.
+    //!                (default = true)
+    void
+    indices(const vector_var_vector& vars, ivec& ind, bool strict = true) const{
+      size_t n = 0;
+      if (strict) {
+        n = vector_size(vars);
+      } else {
+        foreach(vector_variable* v, vars) {
+          if (args.count(v) != 0)
+            n += v->size();
+        }
+      }
       if (ind.size() != n)
         ind.resize(n);
       n = 0;
       foreach(vector_variable* v, vars) {
-        const irange& range = safe_get(var_range, v);
-        for(size_t i = 0; i < range.size(); i++)
-          ind[n++] = range(i);
+        std::map<vector_variable*, irange>::const_iterator
+          it(var_range.find(v));
+        if (it == var_range.end()) {
+          if (strict) {
+            throw std::runtime_error
+              (std::string("gaussian_factor::indices(vars,ind,strict)") +
+               " called with some vars not included in this factor and" +
+               " strict = true.");
+          }
+        } else {
+          const irange& range = it->second;
+          for(size_t i = 0; i < range.size(); i++)
+            ind[n++] = range(i);
+        }
       }
     }
 
-    //! Returns an array of indices for the given set of variables
+    //! Returns an array of indices for the given set of variables.
     ivec indices(const vector_domain& vars) const {
-      ivec ind(vector_size(vars));
-      size_t n = 0;
-      foreach(vector_variable* v, vars) {
-        const irange& range = safe_get(var_range, v);
-        for(size_t i = 0; i < range.size(); i++)
-          ind[n++] = range(i);
-      }
+      ivec ind;
+      indices(vars, ind);
       return ind;
     }
 
-    //! Returns an array of indices for the given set of variables
-    void indices(const vector_domain& vars, ivec& ind) const {
-      size_t n(vector_size(vars));
+    //! Sets 'ind' to an array of indices for the given set of variables.
+    //! @param strict  If true, require that this factor include all of vars.
+    //!                (default = true)
+    void
+    indices(const vector_domain& vars, ivec& ind, bool strict = true) const {
+      size_t n = 0;
+      if (strict) {
+        n = vector_size(vars);
+      } else {
+        foreach(vector_variable* v, vars) {
+          if (args.count(v) != 0)
+            n += v->size();
+        }
+      }
       if (ind.size() != n)
         ind.resize(n);
       n = 0;
       foreach(vector_variable* v, vars) {
-        const irange& range = safe_get(var_range, v);
-        for(size_t i = 0; i < range.size(); i++)
-          ind[n++] = range(i);
+        std::map<vector_variable*, irange>::const_iterator
+          it(var_range.find(v));
+        if (it == var_range.end()) {
+          if (strict) {
+            throw std::runtime_error
+              (std::string("gaussian_factor::indices(vars,ind,strict)") +
+               " called with some vars not included in this factor and" +
+               " strict = true.");
+          }
+        } else {
+          const irange& range = it->second;
+          for(size_t i = 0; i < range.size(); i++)
+            ind[n++] = range(i);
+        }
       }
     }
 

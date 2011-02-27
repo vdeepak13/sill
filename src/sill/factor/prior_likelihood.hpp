@@ -174,7 +174,7 @@ namespace sill
     }
 
     //! implements Factor::collapse
-    prior_likelihood collapse(const domain_type& retain, op_type op) const {
+    prior_likelihood collapse(op_type op, const domain_type& retain) const {
       check_supported(op, collapse_ops);
       if (likelihood().arguments().empty()) {
         return prior_likelihood(prior().marginal(retain), likelihood());
@@ -200,7 +200,7 @@ namespace sill
 
     //! implements DistributionFactor::marginal
     prior_likelihood marginal(const domain_type& retain) const {
-      return collapse(retain, sum_op);
+      return collapse(sum_op, retain);
     }
 
     //! Transfers the likelihood from another P-L factor to this factor

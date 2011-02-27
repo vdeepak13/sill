@@ -134,7 +134,7 @@ namespace sill {
   void
   log_table_factor::marginal(log_table_factor& f,
                              const finite_domain& retain) const {
-    collapse(f, std::plus<result_type>(), 0, retain);
+    collapse(std::plus<result_type>(), 0, retain, f);
   }
 
   log_table_factor& log_table_factor::normalize() {

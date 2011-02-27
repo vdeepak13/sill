@@ -1,3 +1,4 @@
+#include <sill/learning/dataset/datasource.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
 
 #include <sill/macros_def.hpp>
@@ -75,18 +76,18 @@ namespace sill {
     return keys(*vector_numbering_ptr);
   }
 
-    vector_record& vector_record::operator=(const vector_record& rec) {
-      vector_numbering_ptr = rec.vector_numbering_ptr;
-      if (vec_own) {
-        vec_ptr->resize(rec.vec_ptr->size());
-        for (size_t j(0); j < rec.vec_ptr->size(); ++j)
-          vec_ptr->operator[](j) = rec.vec_ptr->operator[](j);
-      } else {
-        vec_own = true;
-        vec_ptr = new vec(*(rec.vec_ptr));
-      }
-      return *this;
+  vector_record& vector_record::operator=(const vector_record& rec) {
+    vector_numbering_ptr = rec.vector_numbering_ptr;
+    if (vec_own) {
+      vec_ptr->resize(rec.vec_ptr->size());
+      for (size_t j(0); j < rec.vec_ptr->size(); ++j)
+        vec_ptr->operator[](j) = rec.vec_ptr->operator[](j);
+    } else {
+      vec_own = true;
+      vec_ptr = new vec(*(rec.vec_ptr));
     }
+    return *this;
+  }
 
   vector_record& vector_record::operator=(const sill::vector_assignment& a) {
     size_t a_vars_size(0);
@@ -120,18 +121,31 @@ namespace sill {
     }
   }
 
-    void
-    vector_record::reset
-    (copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
-     size_t vector_dim) {
-      this->vector_numbering_ptr = vector_numbering_ptr;
-      if (vec_own) {
-        vec_ptr->resize(vector_dim);
-      } else {
-        vec_own = true;
-        vec_ptr = new vec(vector_dim);
-      }
+  void
+  vector_record::reset
+  (copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
+   size_t vector_dim) {
+    this->vector_numbering_ptr = vector_numbering_ptr;
+    if (vec_own) {
+      vec_ptr->resize(vector_dim);
+    } else {
+      vec_own = true;
+      vec_ptr = new vec(vector_dim);
     }
+  }
+
+  void
+  vector_record::reset(const datasource_info_type& ds_info) {
+    datasource::build_vector_numbering(ds_info.vector_seq,
+                                       *vector_numbering_ptr);
+    size_t vdim = vector_size(ds_info.vector_seq);
+    if (vec_own) {
+      vec_ptr->resize(vdim);
+    } else {
+      vec_own = true;
+      vec_ptr = new vec(vdim);
+    }
+  }
 
 } // namespace sill
 

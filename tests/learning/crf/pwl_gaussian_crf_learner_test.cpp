@@ -61,13 +61,12 @@ int main(int argc, char** argv) {
 
   // Generate a dataset
   cout << "Sampling " << nsamples << " training samples from the model" << endl;
-  boost::shared_ptr<vector_dataset>
-    ds_ptr(new vector_dataset(finite_var_vector(), YX, 
-                              std::vector<variable::variable_typenames>
-                              (YX.size(), variable::VECTOR_VARIABLE)));
+  vector_dataset ds(finite_var_vector(), YX, 
+                    std::vector<variable::variable_typenames>
+                    (YX.size(), variable::VECTOR_VARIABLE));
   for (size_t i(0); i < nsamples; ++i) {
     vector_assignment fa(YXmodel.sample(rng));
-    ds_ptr->insert(assignment(fa));
+    ds.insert(assignment(fa));
   }
 
   // Learn a model
@@ -84,8 +83,8 @@ int main(int argc, char** argv) {
   pwlcl_params.score_type = score_type;
   pwlcl_params.learn_tree = learn_tree;
   pwlcl_params.edge_reg = edge_reg;
-  crossval_parameters<gaussian_crf_factor::regularization_type::nlambdas>
-    cv_params;
+  crossval_parameters
+    cv_params(gaussian_crf_factor::regularization_type::nlambdas);
   cv_params.minvals = 10.;
   cv_params.maxvals = .001;
   cv_params.nvals = 10;
@@ -98,14 +97,14 @@ int main(int argc, char** argv) {
 
   crf_X_mapping<gaussian_crf_factor> X_mapping(Y2X_map);
   pwl_crf_learner<gaussian_crf_factor>
-    pwlcl_learner(ds_ptr, Yset, X_mapping, pwlcl_params);
+    pwlcl_learner(ds, Yset, X_mapping, pwlcl_params);
   cout << "Learned CRF structure:\n" << pwlcl_learner.current_graph()
        << endl;
   crf_model<gaussian_crf_factor> model(pwlcl_learner.current_model());
   double ll(0);
-  foreach(const assignment& a, ds_ptr->assignments())
+  foreach(const assignment& a, ds.assignments())
     ll += model.log_likelihood(a.vector());
-  ll /= ds_ptr->size();
+  ll /= ds.size();
   cout << "Learned CRF model's average data log likelihood: " << ll << endl;
 
   return 0;

@@ -47,6 +47,7 @@ namespace sill {
 
   // Unary functors
   //============================================================================
+
   //! A functor that computes the square of a value
   template <typename T>
   struct squared : std::unary_function<T,T> {

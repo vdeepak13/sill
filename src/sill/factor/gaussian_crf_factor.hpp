@@ -26,6 +26,12 @@ namespace sill {
    * This represents a function f(Y,X) = exp(-(1/2)(AY - (b + CX))^2),
    * which may be converted into a Gaussian factor for P(Y | X = x).
    * (Note that the covariance matrix Sigma = (A'A)^-1.)
+   * NOTE: The above representation is the default.
+   *       It is actually possible to relabel variables as input/output
+   *       so that this represents a function
+   *       f(Y1,X1,Y2,X2) = exp(-(1/2)( A [Y1;X1] - (b + C [Y2;X2]) )^2)
+   *       so that output and input variables appear on both sides of the
+   *       conditional Gaussian.
    *
    * This satisfies the LearnableCRFfactor concept.
    *
@@ -189,6 +195,17 @@ namespace sill {
     explicit gaussian_crf_factor(const canonical_gaussian& cg);
 
     /**
+     * Constructor.  Takes a canonical_gaussian and constructs the corresponding
+     * gaussian_crf_factor, using the given head/tail and Y/X divisions of
+     * variables.
+     */
+    gaussian_crf_factor(const canonical_gaussian& cg,
+                        const vector_domain& head_vars,
+                        const vector_domain& tail_vars,
+                        const vector_domain& Y,
+                        const vector_domain& X);
+
+    /**
      * Constructor from a constant factor.
      */
     explicit gaussian_crf_factor(const constant_factor& cf);
@@ -198,11 +215,24 @@ namespace sill {
      */
     explicit gaussian_crf_factor(double c);
 
-    //! @return  vector of output variables in Y for this factor
-    const vector_var_vector& output_arg_list() const;
+    //! Serialize members
+    void save(oarchive & ar) const;
 
-    //! @return  vector of input variables in X for this factor
-    const vector_var_vector& input_arg_list() const;
+    //! Deserialize members
+    void load(iarchive & ar);
+
+    // Public methods: Getters
+    // =========================================================================
+
+    //! @return  Vector of head variables in conditional Gaussian.
+    //!          By default, this equals Y.
+    //!          With relabeled outputs/inputs, it may include Y and X vars.
+    const vector_var_vector& head() const;
+
+    //! @return  Vector of tail variables in conditional Gaussian.
+    //!          By default, this equals X.
+    //!          With relabeled outputs/inputs, it may include Y and X vars.
+    const vector_var_vector& tail() const;
 
     /**
      * @param print_Y    If true, print Y variables. (default = true)
@@ -212,8 +242,12 @@ namespace sill {
     void print(std::ostream& out, bool print_Y = true, bool print_X = true,
                bool print_vals = true) const;
 
-    //! Return the underlying factor as a moment_gaussian.
-    moment_gaussian get_gaussian() const;
+    //! Return the underlying factor as a different type of Gaussian factor.
+    //! NOTE: If this factor has relabeled outputs/inputs,
+    //!       then the returned factor uses the variables divided as head()
+    //!       and tail().
+    template <typename F>
+    F get_gaussian() const;
 
     /**
      * Relabels outputs Y, inputs X so that
@@ -277,6 +311,21 @@ namespace sill {
      *          in real space
      */
     const canonical_gaussian& condition(const vec& x) const;
+
+    /**
+     * If this factor is f(Y,X), compute f(Y, X = x).
+     * This version is for factor with relabeled output/inputs.
+     *
+     * @param x_in_head  Values for X variables in the head of the
+     *                   conditional Gaussian.
+     * @param x_in_tail  Values for X variables in the tail of the
+     *                   conditional Gaussian.
+     * @return  gaussian factor representing the factor with
+     *          the given input variable (X) instantiation;
+     *          in real space
+     */
+    const canonical_gaussian&
+    condition(const vec& x_in_head, const vec& x_in_tail) const;
 
     /**
      * If this factor is f(Y_retain, Y_part, X) (not in log space),
@@ -361,6 +410,9 @@ namespace sill {
     //! @return This modified factor.
 //  gaussian_crf_factor& combine_in_left(const constant_factor& cf, op_type op);
 
+    //! Set this factor to the square root of its value.
+    gaussian_crf_factor& square_root();
+
     // Public: Learning-related methods from crf_factor interface
     // =========================================================================
 
@@ -390,8 +442,8 @@ namespace sill {
      * with different variable orderings!
      */
     void fix_records(const vector_record& r) {
-      r.vector_indices(Y_indices_, Y_);
-      r.vector_indices(X_indices_, X_);
+      r.vector_indices(head_indices_, head_);
+      r.vector_indices(tail_indices_, tail_);
       fixed_records_ = true;
     }
 
@@ -567,40 +619,62 @@ namespace sill {
     // =========================================================================
   protected:
 
-    optimization_vector ov;
-
     //! Y variables
-    vector_var_vector Y_;
+    //! These correspond to the head variables of the conditional Gaussian.
+    //! By default, this matches Ydomain_; if not, then relabeled_ is true.
+    vector_var_vector head_;
 
     //! X variables
-    vector_var_vector X_;
+    //! These correspond to the tail variables of the conditional Gaussian.
+    //! By default, this matches Xdomain_ptr_; if not, then relabeled_ is true.
+    vector_var_vector tail_;
+
+    optimization_vector ov;
 
     //! If true, then whenever methods taking records are called,
     //! it is assumed that records of exactly the same type are being given.
-    //! This will then use the stored indices Y_indices_, X_indices_ to
+    //! This will then use the stored indices head_indices_, tail_indices_ to
     //! access data in the records.
     bool fixed_records_;
 
-    //! See fixed_records_; Y_indices_ = indices of Y_ in records.
-    ivec Y_indices_;
+    //! See fixed_records_; head_indices_ = indices of head_ in records.
+    ivec head_indices_;
 
-    //! See fixed_records_; X_indices_ = indices of X_ in records.
-    ivec X_indices_;
+    //! See fixed_records_; tail_indices_ = indices of tail_ in records.
+    ivec tail_indices_;
 
     //! Temporary used to avoid reallocation for conditioning.
     //! If this CRF factor has no arguments (i.e., is a constant factor),
     //! then this stored its value. // TO DO: ELIMINATE THIS HACK.
     mutable canonical_gaussian conditioned_f;
 
+
+    // Stuff for handling relabeled outputs/inputs
+    //--------------------------------------------------------------------------
+
+    //! Indicates if the variables have been relabeled,
+    //! in which case head_,Ydomain_ and tail_,Xdomain_ptr_ may not match.
+    bool relabeled;
+
+    //! If relabeled = true,
+    //! this stores vars for rows of ov.C corresponding to input arguments.
+    vector_var_vector X_in_head_;
+
+    //! If relabeled = true,
+    //! this stores vars for cols of ov.C corresponding to input arguments.
+    vector_var_vector X_in_tail_;
+
+    //--------------------------------------------------------------------------
+
     //! Get Y,X values from record.
     void get_yx_values(const vector_record& r, vec& y, vec& x) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
-        y = rvec(Y_indices_);
-        x = rvec(X_indices_);
+        y = rvec(head_indices_);
+        x = rvec(tail_indices_);
       } else {
-        r.vector_values(y, Y_);
-        r.vector_values(x, X_);
+        r.vector_values(y, head_);
+        r.vector_values(x, tail_);
       }
     }
 
@@ -608,9 +682,9 @@ namespace sill {
     void get_y_values(const vector_record& r, vec& y) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
-        y = rvec(Y_indices_);
+        y = rvec(head_indices_);
       } else {
-        r.vector_values(y, Y_);
+        r.vector_values(y, head_);
       }
     }
 
@@ -618,13 +692,43 @@ namespace sill {
     void get_x_values(const vector_record& r, vec& x) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
-        x = rvec(X_indices_);
+        x = rvec(tail_indices_);
       } else {
-        r.vector_values(x, X_);
+        r.vector_values(x, tail_);
       }
     }
 
+    /**
+     * Get Y,X values from record.
+     * This version is used for relabeled outputs/inputs.
+     * @param x_in_head   X values in head variables of conditional Gaussian.
+     * @param x_in_tail   X values in tail variables of conditional Gaussian.
+     */
+    void
+    get_x_values(const vector_record& r, vec& x_in_head, vec& x_in_tail) const {
+      // TO DO: Support fixed_records_.
+      if (!relabeled) {
+        throw std::runtime_error
+          (std::string("gaussian_crf_factor::get_x_values") +
+           "(r,x_in_head,x_in_tail) called on factor whose vars had not" +
+           " been relabeled.");
+      }
+      r.vector_values(x_in_head, X_in_head_);
+      r.vector_values(x_in_tail, X_in_tail_);
+    }
+
   };  // class gaussian_crf_factor
+
+  // Templated methods from gaussian_crf_factor
+  //============================================================================
+
+  template <>
+  moment_gaussian
+  gaussian_crf_factor::get_gaussian<moment_gaussian>() const;
+
+  template <>
+  canonical_gaussian
+  gaussian_crf_factor::get_gaussian<canonical_gaussian>() const;
 
 }  // namespace sill
 

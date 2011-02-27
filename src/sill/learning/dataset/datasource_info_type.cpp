@@ -5,6 +5,8 @@
 
 namespace sill {
 
+  datasource_info_type::datasource_info_type() { }
+
   datasource_info_type::datasource_info_type
   (const finite_var_vector& finite_seq,
    const vector_var_vector& vector_seq,
@@ -46,19 +48,17 @@ namespace sill {
     }
   }
 
-  /*
   datasource_info_type::
-  datasource_info_type(const forward_range<finite_variable*>& var_seq)
-    : finite_seq(var_seq.begin(), var_seq.end()),
+  datasource_info_type(const finite_var_vector& var_seq)
+    : finite_seq(var_seq),
       var_type_order(finite_seq.size(), variable::FINITE_VARIABLE) {
   }
 
   datasource_info_type::
-  datasource_info_type(const forward_range<vector_variable*>& var_seq)
-    : vector_seq(var_seq.begin(), var_seq.end()),
+  datasource_info_type(const vector_var_vector& var_seq)
+    : vector_seq(var_seq),
       var_type_order(vector_seq.size(), variable::VECTOR_VARIABLE) {
   }
-  */
 
   void datasource_info_type::save(oarchive& a) const {
     a << finite_seq << vector_seq << var_type_order

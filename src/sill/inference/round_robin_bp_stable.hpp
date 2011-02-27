@@ -289,7 +289,7 @@ namespace sill {
       domain_type domain = make_domain(source.is_variable()?
                                        &(source.variable()) :
                                        &(target.variable()));
-      message_type new_msg = cavity.collapse(domain, csr_.cross_op);
+      message_type new_msg = cavity.collapse(csr_.cross_op, domain);
       // Normalize the message
       new_msg.normalize();
       // Damp messages form factors to variables

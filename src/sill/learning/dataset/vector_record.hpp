@@ -7,11 +7,15 @@
 #include <sill/base/vector_assignment.hpp>
 #include <sill/base/stl_util.hpp>
 #include <sill/copy_ptr.hpp>
+#include <sill/learning/dataset/datasource_info_type.hpp>
 #include <sill/math/vector.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  // Forward declaration
+  struct datasource_info_type;
 
   /**
    * A type that provides a mutable view of a single datapoint's vector data.
@@ -298,6 +302,10 @@ namespace sill {
     void
     reset(copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
           size_t vector_dim);
+
+    //! Clears the stored data (if it is owned by the record)
+    //! and resets the record (like a constructor).
+    void reset(const datasource_info_type& ds_info);
 
     //! Set vector data to be this value (stored in the record itself).
     void set_vector_val(const vec& val) {

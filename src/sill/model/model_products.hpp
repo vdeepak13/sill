@@ -53,7 +53,7 @@ namespace sill {
     }
     std::vector<canonical_gaussian> factors;
     foreach(const gaussian_crf_factor& f, YgivenXmodel.factors())
-      factors.push_back(moment_gaussian(f.get_gaussian()));
+      factors.push_back(f.get_gaussian<canonical_gaussian>());
     YXmodel *= factors;
   }
 

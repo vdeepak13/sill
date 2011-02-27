@@ -828,12 +828,12 @@ namespace sill {
 
   double multiclass_logistic_regression::choose_lambda
   (std::vector<vec>& lambdas, vec& means, vec& stderrs,
-   const crossval_parameters<1>& cv_params, boost::shared_ptr<dataset> ds_ptr,
+   const crossval_parameters& cv_params, boost::shared_ptr<dataset> ds_ptr,
    const multiclass_logistic_regression_parameters& params,
    unsigned random_seed) {
     choose_lambda_helper clh(ds_ptr, params);
     vec best_lambda =
-      crossval_zoom<choose_lambda_helper, 1>
+      crossval_zoom<choose_lambda_helper>
       (lambdas, means, stderrs, cv_params, clh, random_seed);
     assert(best_lambda.size() == 1);
     return best_lambda[0];

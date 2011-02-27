@@ -10,7 +10,7 @@
   template <>                                                           \
   hybrid_crf_factor<F>*                                                 \
   learn_crf_factor<hybrid_crf_factor<F> >                               \
-  (boost::shared_ptr<dataset> ds_ptr,                                   \
+  (const dataset& ds,                                                   \
    const hybrid_crf_factor<F>::output_domain_type& Y_,                  \
    copy_ptr<hybrid_crf_factor<F>::input_domain_type> X_ptr_,            \
    const hybrid_crf_factor<F>::parameters& params,                      \
@@ -36,14 +36,14 @@
        (*X_ptr_, domain(params.hcf_x2.begin(), params.hcf_x2.end())),           \
        *sub_X_ptr_);                                                    \
                                                                         \
-    foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {      \
-      boost::shared_ptr<dataset_view> sub_ds_ptr(new dataset_view(*ds_ptr)); \
-      sub_ds_ptr->restrict_to_assignment(x2);                           \
+    foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {  \
+      dataset_view sub_ds(ds);                                          \
+      sub_ds.restrict_to_assignment(x2);                                \
       size_t i =                                                        \
         hybrid_crf_factor<F>::subfactor_index(x2, x2_vec, x2_multipliers); \
       assert(i < subfactor_ptrs.size());                                \
       subfactor_ptrs[i] =                                               \
-        learn_crf_factor<F>(sub_ds_ptr, Y_, sub_X_ptr_,                 \
+        learn_crf_factor<F>(sub_ds, Y_, sub_X_ptr_,                     \
                             params, unif_int(rng));                     \
     }                                                                   \
     return new hybrid_crf_factor<F>(Y_, X_ptr_, subfactor_ptrs, x2_vec, \
@@ -66,9 +66,8 @@
   learn_crf_factor_cv<hybrid_crf_factor<F> >                            \
   (std::vector<hybrid_crf_factor<F>::regularization_type>& reg_params,  \
    vec& means, vec& stderrs,                                            \
-   const crossval_parameters<hybrid_crf_factor<F>::regularization_type::nlambdas>& \
-   cv_params,                                                           \
-   boost::shared_ptr<dataset> ds_ptr,                                   \
+   const crossval_parameters& cv_params,                                \
+   const dataset& ds,                                                   \
    const hybrid_crf_factor<F>::output_domain_type& Y_,                  \
    copy_ptr<hybrid_crf_factor<F>::input_domain_type> X_ptr_,            \
    const hybrid_crf_factor<F>::parameters& params,                      \
@@ -101,16 +100,15 @@
        *sub_X_ptr_);                                                    \
                                                                         \
     size_t return_j(0);                                                 \
-    foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {      \
-      boost::shared_ptr<dataset_view>                                   \
-        sub_ds_ptr(new dataset_view(*ds_ptr));                          \
-      sub_ds_ptr->restrict_to_assignment(x2);                           \
+    foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {  \
+      dataset_view sub_ds(ds);                                          \
+      sub_ds.restrict_to_assignment(x2);                                \
       size_t i =                                                        \
         hybrid_crf_factor<F>::subfactor_index(x2, x2_vec, x2_multipliers); \
       assert(i < subfactor_ptrs.size());                                \
       subfactor_ptrs[i] =                                               \
         learn_crf_factor_cv<F>(sub_reg_params, sub_means, sub_stderrs,  \
-                               cv_params, sub_ds_ptr, Y_, sub_X_ptr_,   \
+                               cv_params, sub_ds, Y_, sub_X_ptr_,       \
                                params, unif_int(rng));                  \
       if (reg_params.size() == 0) {                                     \
         assert(sub_means.size() == sub_stderrs.size() &&                \
@@ -139,18 +137,16 @@ namespace sill {
   //! Specialization: table_crf_factor
   template <>
   table_crf_factor*
-  learn_crf_factor<table_crf_factor>(boost::shared_ptr<dataset> ds_ptr,
-                                    const finite_domain& Y_,
-                                    copy_ptr<finite_domain> X_ptr_,
-                                    const table_crf_factor::parameters& params,
-                                    unsigned random_seed) {
-    assert(ds_ptr);
-    assert(includes(ds_ptr->finite_variables(), Y_));
+  learn_crf_factor<table_crf_factor>
+  (const dataset& ds,
+   const finite_domain& Y_, copy_ptr<finite_domain> X_ptr_,
+   const table_crf_factor::parameters& params, unsigned random_seed) {
+    assert(includes(ds.finite_variables(), Y_));
     assert(X_ptr_);
-    assert(includes(ds_ptr->finite_variables(), *X_ptr_));
+    assert(includes(ds.finite_variables(), *X_ptr_));
     assert(params.valid());
     return new table_crf_factor
-      (learn_marginal<table_factor>(set_union(Y_, *X_ptr_), *ds_ptr,
+      (learn_marginal<table_factor>(set_union(Y_, *X_ptr_), ds,
                                     params.reg.lambdas[0]),
        Y_, false);
   } // learn_crf_factor<table_crf_factor>
@@ -160,22 +156,21 @@ namespace sill {
   template <>
   log_reg_crf_factor*
   learn_crf_factor<log_reg_crf_factor>
-  (boost::shared_ptr<dataset> ds_ptr,
+  (const dataset& ds,
    const finite_domain& Y_, copy_ptr<domain> X_ptr_,
    const log_reg_crf_factor::parameters& params, unsigned random_seed) {
-    assert(ds_ptr);
-    if (!includes(ds_ptr->finite_variables(), Y_)) {
+    if (!includes(ds.finite_variables(), Y_)) {
       std::cerr << "learn_crf_factor given Y_ = " << Y_
                 << ", but the dataset only contains finite variables: "
-                << ds_ptr->finite_variables() << std::endl;
+                << ds.finite_variables() << std::endl;
       assert(false);
     }
     assert(X_ptr_);
 
-    assert(includes(ds_ptr->variables(), *X_ptr_));
+    assert(includes(ds.variables(), *X_ptr_));
     assert(params.valid());
     // Set up dataset view
-    dataset_view ds_view(*ds_ptr);
+    dataset_view ds_view(ds);
     std::set<size_t> finite_indices;
     size_t new_class_var_size(1);
     foreach(finite_variable* v, Y_) {
@@ -215,7 +210,7 @@ namespace sill {
     return new log_reg_crf_factor
       (boost::shared_ptr<multiclass2multilabel>(new multiclass2multilabel
                                                 (stats, m2m_params)),
-       params.smoothing / ds_ptr->size(), Y_, X_ptr_);
+       params.smoothing / ds.size(), Y_, X_ptr_);
   } // learn_crf_factor<log_reg_crf_factor>()
 
 
@@ -223,22 +218,21 @@ namespace sill {
   template <>
   gaussian_crf_factor*
   learn_crf_factor<gaussian_crf_factor>
-  (boost::shared_ptr<dataset> ds_ptr,
+  (const dataset& ds,
    const vector_domain& Y_, copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed) {
-    assert(ds_ptr);
-    assert(ds_ptr->size() > 0);
-    assert(includes(ds_ptr->variables(), Y_));
+    assert(ds.size() > 0);
+    assert(includes(ds.variables(), Y_));
     assert(X_ptr_);
-    assert(includes(ds_ptr->variables(), *X_ptr_));
+    assert(includes(ds.variables(), *X_ptr_));
     assert(params.valid());
 
     vector_var_vector Yvec(Y_.begin(), Y_.end());
     vector_var_vector Xvec(X_ptr_->begin(), X_ptr_->end());
     mat Ydata; // Y data matrix (nrecords x |Y|)
-    ds_ptr->get_value_matrix(Ydata, Yvec);
+    ds.get_value_matrix(Ydata, Yvec);
     mat Xdata; // X data matrix (nrecords x |X|)
-    ds_ptr->get_value_matrix(Xdata, Xvec, false);
+    ds.get_value_matrix(Xdata, Xvec, false);
     // Compute mean, and center Y values.
     vec mu(sum(Ydata,1));
     mu /= Ydata.size1();
@@ -264,7 +258,7 @@ namespace sill {
       cov += params.reg.lambdas[1] * identity(cov.size1());
     }
     cov -= XtY.transpose() * Ct;
-    cov /= ds_ptr->size();
+    cov /= ds.size();
     moment_gaussian mg(Yvec, mu, cov, Xvec, Ct.transpose());
     gaussian_crf_factor* gcf_ptr = NULL;
     try {
@@ -290,7 +284,7 @@ namespace sill {
             lc_inc * ((params.max_lambda_cov - params.reg.lambdas[1])
                       / params.lambda_cov_increments)
             + params.reg.lambdas[1];
-          cov += ((new_lambda_cov - old_lambda_cov) / ds_ptr->size())
+          cov += ((new_lambda_cov - old_lambda_cov) / ds.size())
             * identity(cov.size1());
           // FINISH THIS IF NECESSARY
         }
@@ -313,24 +307,23 @@ namespace sill {
 
     gcf_learn_crf_factor_cv_functor::
     gcf_learn_crf_factor_cv_functor
-    (boost::shared_ptr<dataset> ds_ptr,
+    (const dataset& ds,
      const vector_domain& Y_, copy_ptr<vector_domain> X_ptr,
      const gaussian_crf_factor::parameters& params)
-      : ds_ptr(ds_ptr), Y_ptr(&Y_), X_ptr(X_ptr), params_ptr(&params) {
-      assert(ds_ptr);
+      : ds(ds), Y_ptr(&Y_), X_ptr(X_ptr), params_ptr(&params) {
       assert(X_ptr);
     }
 
     vec gcf_learn_crf_factor_cv_functor::
     operator()(vec& means, vec& stderrs, const std::vector<vec>& lambdas,
                size_t nfolds, unsigned random_seed) const {
-      assert((nfolds > 0) && (nfolds <= ds_ptr->size()));
+      assert((nfolds > 0) && (nfolds <= ds.size()));
       assert(lambdas.size() > 0);
       assert(lambdas[0].size() ==
              gaussian_crf_factor::regularization_type::nlambdas);
 
     /*
-    if ((vector_size(Y_) == 1) && (cv_params.nfolds == ds_ptr->size())) {
+    if ((vector_size(Y_) == 1) && (cv_params.nfolds == ds.size())) {
       // Then we may as well do LOOCV via ridge regression.
       vector_var_vector Yvec(Y_.begin(), Y_.end());
       vector_var_vector Xvec(X_ptr_->begin(), X_ptr_->end());
@@ -346,7 +339,7 @@ namespace sill {
       std::pair<double, linear_regression*> lambda_ridge_result =
         linear_regression::choose_lambda_ridge
         (all_lambdas, means, stderrs, Yvec, Xvec,
-         orig_lambdas, lr_params, cv_params.zoom, *ds_ptr, true, unif_int(rng));
+         orig_lambdas, lr_params, cv_params.zoom, ds, true, unif_int(rng));
       const linear_regression& lr = *(lambda_ridge_result.second);
 
       reg_params.resize(all_lambdas.size());
@@ -357,7 +350,7 @@ namespace sill {
       means += vector_size(Yvec) * std::log(2. * pi());
       means *= -.5;
       stderrs *= .5;
-      gaussian_crf_factor* tmp_gcf_ptr = new gaussian_crf_factor(lr, *ds_ptr);
+      gaussian_crf_factor* tmp_gcf_ptr = new gaussian_crf_factor(lr, ds);
       delete(lambda_ridge_result.second);
       return tmp_gcf_ptr;
     } // end of if (vector_size(Y_) == 1)
@@ -383,8 +376,8 @@ namespace sill {
 
       double ll_constant = -.5 * vector_size(Yvec) * std::log(2. * pi());
 
-      dataset_view permuted_view(*ds_ptr);
-      permuted_view.set_record_indices(randperm(ds_ptr->size(), rng));
+      dataset_view permuted_view(ds);
+      permuted_view.set_record_indices(randperm(ds.size(), rng));
       dataset_view fold_train_view(permuted_view);
       dataset_view fold_test_view(permuted_view);
       fold_train_view.save_record_view();
@@ -561,10 +554,8 @@ namespace sill {
   learn_crf_factor_cv<gaussian_crf_factor>
   (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
    vec& means, vec& stderrs,
-   const
-   crossval_parameters<gaussian_crf_factor::regularization_type::nlambdas>&
-   cv_params,
-   boost::shared_ptr<dataset> ds_ptr, const vector_domain& Y_,
+   const crossval_parameters& cv_params,
+   const dataset& ds, const vector_domain& Y_,
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed) {
 
@@ -575,11 +566,9 @@ namespace sill {
     boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
 
     std::vector<vec> lambdas;
-    impl::gcf_learn_crf_factor_cv_functor cvfunctor(ds_ptr, Y_, X_ptr_, params);
+    impl::gcf_learn_crf_factor_cv_functor cvfunctor(ds, Y_, X_ptr_, params);
     vec best_lambda =
-      crossval_zoom
-      <impl::gcf_learn_crf_factor_cv_functor,
-       gaussian_crf_factor::regularization_type::nlambdas>
+      crossval_zoom<impl::gcf_learn_crf_factor_cv_functor>
       (lambdas, means, stderrs, cv_params, cvfunctor, unif_int(rng));
     assert(best_lambda.size() ==
            gaussian_crf_factor::regularization_type::nlambdas);
@@ -593,8 +582,8 @@ namespace sill {
     }
     gaussian_crf_factor::parameters tmp_params(params);
     tmp_params.reg.lambdas = best_lambda;
-    return learn_crf_factor<gaussian_crf_factor>(ds_ptr, Y_, X_ptr_,
-                                                tmp_params, unif_int(rng));
+    return learn_crf_factor<gaussian_crf_factor>(ds, Y_, X_ptr_,
+                                                 tmp_params, unif_int(rng));
 
   } // learn_crf_factor_cv<gaussian_crf_factor>()
 

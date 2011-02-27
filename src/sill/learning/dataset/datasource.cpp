@@ -204,6 +204,21 @@ namespace sill {
     return vars;
   }
 
+  template <>
+  var_vector datasource::variable_sequence<variable>() const {
+    return variable_list();
+  }
+
+  template <>
+  finite_var_vector datasource::variable_sequence<finite_variable>() const {
+    return finite_seq;
+  }
+
+  template <>
+  vector_var_vector datasource::variable_sequence<vector_variable>() const {
+    return vector_seq;
+  }
+
   // Getters and helpers
   //==========================================================================
 

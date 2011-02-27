@@ -18,6 +18,28 @@ namespace sill {
     }
   }
 
+  void add_vector2vector_assignment(const vector_var_vector& X, const vec& x,
+                                    vector_assignment& va) {
+    size_t i = 0; // index into x
+    vec val;
+    foreach(vector_variable* v, X) {
+      val.resize(v->size());
+      if (i + v->size() > x.size()) {
+        throw std::invalid_argument
+          (std::string("add_vector2vector_assignment(X,x,va)") +
+           " given X,x of non-matching dimensionalities (|X| > |x|).");
+      }
+      for (size_t j = 0; j < v->size(); ++j)
+        val[j] = x[i++];
+      va[v] = val;
+    }
+    if (i != x.size()) {
+        throw std::invalid_argument
+          (std::string("add_vector2vector_assignment(X,x,va)") +
+           " given X,x of non-matching dimensionalities (|X| < |x|).");
+    }
+  }
+
   void
   finite_assignment2vector(const finite_assignment& fa,
                            const finite_var_vector& finite_seq,

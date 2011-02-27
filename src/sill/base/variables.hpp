@@ -73,6 +73,24 @@ namespace sill {
   //! Extract the vector variables from the given variables.
   vector_var_vector extract_vector_var_vector(const var_vector& vars);
 
+  // Vector variable helpers
+  //============================================================================
+
+  /**
+   * Compute indices for variables in vvec, based on reference set vset.
+   * These indices are based on concatenating sizes of the vector variables
+   * in vvec.
+   * @param in_vset_indices
+   *         (Return value) Indices for variables in vvec and in vset.
+   * @param notin_vset_indices
+   *         (Return value) Indices for variables in vvec but not in vset.
+   */
+  void
+  vector_indices_relative_to_set(const vector_var_vector& vvec,
+                                 const vector_domain& vset,
+                                 ivec& in_vset_indices,
+                                 ivec& notin_vset_indices);
+
 }; // namespace sill
 
 #endif // #ifndef SILL_VARIABLES_HPP

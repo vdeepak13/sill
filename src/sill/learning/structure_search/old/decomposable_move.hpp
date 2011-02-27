@@ -154,12 +154,11 @@ namespace sill {
           //   .plus(vchange.insert_variables)
           // Set clique potential to be
           //  vchange.marginal_ptr.operator*()
-          //   .collapse(new clique variables, sum_op)
+          //   .collapse(sum_op, new clique variables)
           domain_type new_domain(model.clique(u).minus(vchange.delete_variables)
                                  .plus(vchange.insert_variables));
           model.set_clique(u, new_domain,
-                           vchange.marginal_ptr.operator*().collapse(new_domain,
-                                                                     sum_op));
+                           vchange.marginal_ptr.operator*().collapse(sum_op, new_domain));
           // Add edges to edges_to_be_updated
           foreach(const edge& e, model.out_edges(u))
             edges_to_be_updated.insert(e);

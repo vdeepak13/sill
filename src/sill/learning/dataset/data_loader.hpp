@@ -142,6 +142,33 @@ namespace sill {
 
     /**
      * Load a SYMBOLIC dataset, given the summary file.
+     *
+     * @param ds           (Return value) Loaded dataset.
+     * @param max_records  max number of records which will be loaded
+     *                     (default = no limit)
+     * @see symbolic.hpp
+     */
+    template <typename Dataset>
+    void
+    load_symbolic_dataset(const std::string& filename, universe& u,
+                          Dataset& ds,
+                          size_t max_records
+                          = std::numeric_limits<size_t>::max()) {
+      concept_assert((sill::Dataset<Dataset>));
+      boost::shared_ptr<symbolic_oracle>
+        o_ptr(load_symbolic_oracle(filename, u));
+      ds = Dataset(o_ptr->datasource_info());
+      for (size_t i = 0; i < max_records; i++) {
+        if (o_ptr->next())
+          ds.insert(o_ptr->current(), o_ptr->weight());
+        else
+          break;
+      }
+    }
+
+    /**
+     * Load a SYMBOLIC dataset, given the summary file.
+     *
      * @param filename     summary file name
      * @param info         datasource info
      * @param max_records  max number of records which will be loaded
@@ -165,6 +192,34 @@ namespace sill {
           return data_ptr;
       }
       return data_ptr;
+    }
+
+    /**
+     * Load a SYMBOLIC dataset, given the summary file.
+     *
+     * @param filename     summary file name
+     * @param info         datasource info
+     * @param ds           (Return value) Loaded dataset.
+     * @param max_records  max number of records which will be loaded
+     *                     (default = no limit)
+     * @see symbolic.hpp
+     */
+    template <typename Dataset>
+    void
+    load_symbolic_dataset
+    (const std::string& filename, const datasource_info_type& info,
+     Dataset& ds,
+     size_t max_records = std::numeric_limits<size_t>::max()) {
+      concept_assert((sill::Dataset<Dataset>));
+      boost::shared_ptr<symbolic_oracle>
+        o_ptr(load_symbolic_oracle(filename, info));
+      ds = Dataset(o_ptr->datasource_info());
+      for (size_t i = 0; i < max_records; i++) {
+        if (o_ptr->next())
+          ds.insert(o_ptr->current(), o_ptr->weight());
+        else
+          break;
+      }
     }
 
     // Free functions: Utilities

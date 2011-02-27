@@ -5,6 +5,7 @@
 #include <map>
 
 #include <sill/base/assignment.hpp>
+#include <sill/base/variable_type_group.hpp>
 #include <sill/copy_ptr.hpp>
 #include <sill/learning/dataset/datasource_info_type.hpp>
 
@@ -148,9 +149,9 @@ namespace sill {
     //! @param var_info    info from calling datasource_info()
     void reset(const datasource_info_type& info);
 
-    virtual void save(oarchive& a) const;
+    void save(oarchive& a) const;
 
-    virtual void load(iarchive& a);
+    void load(iarchive& a);
 
     // Variables
     //==========================================================================
@@ -184,6 +185,12 @@ namespace sill {
     const vector_var_vector& vector_list() const {
       return vector_seq;
     }
+
+    //! Constructs and returns a list of variables of the specified type,
+    //! in the natural order.
+    template <typename VarType>
+    typename variable_type_group<VarType>::var_vector_type
+    variable_sequence() const;
 
     //! Returns the finite class variables (if any)
     const finite_var_vector& finite_class_variables() const {
@@ -334,7 +341,43 @@ namespace sill {
     //! Sets the vector class variables
     void set_vector_class_variables(const vector_domain& class_vars);
 
+    // Static helpers
+    //==========================================================================
+
+    //! Builds vector_numbering.
+    static void
+    build_vector_numbering(const vector_var_vector& vvec,
+                           std::map<vector_variable*, size_t>& idx) {
+      idx.clear();
+      size_t n = 0;
+      foreach(vector_variable* v, vvec) {
+        std::pair<std::map<vector_variable*, size_t>::iterator, bool>
+          it_inserted(idx.insert(std::make_pair(v, n)));
+        n += v->size();
+        if (!it_inserted.second) {
+          throw std::runtime_error
+            (std::string("build_vector_numbering(vvec,idx)") +
+             " was given v with duplicate elements!");
+        }
+      }
+    }
+
   }; // class datasource
+
+  // Specializations of templated functions in datasource
+  // ===========================================================================
+
+  //! Specialization for variable.
+  template <>
+  var_vector datasource::variable_sequence<variable>() const;
+
+  //! Specialization for finite_variable.
+  template <>
+  finite_var_vector datasource::variable_sequence<finite_variable>() const;
+
+  //! Specialization for vector_variable.
+  template <>
+  vector_var_vector datasource::variable_sequence<vector_variable>() const;
 
 } // namespace sill
 

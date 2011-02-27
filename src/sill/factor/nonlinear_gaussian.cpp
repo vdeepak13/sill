@@ -86,7 +86,7 @@ namespace sill {
   }
 
   nonlinear_gaussian
-  nonlinear_gaussian::collapse(const vector_domain& retain, op_type op) const {
+  nonlinear_gaussian::collapse(op_type op, const vector_domain& retain) const {
     throw std::invalid_argument
       ("nonlinear_gaussian does not support the collapse operation");
   }

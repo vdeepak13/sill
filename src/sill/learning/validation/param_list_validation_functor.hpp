@@ -1,11 +1,11 @@
-#ifndef SILL_VALIDATION_FUNCTOR_HPP
-#define SILL_VALIDATION_FUNCTOR_HPP
+#ifndef SILL_PARAM_LIST_VALIDATION_FUNCTOR_HPP
+#define SILL_PARAM_LIST_VALIDATION_FUNCTOR_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
 #include <sill/learning/validation/crossval_parameters.hpp>
-#include <sill/learning/validation/model_training_functor.hpp>
+#include <sill/learning/validation/model_validation_functor.hpp>
 #include <sill/learning/validation/parameter_grid.hpp>
 #include <sill/math/statistics.hpp>
 
@@ -14,28 +14,29 @@
 namespace sill {
 
   /**
-   * Functor which calls a model_training_functor on a list of parameter values.
+   * Functor which calls a model_validation_functor on a list of parameter
+   * values.
    *
-   * By default, this functor handles the parameters in increasing order,
+   * By default, this functor handles the parameters in decreasing order,
    * which helps facilitate warm starts to speed up optimization.
    * However, the test() method may be overridden if necessary.
    */
-  struct validation_functor {
+  struct param_list_validation_functor {
 
     //! Results corresponding to the last parameters passed to test().
     //! These results are the ones used to choose the best parameters.
     vec results;
 
     //! Results corresponding to the last lambdas passed to test().
-    //! These results are all ones returned by the model_training_functor.
+    //! These results are all ones returned by the model_validation_functor.
     std::map<std::string, vec> all_results;
 
-    validation_functor();
+    param_list_validation_functor();
 
     /**
-     * Calls model_training_functor on a list of parameter values.
+     * Calls model_validation_functor on a list of parameter values.
      *
-     * This tests the parameters in increasing order,
+     * This tests the parameters in decreasing order,
      * which helps facilitate warm starts to speed up optimization.
      * If parameter vecs have length > 1, then they are lexigraphically sorted.
      * Override this method if necessary.
@@ -46,16 +47,16 @@ namespace sill {
                       const dataset& train_ds,
                       const dataset& test_ds,
                       unsigned random_seed,
-                      model_training_functor& train_func);
+                      model_validation_functor& mv_func);
 
   protected:
 
     boost::uniform_int<int> unif_int;
 
-  }; // struct validation_functor
+  }; // struct param_list_validation_functor
 
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
 
-#endif // #ifndef SILL_VALIDATION_FUNCTOR_HPP
+#endif // #ifndef SILL_PARAM_LIST_VALIDATION_FUNCTOR_HPP

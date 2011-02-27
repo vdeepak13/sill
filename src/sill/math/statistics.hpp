@@ -110,6 +110,36 @@ namespace sill {
     }
   }
 
+  //! Return the generalized deviation of type GM of the given values.
+  template <typename T>
+  T generalized_deviation(const vector<T>& v,
+                          const statistics::generalized_mean_enum& gm) {
+    switch (gm) {
+    case statistics::MEAN:
+      return mean_stderr(v).second;
+    case statistics::MEDIAN:
+      return median_MAD(v).second;
+    default:
+      throw std::invalid_argument
+        ("generalized_deviation(v,gm) given bad gm value.");
+    }
+  }
+
+  //! Return the generalized deviation of type GM of the given values.
+  template <typename T>
+  T generalized_deviation(const std::vector<T>& v,
+                          const statistics::generalized_mean_enum& gm) {
+    switch (gm) {
+    case statistics::MEAN:
+      return mean_stderr(v).second;
+    case statistics::MEDIAN:
+      return median_MAD(v).second;
+    default:
+      throw std::invalid_argument
+        ("generalized_deviation(v,gm) given bad gm value.");
+    }
+  }
+
   // Max and min: deterministic tie-breaking
   //============================================================================
 

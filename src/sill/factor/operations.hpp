@@ -82,7 +82,7 @@ namespace sill {
   //! A free function version of a collapse operation
   template <typename F>
   typename F::collapse_type
-  collapse(const F& f, const typename F::domain_type& retain, op_type op) {
+  collapse(const F& f, op_type op, const typename F::domain_type& retain) {
     return f.aggregate(op, retain);
   }
 

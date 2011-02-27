@@ -138,7 +138,7 @@ namespace sill {
     }
 
     //! Returns a continuous block of the matrix
-    const itpp::Mat<T> operator()(irange i, irange j) const {
+    const matrix operator()(irange i, irange j) const {
       if (i.empty() || j.empty())
         return itpp::Mat<T>(i.size(), j.size());
       else
@@ -147,8 +147,8 @@ namespace sill {
 
     //! Returns a submatrix over rows \c i and columns \c j
     //! \todo This function is not very efficient yet
-    const itpp::Mat<T> operator()(const itpp::ivec& i, 
-                                  const itpp::ivec& j) const {
+    const matrix operator()(const itpp::ivec& i, 
+                            const itpp::ivec& j) const {
       itpp::Mat<T> a(i.size(), j.size());
       for(int k = 0; k < i.size(); k++)
         for(int l = 0; l < j.size(); l++)
@@ -193,8 +193,12 @@ namespace sill {
     }
 
     //! Returns the transpose of the matrix
-    const matrix transpose() const {
-      return base::transpose();
+    matrix transpose() const {
+      if (size() == 0)
+        return matrix();
+//        return matrix(size2(), size1());
+      else
+        return base::transpose();
     }
 
     //! Returns the conjugate transpose of the matrix
@@ -261,14 +265,20 @@ namespace sill {
 
     //! Sets a block of the matrix
     void set_submatrix(irange i, irange j, const itpp::Mat<T>& m) {
+      if (i.size() != (size_t)(m.rows()) || j.size() != (size_t)(m.cols())) {
+        throw std::invalid_argument
+          (std::string("matrix<T>::set_submatrix(i,j,m) given i,j not") +
+           " matching dimensionality of m.");
+      }
       if (!i.empty() && !j.empty())
-        base::set_submatrix(i.start(), i.end(), j.start(), j.end(), m);
+        base::set_submatrix(i.start(), j.start(), m);
+//        base::set_submatrix(i.start(), i.end(), j.start(), j.end(), m);
     }
 
     //! Sets a block of the matrix to a constant
     void set_submatrix(irange i, irange j, T value) {
       if (!i.empty() && !j.empty())
-        base::set_submatrix(i.start(), j.end(), value);
+        base::set_submatrix(i.start(), i.end, j.start(), j.end(), value);
     }
 
     //! Sets a submatrix with rows \c i and columns \c j
@@ -483,11 +493,20 @@ namespace sill {
       base::operator-=(value); return *this;
     }
 
-    //! Matrix multiplication
-    matrix& operator*=(const itpp::Mat<T>& m) {
-      base::operator*=(m); return *this;
+    //! Matrix-matrix multiplication
+    matrix& operator*=(const matrix& m) {
+      if (size() == 0 || m.size() == 0) {
+        if (size2() != m.size1())
+          throw std::invalid_argument
+            ("matrix<T>::operator*=(m) given m with non-matching dimensions");
+        this->resize(size1(), m.size2());
+        this->zeros();
+      } else {
+        base::operator*=(m);
+      }
+      return *this;
     }
-    
+
     //! Multiplies the matrix by a scalar
     matrix& operator*=(T value) {
       base::operator*=(value); return *this;
@@ -675,6 +694,30 @@ namespace sill {
     }
 
   }; // class matrix
+
+  // Operator overrides to deal with IT++ bugs for empty matrices
+  //============================================================================
+
+  template <typename T>
+  matrix<T> operator+(const matrix<T>& m1, const matrix<T>& m2) {
+    matrix<T> m(m1);
+    m += m2;
+    return m;
+  }
+
+  template <typename T>
+  matrix<T> operator-(const matrix<T>& m1, const matrix<T>& m2) {
+    matrix<T> m(m1);
+    m -= m2;
+    return m;
+  }
+
+  template <typename T>
+  matrix<T> operator*(const matrix<T>& m1, const matrix<T>& m2) {
+    matrix<T> m(m1);
+    m *= m2;
+    return m;
+  }
 
   // Standardized free functions
   //============================================================================

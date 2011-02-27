@@ -263,7 +263,7 @@ namespace sill {
      * If learning a tree, go ahead and learn it.
      * Otherwise, fill queue with potential edges and their scores.
      */
-    void init(boost::shared_ptr<dataset> ds_ptr,
+    void init(const dataset& ds,
               const output_domain_type& Yvars) {
       assert(params.valid());
       boost::mt11213b rng(params.random_seed);
@@ -319,13 +319,13 @@ namespace sill {
             cf_ptr =
               learn_crf_factor_cv<crf_factor>
               (reg_params, means, stderrs, params.cv_params,
-               ds_ptr, tmpdom, weight_functor_.X_mapping()[tmpdom],
+               ds, tmpdom, weight_functor_.X_mapping()[tmpdom],
                *(params.crf_factor_params_ptr),
                boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
           } else {
             cf_ptr =
               learn_crf_factor<crf_factor>
-              (ds_ptr, tmpdom, weight_functor_.X_mapping()[tmpdom],
+              (ds, tmpdom, weight_functor_.X_mapping()[tmpdom],
                *(params.crf_factor_params_ptr),
                boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
           }
@@ -368,7 +368,7 @@ namespace sill {
      * Constructor for a learner for a model for P(Y | X).
      * This initially holds an empty graph.
      *
-     * @param ds_ptr        Training dataset.
+     * @param ds            Training dataset.
      * @param Yvars         Output variables.
      * @param X_mapping     Map specifying which X vars to use for each factor.
      *                      Note this type supports automatic conversions from
@@ -376,12 +376,12 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     pwl_crf_learner
-    (boost::shared_ptr<dataset> ds_ptr, const output_domain_type& Yvars,
+    (const dataset& ds, const output_domain_type& Yvars,
      const crf_X_mapping<crf_factor>& X_mapping,
      parameters params = parameters())
-      : params(params), weight_functor_(ds_ptr, Yvars, X_mapping, 0, params),
+      : params(params), weight_functor_(ds, Yvars, X_mapping, 0, params),
         total_score_(0) {
-      init(ds_ptr, Yvars);
+      init(ds, Yvars);
     }
 
     // Getters and helper methods
@@ -466,19 +466,18 @@ namespace sill {
       dataset_view permuted_view(ds);
       permuted_view.set_record_indices(randperm(ds.size(), rng));
       typename crf_factor::parameters tmp_params(params);
-      boost::shared_ptr<dataset_view>
-        fold_train_view_ptr(new dataset_view(permuted_view));
+      dataset_view fold_train_view(permuted_view);
       dataset_view fold_test_view(permuted_view);
-      fold_train_view_ptr->save_record_view();
+      fold_train_view.save_record_view();
       fold_test_view.save_record_view();
       // For each fold
       for (size_t fold(0); fold < n_folds; ++fold) {
         // Prepare the fold dataset views
         if (fold != 0) {
-          fold_train_view_ptr->restore_record_view();
+          fold_train_view.restore_record_view();
           fold_test_view.restore_record_view();
         }
-        fold_train_view_ptr->set_cross_validation_fold(fold, n_folds, false);
+        fold_train_view.set_cross_validation_fold(fold, n_folds, false);
         fold_test_view.set_cross_validation_fold(fold, n_folds, true);
         // Pick a random pair of Y variables.
         output_domain_type tmpYset;
@@ -489,7 +488,7 @@ namespace sill {
           tmp_params.reg = reg_params[k];
           crf_factor* tmpf_ptr =
             learn_crf_factor<crf_factor>
-            (fold_train_view_ptr, tmpYset, X_mapping[tmpYset], tmp_params,
+            (fold_train_view, tmpYset, X_mapping[tmpYset], tmp_params,
              boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
           double tmpval(tmpf_ptr->log_expected_value(fold_test_view));
           delete(tmpf_ptr);
@@ -526,7 +525,7 @@ namespace sill {
     static crf_factor_reg_type
     choose_lambda_fancy
     (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
-     const crossval_parameters<crf_factor_reg_type::nlambdas>& cv_params,
+     const crossval_parameters& cv_params,
      const dataset& ds, const output_domain_type& Yvars,
      const crf_X_mapping<crf_factor>& X_mapping,
      const typename crf_factor::parameters& params,

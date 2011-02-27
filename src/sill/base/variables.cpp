@@ -116,7 +116,6 @@ namespace sill {
   // Variable vector conversions
   //============================================================================
 
-  //! Extract the finite variables from the given variables.
   finite_var_vector extract_finite_var_vector(const var_vector& vars) {
     finite_var_vector fvars;
     foreach(variable* v, vars) {
@@ -126,7 +125,6 @@ namespace sill {
     return fvars;
   }
 
-  //! Extract the vector variables from the given variables.
   vector_var_vector extract_vector_var_vector(const var_vector& vars) {
     vector_var_vector vvars;
     foreach(variable* v, vars) {
@@ -134,6 +132,39 @@ namespace sill {
         vvars.push_back((vector_variable*)v);
     }
     return vvars;
+  }
+
+  // Vector variable helpers
+  //============================================================================
+
+  void
+  vector_indices_relative_to_set(const vector_var_vector& vvec,
+                                 const vector_domain& vset,
+                                 ivec& in_vset_indices,
+                                 ivec& notin_vset_indices) {
+    size_t in = 0;
+    size_t notin = 0;
+    foreach(vector_variable* v, vvec) {
+      if (vset.count(v))
+        in += v->size();
+      else
+        notin += v->size();
+    }
+    in_vset_indices.resize(in);
+    notin_vset_indices.resize(notin);
+    in = 0;
+    notin = 0;
+    size_t n = 0;
+    foreach(vector_variable* v, vvec) {
+      if (vset.count(v)) {
+        for (size_t j = 0; j < v->size(); ++j)
+          in_vset_indices[in++] = n++;
+      } else {
+        for (size_t j = 0; j < v->size(); ++j)
+          notin_vset_indices[notin++] = n++;
+      }
+    }
+    assert(n == in_vset_indices.size() + notin_vset_indices.size());
   }
 
 }; // namespace sill

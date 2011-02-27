@@ -41,9 +41,9 @@ namespace sill {
    *                          and returns the best lambda found.
    * @tparam N                dimensionality of lambda vector
    */
-  template <typename CrossvalFunctor, size_t N>
+  template <typename CrossvalFunctor>
   vec crossval_zoom(std::vector<vec>& lambdas, vec& means, vec& stderrs,
-                    const crossval_parameters<N>& cv_params,
+                    const crossval_parameters& cv_params,
                     const CrossvalFunctor& cv_functor, unsigned random_seed) {
     assert(cv_params.valid());
 

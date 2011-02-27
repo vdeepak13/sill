@@ -59,10 +59,10 @@ namespace sill {
     //! The matrix of coefficients (size = size_head x size_tail)
     mat coeff;
 
-  public:
     //! The multiplicative constant (likelihood)
     logarithmic<double> likelihood;
 
+  public:
 
     //! Serialize / deserialize members
     void serialize(oarchive & ar) const;
@@ -262,7 +262,7 @@ namespace sill {
     moment_gaussian& combine_in(const constant_factor& x, op_type op);
 
     //! implements Factor::collapse
-    moment_gaussian collapse(const vector_domain& retain, op_type op) const;
+    moment_gaussian collapse(op_type op, const vector_domain& retain) const;
 
     /**
      * implements Factor::restrict
@@ -281,11 +281,10 @@ namespace sill {
 
     //! implements DistributionFactor::marginal
     moment_gaussian marginal(const vector_domain& retain) const {
-      return collapse(retain, sum_op);
+      return collapse(sum_op, retain);
     }
 
-    //! If this factor represents P(A,B), then this returns P(A|B).
-    //! This may only be called on marginal distributions.
+    //! If this factor represents P(A,B|C), then this returns P(A|B,C).
     moment_gaussian conditional(const vector_domain& B) const;
 
     //! implements DistributionFactor::is_normalizable
@@ -302,6 +301,10 @@ namespace sill {
 
     //! implements DistributionFactor::norm_constant
     logarithmic<double> norm_constant() const { 
+      return likelihood;
+    }
+
+    logarithmic<double>& norm_constant() { 
       return likelihood;
     }
 
@@ -384,12 +387,12 @@ namespace sill {
 
   }; // class moment_gaussian
 
-  //! \relates moment_gaussian
-  std::ostream& operator<<(std::ostream& out, const moment_gaussian& mg);
-
 
   // Free functions
   //============================================================================
+
+  //! \relates moment_gaussian
+  std::ostream& operator<<(std::ostream& out, const moment_gaussian& mg);
   
   //! \relates moment_gaussian
   moment_gaussian combine(const moment_gaussian& x,

@@ -277,7 +277,7 @@ namespace sill {
     }
 
     //! implements Factor::collapse for summation
-    decomposable_fragment collapse(const domain_type& retain, op_type op) const{
+    decomposable_fragment collapse(op_type op, const domain_type& retain) const{
       check_supported(op, collapse_ops);
       if (includes(retain, arguments())) return *this; // not much to do
       
@@ -332,7 +332,7 @@ namespace sill {
 
     //! implements DistributionFactor::marginal
     decomposable_fragment marginal(const domain_type& retain) const {
-      return collapse(retain, sum_op);
+      return collapse(sum_op, retain);
     }
 
   }; // class decomposable_fragment

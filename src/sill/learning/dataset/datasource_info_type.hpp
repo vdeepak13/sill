@@ -22,7 +22,7 @@ namespace sill {
 
     vector_var_vector vector_class_vars;
 
-    datasource_info_type() { }
+    datasource_info_type();
 
     //! Construct a datasource info struct explicitly.
     datasource_info_type
@@ -42,19 +42,21 @@ namespace sill {
      * Construct a datasource from a vector of variables.
      * This uses the given ordering, and it sets no class variables.
      */
-    datasource_info_type(const forward_range<variable*>& var_seq);
+    explicit datasource_info_type(const forward_range<variable*>& var_seq);
 
     /**
      * Construct a datasource from a vector of variables.
      * This uses the given ordering, and it sets no class variables.
      */
-//    datasource_info_type(const forward_range<finite_variable*>& var_seq);
+    explicit
+    datasource_info_type(const finite_var_vector& var_seq);
 
     /**
      * Construct a datasource from a vector of variables.
      * This uses the given ordering, and it sets no class variables.
      */
-//    datasource_info_type(const forward_range<vector_variable*>& var_seq);
+    explicit
+    datasource_info_type(const vector_var_vector& var_seq);
 
     void save(oarchive& a) const;
 

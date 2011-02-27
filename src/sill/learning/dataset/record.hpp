@@ -8,7 +8,7 @@
 #include <sill/base/stl_util.hpp>
 #include <sill/base/variables.hpp>
 #include <sill/copy_ptr.hpp>
-#include <sill/learning/dataset/datasource.hpp>
+#include <sill/learning/dataset/datasource_info_type.hpp>
 #include <sill/learning/dataset/finite_record.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
 #include <sill/math/vector.hpp>
@@ -106,10 +106,7 @@ namespace sill {
 
     //! Constructor for a record which owns its data.
     //! @param ds_info  Gives finite and vector sequences.
-    record(const datasource_info_type& ds_info)
-      : finite_record(ds_info.finite_seq),
-        vector_record(ds_info.vector_seq, vector_size(ds_info.vector_seq)) {
-    }
+    record(const datasource_info_type& ds_info);
 
     //! Copy constructor.
     //! The new record owns its data since a record does not know whether

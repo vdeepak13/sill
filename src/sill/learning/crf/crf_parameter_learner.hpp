@@ -468,7 +468,7 @@ namespace sill {
     typename crf_factor::regularization_type regularization;
 
     //! Training dataset
-    boost::shared_ptr<dataset> ds_ptr;
+    const dataset& ds;
 
     //! Iterator for training dataset
     mutable dataset::record_iterator ds_it;
@@ -544,8 +544,7 @@ namespace sill {
 
     //! Initialize learner.
     void init() {
-      assert(ds_ptr);
-      assert(ds_ptr->size() > 0);
+      assert(ds.size() > 0);
       assert(params.valid());
       regularization.regularization = params.regularization;
       if (crf_factor_reg_type::nlambdas != params.lambdas.size()) {
@@ -563,9 +562,9 @@ namespace sill {
         regularization.lambdas = params.lambdas;
       }
       rng.seed(params.random_seed);
-      unif_int = boost::uniform_int<int>(0, ds_ptr->size() - 1);
-      for (size_t i(0); i < ds_ptr->size(); ++i)
-        total_train_weight += ds_ptr->weight(i);
+      unif_int = boost::uniform_int<int>(0, ds.size() - 1);
+      for (size_t i(0); i < ds.size(); ++i)
+        total_train_weight += ds.weight(i);
       assert(total_train_weight > 0);
     }
 
@@ -760,7 +759,7 @@ namespace sill {
       crf_tmp_weights = crf_.weights();
       crf_.weights() = x;
       while (ds_it != ds_end) {
-        ll -= ds_ptr->weight(i) * crf_.log_likelihood(*ds_it);
+        ll -= ds.weight(i) * crf_.log_likelihood(*ds_it);
         ++i;
         ++ds_it;
       }
@@ -802,12 +801,12 @@ namespace sill {
             = Ymodel.marginal(conditioned_model_vertex_map_[j]);
           if (tmp_marginal.arguments().size() == f.output_arguments().size()) {
             f.add_combined_gradient(gradient.factor_weight(j), *ds_it,
-                                    tmp_marginal, - ds_ptr->weight(i));
+                                    tmp_marginal, - ds.weight(i));
           } else {
             typename crf_factor::output_factor_type
               f_marginal(tmp_marginal.marginal(f.output_arguments()));
             f.add_combined_gradient(gradient.factor_weight(j), *ds_it,
-                                    f_marginal, - ds_ptr->weight(i));
+                                    f_marginal, - ds.weight(i));
           }
           ++j;
         }
@@ -909,39 +908,39 @@ namespace sill {
         foreach(const crf_factor& f, crf_.factors()) {
           if (f.fixed_value())
             continue;
-          f.add_hessian_diag(hd.factor_weight(j), *ds_it, - ds_ptr->weight(i));
+          f.add_hessian_diag(hd.factor_weight(j), *ds_it, - ds.weight(i));
           const typename crf_factor::output_factor_type& tmp_marginal
             = Ymodel.marginal(conditioned_model_vertex_map_[j]);
           typename crf_factor::optimization_vector
             tmpoptvec(hd.factor_weight(j).size(), 0.);
           if (tmp_marginal.arguments().size() == f.output_arguments().size()) {
             f.add_expected_hessian_diag(hd.factor_weight(j), *ds_it,
-                                        tmp_marginal, ds_ptr->weight(i));
+                                        tmp_marginal, ds.weight(i));
             f.add_expected_squared_gradient(hd.factor_weight(j), *ds_it,
-                                            tmp_marginal, ds_ptr->weight(i));
+                                            tmp_marginal, ds.weight(i));
             f.add_expected_gradient(tmpoptvec, *ds_it, tmp_marginal);
             /*
             f.add_expected_gradient(tmpoptvec, *ds_it, tmp_marginal,
-                                    ds_ptr->weight(i));
+                                    ds.weight(i));
             */
           } else {
             typename crf_factor::output_factor_type
               f_marginal(tmp_marginal.marginal(f.output_arguments()));
             f.add_expected_hessian_diag(hd.factor_weight(j), *ds_it, f_marginal,
-                                        ds_ptr->weight(i));
+                                        ds.weight(i));
             f.add_expected_squared_gradient(hd.factor_weight(j), *ds_it,
-                                            f_marginal, ds_ptr->weight(i));
+                                            f_marginal, ds.weight(i));
             f.add_expected_gradient(tmpoptvec, *ds_it, f_marginal);
             /*
             f.add_expected_gradient(tmpoptvec, *ds_it, f_marginal,
-                                    ds_ptr->weight(i));
+                                    ds.weight(i));
             */
           }
           tmpoptvec.elem_mult(tmpoptvec);
 //          hd.factor_weight(j) -= tmpoptvec;
-          hd.factor_weight(j) -= (ds_ptr->weight(i) == 1 ?
+          hd.factor_weight(j) -= (ds.weight(i) == 1 ?
                                   tmpoptvec :
-                                  tmpoptvec * ds_ptr->weight(i));
+                                  tmpoptvec * ds.weight(i));
           ++j;
         }
         ++i;
@@ -997,7 +996,7 @@ namespace sill {
         const record& rec = *ds_it;
         const decomposable<typename crf_factor::output_factor_type>&
           Ymodel = crf_.condition(rec);
-        obj -= ds_ptr->weight(i) * Ymodel.log_likelihood(rec);
+        obj -= ds.weight(i) * Ymodel.log_likelihood(rec);
         size_t j(0);
         foreach(const crf_factor& f, crf_.factors()) {
           if (f.fixed_value())
@@ -1015,33 +1014,33 @@ namespace sill {
 
           if (codes == 1) {
             f.add_combined_gradient(gradient.factor_weight(j), *ds_it,
-                                    tmp_marginal, - ds_ptr->weight(i));
+                                    tmp_marginal, - ds.weight(i));
           } else if (codes == 0) {
             f.add_gradient(gradient.factor_weight(j), *ds_it,
-                           - ds_ptr->weight(i));
-            f.add_hessian_diag(hd.factor_weight(j), *ds_it, -ds_ptr->weight(i));
+                           - ds.weight(i));
+            f.add_hessian_diag(hd.factor_weight(j), *ds_it, -ds.weight(i));
             f.add_expected_hessian_diag(hd.factor_weight(j), *ds_it,
-                                        tmp_marginal, ds_ptr->weight(i));
+                                        tmp_marginal, ds.weight(i));
             f.add_expected_squared_gradient(hd.factor_weight(j), *ds_it,
                                             tmp_marginal,
-                                            ds_ptr->weight(i));
+                                            ds.weight(i));
             typename crf_factor::optimization_vector
               tmpoptvec(hd.factor_weight(j).size(), 0.);
             /*
             f.add_expected_gradient(tmpoptvec, *ds_it, tmp_marginal,
-                                    ds_ptr->weight(i));
+                                    ds.weight(i));
             gradient.factor_weight(j) += tmpoptvec;
             tmpoptvec.elem_mult(tmpoptvec);
             hd.factor_weight(j) -= tmpoptvec;
             */
             f.add_expected_gradient(tmpoptvec, *ds_it, tmp_marginal);
-            gradient.factor_weight(j) += (ds_ptr->weight(i) == 1 ?
+            gradient.factor_weight(j) += (ds.weight(i) == 1 ?
                                           tmpoptvec :
-                                          tmpoptvec * ds_ptr->weight(i));
+                                          tmpoptvec * ds.weight(i));
             tmpoptvec.elem_mult(tmpoptvec);
-            hd.factor_weight(j) -= (ds_ptr->weight(i) == 1 ?
+            hd.factor_weight(j) -= (ds.weight(i) == 1 ?
                                     tmpoptvec :
-                                    tmpoptvec * ds_ptr->weight(i));
+                                    tmpoptvec * ds.weight(i));
           } else {
             assert(false);
           }
@@ -1115,32 +1114,29 @@ namespace sill {
         dataset_view permuted_view(ds);
         permuted_view.set_record_indices(randperm(ds.size(), rng));
         parameters fold_params(params_);
-        boost::shared_ptr<dataset_view>
-          fold_train_ptr(new dataset_view(permuted_view));
+        dataset_view fold_train(permuted_view);
         dataset_view fold_test(permuted_view);
-        fold_train_ptr->save_record_view();
+        fold_train.save_record_view();
         fold_test.save_record_view();
         for (size_t fold(0); fold < n_folds; ++fold) {
           if (fold != 0) {
-            fold_train_ptr->restore_record_view();
+            fold_train.restore_record_view();
             fold_test.restore_record_view();
           }
-          fold_train_ptr->set_cross_validation_fold(fold, n_folds, false);
+          fold_train.set_cross_validation_fold(fold, n_folds, false);
           fold_test.set_cross_validation_fold(fold, n_folds, true);
           // Make a hard copy of the training set for efficiency.
-          boost::shared_ptr<vector_assignment_dataset>
-            tmp_train_ds_ptr(new vector_assignment_dataset
-                             (fold_train_ptr->datasource_info(),
-                              fold_train_ptr->size()));
-          foreach(const record& r, fold_train_ptr->records())
-            tmp_train_ds_ptr->insert(r);
+          vector_assignment_dataset
+            tmp_train_ds(fold_train.datasource_info(), fold_train.size());
+          foreach(const record& r, fold_train.records())
+            tmp_train_ds.insert(r);
           for (size_t k(0); k < lambdas.size(); ++k) {
             fold_params.lambdas = lambdas[k];
             fold_params.random_seed =
               boost::uniform_int<int>(0, std::numeric_limits<int>::max())(rng);
             try {
               boost::timer tmptimer;
-              crf_parameter_learner cpl(model, tmp_train_ds_ptr, keep_weights,
+              crf_parameter_learner cpl(model, tmp_train_ds, keep_weights,
                                         fold_params);
               if (params_.debug > 0)
                 std::cerr << "Doing CV (fold " << fold
@@ -1193,17 +1189,6 @@ namespace sill {
 
     }; // struct choose_lambda_helper
 
-    //! Copy constructor not allowed.
-    crf_parameter_learner(const crf_parameter_learner& cpl) {
-      assert(false);
-    }
-
-    //! Assignment operator.
-    crf_parameter_learner& operator=(const crf_parameter_learner& cpl) {
-      assert(false);
-      return *this;
-    }
-
     // Constructors and destructors
     // =========================================================================
   public:
@@ -1212,10 +1197,10 @@ namespace sill {
      * Initializes a CRF model learner using the given graph structure.
      */
     crf_parameter_learner(const typename crf_model_type::crf_graph_type& graph,
-                          boost::shared_ptr<dataset> ds_ptr,
+                          const dataset& ds,
                           const parameters& params = parameters())
       : params(params),
-        ds_ptr(ds_ptr), ds_it(ds_ptr->begin()), ds_end(ds_ptr->end()),
+        ds(ds), ds_it(ds.begin()), ds_end(ds.end()),
         crf_(graph), crf_tmp_weights(crf_.weights()),
         iteration_(0),
         everything_functor_ptr(NULL), stochastic_everything_functor_ptr(NULL),
@@ -1237,11 +1222,11 @@ namespace sill {
      * @param keep_weights  If false, the model weights are re-initialized.
      */
     crf_parameter_learner(const crf_model_type& model,
-                          boost::shared_ptr<dataset> ds_ptr,
+                          const dataset& ds,
                           bool keep_weights,
                           const parameters& params = parameters())
       : params(params),
-        ds_ptr(ds_ptr), ds_it(ds_ptr->begin()), ds_end(ds_ptr->end()),
+        ds(ds), ds_it(ds.begin()), ds_end(ds.end()),
         crf_(model), crf_tmp_weights(crf_.weights()),
         iteration_(0), everything_functor_ptr(NULL),
         stochastic_everything_functor_ptr(NULL),
@@ -1407,14 +1392,14 @@ namespace sill {
     static
     vec choose_lambda
     (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
-     const crossval_parameters<crf_factor_reg_type::nlambdas>& cv_params,
+     const crossval_parameters& cv_params,
      const crf_model_type& model, bool keep_weights, const dataset& ds,
      const parameters& params, size_t score_type, unsigned random_seed) {
       assert(score_type < 4);
       choose_lambda_helper clh(model, keep_weights, ds, score_type, params);
       std::vector<vec> lambdas;
       vec best_lambda =
-        crossval_zoom<choose_lambda_helper, crf_factor_reg_type::nlambdas>
+        crossval_zoom<choose_lambda_helper>
         (lambdas, means, stderrs, cv_params, clh, random_seed);
       reg_params.clear();
       crf_factor_reg_type reg;
@@ -1451,7 +1436,7 @@ namespace sill {
     static
     vec choose_lambda
     (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
-     const crossval_parameters<crf_factor_reg_type::nlambdas>& cv_params,
+     const crossval_parameters& cv_params,
      const typename crf_model_type::crf_graph_type& structure,
      const dataset& ds, const parameters& params, size_t score_type,
      unsigned random_seed) {

@@ -128,7 +128,7 @@ namespace sill {
     }
 
     //! implements Factor::collapse
-    constant_factor collapse(const domain_type&, op_type op) const {
+    constant_factor collapse(op_type op, const domain_type&) const {
       return *this;
     }
 

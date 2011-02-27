@@ -362,6 +362,64 @@ namespace sill {
     }
   } // remove_subvector
 
+  //! Returns the subvector of v which also appears in set s.
+  template <typename T>
+  std::vector<T> select_subvector(const std::vector<T>& v,
+                                  const std::set<T>& s) {
+    std::vector<T> newv;
+    foreach(const T& elem, v) {
+      if (s.count(elem))
+        newv.push_back(elem);
+    }
+    return newv;
+  }
+
+  //! Returns the subvector of v of elements which do not appear in set s.
+  template <typename T>
+  std::vector<T> select_subvector_complement(const std::vector<T>& v,
+                                             const std::set<T>& s) {
+    std::vector<T> newv;
+    foreach(const T& elem, v) {
+      if (s.count(elem) == 0)
+        newv.push_back(elem);
+    }
+    return newv;
+  }
+
+  //! Returns the subvector of v which also appears in set s,
+  //! as well as its complement.
+  template <typename T>
+  void select_subvector_and_complement(const std::vector<T>& v,
+                                       const std::set<T>& s,
+                                       std::vector<T>& subvec,
+                                       std::vector<T>& subvec_complement) {
+    subvec.clear();
+    subvec_complement.clear();
+    foreach(const T& elem, v) {
+      if (s.count(elem))
+        subvec.push_back(elem);
+      else
+        subvec_complement.push_back(elem);
+    }
+  }
+
+  //! Builds an index from a vector of values, i.e.,
+  //!  map[value] = index in vector
+  //! NOTE: This requires all elements to be distinct!
+  template <typename T>
+  std::map<T,size_t> build_vector_index(const std::vector<T>& v) {
+    std::map<T,size_t> idx;
+    for (size_t i = 0; i < v.size(); ++i) {
+      std::pair<typename std::map<T,size_t>::iterator, bool>
+        it_inserted(idx.insert(std::make_pair(v[i], i)));
+      if (!it_inserted.second) {
+        throw std::runtime_error
+          ("build_vector_index(v) was given v with duplicate elements!");
+      }
+    }
+    return idx;
+  }
+
 }; // end of namespace sill
 
 #include <sill/macros_undef.hpp>

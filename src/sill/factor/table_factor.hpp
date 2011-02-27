@@ -476,6 +476,23 @@ namespace sill {
     //==========================================================================
 
     /**
+     * A complete collapse() to a single value
+     * using the agg_op operation to combine all values in the table.
+     *
+     * For instance if A has arguments (i,j,k)
+     * B = A.collapse(plus, 0) 
+     * will compute
+     * B = sum_{i,j,k} A(i,j,k)
+     *
+     * This is equivalent to passing an empty 'retained' argument
+     */
+    template <typename AggOp>
+    double collapse(AggOp agg_op, 
+                    double initialvalue) const {
+      return table_data.aggregate(agg_op, initialvalue);
+    }
+
+    /**
      * Collapses the table into a smaller table with fewer arguments
      * using the collapse_op operation to combine the values of the remaining
      * assignment values.
@@ -517,8 +534,8 @@ namespace sill {
      * and avoids reallocation if possible.
      */
     template <typename AggOp>
-    void collapse(table_factor& f, AggOp agg_op, double initialvalue,
-                  const finite_domain& retained) const {
+    void collapse(AggOp agg_op, double initialvalue,
+                  const finite_domain& retained, table_factor& f) const {
       finite_var_vector newargs;
       foreach(finite_variable* v, arg_seq)
         if (retained.count(v) != 0)
@@ -546,33 +563,26 @@ namespace sill {
     }
 
     /**
-     * A complete collapse() to a single value
-     * using the agg_op operation to combine all values in the table
-     *
-     * For instance if A has arguments (i,j,k)
-     * B = A.collapse(plus, 0) 
-     * will compute
-     * B = sum_{i,j,k} A(i,j,k)
-     *
-     * This is equivalent to passing an empty 'retained' argument
+     * An overload of collapse() which takes an op_type instead of a functor.
      */
-    template <typename AggOp>
-    double collapse(AggOp agg_op, 
-                    double initialvalue) const {
-      return table_data.aggregate(agg_op, initialvalue);
-    }
-
-    /** An overload of collapse() which takes in an op_type instead 
-      * of a functor
-      */
-    table_factor collapse(op_type op, const finite_domain& retained) const;
-    
-    
-    /** An overload of collapse() which takes in an op_type instead 
-      * of a functor
-      */
     result_type collapse(op_type op) const;
-    
+
+    /**
+     * An overload of collapse() which takes an op_type instead of a functor.
+     */
+    table_factor collapse(op_type op, const finite_domain& retained) const;
+
+    /**
+     * An overload of collapse() which takes an op_type instead of a functor.
+     *
+     * This version stores the result in the factor f
+     * and avoids reallocation if possible.
+     * This does the same thing as collapse(); it exists for compatibility.
+     */
+    void collapse_unnormalized(op_type op,
+                               const finite_domain& retained,
+                               table_factor& f) const;
+
     //! implements Factor::restrict
     table_factor restrict(const finite_assignment& a) const;
 
@@ -768,11 +778,13 @@ namespace sill {
       return res;
       
     }
+
     double cross_entropy(const table_factor& f) const {
       assert(this->arguments() == f.arguments());
       return combine_collapse(*this, f, cross_entropy_operator<result_type>(), 
-                            std::plus<result_type>(), 0.0);
+                              std::plus<result_type>(), 0.0);
     }
+
     //! Computes the mutual information between two sets of variables
     //! in this factor's arguments. The sets of f1, f2 must be discombinet.
     double mutual_information(const finite_domain& fd1,
@@ -835,8 +847,8 @@ namespace sill {
     //! Combines two factors and collapse
     template <typename CombineOp, typename AggOp>
     static double combine_collapse(const table_factor& x, const table_factor& y,
-                                 CombineOp combine_op, AggOp agg_op, 
-                                 result_type initialvalue) {
+                                   CombineOp combine_op, AggOp agg_op, 
+                                   result_type initialvalue) {
       concept_assert((BinaryFunction<CombineOp,result_type,result_type,result_type>));
       concept_assert((BinaryFunction<AggOp,result_type,result_type,result_type>));
       var_index_map var_index;

@@ -124,6 +124,18 @@ namespace sill {
     }
   }
 
+  void
+  finite_record::reset(const datasource_info_type& ds_info) {
+    this->finite_numbering_ptr->operator=
+      (build_vector_index(ds_info.finite_seq));
+    if (fin_own) {
+      fin_ptr->resize(ds_info.finite_seq.size());
+    } else {
+      fin_own = true;
+      fin_ptr = new std::vector<size_t>(ds_info.finite_seq.size());
+    }
+  }
+
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

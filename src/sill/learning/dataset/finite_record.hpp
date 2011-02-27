@@ -7,13 +7,15 @@
 #include <sill/base/finite_assignment.hpp>
 #include <sill/base/stl_util.hpp>
 #include <sill/copy_ptr.hpp>
+#include <sill/learning/dataset/datasource_info_type.hpp>
 #include <sill/learning/dataset/finite_record_iterator.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
 
-  // Pre-declaration
+  // Forward declarations
+  struct datasource_info_type;
   class finite_record_iterator;
 
   /**
@@ -251,6 +253,10 @@ namespace sill {
     //! and resets the record (like a constructor).
     void
     reset(copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr);
+
+    //! Clears the stored data (if it is owned by the record)
+    //! and resets the record (like a constructor).
+    void reset(const datasource_info_type& ds_info);
 
     //! Set finite data to be this value (stored in the record itself).
     void set_finite_val(const std::vector<size_t>& val) {

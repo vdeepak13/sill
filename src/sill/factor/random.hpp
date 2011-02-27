@@ -324,7 +324,7 @@ namespace sill {
 
   //! @} group factor_random
 
-}
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

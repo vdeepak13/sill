@@ -1188,7 +1188,7 @@ namespace sill {
     static double
     choose_lambda
     (std::vector<vec>& lambdas, vec& means, vec& stderrs,
-     const crossval_parameters<1>& cv_params, boost::shared_ptr<dataset> ds_ptr,
+     const crossval_parameters& cv_params, boost::shared_ptr<dataset> ds_ptr,
      const multiclass_logistic_regression_parameters& params,
      unsigned random_seed);
 

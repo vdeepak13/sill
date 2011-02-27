@@ -191,7 +191,7 @@ namespace sill {
     }
 
     //! implements Factor::collapse
-    mixture collapse(const domain_type& retained, op_type op) const {
+    mixture collapse(op_type op, const domain_type& retained) const {
       check_supported(op, collapse_ops);
       
       // If the retained arguments contain the arguments of this factor,
@@ -203,7 +203,7 @@ namespace sill {
       mixture factor(size(), newargs);
 
       for(size_t i = 0; i < size(); i++)
-        factor.comps[i] = comps[i].collapse(retained, sum_op);
+        factor.comps[i] = comps[i].collapse(op, retained); // Joseph: I changed "sum_op" to "op"
       
       return factor;
     }
@@ -242,7 +242,7 @@ namespace sill {
 
     //! implements DistributionFactor::marginal
     mixture marginal(const domain_type& retain) const {
-      return collapse(retain, sum_op);
+      return collapse(sum_op, retain);
     }
 
     //! implements DistributionFactor::is_normalizable

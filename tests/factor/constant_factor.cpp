@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   cout << "fg=" << fg << endl;
 
   // Collapse the product down.
-  constant_factor h = fg.collapse(finite_domain(), sum_op);
+  constant_factor h = fg.collapse(sum_op, finite_domain());
   cout << "sum(f)=" << h << endl;
 
   return EXIT_SUCCESS;

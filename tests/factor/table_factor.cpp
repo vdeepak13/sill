@@ -115,10 +115,10 @@ int main(int argc, char** argv) {
 
 
     // Collapse both factors down to xyz.
-    dense_factor h_xyz_dense(collapse(h_dense, xyz, sum_op));
+    dense_factor h_xyz_dense(collapse(h_dense, sum_op, xyz));
     sparse_factor h_xyz_sparse;
     try {
-      h_xyz_sparse = collapse(h_sparse, xyz, sum_op);
+      h_xyz_sparse = collapse(h_sparse, sum_op, xyz);
     } catch (const std::runtime_error&) {
       std::cout << "Continuing" << std::endl;
       // Aggregation of non-empty sparse tables with non-identity
@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
 
     // Compare join_aggregate.
     dense_factor diff = dense_factor::join(f_dense, g_dense, abs_difference<double>());
-    double correct = collapse(diff, finite_domain(), max_op)(finite_assignment());
+    double correct = collapse(diff, max_op, finite_domain())(finite_assignment());
 
     // std::cout << correct << " " << std::endl;
     assert(fabs(correct - norm_inf(f_dense, g_dense)) < 1e-8);
