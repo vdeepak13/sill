@@ -196,6 +196,15 @@ namespace sill {
 
     /**
      * Constructor.  Takes a canonical_gaussian and constructs the corresponding
+     * gaussian_crf_factor, using the given Y/X division of variables.
+     * It is assumed that cg represents P(Y|X), i.e., Y = head and X = tail.
+     */
+    gaussian_crf_factor(const canonical_gaussian& cg,
+                        const vector_domain& Y,
+                        const vector_domain& X);
+
+    /**
+     * Constructor.  Takes a canonical_gaussian and constructs the corresponding
      * gaussian_crf_factor, using the given head/tail and Y/X divisions of
      * variables.
      */
@@ -716,6 +725,80 @@ namespace sill {
       r.vector_values(x_in_head, X_in_head_);
       r.vector_values(x_in_tail, X_in_tail_);
     }
+
+    /**
+     * Set this factor equal to the given canonical_gaussian.
+     * This assumes that head_, tail_ have already been set appropriately.
+     * This sets ov only.
+     */
+    void reset_ov(const canonical_gaussian& cg) {
+      if (head_.size() > 0) {
+        if (tail_.size() > 0) {
+          ivec head_ind; // indices in cg for head
+          cg.indices(head_, head_ind);
+          ivec tail_ind; // indices in cg for tail
+          cg.indices(tail_, tail_ind);
+          bool result = chol(cg.inf_matrix()(head_ind, head_ind), ov.A);
+          if (!result) {
+            std::cerr << "Could not take Cholesky decomposition of lambda = \n"
+                      << cg.inf_matrix()(head_ind, head_ind) << std::endl;
+            throw chol_error
+              (std::string("gaussian_crf_factor::gaussian_crf_factor") +
+               "(cg,head_vars,tail_vars,Y,X): Cholesky decomposition failed.");
+          }
+          mat AAt_inv;
+          result = inv(ov.A * ov.A.transpose(), AAt_inv);
+          if (!result) {
+            throw inv_error
+              (std::string("gaussian_crf_factor::gaussian_crf_factor") +
+               "(cg,head_vars,tail_vars,Y,X): Matrix inverse failed.");
+          }
+          ov.b = AAt_inv * (ov.A * cg.inf_vector()(head_ind));
+          ov.C = AAt_inv * (ov.A * (- cg.inf_matrix()(head_ind, tail_ind)));
+        } else {
+          bool result = chol(cg.inf_matrix(), ov.A);
+          if (!result) {
+            std::cerr << "Could not take Cholesky decomposition of lambda = \n"
+                      << cg.inf_matrix() << std::endl;
+            throw chol_error
+              (std::string("gaussian_crf_factor::gaussian_crf_factor") +
+               "(cg,head_vars,tail_vars,Y,X): Cholesky decomposition failed.");
+          }
+          mat AAt_inv;
+          result = inv(ov.A * ov.A.transpose(), AAt_inv);
+          if (!result) {
+            throw inv_error
+              (std::string("gaussian_crf_factor::gaussian_crf_factor") +
+               "(cg,head_vars,tail_vars,Y,X): Matrix inverse failed.");
+          }
+          ov.b = AAt_inv * (ov.A * cg.inf_vector());
+          // ov.C is empty
+        }
+      } else {
+        if (tail_.size() > 0) {
+          // ov.A is empty
+          bool result = chol(cg.inf_matrix(), ov.C);
+          if (!result) {
+            std::cerr << "Could not take Cholesky decomposition of lambda = \n"
+                      << cg.inf_matrix() << std::endl;
+            throw chol_error
+              (std::string("gaussian_crf_factor::gaussian_crf_factor") +
+               "(cg,head_vars,tail_vars,Y,X): Cholesky decomposition failed.");
+          }
+          mat CCt_inv;
+          result = inv(ov.C * ov.C.transpose(), CCt_inv);
+          if (!result) {
+            throw inv_error
+              (std::string("gaussian_crf_factor::gaussian_crf_factor") +
+               "(cg,head_vars,tail_vars,Y,X): Matrix inverse failed.");
+          }
+          ov.b = CCt_inv * (ov.C * cg.inf_vector());
+        } else {
+          // No arguments.
+          conditioned_f = cg;
+        }
+      }
+    } // cg2gcf
 
   };  // class gaussian_crf_factor
 

@@ -41,9 +41,10 @@ namespace sill {
     //! implements Factor::combine_ops
     static const unsigned combine_ops = 1 << product_op | 1 << divides_op;
 
-    // Private data members
+    // Private data members and methods
     //==========================================================================
   private:
+
     //! A list of head arguments in their natural order
     vector_var_vector head_list;
 
@@ -62,14 +63,6 @@ namespace sill {
     //! The multiplicative constant (likelihood)
     logarithmic<double> likelihood;
 
-  public:
-
-    //! Serialize / deserialize members
-    void serialize(oarchive & ar) const;
-    void deserialize(iarchive & ar);
-
-  private:
-
     /**
      * Initializes the indices for the given arguments and checks
      * matrix dimensions.
@@ -84,6 +77,7 @@ namespace sill {
     // Constructors and conversion operators
     //==========================================================================
   public:
+
     //! Constructs a moment Gaussian factor with no arguments
     moment_gaussian(double value = 1)
       : likelihood(value) { }
@@ -139,6 +133,13 @@ namespace sill {
 
     //! conversion to human-readable representation
     operator std::string() const;
+
+    // Serialization
+    //==========================================================================
+
+    void save(oarchive& ar) const;
+
+    void load(iarchive& ar);
 
     // Accessors
     //==========================================================================
@@ -244,6 +245,7 @@ namespace sill {
 
     // Factor operations
     //==========================================================================
+
     //! Evaluates the Gaussian for a given assignment
     logarithmic<double> operator()(const vector_assignment& a) const;
 
@@ -268,8 +270,6 @@ namespace sill {
      * implements Factor::restrict
      * \throws invalid_operation if the covariance matrix over the restricted
      *         variables is singular.
-     * @todo Currently, if the factor has any tail variables,
-     *       then all of them must be restricted. Permit more flexibility.
      */
     moment_gaussian restrict(const vector_assignment& a) const;
 

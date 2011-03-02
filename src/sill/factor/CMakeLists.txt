@@ -9,6 +9,8 @@ set(PRL_FACTOR_SOURCES
   mixture
   nonlinear_gaussian
   random
+  random_gaussian_crf_factor_functor
+  random_gaussian_functor
   table_crf_factor
   table_factor
   PARENT_SCOPE)

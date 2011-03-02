@@ -36,12 +36,13 @@ namespace sill {
     // Public type declarations
     // =========================================================================
   public:
+
     //! The type of variables that form the factor's domain
     typedef typename F::variable_type variable_type;
-    
+
     //! The domain type of the factor
     typedef typename F::domain_type domain_type;
-    
+
     //! The assignment type of the factor
     typedef std::map<variable_type*, typename variable_type::value_type> 
       assignment_type;
@@ -79,6 +80,7 @@ namespace sill {
 
     // Queries
     // =========================================================================
+
     domain_type arguments() const {
       return base::nodes();
     }
@@ -100,16 +102,6 @@ namespace sill {
     forward_range<const F&> factors() const {
       return make_transformed(vertices(), vertex_property_functor(*this));
     }
-
-    double log_likelihood(const assignment_type& a) const {
-      assert(false); // not implemented yet
-      return 0;
-    }
-
-    logarithmic<double> operator()(const assignment_type& a) const {
-      return logarithmic<double>(log_likelihood(a), log_tag());
-    }
-
 
     bool d_separated(const domain_type& x, const domain_type& y,
                      const domain_type& z = domain_type::empty_set) const {
@@ -146,30 +138,35 @@ namespace sill {
       }
     }
 
+    // Probabilistic model queries
+    //==========================================================================
+
+    double log_likelihood(const assignment_type& a) const {
+      if (!includes(keys(a), arguments())) {
+        throw std::invalid_argument
+          (std::string("bayesian_network::log_likelihood(assignment)") +
+           " called with assignment which did not cover the arguments.");
+      }
+      double ll = 0;
+      foreach(const F& f, factors())
+        ll += f.logv(a);
+      return ll;
+    }
+
+    logarithmic<double> operator()(const assignment_type& a) const {
+      return logarithmic<double>(log_likelihood(a), log_tag());
+    }
+
     //! Returns a sample from a Bayes net over discrete variables.
     template <typename RandomNumberGenerator>
     assignment_type sample(RandomNumberGenerator& rng) const {
-      //      boost::uniform_real<double> uniform_prob(0,1);
       assignment_type a;
-      //      std::vector<vertex> tmp_dpvo(directed_partial_vertex_order(*this));
       foreach(vertex v, directed_partial_vertex_order(*this)) {
         F f(factor(v));
         f = f.restrict(a);
+        f.normalize();
         assignment_type tmpa(f.sample(rng));
         a[v] = tmpa[v];
-        /*
-        double r(uniform_prob(rng));
-        size_t k = 0;
-        foreach(double val, f.values()) {
-          if (r <= val) {
-            a[v] = k;
-            break;
-          } else {
-            ++k;
-            r -= val;
-          }
-        }
-        */
       }
       return a;
     }
@@ -197,6 +194,32 @@ namespace sill {
       else
         factor(vertex(v)) *= f;
     }
+
+    /**
+     * Condition this model on the values in the given assignment
+     * for the variables in restrict_vars.
+     * This renormalizes the factors.
+     *
+     * @todo Make this more efficient.
+     */
+    bayesian_network&
+    condition(const assignment_type& a_, const domain_type& restrict_vars) {
+      assignment_type a;
+      foreach(variable_type* v, restrict_vars) {
+        if (a_.count(v))
+          a[v] = safe_get(a_, v);
+      }
+      bayesian_network tmp_bn;
+      foreach(variable_type* v, vertices()) {
+        F tmpf = factor(v).restrict(a);
+        if (tmpf.arguments().count(v)) {
+          tmpf.normalize();
+          tmp_bn.add_factor(v, tmpf);
+        }
+      }
+      *this = tmp_bn;
+      return *this;
+    } // condition(a, restrict_vars)
 
   }; // class bayesian_network
 

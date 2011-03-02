@@ -25,23 +25,23 @@ namespace sill {
             typename EdgeProperty = void_>
   class bayesian_graph
     : public directed_graph<Node, VertexProperty, EdgeProperty> {
-      
+
     // Public type declarations
     // =========================================================================
   public:
+
     //! The type of variables used in this graph
     typedef Node node_type;
 
     //! The type of domain used by this graph
     typedef std::set<Node> node_set;
-    
+
     //! The type of edges used in this graph
     typedef directed_edge<Node> edge;
 
     //! The base type.
     typedef directed_graph<Node, VertexProperty, EdgeProperty> base;
-    
-    // Shortcuts
+
     using base::vertices;
     using base::add_edge;
     using base::add_vertex;

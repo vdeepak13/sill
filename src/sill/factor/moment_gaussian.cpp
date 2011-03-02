@@ -14,33 +14,9 @@
 
 namespace sill {
 
-  // Serialization
-  //============================================================================
-  void moment_gaussian::serialize(oarchive& ar) const{
-    ar << head_list;
-    ar << tail_list;
-    ar << cmean;
-    ar << cov;
-    ar << coeff;
-    ar << likelihood;
-  }
-
-  void moment_gaussian::deserialize(iarchive& ar) {
-    ar >> head_list;
-    ar >> tail_list;
-    ar >> cmean;
-    ar >> cov;
-    ar >> coeff;
-    ar >> likelihood;
-    args = set_union(vector_domain(head_list.begin(), head_list.end()), 
-                     vector_domain(tail_list.begin(), tail_list.end()));
-    var_range.clear();
-    compute_indices(head_list);
-    compute_indices(tail_list);
-  }
-
   // Constructors and conversion operators
   //============================================================================
+
   void moment_gaussian::initialize(const vector_var_vector& head,
                                    const vector_var_vector& tail){
     // Initialize the indices
@@ -146,6 +122,23 @@ namespace sill {
     std::ostringstream out; out << *this; return out.str();
   }
 
+  // Serialization
+  //==========================================================================
+
+  void moment_gaussian::save(oarchive& ar) const {
+    ar << head_list << tail_list << cmean << cov << coeff << likelihood;
+  }
+
+  void moment_gaussian::load(iarchive& ar) {
+    ar >> head_list >> tail_list >> cmean >> cov >> coeff >> likelihood;
+    args.clear();
+    args.insert(head_list.begin(), head_list.end());
+    args.insert(tail_list.begin(), tail_list.end());
+    var_range.clear();
+    compute_indices(head_list);
+    compute_indices(tail_list);
+  }
+
   // Comparison operators
   //============================================================================
 
@@ -224,7 +217,6 @@ namespace sill {
 
   moment_gaussian
   moment_gaussian::restrict(const vector_assignment& a) const {
-    using std::log;
     vector_var_vector x, y; // x = kept, y = restricted (in head_list)
     foreach(vector_variable* v, head_list) {
       if (a.count(v) == 0)
@@ -233,20 +225,35 @@ namespace sill {
         y.push_back(v);
     }
     vec new_cmean(cmean);
-    size_t ntail(0); // number of tail_list variables with values in 'a'
+    vector_var_vector remaining_tail; // tail vars not in assignment
     if (marginal()) {
       if (y.size() == 0)
         return *this;
     } else {
-      foreach(vector_variable* v, tail_list)
-        ntail += a.count(v);
-      if (ntail + y.size() == 0) // Then we do not restrict anything.
-        return *this;
-      assert(ntail == tail_list.size()); // for now
-      vec v_tail(sill::concat(values(a, tail_list)));
-      new_cmean += coeff * v_tail;
-      if (y.size() == 0)
-        return moment_gaussian(x, new_cmean, cov, likelihood);
+      vector_var_vector restricted_tail; // tail vars in assignment
+      foreach(vector_variable* v, tail_list) {
+        if (a.count(v) == 0)
+          remaining_tail.push_back(v);
+        else
+          restricted_tail.push_back(v);
+      }
+      if (y.size() == 0 && remaining_tail.size() == tail_list.size())
+        return *this; // Then we do not restrict anything.
+      if (remaining_tail.size() == 0) {
+        vec v_tail(sill::concat(values(a, tail_list)));
+        new_cmean += coeff * v_tail;
+        if (y.size() == 0)
+          return moment_gaussian(x, new_cmean, cov, likelihood);
+      } else {
+        if (restricted_tail.size() != 0) {
+          ivec rt_ind;
+          this->indices(restricted_tail, rt_ind, true);
+          vec rt_vals(sill::concat(values(a, restricted_tail)));
+          new_cmean += coeff.columns(rt_ind) * rt_vals;
+        }
+        if (y.size() == 0)
+          return moment_gaussian(x, new_cmean, cov, likelihood);
+      }
     }
 
     ivec ix(indices(x));
@@ -266,16 +273,27 @@ namespace sill {
     }
     double logl = 0;
     logl -= 0.5 * inner_prod(dy, ls_solve_chol(cov(iy,iy), dy));
-    logl -= 0.5 * (dy.size()*log(2*pi()) + logdet(cov(iy,iy)));
-    if (x.size() == 0)
+    logl -= 0.5 * (dy.size() * std::log(2*pi()) + logdet(cov(iy,iy)));
+    if (x.size() == 0) {
       return moment_gaussian
         (likelihood * logarithmic<double>(logl, log_tag()));
-    else
+    } else if (remaining_tail.size() == 0) {
       return moment_gaussian
         (x,
-         new_cmean(ix) + invyy_covyx.transpose()*dy,
+         new_cmean(ix) + invyy_covyx.transpose() * dy,
          cov(ix, ix) - cov(ix,iy) * invyy_covyx,
          likelihood * logarithmic<double>(logl, log_tag()));
+    } else {
+      ivec rt_inds;
+      this->indices(remaining_tail, rt_inds, true);
+      return moment_gaussian
+        (x,
+         new_cmean(ix) + invyy_covyx.transpose() * dy,
+         cov(ix, ix) - cov(ix,iy) * invyy_covyx,
+         remaining_tail,
+         coeff.columns(rt_inds),
+         likelihood * logarithmic<double>(logl, log_tag()));
+    }
   } // restrict(a)
 
   moment_gaussian&

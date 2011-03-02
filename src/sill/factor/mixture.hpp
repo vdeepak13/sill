@@ -39,11 +39,13 @@ namespace sill {
     //! The number representation of the factor
     typedef typename F::result_type result_type;
     
+    //! implements Factor::variable_type
+    typedef typename F::variable_type variable_type;
+
     //! implements Factor::domain_type
     typedef typename F::domain_type domain_type;
 
-    //! implements Factor::variable_type
-    typedef typename F::variable_type variable_type;
+    typedef typename F::var_vector_type var_vector_type;
 
     //! The result of a collapse operation
     typedef mixture collapse_type;
@@ -64,26 +66,12 @@ namespace sill {
     //! implements Factor::record_type
     typedef typename F::record_type record_type;
 
-    // Private data members
-    //==========================================================================
-  private:
-    //! The mixture components
-    std::vector<F> comps;
-
-    
-    // Constructors and conversion operators
+    // Constructors, conversion operators, and serialization
     //==========================================================================
   public:
 
-    void serialize(oarchive & ar) const {
-      ar << comps;
-    }
-    void deserialize(iarchive & ar){
-      ar >> comps;
-    }
-
     //! Initializes the factor to a fixed value
-    mixture(double value = double()) : comps(1, F(value)) {}
+    explicit mixture(double value = 1) : comps(1, F(value)) {}
 
     //! Initialize the factor to the given arguments and number of components
     mixture(size_t k, const domain_type& args) : comps(k, F(args)) {
@@ -96,10 +84,10 @@ namespace sill {
     }
 
     //! Constructs a mixture with a single component
-    mixture(const constant_factor& c) : comps(1, c) { }
+    explicit mixture(const constant_factor& c) : comps(1, c) { }
 
     //! Constructs a mixture with a single component
-    mixture(const F& x) : comps(1, x) { }
+    explicit mixture(const F& x) : comps(1, x) { }
 
     //! Conversion to a single component
     operator F() const {
@@ -126,8 +114,24 @@ namespace sill {
       comps.swap(f.comps);
     }
 
+    //! Assignment operator: from constant
+    mixture& operator=(double val) {
+      foreach(F& f, comps)
+        f = val;
+      return *this;
+    }
+
+    void save(oarchive & ar) const {
+      ar << comps;
+    }
+
+    void load(iarchive & ar){
+      ar >> comps;
+    }
+
     // Accessors and comparison operators
     //==========================================================================
+
     //! Returns the argument set of this factor
     const domain_type& arguments() const {
       return comps[0].arguments();
@@ -156,15 +160,23 @@ namespace sill {
       return !operator==(other);
     }
 
+    // Factor operations
+    //==========================================================================
+
     //! Evaluates the probability of an assignment
     double operator()(const assignment_type& a) const {
-      double result = 1;
+      if (comps.size() == 0)
+        return 1;
+      double result = 0;
       foreach(const F& factor, comps) result += factor(a);
       return result;
     }
- 
-    // Factor operations
-    //==========================================================================
+
+    //! Returns the value associated with an assignment.
+    double logv(const vector_assignment& a) const {
+      return std::log(operator()(a));
+    }
+
     /*
     //! implements element-wise factor combination
     mixture& combine_in(const F& factor, op_type op) {
@@ -184,7 +196,10 @@ namespace sill {
     //! implements Factor::combine_in
     //! \todo For now, the combination is element-wise; this will change
     mixture& combine_in(const mixture& other, op_type op) {
-      assert(size() == other.size());
+      if (size() != other.size()) {
+        throw std::runtime_error
+          ("mixture::combine_in(other,op) given other with mismatched size.");
+      }
       for(size_t i = 0; i < other.size(); i++)
         comps[i].combine_in(other[i], op);
       return *this;
@@ -193,36 +208,48 @@ namespace sill {
     //! implements Factor::collapse
     mixture collapse(op_type op, const domain_type& retained) const {
       check_supported(op, collapse_ops);
-      
+
       // If the retained arguments contain the arguments of this factor,
       // we can simply return a copy
-      if (arguments().subset_of(retained)) return *this;
+      if (includes(retained, arguments()))
+        return *this;
 
       // Collapse the individual components
-      domain_type newargs = arguments().intersect(retained);
-      mixture factor(size(), newargs);
-
+      mixture m(size(), set_intersect(retained, arguments()));
       for(size_t i = 0; i < size(); i++)
-        factor.comps[i] = comps[i].collapse(op, retained); // Joseph: I changed "sum_op" to "op"
-      
-      return factor;
+        m.comps[i] = comps[i].collapse(op, retained);
+
+      return m;
+    }
+
+    //! Performs a collapse operation, storing result in factor m.
+    //! Avoids reallocation if possible.
+    //! This version does not update the normalization constant.
+    void collapse_unnormalized(op_type op,
+                               const domain_type& retain,
+                               mixture& m) const {
+      // Collapse the individual components
+      m = mixture(size());
+      for(size_t i = 0; i < size(); i++)
+        comps[i].collapse_unnormalized(op, retain, m.comps[i]);
     }
 
     //! implements Factor::restrict
     mixture restrict(const assignment_type& a) const {
-      domain_type bound_vars = a.keys();
-      
+      domain_type bound_vars = keys(a);
+
       // If the arguments are disjoint from the bound variables,
       // we can simply return a copy of the factor
-      if (!bound_vars.meets(arguments())) return *this;
+      if (set_disjoint(bound_vars, arguments()))
+        return *this;
 
       // Restrict each component factor
-      domain_type retained = arguments() - bound_vars;
+      domain_type retained = set_difference(arguments(), bound_vars);
       mixture factor(size(), retained);
-      
+
       for(size_t i = 0; i < size(); i++)
         factor.comps[i] = comps[i].restrict(a);
-    
+
       return factor;
     }
 
@@ -235,7 +262,8 @@ namespace sill {
     }
 
     //! implements Factor::subst_args
-    mixture& subst_args(const std::map<variable_type*, variable_type*>& var_map) {
+    mixture&
+    subst_args(const std::map<variable_type*, variable_type*>& var_map) {
       foreach(F& factor, comps) factor.subst_args(var_map);
       return *this;
     }
@@ -264,10 +292,18 @@ namespace sill {
     //! implements DistributionFactor::normalize
     //! uses the standard parameterization
     mixture& normalize() {
-      double p = norm_constant();
-      assert(p>0);
-      foreach(F& factor, comps) factor /= constant_factor(p);
+      if (comps.size() > 0) {
+        double p = norm_constant();
+        assert(p>0);
+        foreach(F& factor, comps)
+          factor /= constant_factor(p);
+      }
       return *this;
+    }
+
+    //! Computes the maximum for each assignment to the given variables
+    mixture maximum(const vector_domain& retain) const {
+      assert(false); return mixture(); // not supported yet - hard to do exactly
     }
 
     //! implements DistributionFactor::entropy
@@ -290,15 +326,32 @@ namespace sill {
       assert(false); return assignment_type(); // not supported
     }
 
-  };
+    //! Sample from the mixture.
+    template <typename Engine>
+    assignment_type sample(Engine& rng) const {
+      if (comps.size() == 0)
+        return assignment_type();
+      boost::uniform_int<int> unif_int(0, comps.size() - 1);
+      size_t i = unif_int(rng);
+      return comps[i].sample(rng);
+    }
+
+    // Private data members
+    //==========================================================================
+  private:
+
+    //! The mixture components
+    std::vector<F> comps;
+
+  }; // class mixture
 
   //! \relates mixture
   template <typename F>
   std::ostream& operator<<(std::ostream& out, const mixture<F>& mixture) {
     out << "#F(M | " << mixture.arguments();
     foreach(const F& factor, mixture.components())
-      out << " | " << factor;
-    out << ")";
+      out << "\n | " << factor;
+    out << ")\n";
     return out;
   }
 

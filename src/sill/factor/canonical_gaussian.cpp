@@ -14,19 +14,6 @@
 
 namespace sill {
 
-  // Serialization
-  //============================================================================
-  void canonical_gaussian::save(oarchive& ar) const {
-    ar << arg_list << lambda << eta << log_mult;
-  }
-
-  void canonical_gaussian::load(iarchive& ar) {
-    ar >> arg_list >> lambda >> eta >> log_mult;
-    args = vector_domain(arg_list.begin(), arg_list.end());
-    var_range.clear();
-    compute_indices(arg_list);
-  }
-
   // Constructors, conversion, and initialization
   //============================================================================
   void canonical_gaussian::
@@ -52,10 +39,22 @@ namespace sill {
   }
 
   canonical_gaussian::
+  canonical_gaussian(const vector_domain& args)
+    : gaussian_factor(args), log_mult(0) {
+    initialize(make_vector(args), true);
+  }
+
+  canonical_gaussian::
   canonical_gaussian(const vector_domain& args,
                      double value)
     : gaussian_factor(args), log_mult(std::log(value)) {
     initialize(make_vector(args), true);
+  }
+
+  canonical_gaussian::
+  canonical_gaussian(const vector_var_vector& args)
+    : gaussian_factor(args), log_mult(0) {
+    initialize(args, true);
   }
 
   canonical_gaussian::
@@ -156,6 +155,20 @@ namespace sill {
     // assert(symmetric(lambda));
     var_range.clear();
     initialize(args, false);
+  }
+
+  // Serialization
+  //============================================================================
+
+  void canonical_gaussian::save(oarchive& ar) const {
+    ar << arg_list << lambda << eta << log_mult;
+  }
+
+  void canonical_gaussian::load(iarchive& ar) {
+    ar >> arg_list >> lambda >> eta >> log_mult;
+    args = vector_domain(arg_list.begin(), arg_list.end());
+    var_range.clear();
+    compute_indices(arg_list);
   }
 
   // Accessors

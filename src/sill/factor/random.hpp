@@ -160,8 +160,12 @@ namespace sill {
       val = unif_real(rng);
     mat sigma(2, 2, variance);
     double covariance = correlation * variance * variance;
-    if (covariance == variance)
-      throw std::invalid_argument("make_binary_marginal_gaussian() given variance and correlation s.t. the covariance equals the variance, so the resulting covariance matrix is invalid.");
+    if (covariance == variance) {
+      throw std::invalid_argument
+        (std::string("make_binary_marginal_gaussian") +
+         " given variance and correlation s.t. the covariance equals" +
+         " the variance, so the resulting covariance matrix is invalid.");
+    }
     sigma(0,1) = covariance;
     sigma(1,0) = covariance;
     return moment_gaussian(X, mu, sigma);

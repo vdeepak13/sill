@@ -127,11 +127,18 @@ namespace sill {
      * Return a variable of the specified type and the given size.
      * @tparam VarType  Variable type.
      * @param  size     Variable size.
-     * @todo Standardize the new_*_variable() method interface so that this
-     *       method can support variable names.
      */
     template <typename VarType>
     VarType* new_variable(size_t size);
+
+    /**
+     * Return a variable of the specified type and the given size.
+     * @tparam VarType  Variable type.
+     * @param  name     Name for the variable.
+     * @param  size     Variable size.
+     */
+    template <typename VarType>
+    VarType* new_variable(const std::string& name, size_t size);
 
     /**
      * Registers a variable with this universe. The variable becomes owned 
@@ -166,6 +173,16 @@ namespace sill {
   //! Specialization for vector variables.
   template <>
   vector_variable* universe::new_variable<vector_variable>(size_t size);
+
+  //! Specialization for finite variables.
+  template <>
+  finite_variable*
+  universe::new_variable<finite_variable>(const std::string& name, size_t size);
+
+  //! Specialization for vector variables.
+  template <>
+  vector_variable*
+  universe::new_variable<vector_variable>(const std::string& name, size_t size);
 
 } // namespace sill
 

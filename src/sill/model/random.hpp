@@ -6,8 +6,11 @@
 #include <sill/range/concepts.hpp>
 #include <sill/factor/gaussian_crf_factor.hpp>
 #include <sill/factor/random.hpp>
+#include <sill/factor/random_crf_factor_functor.hpp>
+#include <sill/factor/random_factor_functor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/table_crf_factor.hpp>
+#include <sill/math/permutations.hpp>
 #include <sill/model/bayesian_network.hpp>
 #include <sill/model/crf_model.hpp>
 #include <sill/model/decomposable.hpp>
@@ -136,6 +139,309 @@ namespace sill {
     }
     return std::make_pair(hidden_vars, emission_vars);
   }
+
+  // Methods for conditional models
+  //============================================================================
+
+  /**
+   * Creates models useful for doing tests with CRFs P(Y|X).
+   * This generates a decomposable model for P(X) and a CRF for P(Y|X),
+   * where each of P(X), P(Y|X) can be chains or trees.
+   *
+   * This may be used to create tractable or intractable models,
+   * depending on how you use the resulting P(X), P(Y|X) and on the 'tractable'
+   * parameter:
+   *  - For tractable P(Y,X): Set the 'tractable' parameter to true, and
+   *    use model_product() to create a model Q(Y,X) from P(X) and P(Y|X).
+   *    Note that Q(Y,X) != P(X)P(Y|X) in general.  Sample from the tractable
+   *    joint Q(Y,X).
+   *  - For intractable P(Y,X): Set the 'tractable' parameter to true (in which
+   *    case P(X), P(Y|X) are both chains/trees following the same structure)
+   *    or to false (in which case P(X), P(Y|X) follow different structures).
+   *    Sample x ~ P(X) and then sample y ~ P(Y|X=x).  Note the normalization
+   *    constants make the joint model intractable in general.
+   *
+   * To explain how models are generated, first look at the tractable Q(Y,X)
+   * case for chains:
+   *  - Q(Y,X) is a chain which forms a ladder structure.
+   *     - e.g.: Y1--Y2--Y3--...
+   *             |   |   |
+   *             X1--X2--X3--...
+   *  - So Q(Y|X) is also a chain:
+   *     - e.g.: Y1--Y2--Y3--...
+   *             |   |   |
+   *             X1  X2  X3  ...
+   *  - Note that Q(X) is not a chain; it is a giant clique.
+   * For trees, this generates models analogously, but the Y-Y factors form a
+   * tree instead of a chain.
+   *  - The tree structure is built incrementally by attaching new Y variables
+   *    to Y variables already in the tree with equal probability.
+   *    (This is called 'non-preferential random attachment.')
+   * For the intractable case, P(X) is built in a way analogous to that
+   * described above for chains/trees, and then P(Y|X) is too.  Each Y still
+   * corresponds to a single X, but this correspondence does not match their
+   * structures.  Instead, the correspondence is chosen via a random
+   * permutation of X.
+   * 
+   * This returns a mapping from each Y variable to exactly one corresponding
+   * X variable.
+   * Note that other X variables may be in the Y variable's Markov blanket.
+   *
+   * @param model_choice       "chain" or "tree"
+   * @param n                  number of Y variables (and X variables)
+   * @param tractable          If true, P(Y,X) will be tractable.
+   * @param add_cross_factors  If true, add factors (Y_i, X_{i+1}), etc.
+   * @param rand_factor_func
+   *         Functor for generating random marginal factors.
+   * @param rand_crf_factor_func
+   *         Functor for generating random conditional factors.
+   * @param Xmodel        (Return value) Decomposable model for P(X)
+   * @param YgivenXmodel  (Return value) CRF model for P(Y|X)
+   *
+   * @return <Y variables in order, X variables in order,
+   *          mapping from Y variables to their corresponding X variables>
+   */
+  template <typename CRFfactor>
+  boost::tuple<typename CRFfactor::output_var_vector_type,
+               typename CRFfactor::input_var_vector_type,
+               std::map<typename CRFfactor::output_variable_type*,
+                        copy_ptr<typename CRFfactor::input_domain_type> > >
+  create_random_crf
+  (const std::string& model_choice, size_t n,
+   bool tractable, bool add_cross_factors,
+   random_factor_functor<typename CRFfactor::output_factor_type>&
+   rand_factor_func,
+   random_crf_factor_functor<CRFfactor>& rand_crf_factor_func,
+   universe& u, unsigned random_seed,
+   decomposable<typename CRFfactor::output_factor_type>& Xmodel,
+   crf_model<CRFfactor>& YgivenXmodel) {
+
+    typedef typename CRFfactor::output_variable_type output_variable_type;
+    typedef typename CRFfactor::input_variable_type input_variable_type;
+    typedef typename CRFfactor::output_domain_type output_domain_type;
+    typedef typename CRFfactor::input_domain_type input_domain_type;
+    typedef typename CRFfactor::output_var_vector_type output_var_vector_type;
+    typedef typename CRFfactor::input_var_vector_type input_var_vector_type;
+    typedef typename CRFfactor::output_factor_type output_factor_type;
+
+    assert((model_choice == "chain") || (model_choice == "tree"));
+
+    boost::mt11213b rng(random_seed);
+    Xmodel.clear();
+    YgivenXmodel.clear();
+    std::map<output_variable_type*, copy_ptr<input_domain_type> > Y2X_map;
+    if (n == 0) {
+      return boost::make_tuple
+        (output_var_vector_type(), input_var_vector_type(), Y2X_map);
+    }
+
+    // Create the variables
+    input_var_vector_type Xvars;
+    output_var_vector_type Yvars;
+    for (size_t i(0); i < n; ++i) {
+      Xvars.push_back
+        (rand_crf_factor_func.generate_input_variable(u, "X" + to_string(i)));
+      Yvars.push_back
+        (rand_crf_factor_func.generate_output_variable(u, "Y" + to_string(i)));
+    }
+
+    if (n == 1) {
+      Y2X_map[Yvars[0]] =
+        copy_ptr<input_domain_type>
+        (new input_domain_type(make_domain(Xvars[0])));
+      YgivenXmodel.add_factor
+        (rand_crf_factor_func.generate_conditional(Yvars[0], Xvars[0]));
+      Xmodel *= rand_factor_func.generate_marginal(Xvars[0]);
+      return boost::make_tuple(Yvars, Xvars, Y2X_map);
+    }
+
+    if (tractable) {
+      for (size_t i(0); i < n; ++i)
+        Y2X_map[Yvars[i]] =
+          copy_ptr<input_domain_type>
+          (new input_domain_type(make_domain(Xvars[i])));
+      // Add initial vertex pair Y0--X0.
+      YgivenXmodel.add_factor
+        (rand_crf_factor_func.generate_conditional(Yvars[0], Xvars[0]));
+      // Add the rest.
+      for (size_t i = 1; i < n; ++i) {
+        // Choose which existing vertex j to attach to.
+        size_t j((model_choice == "chain") ?
+                 i-1 : boost::uniform_int<int>(0,i-1)(rng));
+        Xmodel *=
+          rand_factor_func.generate_marginal(make_domain(Xvars[i],Xvars[j]));
+        YgivenXmodel.add_factor
+          (rand_crf_factor_func.generate_conditional(Yvars[i], Xvars[i]));
+        YgivenXmodel.add_factor(rand_crf_factor_func.generate_marginal
+                                (make_domain(Yvars[i], Yvars[j])));
+        if (add_cross_factors) {
+          YgivenXmodel.add_factor
+            (rand_crf_factor_func.generate_conditional(Yvars[j], Xvars[i]));
+          YgivenXmodel.add_factor
+            (rand_crf_factor_func.generate_conditional(Yvars[i], Xvars[j]));
+        }
+      }
+    } else { // intractable
+
+      // First, create P(X).
+      for (size_t i(1); i < n; ++i) {
+        // Choose which existing vertex j to attach to.
+        size_t j((model_choice == "chain") ?
+                 i-1 : boost::uniform_int<int>(0,i-1)(rng));
+        Xmodel *=
+          rand_factor_func.generate_marginal(make_domain(Xvars[i], Xvars[j]));
+      }
+      std::vector<size_t> xind(randperm(n, rng)); // Y_i matches to X_{xind[i]}
+      for (size_t i(0); i < n; ++i)
+        Y2X_map[Yvars[i]] =
+          copy_ptr<input_domain_type>
+          (new input_domain_type(make_domain(Xvars[xind[i]])));
+
+      // Second, create P(Y|X).
+      YgivenXmodel.add_factor
+        (rand_crf_factor_func.generate_conditional(Yvars[0], Xvars[xind[0]]));
+      for (size_t i(1); i < n; ++i) {
+        // Choose which existing Y_j to attach to.
+        size_t j((model_choice == "chain") ?
+                 i-1 : boost::uniform_int<int>(0,i-1)(rng));
+        YgivenXmodel.add_factor
+          (rand_crf_factor_func.generate_conditional(Yvars[i], Xvars[xind[i]]));
+        YgivenXmodel.add_factor(rand_crf_factor_func.generate_marginal
+                                (make_domain(Yvars[i], Yvars[j])));
+        if (add_cross_factors) {
+          YgivenXmodel.add_factor
+            (rand_crf_factor_func.generate_conditional(Yvars[j],
+                                                       Xvars[xind[i]]));
+          YgivenXmodel.add_factor
+            (rand_crf_factor_func.generate_conditional(Yvars[i],
+                                                       Xvars[xind[j]]));
+        }
+      }
+    }
+    return boost::make_tuple(Yvars, Xvars, Y2X_map);
+
+  } // create_random_crf
+
+  /**
+   * This method is designed to parallel create_random_crf;
+   * it creates a Bayesian network which is representable as a CRF of the same
+   * structure which would be produced by create_random_crf.
+   *
+   * This method is useful for factors which do not easily support inference,
+   * such as mixtures of Gaussians.  The returned Bayesian network can still
+   * be sampled from easily to produce datasets.
+   *
+   * @tparam F  Factor type.
+   *
+   * @param model_choice       "chain" or "tree"
+   * @param n                  number of Y variables (and X variables)
+   * @param tractable          If true, P(Y,X) will be tractable.
+   * @param add_cross_factors  If true, add factors (Y_i, X_{i+1}), etc.
+   * @param rand_factor_func   Functor for generating random factors.
+   * @param model              (Return value) Bayesian network for P(Y,X)
+   *
+   * @return <Y variables in order, X variables in order,
+   *          mapping from Y variables to their corresponding X variables>
+   */
+  template <typename F>
+  boost::tuple
+  <typename F::var_vector_type, typename F::var_vector_type,
+   std::map<typename F::variable_type*, copy_ptr<typename F::domain_type> > >
+  create_random_bayesian_network_crf
+  (const std::string& model_choice, size_t n,
+   bool tractable, bool add_cross_factors,
+   random_factor_functor<F>& rand_factor_func,
+   universe& u, unsigned random_seed,
+   bayesian_network<F>& model) {
+
+    typedef typename F::variable_type   variable_type;
+    typedef typename F::var_vector_type var_vector_type;
+    typedef typename F::domain_type     domain_type;
+
+    assert((model_choice == "chain") || (model_choice == "tree"));
+
+    boost::mt11213b rng(random_seed);
+    model.clear();
+
+    std::map<variable_type*, copy_ptr<domain_type> > Y2X_map;
+    if (n == 0) {
+      return boost::make_tuple(var_vector_type(), var_vector_type(), Y2X_map);
+    }
+
+    // Create the variables
+    var_vector_type Xvars;
+    var_vector_type Yvars;
+    for (size_t i(0); i < n; ++i) {
+      Xvars.push_back
+        (rand_factor_func.generate_variable(u, "X" + to_string(i)));
+      Yvars.push_back
+        (rand_factor_func.generate_variable(u, "Y" + to_string(i)));
+    }
+
+    if (n == 1) {
+      Y2X_map[Yvars[0]] =
+        copy_ptr<domain_type>(new domain_type(make_domain(Xvars[0])));
+      model.add_factor(Xvars[0], rand_factor_func.generate_marginal(Xvars[0]));
+      model.add_factor
+        (Yvars[0], rand_factor_func.generate_conditional(Yvars[0], Xvars[0]));
+      return boost::make_tuple(Yvars, Xvars, Y2X_map);
+    }
+
+    std::vector<size_t> xind; // Y_i matches to X_{xind[i]}
+    if (tractable) {
+      for (size_t i(0); i < n; ++i)
+        xind.push_back(i);
+    } else {
+      xind = randperm(n, rng);
+    }
+
+    for (size_t i(0); i < n; ++i)
+      Y2X_map[Yvars[i]] =
+        copy_ptr<domain_type>(new domain_type(make_domain(Xvars[xind[i]])));
+
+    // Create P(X).
+    model.add_factor(Xvars[0], rand_factor_func.generate_marginal(Xvars[0]));
+    for (size_t i(1); i < n; ++i) {
+      // Choose which existing vertex j to attach to.
+      size_t j((model_choice == "chain") ?
+               i-1 : boost::uniform_int<int>(0,i-1)(rng));
+      model.add_factor
+        (Xvars[i], rand_factor_func.generate_conditional(Xvars[i], Xvars[j]));
+    }
+
+    // Choose structure over Y.
+    std::vector<size_t> Y_parents(n); // Y_i has parent Y_parents[i]
+    Y_parents[0] = (size_t)(-1);
+    for (size_t i = 1; i < n; ++i) {
+      Y_parents[i] = (model_choice == "chain"
+                      ? i-1
+                      : boost::uniform_int<int>(0,i-1)(rng));
+    }
+
+    // Create P(Y).
+    for (size_t i = 0; i < n; ++i) {
+      // Choose which existing vertex j to attach to.
+      size_t j = Y_parents[i];
+      // TO DO:
+      //  FACTORIZE THE BELOW CONDITIONALS SO THEY FIT THE ASSUMED STRUCTURE.
+      domain_type tail(make_domain(Xvars[xind[i]]));
+      if (i > 0)
+        tail.insert(Yvars[j]);
+      if (add_cross_factors) {
+        if (i > 0)
+          tail.insert(Xvars[xind[j]]);
+        if (i+1 < n)
+          tail.insert(Xvars[xind[Y_parents[i+1]]]);
+      }
+
+      model.add_factor
+        (Yvars[i],
+         rand_factor_func.generate_conditional(make_domain(Yvars[i]), tail));
+    }
+
+    return boost::make_tuple(Yvars, Xvars, Y2X_map);
+
+  } // create_random_bayesian_network_crf
 
   // Methods for conditional models over discrete variables
   //============================================================================

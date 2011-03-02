@@ -60,6 +60,16 @@ namespace sill {
     //! The base type
     typedef itpp::Mat<T> base;
 
+    // Container interface
+    typedef std::ptrdiff_t  difference_type;
+    typedef size_t          size_type;
+    typedef T&              reference;
+    typedef T*              pointer;
+    typedef T*              iterator;
+    typedef const T&        const_reference;
+    typedef const T*        const_pointer;
+    typedef const T*        const_iterator;
+
     // Constructors
     //==========================================================================
   public:
@@ -90,6 +100,28 @@ namespace sill {
     
     //! Conversion from human-readable representation
     matrix(const char* str) : base(str) { }
+
+    // Range interface
+    //==========================================================================
+    //! Returns a pointer to the first element
+    const T* begin() const {
+      return base::_data();
+    }
+
+    //! Returns a pointer to the first element
+    T* begin() {
+      return base::_data();
+    }
+
+    //! Returns a pointer past the last element
+    const T* end() const {
+      return begin() + size();
+    }
+
+    //! Returns a pointer past the last element
+    T* end() {
+      return begin() + size();
+    }
 
     // Accessors
     //==========================================================================

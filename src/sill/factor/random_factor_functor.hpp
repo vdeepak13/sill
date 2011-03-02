@@ -36,7 +36,7 @@ namespace sill {
     /**
      * Generate a marginal factor P(X) using the stored parameters.
      */
-    F generate_marginal(const variable_type* X) {
+    F generate_marginal(variable_type* X) {
       return generate_marginal(make_domain(X));
     }
 
@@ -45,6 +45,19 @@ namespace sill {
      */
     virtual
     F generate_conditional(const domain_type& Y, const domain_type& X) = 0;
+
+    /**
+     * Generate a conditional factor P(Y|X) using the stored parameters.
+     */
+    F generate_conditional(variable_type* Y, variable_type* X) {
+      return generate_conditional(make_domain(Y), make_domain(X));
+    }
+
+    //! Generate a variable of the appropriate type and dimensionality,
+    //! using the given name.
+    virtual
+    variable_type*
+    generate_variable(universe& u, const std::string& name = "") const = 0;
 
   }; // struct random_factor_functor
 

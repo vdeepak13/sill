@@ -52,6 +52,18 @@ namespace sill {
     return new_vector_variable(size);
   }
 
+  template <>
+  finite_variable*
+  universe::new_variable<finite_variable>(const std::string& name, size_t size){
+    return new_finite_variable(name, size);
+  }
+
+  template <>
+  vector_variable*
+  universe::new_variable<vector_variable>(const std::string& name, size_t size){
+    return new_vector_variable(name, size);
+  }
+
   void universe::add_impl(variable* v) {
     assert(v->process() == NULL);
     register_variable_id(v);

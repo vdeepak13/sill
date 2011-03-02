@@ -85,6 +85,9 @@ set(MPI_CXX true CACHE BOOL
 # Math library
 find_package(IT++)
 
+# Sparse linear algebra library
+find_package(SuiteSparse)
+
 # OpenCV (optional)
 # If OpenCV is not found, projects/qsgm/vision/ compiles to throw an error.
 find_package(OpenCV)
@@ -111,6 +114,12 @@ link_libraries(
   #  mpich
   bz2
   )
+
+if (SUITESPARSE_FOUND)
+  include_directories(${SUITESPARSE_INCLUDE_DIRS})
+#  link_directories(${SUITESPARSE_LIBRARY_DIRS})
+  link_libraries(${SUITESPARSE_LIBRARIES})
+endif (SUITESPARSE_FOUND)
 
 # If we find MPI link against it
 if(MPI_FOUND)

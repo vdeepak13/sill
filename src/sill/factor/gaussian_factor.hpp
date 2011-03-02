@@ -32,11 +32,13 @@ namespace sill {
     //! implements Factor::result_type
     typedef logarithmic<double> result_type;
 
+    //! implements Factor::variable_type
+    typedef vector_variable variable_type;
+
     //! implements Factor::domain_type
     typedef vector_domain domain_type;
 
-    //! implements Factor::variable_type
-    typedef vector_variable variable_type;
+    typedef vector_var_vector var_vector_type;
 
     //! implements Factor::assignment_type
     typedef vector_assignment assignment_type;

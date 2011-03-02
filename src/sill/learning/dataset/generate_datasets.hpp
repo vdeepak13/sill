@@ -7,6 +7,7 @@
  */
 
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/model/bayesian_network.hpp>
 #include <sill/model/crf_model.hpp>
 
 #include <sill/macros_def.hpp>
@@ -21,6 +22,20 @@ namespace sill {
   template <typename F, typename RandomNumGen>
   void generate_dataset(dataset& ds,
                         const decomposable<F>& model,
+                        size_t n, RandomNumGen& rng) {
+    for (size_t i(0); i < n; ++i) {
+      ds.insert(model.sample(rng));
+    }
+  }
+
+  /**
+   * Generate n samples over X from the given model for P(X),
+   * and insert them into the given dataset.
+   * Any samples already in the dataset are kept.
+   */
+  template <typename F, typename RandomNumGen>
+  void generate_dataset(dataset& ds,
+                        const bayesian_network<F>& model,
                         size_t n, RandomNumGen& rng) {
     for (size_t i(0); i < n; ++i) {
       ds.insert(model.sample(rng));

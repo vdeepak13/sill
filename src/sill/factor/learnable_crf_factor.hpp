@@ -94,6 +94,14 @@ namespace sill {
                          copy_ptr<input_domain_type> Xdomain_ptr_)
       : base(Ydomain_, Xdomain_ptr_) { }
 
+    //! Constructor.
+    //! It is better to use the other constructor which takes a copy_ptr to
+    //! the X domain (to avoid copies).
+    learnable_crf_factor(const output_domain_type& Ydomain_,
+                         const input_domain_type& Xdomain_)
+      : base(Ydomain_,
+             copy_ptr<input_domain_type>(new input_domain_type(Xdomain_))) { }
+
     virtual ~learnable_crf_factor() { }
 
     using base::save;

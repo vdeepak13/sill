@@ -36,25 +36,30 @@ namespace sill {
     //! implements Factor::combine_ops
     static const unsigned combine_ops = 1 << product_op | 1 << divides_op;
 
-    // Public methods for serialization
-    //==========================================================================
-  public:
-
-    void save(oarchive& ar) const;
-
-    void load(iarchive& ar);
-
     // Constructors and conversion operators
     //==========================================================================
   public:
+
     //! Constructs a canonical Gaussian factor with no arguments
     canonical_gaussian(double value = 1) : log_mult(std::log(value)) { }
+
+    /**
+     * Constructs a canonical Gaussian factor with a given set of
+     * arguments and zeroed parameters.
+     */
+    explicit canonical_gaussian(const vector_domain& args);
 
     /**
      * Constructs a canonical Gaussian factor with a given set of
      * arguments and zero parameters.
      */
     canonical_gaussian(const vector_domain& args, double value);
+
+    /**
+     * Constructs a canonical Gaussian factor with a given set of
+     * arguments and zeroed parameters, using the given variable ordering.
+     */
+    explicit canonical_gaussian(const vector_var_vector& args);
 
     /**
      * Constructs a canonical Gaussian factor with a given set of
@@ -110,6 +115,13 @@ namespace sill {
      */
     void reset(const vector_var_vector& args, const mat& lambda, const vec& eta,
                double log_mult = 0);
+
+    // Serialization
+    //==========================================================================
+
+    void save(oarchive& ar) const;
+
+    void load(iarchive& ar);
 
     // Accessors
     //==========================================================================
