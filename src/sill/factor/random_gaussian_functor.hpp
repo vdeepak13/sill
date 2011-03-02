@@ -45,17 +45,25 @@ namespace sill {
     // Parameters for tail variables, i.e., for X in P(Y|X).
     //==========================================================================
 
-    //! Each element of the coefficient matrix C is chosen from Uniform[-c, c],
+    //! Each element of the coefficient matrix C is chosen
+    //! from c_shift + Uniform[-c, c],
     //! where C shifts the mean when conditioning on X=x.
     //!  (default = 1)
     double c;
+
+    //! Each element of the coefficient matrix C is chosen
+    //! from c_shift + Uniform[-c, c],
+    //! where C shifts the mean when conditioning on X=x.
+    //!  (default = 0)
+    double c_shift;
 
     // Public methods
     //==========================================================================
 
     //! Constructor.
     random_gaussian_functor(unsigned random_seed)
-      : b(1), variance(1), correlation(.3), c(1), rng(random_seed) { }
+      : b(1), variance(1), correlation(.3), c(1), c_shift(0),
+        rng(random_seed) { }
 
     using base::generate_marginal;
     using base::generate_conditional;
@@ -159,7 +167,7 @@ namespace sill {
       boost::uniform_real<double> unif_real(-c, c);
       coeff.resize(Ysize, Xsize);
       foreach(double& val, coeff)
-        val = unif_real(rng);
+        val = c_shift + unif_real(rng);
     } // choose_coeff
 
   }; // struct random_gaussian_functor

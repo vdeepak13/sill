@@ -150,6 +150,9 @@ namespace sill {
     //! Returns the components of the mixture
     const std::vector<F>& components() const { return comps; }
 
+    //! Returns the components of the mixture
+    std::vector<F>& components() { return comps; }
+
     //! Returns true if the two mixtures are the same
     bool operator==(const mixture& other) const {
       return arguments() == other.arguments() && comps == other.comps;
