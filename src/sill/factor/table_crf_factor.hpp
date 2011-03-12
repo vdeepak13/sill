@@ -39,6 +39,8 @@ namespace sill {
     learnable_crf_factor<finite_variable,table_factor,table_factor_opt_vector,1>
     base;
 
+    typedef base::la_type la_type;
+
     //! Parameters used for learn_crf_factor methods.
     struct parameters {
 
@@ -218,7 +220,7 @@ namespace sill {
      */
     table_crf_factor&
     partial_expectation_in_log_space(const output_domain_type& Y_part,
-                                     const dataset& ds);
+                                     const dataset<la_type>& ds);
 
     /**
      * If this factor is f(Y_retain, Y_other, X),
@@ -250,7 +252,7 @@ namespace sill {
      *          (which may have values for any other variables as well).
      * @return  This modified factor.
      */
-    table_crf_factor& partial_condition(const record_type& r,
+    table_crf_factor& partial_condition(const finite_record& r,
                                         const output_domain_type& Y_part,
                                         const input_domain_type& X_part);
 
@@ -260,7 +262,7 @@ namespace sill {
      * this returns the expected log likelihood of the distribution P(A | B).
      * (But this does not normalize the factor after conditioning.)
      */
-    double log_expected_value(const dataset& ds) const;
+    double log_expected_value(const dataset<la_type>& ds) const;
 
     //! implements Factor::combine_in
     table_crf_factor& combine_in(const table_crf_factor& other, op_type op);

@@ -5,7 +5,7 @@
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
 #include <sill/learning/object_detection/image.hpp>
@@ -97,14 +97,23 @@ namespace sill {
    * @todo Change this to choose randomly to break ties between classifiers.
    */
   template <typename Objective = discriminative::objective_accuracy>
-  class haar : public binary_classifier {
+  class haar : public binary_classifier<> {
 
-    concept_assert((sill::DomainPartitioningObjective<Objective>));
+    //    concept_assert((sill::DomainPartitioningObjective<Objective>));
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef binary_classifier<> base;
+
+    typedef base::la_type la_type;
+    typedef base::record_type record_type;
 
     /////////////////////// PROTECTED DATA AND METHODS ////////////////////
 
   protected:
-    typedef binary_classifier base;
+
     // Data from base class:
     //  finite_variable* label_
     //  size_t label_index_
@@ -139,7 +148,7 @@ namespace sill {
     //!                          (set by this function if a better set is found)
     template <typename Distribution>
     void
-    check(const dataset& ds, const Distribution& distribution,
+    check(const dataset<la_type>& ds, const Distribution& distribution,
           const std::vector<std::pair<size_t,size_t> >& cur_coordinates,
           const std::vector<double>& cur_multipliers,
           boost::tuple<double, double, double, double>&
@@ -150,8 +159,8 @@ namespace sill {
       // posA = positive examples in set A (val > 0), etc.
       double posA = 0, posB = 0, negA = 0, negB = 0;
       size_t i = 0; // indexes ds/distribution
-      dataset::record_iterator end = ds.end();
-      for (dataset::record_iterator it = ds.begin();
+      typename dataset<la_type>::record_iterator end = ds.end();
+      for (typename dataset<la_type>::record_iterator it = ds.begin();
            it != end; ++it) {
         double val = 0;
         for (size_t j = 0; j < cur_coordinates.size(); ++j)
@@ -213,7 +222,7 @@ namespace sill {
     boost::tuple<std::vector<std::pair<size_t,size_t> >,
                  std::vector<double>,
                  double, double, double, double>
-    choose2(const dataset& ds, const Distribution& distribution) {
+    choose2(const dataset<la_type>& ds, const Distribution& distribution) {
       std::vector<std::pair<size_t,size_t> > best_coordinates(6);
       std::vector<double> multiplier(6);
       multiplier[0] = -1;
@@ -323,7 +332,7 @@ namespace sill {
     boost::tuple<std::vector<std::pair<size_t,size_t> >,
                  std::vector<double>,
                  double, double, double, double>
-    choose3(const dataset& ds, const Distribution& distribution) {
+    choose3(const dataset<la_type>& ds, const Distribution& distribution) {
       std::vector<std::pair<size_t,size_t> > best_coordinates(8);
       std::vector<double> multiplier(8);
       multiplier[0] = 1;
@@ -392,7 +401,7 @@ namespace sill {
     boost::tuple<std::vector<std::pair<size_t,size_t> >,
                  std::vector<double>,
                  double, double, double, double>
-    choose4(const dataset& ds, const Distribution& distribution) {
+    choose4(const dataset<la_type>& ds, const Distribution& distribution) {
       std::vector<std::pair<size_t,size_t> > best_coordinates(9);
       std::vector<double> multiplier(9);
       multiplier[0] = -1;
@@ -454,7 +463,7 @@ namespace sill {
      * Choose best Haar-like feature.
      */
     template <typename Distribution>
-    void build(const dataset& ds,
+    void build(const dataset<la_type>& ds,
                const Distribution& distribution) {
       // TODO: move some of these things to a binary_classifier init()
       const vector_var_vector& vector_seq = ds.vector_list();
@@ -545,7 +554,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit haar(dataset_statistics& stats, haar_parameters params = haar_parameters())
+    explicit haar(dataset_statistics<la_type>& stats, haar_parameters params = haar_parameters())
       : base(stats.get_dataset()), params(params) {
       build(stats.get_dataset(), make_constant<double>(1));
     }
@@ -555,23 +564,23 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param parameters    algorithm parameters
      */
-    haar(oracle& o, size_t n, haar_parameters params = haar_parameters())
+    haar(oracle<la_type>& o, size_t n, haar_parameters params = haar_parameters())
       : base(o), params(params) {
-      boost::shared_ptr<vector_dataset>
-        ds_ptr(oracle2dataset<vector_dataset>(o,n));
-      build(*ds_ptr, make_constant<double>(1));
+      vector_dataset<la_type> ds;
+      oracle2dataset(o, n, ds);
+      build(ds, make_constant<double>(1));
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new haar<Objective>(stats, this->params));
       return bptr;
     }
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new haar<Objective>(o, n, this->params));
       return bptr;
     }
@@ -607,7 +616,7 @@ namespace sill {
     ////----------------- PREDICTION METHODS ----------------////
 
     //! Predict the 0/1 label of a new example.
-    std::size_t predict(const record& example) const {
+    std::size_t predict(const record_type& example) const {
       return (confidence(example) > 0 ? 1 : 0);
     }
     //! Predict the 0/1 label of a new example.
@@ -618,7 +627,7 @@ namespace sill {
     //!  predict() == (confidence() > 0) ? 1 : 0.
     //! If the classifier does not have actual confidence ratings,
     //!  then this should be any value with the correct sign.
-    double confidence(const record& example) const {
+    double confidence(const record_type& example) const {
       double s = 0;
       for (size_t i = 0; i < coordinates.size(); ++i)
         if (coordinates[i].first > 0 && coordinates[i].second > 0)

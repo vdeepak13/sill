@@ -21,8 +21,13 @@ namespace sill {
    */
   class em_mog {
 
+  public:
+    typedef dense_linear_algebra<> la_type;
+    typedef record<la_type> record_type;
+
+  private:
     //! The dataset
-    const dataset* data;
+    const dataset<la_type>* data;
 
     //! The number of points in the dataset;
     size_t n;
@@ -35,7 +40,7 @@ namespace sill {
 
   public:
     //! Initializes the engine.
-    em_mog(const dataset* data, size_t k);
+    em_mog(const dataset<la_type>* data, size_t k);
     
     //! Computes the initial mixtures
     //! \param regul regularization parameter

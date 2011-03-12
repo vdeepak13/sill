@@ -156,9 +156,16 @@ namespace sill {
    * @todo confidence-rated predictions, regularization, different optimization
    *       objectives
    */
-  class logistic_regression : public binary_classifier {
+  class logistic_regression : public binary_classifier<> {
 
-    typedef binary_classifier base;
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef binary_classifier<> base;
+
+    typedef base::la_type la_type;
+    typedef base::record_type record_type;
 
     // Protected data members
     //==========================================================================
@@ -229,16 +236,16 @@ namespace sill {
     size_t iteration_;
 
     //! Dataset (for batch mode when given an oracle)
-    vector_dataset* ds_ptr;
+    vector_dataset<la_type>* ds_ptr;
 
     //! Dataset
-    const dataset& ds;
+    const dataset<la_type>& ds;
 
     //! Dataset oracle (for online mode when given a dataset)
-    ds_oracle* ds_o_ptr;
+    ds_oracle<la_type>* ds_o_ptr;
 
     //! Data oracle
-    oracle& o;
+    oracle<la_type>& o;
 
     // Protected methods
     //==========================================================================
@@ -286,15 +293,15 @@ namespace sill {
                                  = logistic_regression_parameters())
       : params(params),
         train_acc(-1), train_log_like(-std::numeric_limits<double>::max()),
-        iteration_(0), ds_ptr(new vector_dataset()), ds(*ds_ptr),
-        ds_o_ptr(new ds_oracle(*ds_ptr)), o(*ds_o_ptr) { }
+        iteration_(0), ds_ptr(new vector_dataset<la_type>()), ds(*ds_ptr),
+        ds_o_ptr(new ds_oracle<la_type>(*ds_ptr)), o(*ds_o_ptr) { }
 
     /**
      * Constructor.
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit logistic_regression(dataset_statistics& stats,
+    explicit logistic_regression(dataset_statistics<la_type>& stats,
                                  logistic_regression_parameters params
                                  = logistic_regression_parameters())
       : base(stats.get_dataset()), params(params),
@@ -302,7 +309,7 @@ namespace sill {
         vector_seq(stats.get_dataset().vector_list()), total_train(0),
         train_acc(-1), train_log_like(-std::numeric_limits<double>::max()),
         iteration_(0), ds_ptr(NULL), ds(stats.get_dataset()),
-        ds_o_ptr(new ds_oracle(stats.get_dataset())), o(*ds_o_ptr) {
+        ds_o_ptr(new ds_oracle<la_type>(stats.get_dataset())), o(*ds_o_ptr) {
       init();
     }
 
@@ -312,14 +319,14 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param parameters    algorithm parameters
      */
-    logistic_regression(oracle& o, size_t n,
+    logistic_regression(oracle<la_type>& o, size_t n,
                         logistic_regression_parameters params
                         = logistic_regression_parameters())
       : base(o), params(params),
         finite_seq(o.finite_list()), vector_seq(o.vector_list()),
         total_train(0), train_acc(-1),
         train_log_like(-std::numeric_limits<double>::max()), iteration_(0),
-        ds_ptr(new vector_dataset(o.datasource_info())), ds(*ds_ptr),
+        ds_ptr(new vector_dataset<la_type>(o.datasource_info())), ds(*ds_ptr),
         ds_o_ptr(NULL), o(o) {
       switch(params.method) {
       case 0:
@@ -346,16 +353,16 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new logistic_regression(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new logistic_regression(o, n, this->params));
       return bptr;
     }
@@ -411,7 +418,7 @@ namespace sill {
     //==========================================================================
 
     //! Predict the 0/1 label of a new example.
-    std::size_t predict(const record& example) const {
+    std::size_t predict(const record_type& example) const {
       return (confidence(example) > 0 ? 1 : 0);
     }
 
@@ -424,7 +431,7 @@ namespace sill {
     //!  predict() == (confidence() > 0) ? 1 : 0.
     //! If the classifier does not have actual confidence ratings,
     //!  then this should be any value with the correct sign.
-    double confidence(const record& example) const;
+    double confidence(const record_type& example) const;
 
     //! Value indicating the confidence of the prediction, with
     //!  predict() == (confidence() > 0) ? 1 : 0.
@@ -433,7 +440,7 @@ namespace sill {
     double confidence(const assignment& example) const;
 
     //! Predict the probability of the class variable having value 1.
-    double probability(const record& example) const {
+    double probability(const record_type& example) const {
       return 1. / (1. + exp(-1. * confidence(example)));
     }
 
@@ -467,11 +474,11 @@ namespace sill {
     //! Resets the data source to be used in future rounds of training.
     //! @param  n   max number of examples which may be drawn from the oracle
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    void reset_datasource(oracle& o, size_t n) { assert(false); }
+    void reset_datasource(oracle<la_type>& o, size_t n) { assert(false); }
 
     //! Resets the data source to be used in future rounds of training.
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    void reset_datasource(dataset_statistics& stats) { assert(false); }
+    void reset_datasource(dataset_statistics<la_type>& stats) { assert(false); }
     */
 
     // Save and load methods

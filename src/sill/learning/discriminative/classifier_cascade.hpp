@@ -29,7 +29,7 @@ namespace sill {
      * the extra base classifiers.
      *  (required)
      */
-    std::vector<boost::shared_ptr<binary_classifier> > base_classifiers;
+    std::vector<boost::shared_ptr<binary_classifier<> > > base_classifiers;
 
     //! Initial number of base classifiers to build.
     //!  (default = 0)
@@ -150,13 +150,20 @@ namespace sill {
    * \ingroup learning_discriminative
    * @todo serialization
    */
-  class classifier_cascade : public binary_classifier {
+  class classifier_cascade : public binary_classifier<> {
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef binary_classifier<> base;
+
+    typedef base::la_type la_type;
+    typedef base::record_type record_type;
 
     // Protected data members
     //==========================================================================
   protected:
-
-    typedef binary_classifier base;
 
     classifier_cascade_parameters params;
 
@@ -169,22 +176,22 @@ namespace sill {
     //! Dataset to be passed to base learners
     //! The first fixed_ds_size examples are from the fixed dataset,
     //! and the remaining ones are from the oracle.
-    vector_dataset base_ds;
+    vector_dataset<la_type> base_ds;
 
     //! Number of rare class examples permanently stored in base_ds.
     size_t rare_ds_size;
 
     //! for constructing an empty classifier_cascade
-    ds_oracle* ds_o_ptr;
+    ds_oracle<la_type>* ds_o_ptr;
 
     //! Oracle for common class
-    oracle& common_o;
+    oracle<la_type>& common_o;
 
     //! Used for choosing a threshold (and avoiding reallocation)
     vec base_ds_preds;
 
     //! Base classifiers
-    std::vector<boost::shared_ptr<binary_classifier> > base_classifiers;
+    std::vector<boost::shared_ptr<binary_classifier<> > > base_classifiers;
 
     //! Thresholds for base classifiers
     std::vector<double> thresholds;
@@ -192,7 +199,7 @@ namespace sill {
     // Protected methods
     //==========================================================================
 
-    void init(const dataset& rare_ds);
+    void init(const dataset<la_type>& rare_ds);
 
     //! Advance the oracle to the next example which is misclassified.
     //! @return true iff a valid next example has been found
@@ -211,7 +218,7 @@ namespace sill {
      */
     explicit classifier_cascade(classifier_cascade_parameters params)
       : params(params), base_ds(), rare_ds_size(0),
-        ds_o_ptr(new ds_oracle(base_ds)), common_o(*ds_o_ptr) {
+        ds_o_ptr(new ds_oracle<la_type>(base_ds)), common_o(*ds_o_ptr) {
     }
 
     /**
@@ -220,7 +227,7 @@ namespace sill {
      * @param common_o   oracle for common class
      * @param params     algorithm parameters
      */
-    classifier_cascade(const dataset& rare_ds, oracle& common_o,
+    classifier_cascade(const dataset<la_type>& rare_ds, oracle<la_type>& common_o,
                        classifier_cascade_parameters params)
       : base(rare_ds), params(params), base_ds(rare_ds.datasource_info()),
         rare_ds_size(rare_ds.size()), ds_o_ptr(NULL), common_o(common_o) {
@@ -234,15 +241,17 @@ namespace sill {
     }
 
     //! Warning: This should not be used for this class!
-    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
+    boost::shared_ptr<binary_classifier<> >
+    create(dataset_statistics<la_type>& stats) const {
       assert(false);
-      return boost::shared_ptr<binary_classifier>();
+      return boost::shared_ptr<binary_classifier<> >();
     }
 
     //! Warning: This should not be used for this class!
-    boost::shared_ptr<binary_classifier> create(oracle& o, size_t n) const {
+    boost::shared_ptr<binary_classifier<> >
+    create(oracle<la_type>& o, size_t n) const {
       assert(false);
-      return boost::shared_ptr<binary_classifier>();
+      return boost::shared_ptr<binary_classifier<> >();
     }
 
     // Getters and helpers
@@ -271,7 +280,7 @@ namespace sill {
     }
 
     //! Computes the accuracy after each iteration on a test set.
-    std::vector<double> test_accuracies(const dataset& testds) const {
+    std::vector<double> test_accuracies(const dataset<la_type>& testds) const {
       assert(false);
     }
 
@@ -296,7 +305,7 @@ namespace sill {
     std::size_t predict(const assignment& example) const;
 
     //! Predict the 0/1 label of a new example.
-    std::size_t predict(const record& example) const;
+    std::size_t predict(const record_type& example) const;
 
     // Save and load methods
     //==========================================================================

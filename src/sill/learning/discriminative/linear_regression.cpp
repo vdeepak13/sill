@@ -107,7 +107,7 @@ namespace sill {
     weights_.b = tmpA.row(tmpA.size1() - 1);
   } // train_matrix_inversion_with_mean()
 
-  void linear_regression::init(const dataset& ds, bool own_data) {
+  void linear_regression::init(const dataset<la_type>& ds, bool own_data) {
     if (!params.valid()) {
       std::cerr << "linear_regression given invalid parameters:\n"
                 << params << std::endl;
@@ -346,7 +346,7 @@ namespace sill {
   linear_regression::choose_lambda_easy
   (const vector_var_vector& Yvec, const vector_var_vector& Xvec,
    const linear_regression_parameters& lr_params,
-   const dataset& ds, unsigned random_seed) {
+   const dataset<la_type>& ds, unsigned random_seed) {
     size_t n_folds = 10;
     size_t n_lambdas = 10;
     double MIN_LAMBDA = .001;
@@ -369,7 +369,7 @@ namespace sill {
   double
   linear_regression::choose_lambda_easy
   (const linear_regression_parameters& lr_params,
-   const dataset& ds, unsigned random_seed) {
+   const dataset<la_type>& ds, unsigned random_seed) {
     vector_var_vector Yvec(ds.vector_class_variables());
     vector_domain Yset(Yvec.begin(), Yvec.end());
     vector_var_vector Xvec;
@@ -386,7 +386,7 @@ namespace sill {
    const vector_var_vector& Yvec, const vector_var_vector& Xvec,
    size_t n_folds, const vec& lambdas,
    const linear_regression_parameters& lr_params,
-   size_t zoom, const dataset& ds, unsigned random_seed) {
+   size_t zoom, const dataset<la_type>& ds, unsigned random_seed) {
 
     if (lr_params.regularization == 0) {
       std::cerr << "linear_regression::choose_lambda_cv() was called when "
@@ -406,10 +406,10 @@ namespace sill {
     boost::mt11213b rng(random_seed);
     size_t best_i(0); // This indexes the current best value in all_lambdas.
 
-    dataset_view permuted_view(ds);
+    dataset_view<la_type> permuted_view(ds);
     permuted_view.set_record_indices(randperm(ds.size(), rng));
-    dataset_view fold_train_view(permuted_view);
-    dataset_view fold_test_view(permuted_view);
+    dataset_view<la_type> fold_train_view(permuted_view);
+    dataset_view<la_type> fold_test_view(permuted_view);
     fold_train_view.save_record_view();
     fold_test_view.save_record_view();
     linear_regression_parameters fold_params(lr_params);
@@ -500,7 +500,7 @@ namespace sill {
   (vec& all_lambdas, vec& scores, vec& stderrs,
    const vector_var_vector& Yvec, const vector_var_vector& Xvec,
    const vec& lambdas, const linear_regression_parameters& lr_params,
-   size_t zoom, const dataset& ds, bool return_regressor,
+   size_t zoom, const dataset<la_type>& ds, bool return_regressor,
    unsigned random_seed) {
 
     if (lr_params.regularization == 0) {

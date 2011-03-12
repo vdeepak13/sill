@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
 
   // Generate a dataset
   cout << "Sampling " << nsamples << " training samples from the model" << endl;
-  vector_dataset ds(finite_var_vector(), YX, 
+  vector_dataset<> ds(finite_var_vector(), YX, 
                     std::vector<variable::variable_typenames>
                     (YX.size(), variable::VECTOR_VARIABLE));
   for (size_t i(0); i < nsamples; ++i) {

@@ -21,7 +21,8 @@ int main(int argc, char* argv[]) {
   universe u;
   syn_oracle_majority majority(create_syn_oracle_majority(10,u));
   cout << "Majority oracle:\n" << majority << std::endl;
-  vector_dataset ds(*(oracle2dataset<vector_dataset>(majority, 100)));
+  vector_dataset<> ds;
+  oracle2dataset(majority, 100, ds);
 
   chow_liu<table_factor> chowliu(ds.finite_variables(), ds);
   const decomposable<table_factor>& model = chowliu.model();

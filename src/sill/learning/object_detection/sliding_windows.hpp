@@ -47,6 +47,10 @@ namespace sill {
     //==========================================================================
   public:
 
+    typedef dense_linear_algebra<> la_type;
+
+    typedef record<la_type> record_type;
+
     struct parameters {
 
       /**
@@ -128,7 +132,7 @@ namespace sill {
     size_t class_variable_index;
 
     //! Base classifier
-    const binary_classifier& base_classifier;
+    const binary_classifier<>& base_classifier;
 
     //! If the base classifier's confidence is above this value for a window,
     //! then the object has been detected in the window.
@@ -141,7 +145,7 @@ namespace sill {
     size_t window_w;
 
 //    //! Record used to store the sliding window
-//    record window_record;
+//    record_type window_record;
 
     // Constructors and destructors
     //==========================================================================
@@ -156,7 +160,7 @@ namespace sill {
      *                window.
      * @todo pass window_h, window_w in a better way
      */
-    sliding_windows(const binary_classifier& base_classifier,
+    sliding_windows(const binary_classifier<>& base_classifier,
                     double cutoff, size_t window_h, size_t window_w,
                     parameters params = parameters())
       : params(params), class_variable(base_classifier.label()),
@@ -199,8 +203,8 @@ namespace sill {
      * @see image.hpp
      */
     std::vector<boost::tuple<size_t, size_t, size_t, size_t> >
-    predict(const record& example) const {
-      record r(example);
+    predict(const record_type& example) const {
+      record_type r(example);
       return predict(r);
     }
 
@@ -214,7 +218,7 @@ namespace sill {
      * @see image.hpp
      */
     std::vector<boost::tuple<size_t, size_t, size_t, size_t> >
-    predict(record& example) const;
+    predict(record_type& example) const;
 
     /**
      * Returns a vector of intensity maps (as images) indicating where objects
@@ -223,9 +227,9 @@ namespace sill {
      * @param example  This must be an image record.
      * @see image.hpp
      */
-    std::vector<record>
-    intensity_maps(const record& example) const {
-      record r(example);
+    std::vector<record_type>
+    intensity_maps(const record_type& example) const {
+      record_type r(example);
       return intensity_maps(r);
     }
 
@@ -236,8 +240,8 @@ namespace sill {
      * @param example  This must be an image record.
      * @see image.hpp
      */
-    std::vector<record>
-    intensity_maps(record& example) const;
+    std::vector<record_type>
+    intensity_maps(record_type& example) const;
 
   };  // class sliding_windows
 

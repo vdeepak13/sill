@@ -1,8 +1,4 @@
 
-#include <fstream>
-
-#include <sill/base/string_functions.hpp>
-#include <sill/base/universe.hpp>
 #include <sill/learning/dataset/symbolic.hpp>
 
 #include <sill/macros_def.hpp>
@@ -87,95 +83,6 @@ namespace sill {
       }
       return params;
     }
-
-    void save_binary_dataset(const dataset& ds, const std::string& filepath) {
-      parameters params;
-      params.format = 1;
-      params.dataset_name = split_directory_file(filepath).second;
-      save_dataset(ds, filepath, params);
-    }
-
-    void save_text_dataset(const dataset& ds, const std::string& filepath) {
-      assert(false); // TO BE IMPLEMENTED
-    }
-
-    void save_dataset(const dataset& ds, const std::string& filepath,
-                      const parameters& params_) {
-      parameters params(params_);
-      //      params.data_filename = filepath + ".data";
-      const finite_var_vector& finite_seq = ds.finite_list();
-      const vector_var_vector& vector_seq = ds.vector_list();
-      std::pair<std::string, std::string>
-        data_dir_file(split_directory_file(filepath));
-      std::vector<size_t> class_var_vec;
-      foreach(finite_variable* v, ds.finite_class_variables())
-        class_var_vec.push_back(ds.var_order_index(v));
-      foreach(vector_variable* v, ds.vector_class_variables())
-        class_var_vec.push_back(ds.var_order_index(v));
-      std::sort(class_var_vec.begin(), class_var_vec.end());
-      if (ds.is_weighted())
-        assert(false); // TO BE IMPLEMENTED
-      if (params.format == 0) { // text
-        assert(false); // TO BE IMPLEMENTED
-      } else if (params.format == 1) { // binary
-        // Save the .sum file
-        std::ofstream f_out((filepath + ".sum").c_str());
-        f_out << params.dataset_name << "\n"
-              << ds.size() << "\n"
-              << ds.num_variables() << "\n";
-        size_t f_i(0);
-        size_t v_i(0);
-        foreach(variable::variable_typenames v_type, ds.variable_type_order()) {
-          switch (v_type) {
-          case variable::FINITE_VARIABLE:
-            f_out << finite_seq[f_i]->size() << "\t"
-                  << finite_seq[f_i]->name() << "\n";
-            ++f_i;
-            break;
-          case variable::VECTOR_VARIABLE:
-            f_out << "v" << vector_seq[v_i]->size() << "\t"
-                  << vector_seq[v_i]->name() << "\n";
-            ++v_i;
-            break;
-          default:
-            assert(false);
-          }
-        }
-        f_out << data_dir_file.second + ".data\n"
-              << "FORMAT=1\n";
-        if (class_var_vec.size() != 0) {
-          f_out << "CLASS_VARIABLES="
-                << string_join(" ", class_var_vec) << "\n";
-        }
-        f_out.flush();
-        f_out.close();
-        // Save the .data file
-        FILE* f = fopen((filepath + ".data").c_str(), "w");
-        assert(!ferror(f));
-        size_t* finite_buffer = new size_t[finite_seq.size()];
-        double* vector_buffer = new double[ds.vector_dim()];
-        foreach(const record& r, ds.records()) {
-          for (size_t j(0); j < finite_seq.size(); ++j)
-            finite_buffer[j] = r.finite(j);
-          for (size_t j(0); j < ds.vector_dim(); ++j)
-            vector_buffer[j] = r.vector(j);
-          size_t wc =
-            fwrite(finite_buffer, sizeof(size_t), finite_seq.size(), f);
-          assert(wc == finite_seq.size());
-          wc = fwrite(vector_buffer, sizeof(double), ds.vector_dim(), f);
-          assert(wc == ds.vector_dim());
-        }
-        delete(finite_buffer);
-        finite_buffer = NULL;
-        delete(vector_buffer);
-        vector_buffer = NULL;
-        fflush(f);
-        fclose(f);
-        f = NULL;
-      } else {
-        assert(false);
-      }
-    } // save_dataset()
 
   } // namespace symbolic
 

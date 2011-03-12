@@ -1,11 +1,18 @@
 #ifndef SILL_CRF_VALIDATION_FUNCTOR_HPP
 #define SILL_CRF_VALIDATION_FUNCTOR_HPP
 
+#include <sill/learning/crf/crf_parameter_learner.hpp>
+#include <sill/learning/crf/crf_parameter_learner_parameters.hpp>
 #include <sill/learning/validation/model_validation_functor.hpp>
+#include <sill/model/crf_model.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  // Forward declarations
+  struct crf_parameter_learner_parameters;
+  template <typename F> class crf_parameter_learner;
 
   /**
    * Model validation functor for Conditional Random Fields (CRFs).
@@ -14,13 +21,13 @@ namespace sill {
    */
   template <typename F>
   class crf_validation_functor
-    : public model_validation_functor {
+    : public model_validation_functor<> {
 
     // Public types
     // =========================================================================
   public:
 
-    typedef model_validation_functor base;
+    typedef model_validation_functor<> base;
 
     //! Type of CRF factor
     typedef F crf_factor_type;
@@ -33,11 +40,15 @@ namespace sill {
 
     /**
      * Constructor which uses a crf_graph.
+     * WARNING: This does not work with templated factors; use the below
+     *          constructor instead.
      */
+    /*
     crf_validation_functor(const crf_graph_type& structure,
                            const crf_parameter_learner_parameters& cpl_params)
-      : structure(structure), cpl_params(cpl_params), use_weights(false) {
+      : structure(structure), cpl_params(cpl_params) {
     }
+    */
 
     /**
      * Constructor which uses a crf_model.
@@ -48,8 +59,8 @@ namespace sill {
     crf_validation_functor(const crf_model<F>& model,
                            const crf_parameter_learner_parameters& cpl_params,
                            bool use_weights = true)
-      : structure(model), model(model), cpl_params(cpl_params),
-        use_weights(use_weights) {
+      : structure(model), model(model), cpl_params(cpl_params) {
+      this->use_weights = use_weights;
     }
 
     // Public methods
@@ -75,8 +86,9 @@ namespace sill {
      *
      * @return  Result/score.
      */
+    /*
     double
-    train(const dataset& train_ds, const dataset& test_ds,
+    train(const dataset<>& train_ds, const dataset<>& test_ds,
           const vec& validation_params, bool warm_start_recommended,
           unsigned random_seed = time(NULL)) {
       cpl_params.lambdas = validation_params;
@@ -86,6 +98,7 @@ namespace sill {
       add_results(train_ds, "train ");
       return add_results(test_ds, "test ");
     } // train (for choosing parameters)
+    */
 
     /**
      * Train a model, and compute results on the test dataset.
@@ -100,14 +113,16 @@ namespace sill {
      *
      * @return  Result/score.
      */
+    /*
     double
-    train(const dataset& train_ds, const dataset& test_ds,
+    train(const dataset<>& train_ds, const dataset<>& test_ds,
           unsigned random_seed = time(NULL)) {
       train_model(train_ds, random_seed);
       result_map_.clear();
       add_results(train_ds, "train ");
       return add_results(test_ds, "test ");
     } // train (for testing)
+    */
 
     /**
      * Compute results on the test dataset.
@@ -118,11 +133,13 @@ namespace sill {
      *
      * @return  Result/score.
      */
+    /*
     double
-    test(const dataset& test_ds, unsigned random_seed) {
+    test(const dataset<>& test_ds, unsigned random_seed) {
       result_map_.clear();
       return add_results(test_ds, "test ");
     } // test
+    */
 
     // Protected data
     // =========================================================================
@@ -135,26 +152,33 @@ namespace sill {
     crf_parameter_learner_parameters cpl_params;
 
     //! Indicates if the weights of model are good for initializing learning.
-    bool use_weights;
+//    bool use_weights;
 
     // Protected methods
     // =========================================================================
 
-    void train_model(const dataset& ds, unsigned random_seed) {
+    void train_model(const dataset<>& ds, unsigned random_seed) {
       cpl_params.random_seed = random_seed;
-      if (model.size() != 0) {
+      if (model.num_arguments() != 0) {
         crf_parameter_learner<F> cpl(model, ds, use_weights, cpl_params);
         model = cpl.current_model();
       } else {
+        assert(false); // This version does not work with templated factors. Figure out a way to resolve this issue.
         crf_parameter_learner<F> cpl(structure, ds, cpl_params);
         model = cpl.current_model();
       }
     }
 
+    void train_model(const dataset<>& ds, const vector_type& validation_params,
+                     unsigned random_seed) {
+      cpl_params.lambdas = validation_params;
+      train_model(ds, random_seed);
+    }
+
     //! Compute results from model, and store them in result_map_.
     //! @param prefix  Prefix to add to result names.
     //! @return  Main result/score.
-    double add_results(const dataset& ds, const std::string& prefix) {
+    double add_results(const dataset<>& ds, const std::string& prefix) {
       double ll = model.expected_log_likelihood(ds);
       result_map_[prefix + "log likelihood"] = ll;
       result_map_[prefix + "per-label accuracy"] =

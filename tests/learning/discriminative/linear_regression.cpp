@@ -12,7 +12,7 @@
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/linear_regression.hpp>
 
 #include <sill/macros_def.hpp>
@@ -47,8 +47,8 @@ int main(int argc, char* argv[]) {
   for (size_t j(0); j < A.size(); ++j)
     A(j) = unif_real(rng);
   cout << "True A matrix:\n" << A << endl;
-  vector_dataset ds_train(ds_info);
-  vector_dataset ds_test(ds_info);
+  vector_dataset<> ds_train(ds_info);
+  vector_dataset<> ds_test(ds_info);
   for (size_t i(0); i < ntrain + ntest; ++i) {
     std::vector<size_t> fvals;
     vec vvals(nY+nX, 0);

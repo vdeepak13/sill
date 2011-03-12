@@ -73,6 +73,8 @@ namespace sill {
     typedef typename base::optimization_vector optimization_vector;
     typedef typename base::regularization_type regularization_type;
 
+    typedef typename base::la_type la_type;
+
     //! Parameters used for learn_crf_factor().
     struct parameters
       : public F::parameters {
@@ -279,12 +281,12 @@ namespace sill {
      * this returns the expected log likelihood of the distribution P(A | B).
      * This uses real-space; i.e., the log of this factor is in log-space.
      */
-    double log_expected_value(const dataset& ds) const {
+    double log_expected_value(const dataset<la_type>& ds) const {
       double val(0);
       output_factor_type tmp_fctr;
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds.records()) {
+      foreach(const record_type& r, ds.records()) {
         val += ds.weight(i) * logv(r);
         total_ds_weight += ds.weight(i);
         ++i;

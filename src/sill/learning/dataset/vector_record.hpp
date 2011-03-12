@@ -8,7 +8,7 @@
 #include <sill/base/stl_util.hpp>
 #include <sill/copy_ptr.hpp>
 #include <sill/learning/dataset/datasource_info_type.hpp>
-#include <sill/math/vector.hpp>
+#include <sill/math/sparse_linear_algebra/linear_algebra_types.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -29,11 +29,17 @@ namespace sill {
    * When a record is copied, the copy will store its own data.
    *
    * \author Joseph Bradley, Stanislav Funiak
-   * \todo Allow vector_records to be restricted to a set of variables.
+   *
+   * @todo Allow vector_records to be restricted to a set of variables.
    * @todo Change assignment(), finite_assignment(), etc. to allow efficient
    *       access for datasets whose native type is assignment.
+   *
    * \ingroup learning_dataset
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
+  template <typename LA = dense_linear_algebra<> >
   class vector_record {
 
     // Public types and data members
@@ -42,6 +48,12 @@ namespace sill {
 
     //! Type of variable used.
     typedef vector_variable variable_type;
+
+    //! Linear algebra specification
+    typedef LA la_type;
+
+    typedef typename la_type::vector_type vector_type;
+    typedef typename la_type::value_type  value_type;
 
     //! Type of map value from a vector variable to the first index in a
     //! vector of values.
@@ -55,7 +67,7 @@ namespace sill {
     bool vec_own;
 
     //! Handle for vector variable values for record
-    vec* vec_ptr;
+    vector_type* vec_ptr;
 
     /*
 // TODO: FINISH RECORD VIEWS
@@ -71,7 +83,7 @@ namespace sill {
     //! Constructs an empty vector_record which owns its data.
     vector_record()
       : vector_numbering_ptr(new std::map<vector_variable*, size_t>()),
-        vec_own(true), vec_ptr(new vec()) {
+        vec_own(true), vec_ptr(new vector_type()) {
     }
 
     //! Constructor for a vector_record which owns its data.
@@ -80,7 +92,7 @@ namespace sill {
     (copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
      size_t vector_dim)
       : vector_numbering_ptr(vector_numbering_ptr), vec_own(true),
-        vec_ptr(new vec(vector_dim)) {
+        vec_ptr(new vector_type(vector_dim)) {
     }
 
     //! Constructor for a vector_record which uses data from its creator
@@ -95,7 +107,7 @@ namespace sill {
     explicit vector_record(const vector_var_vector& vector_seq,
                            size_t vector_dim)
       : vector_numbering_ptr(new std::map<vector_variable*,size_t>()),
-        vec_own(true), vec_ptr(new vec(vector_dim)) {
+        vec_own(true), vec_ptr(new vector_type(vector_dim)) {
       size_t k(0);
       for (size_t j(0); j < vector_seq.size(); ++j) {
         vector_numbering_ptr->operator[](vector_seq[j]) = k;
@@ -113,7 +125,7 @@ namespace sill {
         vector_numbering_ptr->operator[](vector_seq[j]) = k;
         k += vector_seq[j]->size();
       }
-      vec_ptr = new vec(k);
+      vec_ptr = new vector_type(k);
     }
 
     //! Copy constructor.
@@ -121,7 +133,7 @@ namespace sill {
     //! or not it's OK to rely on the outside handle.
     vector_record(const vector_record& rec)
       : vector_numbering_ptr(rec.vector_numbering_ptr), vec_own(true),
-        vec_ptr(new vec(*(rec.vec_ptr))) {
+        vec_ptr(new vector_type(*(rec.vec_ptr))) {
     }
 
     ~vector_record() {
@@ -130,18 +142,37 @@ namespace sill {
       }
     }
 
-    bool operator==(const vector_record& other) const;
+    bool operator==(const vector_record& other) const {
+      if (*vector_numbering_ptr == *(other.vector_numbering_ptr) &&
+          vector() == other.vector())
+        return true;
+      else
+        return false;
+    }
 
-    bool operator!=(const vector_record& other) const;
+    bool operator!=(const vector_record& other) const {
+      return !operator==(other);
+    }
 
     // Getters and helpers
     //==========================================================================
 
     //! Returns true iff this record has a value for this variable.
-    bool has_variable(vector_variable* v) const;
+    bool has_variable(vector_variable* v) const {
+      return (vector_numbering_ptr->count(v) != 0);
+    }
 
     //! Returns the vector part of this record as an assignment.
-    sill::vector_assignment vector_assignment() const;
+    sill::vector_assignment vector_assignment() const {
+      sill::vector_assignment a;
+      foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
+        vector_type v(p.first->size());
+        for(size_t j = 0; j < p.first->size(); ++j)
+          v[j] = vec_ptr->operator[](j+p.second);
+        a[p.first] = v;
+      }
+      return a;
+    }
 
     //! Converts this record to a vector assignment.
     operator sill::vector_assignment() const {
@@ -151,13 +182,31 @@ namespace sill {
     //! Returns the vector part of this record as an assignment,
     //! but only for the given variables X.
     //! @param X  All of these variables must be in this record.
-    sill::vector_assignment assignment(const vector_domain& X) const;
+    sill::vector_assignment assignment(const vector_domain& X) const {
+      sill::vector_assignment a;
+      foreach(vector_variable* v, X) {
+        size_t v_index(safe_get(*vector_numbering_ptr, v));
+        vector_type val(v->size());
+        for(size_t j(0); j < v->size(); ++j)
+          val[j] = vec_ptr->operator[](v_index + j);
+        a[v] = val;
+      }
+      return a;
+    }
 
     //! For the given variables X, add their values in this record to
     //! the given assignment.
     //! @param X  All of these variables must be in this record.
     void
-    add_assignment(const vector_domain& X, sill::vector_assignment& a) const;
+    add_assignment(const vector_domain& X, sill::vector_assignment& a) const {
+      foreach(vector_variable* v, X) {
+        size_t v_index(safe_get(*vector_numbering_ptr, v));
+        vector_type val(v->size());
+        for(size_t j(0); j < v->size(); ++j)
+          val[j] = vec_ptr->operator[](v_index + j);
+        a[v] = val;
+      }
+    }
 
     //! Returns the number of vector variables.
     size_t num_vector() const {
@@ -166,46 +215,55 @@ namespace sill {
 
     //! Returns list of vector variables in the natural order.
     //! NOTE: This is not stored and must be computed from vector_numbering!
-    vector_var_vector vector_list() const;
+    vector_var_vector vector_list() const {
+      vector_var_vector vlist(vector_numbering_ptr->size(), NULL);
+      for (std::map<vector_variable*,size_t>::const_iterator
+             it(vector_numbering_ptr->begin());
+           it != vector_numbering_ptr->end(); ++it)
+        vlist[it->second] = it->first;
+      return vlist;
+    }
 
     //! Returns the set of arguments.
     //! NOTE: This is not stored and must be computed from vector_numbering!
-    vector_domain variables() const;
+    vector_domain variables() const {
+      return keys(*vector_numbering_ptr);
+    }
 
     //! Returns the vector component of this record as one continuous vector
-    vec& vector() {
+    vector_type& vector() {
       return *vec_ptr;
     }
 
     //! Returns the vector component of this record as one continuous vector
-    const vec& vector() const {
+    const vector_type& vector() const {
       return *vec_ptr;
     }
 
     //! Returns element i of the vector component of this record (when
     //!  represented as one continuous vector)
     //! Warning: The bounds are not checked!
-    double& vector(size_t i) {
+    value_type& vector(size_t i) {
       return vec_ptr->operator[](i);
     }
 
     //! Returns element i of the vector component of this record (when
     //!  represented as one continuous vector)
     //! Warning: The bounds are not checked!
-    double vector(size_t i) const {
+    value_type vector(size_t i) const {
       return vec_ptr->operator[](i);
     }
 
     //! Returns element j of the value of variable v in this record.
     //! Warning: The bounds are not checked!
-    double& vector(vector_variable* v, size_t j) {
+    value_type& vector(vector_variable* v, size_t j) {
       size_t i(safe_get(*vector_numbering_ptr, v));
       return vec_ptr->operator[](i + j);
     }
 
     //! Returns the value of variable v in this record.
     //! Warning: The bounds are not checked!
-    double vector(vector_variable* v, size_t j) const {
+    value_type vector(vector_variable* v, size_t j) const {
       size_t i(safe_get(*vector_numbering_ptr, v));
       return vec_ptr->operator[](i + j);
     }
@@ -213,7 +271,8 @@ namespace sill {
     //! Sets the given vector vals to have the values of vars from this record.
     //! @param vals  Does not need to be pre-allocated.
     //! @param vars  All of these variables must have values in this record.
-    void vector_values(vec& vals, const vector_var_vector& vars) const {
+    template <typename VecType>
+    void vector_values(VecType& vals, const vector_var_vector& vars) const {
       size_t vars_size(vector_size(vars));
       if (vars_size != vals.size())
         vals.resize(vars_size);
@@ -229,7 +288,9 @@ namespace sill {
 
     //! Sets the given vector to the indices of the given variables' values
     //! in this record.
-    void vector_indices(ivec& indices, const vector_var_vector& vars) const {
+    template <typename IVecType>
+    void
+    vector_indices(IVecType& indices, const vector_var_vector& vars) const {
       size_t vars_size(vector_size(vars));
       if (indices.size() != vars_size)
         indices.resize(vars_size);
@@ -244,8 +305,7 @@ namespace sill {
     }
 
     //! Write the record to the given output stream.
-    template <typename CharT, typename Traits>
-    void write(std::basic_ostream<CharT, Traits>& out) const {
+    void write(std::ostream& out) const {
       out << this->vector_assignment();
     }
 
@@ -285,38 +345,137 @@ namespace sill {
 
     //! The new copy owns its data since a record does not know whether
     //! or not it's OK to rely on the outside reference.
-    vector_record& operator=(const vector_record& rec);
+    vector_record& operator=(const vector_record& rec) {
+      vector_numbering_ptr = rec.vector_numbering_ptr;
+      if (vec_own) {
+        vec_ptr->resize(rec.vec_ptr->size());
+        for (size_t j(0); j < rec.vec_ptr->size(); ++j)
+          vec_ptr->operator[](j) = rec.vec_ptr->operator[](j);
+      } else {
+        vec_own = true;
+        vec_ptr = new vector_type(*(rec.vec_ptr));
+      }
+      return *this;
+    }
 
     //! Copies values from the given assignment (but only those for variables
     //! in this record.
     //! NOTE: The assignment must give values to all variables in this record.
     //! The new copy owns its data since a record does not know whether
     //! or not it's OK to rely on the outside reference.
-    vector_record& operator=(const sill::vector_assignment& a);
+    vector_record& operator=(const sill::vector_assignment& a) {
+      size_t a_vars_size(0);
+      foreach(const sill::vector_assignment::value_type& a_val, a) {
+        a_vars_size += a_val.first->size();
+      }
+      if (!vec_own) {
+        vec_ptr = new vector_type(a_vars_size, 0.);
+        vec_own = true;
+      } else {
+        vec_ptr->resize(a_vars_size);
+      }
+      foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
+        const vector_type& v = safe_get(a, p.first);
+        for (size_t j = 0; j < p.first->size(); ++j)
+          vec_ptr->operator[](p.second + j) = v[j];
+      }
+      return *this;
+    }
 
     //! Clear the record.
-    void clear();
+    void clear() {
+      vector_numbering_ptr->clear();
+      if (vec_own) {
+        vec_ptr->clear();
+      } else {
+        vec_own = true;
+        vec_ptr = new vector_type();
+      }
+    }
 
     //! Clears the stored data (if it is owned by the record)
     //! and resets the record (like a constructor).
     void
     reset(copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
-          size_t vector_dim);
+          size_t vector_dim) {
+      this->vector_numbering_ptr = vector_numbering_ptr;
+      if (vec_own) {
+        vec_ptr->resize(vector_dim);
+      } else {
+        vec_own = true;
+        vec_ptr = new vector_type(vector_dim);
+      }
+    }
 
     //! Clears the stored data (if it is owned by the record)
     //! and resets the record (like a constructor).
-    void reset(const datasource_info_type& ds_info);
+    void reset(const datasource_info_type& ds_info) {
+      datasource_info_type::build_vector_numbering(ds_info.vector_seq,
+                                                   *vector_numbering_ptr);
+      size_t vdim = vector_size(ds_info.vector_seq);
+      if (vec_own) {
+        vec_ptr->resize(vdim);
+      } else {
+        vec_own = true;
+        vec_ptr = new vector_type(vdim);
+      }
+    }
 
     //! Set vector data to be this value (stored in the record itself).
-    void set_vector_val(const vec& val) {
+    void set_vector_val(const vector_type& val) {
       assert(vec_own);
       vec_ptr->operator=(val);
     }
 
     //! Set vector data to reference this value (stored outside of the record).
-    void set_vector_ptr(vec* val) {
+    void set_vector_ptr(vector_type* val) {
       assert(!vec_own);
       vec_ptr = val;
+    }
+
+    /**
+     * For each variable in this record,
+     * set the value according to the assignment,
+     * with record variables mapped to assignment variables according to vmap.
+     *
+     * @param a     Assignment covering all variables in this record,
+     *               modulo the variable mapping.
+     * @param vmap  Variable mapping: Variables in record --> Variables in a.
+     */
+    void copy_assignment_mapped(const sill::vector_assignment& a,
+                                const vector_var_map& vmap) {
+      for (std::map<vector_variable*, size_t>::const_iterator it =
+             vector_numbering_ptr->begin();
+           it != vector_numbering_ptr->end();
+           ++it) {
+        vec_ptr->set_subvector
+          (irange(it->second, it->second + it->first->size()),
+           safe_get(a, safe_get(vmap, it->first)));
+      }
+    }
+
+    /**
+     * For each variable in this record,
+     * set the value according to the given record,
+     * with variables mapped according to vmap.
+     *
+     * @param r     Record covering all variables in this record,
+     *               modulo the variable mapping.
+     * @param vmap  Variable mapping: Vars in this record --> Vars in other.
+     */
+    void copy_record_mapped(const vector_record& r,
+                            const vector_var_map& vmap) {
+      for (std::map<vector_variable*, size_t>::const_iterator it =
+             vector_numbering_ptr->begin();
+           it != vector_numbering_ptr->end();
+           ++it) {
+        size_t i(safe_get(*(r.vector_numbering_ptr),
+                          safe_get(vmap,it->first)));
+        for (size_t j(it->second); j < it->second + it->first->size(); ++j) {
+          this->vector(j) = r.vector(i);
+          ++i;
+        }
+      }
     }
 
   }; // class vector_record
@@ -325,10 +484,8 @@ namespace sill {
   //==========================================================================
 
   // @todo Fix this! (See symbolic_oracle.cpp)
-  template <typename V, typename CharT, typename Traits>
-  std::basic_ostream<CharT, Traits>&
-  operator<<(std::basic_ostream<CharT, Traits>& out,
-             const vector_record& r) {
+  template <typename LA>
+  std::ostream& operator<<(std::ostream& out, const vector_record<LA>& r) {
     r.write(out);
     return out;
   }

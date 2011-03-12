@@ -48,6 +48,14 @@ namespace sill {
    */
   class image {
 
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef dense_linear_algebra<> la_type;
+
+    typedef record<la_type> record_type;
+
   private:
     static const bool debug = true;
 
@@ -165,39 +173,39 @@ namespace sill {
 
     //! Return height of image (or height of view) with respect to scaled
     //! width/height
-    static size_t height(const record& r) {
+    static size_t height(const record_type& r) {
       return view_height(r.vector());
     }
 
     //! Return width of image (or width of view) with respect to scaled
     //! width/height
-    static size_t width(const record& r) {
+    static size_t width(const record_type& r) {
       return view_width(r.vector());
     }
 
     //! Return actual height of image (regardless of view)
-    static size_t true_height(const record& r) {
+    static size_t true_height(const record_type& r) {
       return true_height(r.vector());
     }
 
     //! Return actual width of image (regardless of view)
-    static size_t true_width(const record& r) {
+    static size_t true_width(const record_type& r) {
       return true_width(r.vector());
     }
 
     //! Return top-left corner (row,col) of view (or (0,0) if no view)
     //! with respect to scaled width/height
-    static std::pair<size_t,size_t> view_pos(const record& r) {
+    static std::pair<size_t,size_t> view_pos(const record_type& r) {
       return std::make_pair(view_row(r.vector()),view_col(r.vector()));
     }
 
     //! Return the scaled height of the view.
-    static size_t scaled_height(const record& r) {
+    static size_t scaled_height(const record_type& r) {
       return scaled_height(r.vector());
     }
 
     //! Return the scaled width of the view.
-    static size_t scaled_width(const record& r) {
+    static size_t scaled_width(const record_type& r) {
       return scaled_width(r.vector());
     }
 
@@ -208,7 +216,7 @@ namespace sill {
     //!       same pixel value as get_simple_view().
     //! @todo This is currently a bottleneck for haar.  Optimize it.
     //! Note: This does not do bound checking!
-    static double get_pixel(const record& r, size_t row, size_t col);
+    static double get_pixel(const record_type& r, size_t row, size_t col);
 
     //! Return variable corresponding to element (row,col) in image
     //! which is not a view and is not scaled.
@@ -226,7 +234,7 @@ namespace sill {
      * @param r     Image record.
      * @param newr  Non-image record in which data will be stored.
      */
-    static void get_simple_view(const record& r, record& newr);
+    static void get_simple_view(const record_type& r, record_type& newr);
 
     /**
      * Returns a record of the view only, without the extra image metadata,
@@ -239,37 +247,37 @@ namespace sill {
      *                   This should not include the other vector variables or
      *                   finite variables.
      */
-    static void get_simple_view(const record& r, record& newr,
+    static void get_simple_view(const record_type& r, record_type& newr,
                                 vector_var_vector var_order);
 
 
     //! Create a blank image with the same dimensions as the given image
     //! (using the view height and width).  This uses variables from img
     //! for the new image.
-    static record blank_image(const record& img);
+    static record_type blank_image(const record_type& img);
 
     //! Sets element (row,col) in image (or in view).
     //! \todo This does not support scaling yet.
-    static void set(record& r, size_t row, size_t col, double val);
+    static void set(record_type& r, size_t row, size_t col, double val);
 
     //! Modify image in raw format to be in integral representation
-    static void raw2integral(record& r);
+    static void raw2integral(record_type& r);
 
     //! Modify image in raw format to be in integral representation
-    static record raw2integral(const record& r);
+    static record_type raw2integral(const record_type& r);
 
     //! Reset view of image to the entire image
-    static void reset_view(record& r);
+    static void reset_view(record_type& r);
 
     //! Set view of image to upper-left corner (row,col), height h, width w,
     //! with scaling scaleh, scalew
-    static void set_view(record& r, size_t row, size_t col, size_t h, size_t w,
+    static void set_view(record_type& r, size_t row, size_t col, size_t h, size_t w,
                          double scaleh, double scalew);
 
     //! Writes an image (or view) to the given output stream as a matrix.
     template <typename CharT, typename Traits>
     static void write(std::basic_ostream<CharT, Traits>& out,
-                      const record& r) {
+                      const record_type& r) {
       const vec& vecdata = r.vector();
       if (depth(vecdata) != 1) {
         if (vecdata.size() < 20)
@@ -298,7 +306,7 @@ namespace sill {
       } else {
         size_t sheight = view_height(vecdata);
         size_t swidth = view_width(vecdata);
-        record r2;
+        record_type r2;
         get_simple_view(r, r2);
         const vec& vecdata2 = r2.vector();
         for (size_t i = 0; i < sheight; ++i) {
@@ -317,7 +325,7 @@ namespace sill {
     //! Writes an image's metadata to the given output stream.  For debugging.
     template <typename CharT, typename Traits>
     static void write_metadata(std::basic_ostream<CharT, Traits>& out,
-                               const record& r) {
+                               const record_type& r) {
       const vec& vecdata = r.vector();
       out << "representation=" << representation(vecdata)
           << ", true_height=" << true_height(vecdata)
@@ -348,15 +356,18 @@ namespace sill {
      *  - pixel values
      * All non-class finite variables are ignored.
      */
+      /*
     template <typename MutableDataset>
     boost::shared_ptr<MutableDataset>
     read_dataset(const std::string& summary_filename, universe& u) {
-      concept_assert((sill::MutableDataset<MutableDataset>));
-      symbolic_oracle o(data_loader::load_symbolic_oracle(summary_filename, u));
+      //      concept_assert((sill::MutableDataset<MutableDataset>));
+      symbolic_oracle<dense_linear_algebra<> > o;
+      data_loader::load_symbolic_oracle(summary_filename, u, o);
       boost::shared_ptr<MutableDataset>
         ds_ptr(new MutableDataset(o.datasource_info()));
       assert(false); // NOT FINISHED
     }
+      */
 
   }; // class image
 

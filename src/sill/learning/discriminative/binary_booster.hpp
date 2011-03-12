@@ -6,14 +6,14 @@
 #include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <sill/learning/dataset/concepts.hpp>
+//#include <sill/learning/dataset/concepts.hpp>
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/learning/dataset/ds_oracle.hpp>
 #include <sill/learning/dataset/oracle.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
 #include <sill/learning/discriminative/booster.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
 #include <sill/learning/discriminative/load_functions.hpp>
 
@@ -33,7 +33,7 @@ namespace sill {
 
     //! Specifies weak learner type
     //!  (required)
-    boost::shared_ptr<binary_classifier> weak_learner;
+    boost::shared_ptr<binary_classifier<> > weak_learner;
 
     binary_booster_parameters() { }
 
@@ -73,7 +73,14 @@ namespace sill {
    * @todo serialization
    */
   template <typename Objective>
-  class binary_booster : public binary_classifier, public booster {
+  class binary_booster : public binary_classifier<>, public booster {
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef binary_classifier<>::la_type la_type;
+    typedef binary_classifier<>::record_type record_type;
 
     // Protected data members
     //==========================================================================
@@ -103,7 +110,7 @@ namespace sill {
     size_t iteration_;
 
     //! Base hypotheses
-    std::vector<boost::shared_ptr<binary_classifier> > base_hypotheses;
+    std::vector<boost::shared_ptr<binary_classifier<> > > base_hypotheses;
 
     //! Weights for base hypotheses
     std::vector<double> alphas;
@@ -149,7 +156,7 @@ namespace sill {
     //==========================================================================
 
     explicit binary_booster(const binary_booster_parameters& params)
-      : binary_classifier(),
+      : binary_classifier<>(),
         uniform_prob(boost::uniform_real<double>(0,1)), smoothing(0),
         iteration_(0) {
       if (params.weak_learner.get() != NULL)
@@ -165,7 +172,7 @@ namespace sill {
 
     binary_booster(const datasource& ds,
                    const binary_booster_parameters& params)
-      : binary_classifier(ds),
+      : binary_classifier<>(ds),
         uniform_prob(boost::uniform_real<double>(0,1)), smoothing(0),
         iteration_(0) {
       if (params.weak_learner.get() != NULL)
@@ -215,7 +222,7 @@ namespace sill {
     }
 
     //! Computes the accuracy after each iteration on a test set.
-    std::vector<double> test_accuracies(const dataset& testds) const {
+    std::vector<double> test_accuracies(const dataset<la_type>& testds) const {
       if (testds.size() == 0) {
         std::cerr << "binary_booster::test_accuracies() called with an empty"
                   << " dataset." << std::endl;
@@ -223,12 +230,12 @@ namespace sill {
         return std::vector<double>();
       }
       std::vector<double> test_acc(iteration_, 0);
-      dataset::record_iterator testds_end = testds.end();
-      for (dataset::record_iterator testds_it
+      typename dataset<la_type>::record_iterator testds_end = testds.end();
+      for (typename dataset<la_type>::record_iterator testds_it
              = testds.begin();
            testds_it != testds_end; ++testds_it) {
         double s = 0;
-        const record& example = *testds_it;
+        const record_type& example = *testds_it;
         for (size_t t = 0; t < iteration_; t++) {
           if (wl_confidence_rated)
             s += base_hypotheses[t]->confidence(example);
@@ -252,7 +259,7 @@ namespace sill {
     }
 
     //! Predict the 0/1 label of a new example.
-    std::size_t predict(const record& example) const {
+    std::size_t predict(const record_type& example) const {
       return (predict_raw(example) > 0 ? 1 : 0);
     }
 
@@ -262,7 +269,7 @@ namespace sill {
     }
 
     //! Returns predict_raw().
-    double confidence(const record& example) const {
+    double confidence(const record_type& example) const {
       return predict_raw(example);
     }
 
@@ -279,7 +286,7 @@ namespace sill {
     }
 
     //! Returns the weighted sum of weak predictions.
-    double predict_raw(const record& example) const {
+    double predict_raw(const record_type& example) const {
       double pred = 0;
       if (wl_confidence_rated)
         for (size_t t = 0; t < iteration_; t++)
@@ -291,7 +298,7 @@ namespace sill {
     }
 
     //! Predict the probability of the class variable having value +1.
-    double probability(const record& example) const {
+    double probability(const record_type& example) const {
       return Objective::probability(label(example), predict_raw(example));
     }
 
@@ -302,15 +309,15 @@ namespace sill {
     // Save and load methods
     //==========================================================================
 
-    using binary_classifier::save;
-    using binary_classifier::load;
+    using binary_classifier<>::save;
+    using binary_classifier<>::load;
 
     //! Output the learner to a human-readable file which can be reloaded.
     //! @param save_part  0: save function (default), 1: engine, 2: shell
     //! @param save_name  If true, this saves the name of the learner.
     virtual void save(std::ofstream& out, size_t save_part = 0,
                       bool save_name = true) const {
-      binary_classifier::save(out, save_part, save_name);
+      binary_classifier<>::save(out, save_part, save_name);
       out << (wl_confidence_rated ?"1":"0") << " " << smoothing << " "
           << iteration_ << " " << alphas << " " << timing << "\n";
       for (size_t t = 0; t < iteration_; ++t)

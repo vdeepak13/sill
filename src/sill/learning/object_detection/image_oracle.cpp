@@ -140,10 +140,10 @@ namespace sill {
   // Free functions
   //==========================================================================
 
-  boost::shared_ptr<std::vector<record> >
+  boost::shared_ptr<std::vector<image::record_type> >
   load_images(const std::string& filename, universe& u) {
-    boost::shared_ptr<std::vector<record> >
-      data_ptr(new std::vector<record>());
+    boost::shared_ptr<std::vector<image::record_type> >
+      data_ptr(new std::vector<image::record_type>());
     image_oracle o(filename, u);
     while(o.next())
       data_ptr->push_back(o.current());

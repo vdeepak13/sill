@@ -2,13 +2,8 @@
 #ifndef SILL_RECORD_HPP
 #define SILL_RECORD_HPP
 
-#include <map>
-
 #include <sill/base/assignment.hpp>
-#include <sill/base/stl_util.hpp>
 #include <sill/base/variables.hpp>
-#include <sill/copy_ptr.hpp>
-#include <sill/learning/dataset/datasource_info_type.hpp>
 #include <sill/learning/dataset/finite_record.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
 #include <sill/math/vector.hpp>
@@ -37,9 +32,13 @@ namespace sill {
    * @todo Change assignment(), finite_assignment(), etc. to allow efficient
    *       access for datasets whose native type is assignment.
    * \ingroup learning_dataset
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<double,size_t>)
    */
+  template <typename LA = dense_linear_algebra<> >
   class record
-    : public finite_record, public vector_record {
+    : public finite_record, public vector_record<LA> {
 
     // Public types and data members
     //==========================================================================
@@ -48,11 +47,19 @@ namespace sill {
     //! Type of variable used.
     typedef variable variable_type;
 
+    typedef typename vector_record<LA>::la_type la_type;
+    typedef typename la_type::vector_type vector_type;
+    typedef typename la_type::value_type  value_type;
+
+    using vector_record<la_type>::vector_numbering_ptr;
+    using vector_record<la_type>::vec_own;
+    using vector_record<la_type>::vec_ptr;
+
     // Constructors
     //==========================================================================
 
     //! Constructs an empty record which owns its data.
-    record() : finite_record(), vector_record() {
+    record() : finite_record(), vector_record<la_type>() {
     }
 
     //! Constructor for a record which owns its data.
@@ -60,63 +67,74 @@ namespace sill {
            copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
            size_t vector_dim)
       : finite_record(finite_numbering_ptr),
-        vector_record(vector_numbering_ptr, vector_dim) {
+        vector_record<la_type>(vector_numbering_ptr, vector_dim) {
     }
 
     //! Constructor for a record which uses data from its creator
     record(copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr,
            copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
-           std::vector<size_t>* fin_ptr, vec* vec_ptr)
+           std::vector<size_t>* fin_ptr, vector_type* vec_ptr)
       : finite_record(finite_numbering_ptr, fin_ptr),
-        vector_record(vector_numbering_ptr, vec_ptr) {
+        vector_record<la_type>(vector_numbering_ptr, vec_ptr) {
     }
 
     //! Constructor for a record which owns its data.
     record(const finite_var_vector& finite_seq,
            const vector_var_vector& vector_seq,
            size_t vector_dim)
-      : finite_record(finite_seq), vector_record(vector_seq, vector_dim) {
+      : finite_record(finite_seq), vector_record<la_type>(vector_seq, vector_dim) {
     }
 
     //! Constructor for a record with only finite data which owns its data.
     explicit record(const finite_record& r)
-      : finite_record(r), vector_record() {
+      : finite_record(r), vector_record<la_type>() {
     }
 
     //! Constructor for a record with only finite data which owns its data.
     record(const finite_var_vector& finite_seq)
-      : finite_record(finite_seq), vector_record() {
+      : finite_record(finite_seq), vector_record<la_type>() {
     }
 
     //! Constructor for a record with only vector data which owns its data.
-    explicit record(const vector_record& r)
-      : finite_record(), vector_record(r) {
+    explicit record(const vector_record<la_type>& r)
+      : finite_record(), vector_record<la_type>(r) {
     }
 
     //! Constructor for a record with only vector data which owns its data.
     record(const vector_var_vector& vector_seq)
-      : finite_record(), vector_record(vector_seq) {
+      : finite_record(), vector_record<la_type>(vector_seq) {
     }
 
     //! Constructor for a record which owns its data.
     record(const var_vector& var_seq)
       : finite_record(extract_finite_var_vector(var_seq)),
-        vector_record(extract_vector_var_vector(var_seq)) {
+        vector_record<la_type>(extract_vector_var_vector(var_seq)) {
     }
 
     //! Constructor for a record which owns its data.
     //! @param ds_info  Gives finite and vector sequences.
-    record(const datasource_info_type& ds_info);
+    record(const datasource_info_type& ds_info)
+      : finite_record(ds_info.finite_seq),
+        vector_record<la_type>(ds_info.vector_seq, vector_size(ds_info.vector_seq)) {
+    }
 
     //! Copy constructor.
     //! The new record owns its data since a record does not know whether
     //! or not it's OK to rely on the outside handle.
-    record(const record& rec) : finite_record(rec), vector_record(rec) {
+    record(const record& rec) : finite_record(rec), vector_record<la_type>(rec) {
     }
 
-    bool operator==(const record& other) const;
+    bool operator==(const record& other) const {
+      if (finite_record::operator==(other) &&
+          vector_record<la_type>::operator==(other))
+        return true;
+      else
+        return false;
+    }
 
-    bool operator!=(const record& other) const;
+    bool operator!=(const record& other) const {
+      return !operator==(other);
+    }
 
     // Getters and helpers
     //==========================================================================
@@ -140,12 +158,16 @@ namespace sill {
     //! Returns the finite part of this record as an assignment,
     //! but only for the given variables X.
     //! @param X  All of these variables must be in this record.
-    sill::finite_assignment assignment(const finite_domain& X) const;
+    sill::finite_assignment assignment(const finite_domain& X) const {
+      return finite_record::assignment(X);
+    }
 
     //! Returns the vector part of this record as an assignment,
     //! but only for the given variables X.
     //! @param X  All of these variables must be in this record.
-    sill::vector_assignment assignment(const vector_domain& X) const;
+    sill::vector_assignment assignment(const vector_domain& X) const {
+      return vector_record<la_type>::assignment(X);
+    }
 
     //! For the given variables X, add their values in this record to
     //! the given assignment.
@@ -157,17 +179,20 @@ namespace sill {
     //! the given assignment.
     //! @param X  All of these variables must be in this record.
     void
-    add_assignment(const finite_domain& X, sill::finite_assignment& a) const;
+    add_assignment(const finite_domain& X, sill::finite_assignment& a) const {
+      finite_record::add_assignment(X, a);
+    }
 
     //! For the given variables X, add their values in this record to
     //! the given assignment.
     //! @param X  All of these variables must be in this record.
     void
-    add_assignment(const vector_domain& X, sill::vector_assignment& a) const;
+    add_assignment(const vector_domain& X, sill::vector_assignment& a) const {
+      vector_record<la_type>::add_assignment(X, a);
+    }
 
     //! Write the record to the given output stream.
-    template <typename CharT, typename Traits>
-    void write(std::basic_ostream<CharT, Traits>& out) const {
+    void write(std::ostream& out) const {
       out << this->assignment();
     }
 
@@ -175,7 +200,7 @@ namespace sill {
     //! or not it's OK to rely on the outside reference.
     //! This clears the non-finite component.
     record& operator=(const finite_record& rec) {
-      vector_record::clear();
+      vector_record<la_type>::clear();
       finite_record::operator=(rec);
       return *this;
     }
@@ -183,9 +208,9 @@ namespace sill {
     //! The new copy owns its data since a record does not know whether
     //! or not it's OK to rely on the outside reference.
     //! This clears the non-vector component.
-    record& operator=(const vector_record& rec) {
+    record& operator=(const vector_record<la_type>& rec) {
       finite_record::clear();
-      vector_record::operator=(rec);
+      vector_record<la_type>::operator=(rec);
       return *this;
     }
 
@@ -196,7 +221,7 @@ namespace sill {
     //! or not it's OK to rely on the outside reference.
     //! This clears the non-finite component.
     record& operator=(const sill::finite_assignment& a) {
-      vector_record::clear();
+      vector_record<la_type>::clear();
       finite_record::operator=(a);
       return *this;
     }
@@ -209,7 +234,7 @@ namespace sill {
     //! This clears the non-vector component.
     record& operator=(const sill::vector_assignment& a) {
       finite_record::clear();
-      vector_record::operator=(a);
+      vector_record<la_type>::operator=(a);
       return *this;
     }
 
@@ -250,7 +275,7 @@ namespace sill {
     //! Clear the record.
     void clear() {
       finite_record::clear();
-      vector_record::clear();
+      vector_record<la_type>::clear();
     }
 
     //! Clears the stored data (if it is owned by the record)
@@ -260,7 +285,76 @@ namespace sill {
           copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
           size_t vector_dim) {
       finite_record::reset(finite_numbering_ptr);
-      vector_record::reset(vector_numbering_ptr, vector_dim);
+      vector_record<la_type>::reset(vector_numbering_ptr, vector_dim);
+    }
+
+    //! Clears the stored data (if it is owned by the record)
+    //! and resets the record (like a constructor).
+    void reset(const datasource_info_type& ds_info) {
+      finite_record::reset(ds_info);
+      vector_record<la_type>::reset(ds_info);
+    }
+
+    /**
+     * For each variable in this record,
+     * set the value according to the assignment,
+     * with record variables mapped to assignment variables according to vmap.
+     *
+     * @param a     Assignment covering all variables in this record,
+     *               modulo the variable mapping.
+     * @param vmap  Variable mapping: Variables in record --> Variables in a.
+     */
+    void copy_assignment_mapped(const sill::assignment& a,
+                                const var_map& vmap) {
+      for (std::map<finite_variable*, size_t>::const_iterator it =
+             finite_numbering_ptr->begin();
+           it != finite_numbering_ptr->end();
+           ++it) {
+        this->finite(it->second) =
+          safe_get(a.finite(),
+                   (finite_variable*)(safe_get(vmap,(variable*)(it->first))));
+      }
+      for (std::map<vector_variable*, size_t>::const_iterator it =
+             vector_numbering_ptr->begin();
+           it != vector_numbering_ptr->end();
+           ++it) {
+        this->vector().set_subvector
+          (irange(it->second, it->second + it->first->size()),
+           safe_get(a.vector(),
+                    (vector_variable*)(safe_get(vmap,(variable*)(it->first)))));
+      }
+    }
+
+    /**
+     * For each variable in this record,
+     * set the value according to the given record,
+     * with variables mapped according to vmap.
+     *
+     * @param r     Record covering all variables in this record,
+     *               modulo the variable mapping.
+     * @param vmap  Variable mapping: Vars in this record --> Vars in other.
+     */
+    void copy_record_mapped(const record& r,
+                            const var_map& vmap) {
+      for (std::map<finite_variable*, size_t>::const_iterator it =
+             finite_numbering_ptr->begin();
+           it != finite_numbering_ptr->end();
+           ++it) {
+        this->finite(it->second) =
+          r.finite((finite_variable*)(safe_get(vmap,(variable*)(it->first))));
+      }
+      for (std::map<vector_variable*, size_t>::const_iterator it =
+             vector_numbering_ptr->begin();
+           it != vector_numbering_ptr->end();
+           ++it) {
+        size_t i =
+          safe_get(*(r.vector_numbering_ptr),
+                   (vector_variable*)(safe_get(vmap,(variable*)(it->first))));
+        for (size_t j(it->second); j < it->second + it->first->size(); ++j) {
+          this->vector(j) = r.vector(i);
+          ++i;
+        }
+      }
     }
 
   }; // class record
@@ -269,12 +363,72 @@ namespace sill {
   //==========================================================================
 
   // @todo Fix this! (See symbolic_oracle.cpp)
-  template <typename V, typename CharT, typename Traits>
-  std::basic_ostream<CharT, Traits>&
-  operator<<(std::basic_ostream<CharT, Traits>& out,
-             const record& r) {
+  template <typename LA>
+  std::ostream& operator<<(std::ostream& out, const record<LA>& r) {
     r.write(out);
     return out;
+  }
+
+  //============================================================================
+  // Implementations of methods in record
+  //============================================================================
+
+  // Getters and helpers
+  //==========================================================================
+
+  template <typename LA>
+  sill::assignment record<LA>::assignment(const domain& X) const {
+    sill::assignment a;
+    foreach(variable* v, X) {
+      switch(v->get_variable_type()) {
+      case variable::FINITE_VARIABLE:
+        {
+          finite_variable* vf = dynamic_cast<finite_variable*>(v);
+          a.finite()[vf] = this->finite(vf);
+        }
+        break;
+      case variable::VECTOR_VARIABLE:
+        {
+          vector_variable* vv = dynamic_cast<vector_variable*>(v);
+          size_t v_index(safe_get(*vector_numbering_ptr, vv));
+          vec val(vv->size());
+          for(size_t j(0); j < vv->size(); ++j)
+            val[j] = vec_ptr->operator[](v_index + j);
+          a.vector()[vv] = val;
+        }
+        break;
+      default:
+        assert(false);
+      }
+    }
+    return a;
+  }
+
+  template <typename LA>
+  void
+  record<LA>::add_assignment(const domain& X, sill::assignment& a) const {
+    foreach(variable* v, X) {
+      switch(v->get_variable_type()) {
+      case variable::FINITE_VARIABLE:
+        {
+          finite_variable* vf = dynamic_cast<finite_variable*>(v);
+          a.finite()[vf] = this->finite(vf);
+        }
+        break;
+      case variable::VECTOR_VARIABLE:
+        {
+          vector_variable* vv = dynamic_cast<vector_variable*>(v);
+          size_t v_index(safe_get(*vector_numbering_ptr, vv));
+          vec val(vv->size());
+          for(size_t j(0); j < vv->size(); ++j)
+            val[j] = vec_ptr->operator[](v_index + j);
+          a.vector()[vv] = val;
+        }
+        break;
+      default:
+        assert(false);
+      }
+    }
   }
 
 } // namespace sill

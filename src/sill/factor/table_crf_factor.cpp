@@ -76,7 +76,7 @@ namespace sill {
   table_crf_factor&
   table_crf_factor::
   partial_expectation_in_log_space(const output_domain_type& Y_part,
-                                   const dataset& ds) {
+                                   const dataset<la_type>& ds) {
     if (!set_disjoint(Y_part, *Xdomain_ptr_)) {
       throw std::invalid_argument("table_crf_factor::partial_expectation_in_log_space(Y_part, ds) given Y_part which overlaps with the factor's input variables X.");
     }
@@ -85,7 +85,7 @@ namespace sill {
       convert_to_log_space();
     table_factor new_f;
     table_factor tmp_f;
-    foreach(const record& r, ds.records()) {
+    foreach(const finite_record& r, ds.records()) {
       f.f.restrict(tmp_f, r, Y_part);
       tmp_f /= ds.size();
       new_f += tmp_f;
@@ -143,20 +143,20 @@ namespace sill {
     return *this;
   }
 
-  double table_crf_factor::log_expected_value(const dataset& ds) const {
+  double table_crf_factor::log_expected_value(const dataset<la_type>& ds) const {
     double val(0);
     output_factor_type tmp_fctr;
     double total_ds_weight(0);
     size_t i(0);
     if (log_space()) {
-      foreach(const record& r, ds.records()) {
+      foreach(const finite_record& r, ds.records()) {
         f.f.restrict(tmp_fctr, r, input_arguments(), true);
         val += ds.weight(i) * tmp_fctr(r);
         total_ds_weight += ds.weight(i);
         ++i;
       }
     } else {
-      foreach(const record& r, ds.records()) {
+      foreach(const finite_record& r, ds.records()) {
         f.f.restrict(tmp_fctr, r, input_arguments(), true);
         val += ds.weight(i) * std::log(tmp_fctr(r));
         total_ds_weight += ds.weight(i);

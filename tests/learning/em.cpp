@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
   universe u;
   vector_var_vector v = u.new_vector_variables(1, 2); // 1 2D variable
 
-  assignment_dataset data =
-    *(data_loader::load_plain<assignment_dataset>
+  assignment_dataset<> data =
+    *(data_loader::load_plain<assignment_dataset<> >
       (filename, finite_var_vector(), v,
        std::vector<variable::variable_typenames>()));
   cout << data << endl;

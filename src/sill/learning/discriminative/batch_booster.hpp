@@ -86,11 +86,18 @@ namespace sill {
   template <typename Objective>
   class batch_booster : public binary_booster<Objective> {
 
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef binary_booster<Objective> base;
+
+    typedef typename base::la_type la_type;
+    typedef typename base::record_type record_type;
+
     // Protected data members
     //==========================================================================
   protected:
-
-    typedef binary_booster<Objective> base;
 
     // Data from base class:
     //  finite_variable* label_
@@ -129,17 +136,17 @@ namespace sill {
 
     //! For loading saved classifier without associated data or
     //! for learning from an oracle.
-    dataset* ds_ptr;
+    dataset<la_type>* ds_ptr;
 
     //! For loading saved classifier without associated data or
     //! for learning from an oracle.
-    dataset_statistics* stats_ptr;
+    dataset_statistics<la_type>* stats_ptr;
 
     //! Stats for dataset
-    dataset_statistics& stats;
+    dataset_statistics<la_type>& stats;
 
     //! Dataset (from stats)
-    const dataset& ds;
+    const dataset<la_type>& ds;
 
     //! Normalized distribution over training examples
     tree_sampler resampler;
@@ -207,15 +214,15 @@ namespace sill {
      */
     explicit batch_booster(batch_booster_parameters params
                            = batch_booster_parameters())
-      : base(params), params(params), ds_ptr(new vector_dataset()),
-        stats_ptr(new dataset_statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) { }
+      : base(params), params(params), ds_ptr(new vector_dataset<la_type>()),
+        stats_ptr(new dataset_statistics<la_type>(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) { }
 
     /**
      * Constructor for a binary batch booster.
      * @param stats         a statistics class for the training dataset
      * @param params        algorithm parameters
      */
-    explicit batch_booster(dataset_statistics& stats,
+    explicit batch_booster(dataset_statistics<la_type>& stats,
                            batch_booster_parameters params
                            = batch_booster_parameters())
       : base(stats.get_dataset(), params),
@@ -233,11 +240,11 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param params        algorithm parameters
      */
-    batch_booster(oracle& o, size_t n,
+    batch_booster(oracle<la_type>& o, size_t n,
                   batch_booster_parameters params = batch_booster_parameters())
       : base(o, params),
-        params(params), ds_ptr(new vector_dataset(o.datasource_info())),
-        stats_ptr(new dataset_statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
+        params(params), ds_ptr(new vector_dataset<la_type>(o.datasource_info())),
+        stats_ptr(new dataset_statistics<la_type>(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
       for (size_t i = 0; i < n; ++i) {
         if (o.next())
           ds_ptr->insert(o.current().finite(), o.current().vector());
@@ -261,16 +268,16 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new batch_booster<Objective>(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new batch_booster<Objective>(o, n, this->params));
       return bptr;
     }
@@ -318,13 +325,13 @@ namespace sill {
         std::cerr << " min value in distribution = " << min_dist << std::endl;
         resampler.check_validity();
       }
-      dataset::record_iterator ds_end = ds.end();
+      typename dataset<la_type>::record_iterator ds_end = ds.end();
       if (m_t > 0 && m_t < ds.size()) {
         // Use resampling
         std::vector<size_t> indices(m_t);
         for (size_t i = 0; i < m_t; ++i)
           indices[i] = resampler.sample();
-        dataset_view ds_view(ds);
+        dataset_view<la_type> ds_view(ds);
         ds_view.set_record_indices(indices);
         if (BATCH_BOOSTER_DEBUG) {
           double zeros = 0;
@@ -348,14 +355,14 @@ namespace sill {
           std::cerr << "True training set class distribution: (" << zeros
                     << ", " << ones << ")" << std::endl;
         }
-        dataset_statistics stats_view(ds_view);
+        dataset_statistics<la_type> stats_view(ds_view);
         base_hypotheses.push_back(params.weak_learner->create(stats_view));
         // TODO: Eventually, we should store WL predictions so we don't
         //       call predict() twice (once for edges and once to update
         //       distribution).
         edge = 0;
         size_t i = 0;
-        for (dataset::record_iterator ds_it = ds.begin();
+        for (typename dataset<la_type>::record_iterator ds_it = ds.begin();
              ds_it != ds_end; ++ds_it) {
           edge += (base_hypotheses.back()->predict(*ds_it) == label(ds,i) ?
                    distribution[i] : 0);
@@ -365,7 +372,7 @@ namespace sill {
         if (BATCH_BOOSTER_DEBUG) {
           double tmpacc = 0;
           size_t i = 0;
-          for (dataset::record_iterator ds_it = ds.begin();
+          for (typename dataset<la_type>::record_iterator ds_it = ds.begin();
                ds_it != ds_end; ++ds_it) {
             tmpacc += (base_hypotheses.back()->predict(*ds_it) == label(ds,i) ?
                        1 : 0);
@@ -377,9 +384,9 @@ namespace sill {
         }
       } else {
         // Do not use resampling
-        dataset_view ds_view(ds);
+        dataset_view<la_type> ds_view(ds);
         ds_view.set_weights(resampler.distribution());
-        dataset_statistics stats_view(ds_view);
+        dataset_statistics<la_type> stats_view(ds_view);
         base_hypotheses.push_back(params.weak_learner->create(stats_view));
         edge = base_hypotheses.back()->train_accuracy() - .5;
       }
@@ -422,7 +429,7 @@ namespace sill {
       // Update distribution
       if (Objective::can_update) {
         size_t i = 0;
-        for (dataset::record_iterator ds_it = ds.begin();
+        for (typename dataset<la_type>::record_iterator ds_it = ds.begin();
              ds_it != ds_end; ++ds_it) {
           double tmpw = Objective::weight_update
             (distribution[i], alpha, label(ds,i),
@@ -443,7 +450,7 @@ namespace sill {
         }
       } else {
         size_t i = 0;
-        for (dataset::record_iterator ds_it = ds.begin();
+        for (typename dataset<la_type>::record_iterator ds_it = ds.begin();
              ds_it != ds_end; ++ds_it) {
           resampler.set(i, Objective::weight(label(ds,i), predict_raw(*ds_it)));
           ++i;
@@ -459,13 +466,13 @@ namespace sill {
 
     //! Resets the data source to be used in future rounds of training.
     //! @param  n   max number of examples which may be drawn from the oracle
-    void reset_datasource(oracle& o, size_t n) {
+    void reset_datasource(oracle<la_type>& o, size_t n) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }
 
     //! Resets the data source to be used in future rounds of training.
-    void reset_datasource(dataset_statistics& stats) {
+    void reset_datasource(dataset_statistics<la_type>& stats) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }

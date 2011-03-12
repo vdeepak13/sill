@@ -28,7 +28,7 @@ namespace sill {
   }
 
   const table_factor&
-  log_reg_crf_factor::condition(const record& r) const {
+  log_reg_crf_factor::condition(const record_type& r) const {
     conditioned_f = mlr_ptr->probabilities(r);
     conditioned_f += smoothing;
     conditioned_f.normalize();
@@ -60,23 +60,23 @@ namespace sill {
   // Public: Learning-related methods from crf_factor interface
   // =========================================================================
 
-  const multiclass_logistic_regression::opt_variables&
+  const multiclass_logistic_regression<>::opt_variables&
   log_reg_crf_factor::weights() const {
     assert(mlr_ptr);
-    boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> >
       base_ptr(mlr_ptr->get_base_learner_ptr());
-    const multiclass_logistic_regression* base_mlr_ptr
-      = dynamic_cast<const multiclass_logistic_regression*>(base_ptr.get());
+    const multiclass_logistic_regression<>* base_mlr_ptr
+      = dynamic_cast<const multiclass_logistic_regression<>*>(base_ptr.get());
     return base_mlr_ptr->weights();
   }
 
-  multiclass_logistic_regression::opt_variables&
+  multiclass_logistic_regression<>::opt_variables&
   log_reg_crf_factor::weights() {
     assert(mlr_ptr);
-    boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> >
       base_ptr(mlr_ptr->get_base_learner_ptr());
-    multiclass_logistic_regression* base_mlr_ptr
-      = dynamic_cast<multiclass_logistic_regression*>(base_ptr.get());
+    multiclass_logistic_regression<>* base_mlr_ptr
+      = dynamic_cast<multiclass_logistic_regression<>*>(base_ptr.get());
     return base_mlr_ptr->weights();
   }
 
@@ -85,66 +85,66 @@ namespace sill {
 
   void
   log_reg_crf_factor::add_gradient
-  (multiclass_logistic_regression::opt_variables& grad, const record& r,
+  (multiclass_logistic_regression<>::opt_variables& grad, const record_type& r,
    double w) const {
     assert(mlr_ptr);
-    boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> >
       base_ptr(mlr_ptr->get_base_learner_ptr());
-    const multiclass_logistic_regression* base_mlr_ptr
-      = dynamic_cast<const multiclass_logistic_regression*>(base_ptr.get());
+    const multiclass_logistic_regression<>* base_mlr_ptr
+      = dynamic_cast<const multiclass_logistic_regression<>*>(base_ptr.get());
     mlr_ptr->convert_record_for_base(r, tmp_record);
     base_mlr_ptr->add_gradient(grad, tmp_record, w);
   }
 
   void
   log_reg_crf_factor::add_expected_gradient
-  (multiclass_logistic_regression::opt_variables& grad,
-   const record& r, const table_factor& fy,
+  (multiclass_logistic_regression<>::opt_variables& grad,
+   const record_type& r, const table_factor& fy,
    double w) const {
     assert(mlr_ptr);
-    boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> >
       base_ptr(mlr_ptr->get_base_learner_ptr());
-    const multiclass_logistic_regression* base_mlr_ptr
-      = dynamic_cast<const multiclass_logistic_regression*>(base_ptr.get());
+    const multiclass_logistic_regression<>* base_mlr_ptr
+      = dynamic_cast<const multiclass_logistic_regression<>*>(base_ptr.get());
     mlr_ptr->convert_record_for_base(r, tmp_record);
     base_mlr_ptr->add_expected_gradient(grad, tmp_record, fy, w);
   }
 
   void
   log_reg_crf_factor::add_combined_gradient
-  (optimization_vector& grad, const record& r,
+  (optimization_vector& grad, const record_type& r,
    const output_factor_type& fy, double w) const {
     assert(mlr_ptr);
-    boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> >
       base_ptr(mlr_ptr->get_base_learner_ptr());
-    const multiclass_logistic_regression* base_mlr_ptr
-      = dynamic_cast<const multiclass_logistic_regression*>(base_ptr.get());
+    const multiclass_logistic_regression<>* base_mlr_ptr
+      = dynamic_cast<const multiclass_logistic_regression<>*>(base_ptr.get());
     mlr_ptr->convert_record_for_base(r, tmp_record);
     base_mlr_ptr->add_combined_gradient(grad, tmp_record, fy, w);
   }
 
   void
   log_reg_crf_factor::add_hessian_diag
-  (optimization_vector& hessian, const record& r, double w) const {
+  (optimization_vector& hessian, const record_type& r, double w) const {
     return; // This is 0.
   }
 
   void
   log_reg_crf_factor::add_expected_hessian_diag
-  (optimization_vector& hessian, const record& r,
+  (optimization_vector& hessian, const record_type& r,
    const table_factor& fy, double w) const {
     return; // This is 0.
   }
 
   void
   log_reg_crf_factor::add_expected_squared_gradient
-  (optimization_vector& sqrgrad, const record& r,
+  (optimization_vector& sqrgrad, const record_type& r,
    const table_factor& fy, double w) const {
     assert(mlr_ptr);
-    boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> >
       base_ptr(mlr_ptr->get_base_learner_ptr());
-    const multiclass_logistic_regression* base_mlr_ptr
-      = dynamic_cast<const multiclass_logistic_regression*>(base_ptr.get());
+    const multiclass_logistic_regression<>* base_mlr_ptr
+      = dynamic_cast<const multiclass_logistic_regression<>*>(base_ptr.get());
     mlr_ptr->convert_record_for_base(r, tmp_record);
     base_mlr_ptr->add_expected_squared_gradient(sqrgrad, tmp_record, fy, w);
   }

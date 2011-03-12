@@ -70,6 +70,8 @@ namespace sill {
     typedef const T*        const_pointer;
     typedef const T*        const_iterator;
 
+    typedef size_t index_type;
+
     // Constructors
     //==========================================================================
   public:

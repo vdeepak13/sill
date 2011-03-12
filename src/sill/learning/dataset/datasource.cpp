@@ -1,6 +1,5 @@
 
 #include <sill/learning/dataset/datasource.hpp>
-#include <sill/learning/dataset/record_conversions.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -78,6 +77,7 @@ namespace sill {
       fa[p.first] = findata[p.second];
   }
 
+  /*
   void datasource::
   convert_vector_record2assignment(const vec& vecdata,
                                    vector_assignment& va) const {
@@ -90,6 +90,7 @@ namespace sill {
       va[p.first] = tmpvec;
     }
   }
+  */
 
   void datasource::
   convert_finite_assignment2record(const finite_assignment& fa,
@@ -97,11 +98,13 @@ namespace sill {
     finite_assignment2vector(fa, finite_seq, findata);
   }
 
+  /*
   void datasource::
   convert_vector_assignment2record(const vector_assignment& va,
                                    vec& vecdata) const {
     vector_assignment2vector(va, vector_seq, vecdata);
   }
+  */
 
   void datasource::add_finite_variable(finite_variable* v, bool make_class) {
     if (finite_vars.count(v))

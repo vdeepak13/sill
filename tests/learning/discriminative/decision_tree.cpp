@@ -5,7 +5,7 @@
 #include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/decision_tree.hpp>
 
 #include <sill/macros_def.hpp>
@@ -24,13 +24,11 @@ int main(int argc, char* argv[]) {
   size_t ntrain = 500;
   size_t ntest = 500;
 
-  boost::shared_ptr<vector_dataset> ds_train_ptr
-    = oracle2dataset<vector_dataset>(majority, ntrain);
-  vector_dataset& ds_train = *ds_train_ptr;
-  boost::shared_ptr<vector_dataset> ds_test_ptr
-    = oracle2dataset<vector_dataset>(majority, ntest);
-  vector_dataset& ds_test = *ds_test_ptr;
-  dataset_statistics stats(ds_train);
+  vector_dataset<> ds_train;
+  oracle2dataset(majority, ntrain, ds_train);
+  vector_dataset<> ds_test;
+  oracle2dataset(majority, ntest, ds_test);
+  dataset_statistics<> stats(ds_train);
 
   decision_tree<> s(stats);
 
@@ -38,7 +36,7 @@ int main(int argc, char* argv[]) {
        << "now testing on " << ntest << " examples" << endl;
 
   size_t nright = 0;
-  foreach(const record& example, ds_test.records()) {
+  foreach(const record<>& example, ds_test.records()) {
     const assignment& a = example.assignment();
     size_t predicted = s.predict(a);
     size_t truth = safe_get(a.finite(), class_var);
@@ -53,7 +51,7 @@ int main(int argc, char* argv[]) {
   s.load("decision_tree_test.txt", ds_test);
   cout << "testing decision_tree again...";
   nright = 0;
-  foreach(const record& example, ds_test.records()) {
+  foreach(const record<>& example, ds_test.records()) {
     const assignment& a = example.assignment();
     size_t predicted = s.predict(a);
     size_t truth = safe_get(a.finite(), class_var);

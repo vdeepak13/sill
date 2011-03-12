@@ -80,12 +80,19 @@ namespace sill {
 
     enum generalized_mean_enum { MEAN, MEDIAN };
 
+    //! Returns name of the given generalized mean as a string.
+    std::string generalized_mean_string(generalized_mean_enum gm);
+
+    //! Returns name of the given generalized mean's corresponding deviation
+    //! as a string.
+    std::string generalized_deviation_string(generalized_mean_enum gm);
+
   } // namespace statistics
 
   //! Return the generalized mean of type GM of the given values.
   template <typename T>
   T generalized_mean(const vector<T>& v,
-                     const statistics::generalized_mean_enum& gm) {
+                     statistics::generalized_mean_enum gm) {
     switch (gm) {
     case statistics::MEAN:
       return mean(v);
@@ -99,7 +106,7 @@ namespace sill {
   //! Return the generalized mean of type GM of the given values.
   template <typename T>
   T generalized_mean(const std::vector<T>& v,
-                     const statistics::generalized_mean_enum& gm) {
+                     statistics::generalized_mean_enum gm) {
     switch (gm) {
     case statistics::MEAN:
       return mean(v);
@@ -113,7 +120,7 @@ namespace sill {
   //! Return the generalized deviation of type GM of the given values.
   template <typename T>
   T generalized_deviation(const vector<T>& v,
-                          const statistics::generalized_mean_enum& gm) {
+                          statistics::generalized_mean_enum gm) {
     switch (gm) {
     case statistics::MEAN:
       return mean_stderr(v).second;
@@ -128,7 +135,7 @@ namespace sill {
   //! Return the generalized deviation of type GM of the given values.
   template <typename T>
   T generalized_deviation(const std::vector<T>& v,
-                          const statistics::generalized_mean_enum& gm) {
+                          statistics::generalized_mean_enum gm) {
     switch (gm) {
     case statistics::MEAN:
       return mean_stderr(v).second;
@@ -182,10 +189,22 @@ namespace sill {
     return extreme_index<T, std::less_equal<T> >(v);
   }
 
+  // For std::vector
+  template <typename T>
+  size_t max_index(const std::vector<T>& v) {
+    return extreme_index<T, std::less_equal<T> >(v);
+  }
+
   //! Return the index of the min value in the vector.
   //! If multiple values are minimal, choose the first one.
   template <typename T>
   size_t min_index(const forward_range<T>& v) {
+    return extreme_index<T, std::greater_equal<T> >(v);
+  }
+
+  // For std::vector
+  template <typename T>
+  size_t min_index(const std::vector<T>& v) {
     return extreme_index<T, std::greater_equal<T> >(v);
   }
 

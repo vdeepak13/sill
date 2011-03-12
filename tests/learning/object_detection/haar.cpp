@@ -20,22 +20,22 @@ int main(int argc, char* argv[]) {
   std::string filename
     = argc > 1 ? argv[1] : "../../../../tests/data/image_test2.sum";
   universe u;
-  boost::shared_ptr<vector_dataset> data_ptr
-    = data_loader::load_symbolic_dataset<vector_dataset>(filename, u);
+  boost::shared_ptr<vector_dataset<> > data_ptr
+    = data_loader::load_symbolic_dataset<vector_dataset<> >(filename, u);
   for (int i = 2; i < argc; ++i) {
-    symbolic_oracle
-      o(*(data_loader::load_symbolic_oracle(argv[i],
-                                            data_ptr->datasource_info())));
+    symbolic_oracle<>
+      o(*(data_loader::load_symbolic_oracle<symbolic_oracle<>::la_type>
+          (argv[i], data_ptr->datasource_info())));
     while(o.next())
       data_ptr->insert(o.current());
   }
   data_ptr->randomize(20938471);
 
-  dataset_view ds_train(*data_ptr);
+  dataset_view<> ds_train(*data_ptr);
   ds_train.set_record_range(0, data_ptr->size() / 2);
-  dataset_view ds_test(*data_ptr);
+  dataset_view<> ds_test(*data_ptr);
   ds_test.set_record_range(data_ptr->size() / 2, data_ptr->size());
-  dataset_statistics stats(ds_train);
+  dataset_statistics<> stats(ds_train);
 
   timer.restart();
   haar<> h(stats);
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
   size_t ptotal = 0;
   size_t nright = 0;
   size_t ntotal = 0;
-  foreach(const record& example, ds_test.records()) {
+  foreach(const record<>& example, ds_test.records()) {
     size_t predicted = h.predict(example);
     size_t truth = example.finite(class_var_index);
     if (truth == 0) {
@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
   ptotal = 0;
   nright = 0;
   ntotal = 0;
-  foreach(const record& example, data_ptr->records()) {
+  foreach(const record<>& example, data_ptr->records()) {
     size_t predicted = h.predict(example);
     size_t truth = example.finite(class_var_index);
     if (truth == 0) {

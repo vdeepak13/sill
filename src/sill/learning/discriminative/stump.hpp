@@ -8,7 +8,7 @@
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
 #include <sill/stl_io.hpp>
 #include <sill/base/stl_util.hpp>
@@ -93,15 +93,22 @@ namespace sill {
    *       record_iterator instead of finite(,) and vector(,).
    */
   template <typename Objective = discriminative::objective_accuracy>
-  class stump : public binary_classifier {
+  class stump : public binary_classifier<> {
 
-    concept_assert((sill::DomainPartitioningObjective<Objective>));
+    //    concept_assert((sill::DomainPartitioningObjective<Objective>));
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef binary_classifier<> base;
+
+    typedef base::la_type la_type;
+    typedef base::record_type record_type;
 
     // Protected data members
     //==========================================================================
   protected:
-
-    typedef binary_classifier base;
 
     // Data from base class:
     //  finite_variable* label_
@@ -149,8 +156,8 @@ namespace sill {
     // Protected methods
     //==========================================================================
 
-    void build(dataset_statistics& stats) {
-      const dataset& ds = stats.get_dataset();
+    void build(dataset_statistics<la_type>& stats) {
+      const dataset<la_type>& ds = stats.get_dataset();
 
       params.set_smoothing(ds.size(), label_->size());
       assert(params.valid());
@@ -357,7 +364,7 @@ namespace sill {
      * @param stats     a statistics class for the training dataset
      * @param params    algorithm parameters
      */
-    explicit stump(dataset_statistics& stats,
+    explicit stump(dataset_statistics<la_type>& stats,
                    stump_parameters params = stump_parameters())
       : base(stats.get_dataset()), params(params) {
       build(stats);
@@ -369,25 +376,26 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param params    algorithm parameters
      */
-    stump(oracle& o, size_t n, stump_parameters params = stump_parameters())
+    stump(oracle<la_type>& o, size_t n, stump_parameters params = stump_parameters())
       : base(o), params(params) {
-      boost::shared_ptr<vector_dataset>
-        ds_ptr(oracle2dataset<vector_dataset>(o,n));
-      dataset_statistics stats(*ds_ptr);
+      boost::shared_ptr<vector_dataset<la_type> >
+        ds_ptr(new vector_dataset<la_type>());
+      oracle2dataset(o, n, *ds_ptr);
+      dataset_statistics<la_type> stats(*ds_ptr);
       build(stats);
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new stump<Objective>(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new stump<Objective>(o, n, this->params));
       return bptr;
     }
@@ -428,7 +436,7 @@ namespace sill {
     //==========================================================================
 
     //! Predict the 0/1 label of a new example.
-    std::size_t predict(const record& example) const {
+    std::size_t predict(const record_type& example) const {
       return (confidence(example) > 0 ? 1 : 0);
     }
 
@@ -441,7 +449,7 @@ namespace sill {
     //!  predict() == (confidence() > 0) ? 1 : 0.
     //! If the classifier does not have actual confidence ratings,
     //!  then this should be any value with the correct sign.
-    double confidence(const record& example) const {
+    double confidence(const record_type& example) const {
       if (split_var_type == variable::FINITE_VARIABLE)
         if (example.finite()[split_var_index] == split_finite)
           return predictA;

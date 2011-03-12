@@ -3,7 +3,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/learning/dataset/concepts.hpp>
+//#include <sill/learning/dataset/concepts.hpp>
 #include <sill/learning/dataset/data_loader.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
@@ -23,28 +23,28 @@ int main(int argc, char* argv[]) {
 
   universe u;
 
-  concept_assert((sill::MutableDataset<vector_dataset>));
+  //  concept_assert((sill::MutableDataset<vector_dataset>));
 
-  boost::shared_ptr<vector_dataset> data_ptr =
-    data_loader::load_symbolic_dataset<vector_dataset>(filename, u);
+  boost::shared_ptr<vector_dataset<> > data_ptr =
+    data_loader::load_symbolic_dataset<vector_dataset<> >(filename, u);
 
   // Print the data
   cout << *data_ptr << endl;
 
   // Print the data as a sequence of assignments
-  foreach(const record& rec, data_ptr->records()) 
-    cout << rec.assignment() << endl;
+  foreach(const record<>& r, data_ptr->records()) 
+    cout << r.assignment() << endl;
 
   // Iterate over the data, computing the mean of the vector data
   vec v(data_ptr->vector_dim(), 0);
-  foreach(const record& record, data_ptr->records())
-    v += record.vector();
+  foreach(const record<>& r, data_ptr->records())
+    v += r.vector();
 
   cout << (v / double(data_ptr->size())) << endl;
 
   // Split the data into 2 parts.
-  vector_dataset spam1(data_ptr->datasource_info());
-  vector_dataset spam2(data_ptr->datasource_info());
+  vector_dataset<> spam1(data_ptr->datasource_info());
+  vector_dataset<> spam2(data_ptr->datasource_info());
   for (size_t i(0); i < data_ptr->size() / 2; ++i) {
     spam2.insert(data_ptr->operator[](i));
   }
@@ -66,7 +66,8 @@ int main(int argc, char* argv[]) {
 
   // Test on finite data
   syn_oracle_majority majority(create_syn_oracle_majority(9,u));
-  vector_dataset majority_ds(*(oracle2dataset<vector_dataset>(majority, 20)));
+  vector_dataset<> majority_ds;
+  oracle2dataset(majority, 20, majority_ds);
 
   return 0;
 }

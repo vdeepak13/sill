@@ -1,3 +1,7 @@
+
+#ifndef _SILL_NORMS_HPP_
+#define _SILL_NORMS_HPP_
+
 #include <itpp/stat/misc_stat.h>
 #include <itpp/base/matfunc.h>
 
@@ -28,4 +32,6 @@ namespace sill {
     return sqrt(dot(v,v));
   }
   
-}
+} // namespace sill
+
+#endif // #ifndef _SILL_NORMS_HPP_

@@ -16,20 +16,26 @@ namespace sill {
    *       predictions.  It should be easy to write a function to set
    *       confidences, etc.  It should probably be in this interface but
    *       implemented in binary_classifier and multiclass_classifier.
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
-  class singlelabel_classifier : public classifier {
+  template <typename LA = dense_linear_algebra<> >
+  class singlelabel_classifier : public classifier<LA> {
 
-    // Protected data members
+    // Public types
     //==========================================================================
-  protected:
+  public:
 
-    typedef classifier base;
+    typedef classifier<LA> base;
 
-    //! Class variable
-    finite_variable* label_;
-
-    //! Index of class variable in dataset's records
-    size_t label_index_;
+    typedef typename base::la_type            la_type;
+    typedef typename base::record_type        record_type;
+    typedef typename base::value_type         value_type;
+    typedef typename base::vector_type        vector_type;
+    typedef typename base::matrix_type        matrix_type;
+    typedef typename base::dense_vector_type  dense_vector_type;
+    typedef typename base::dense_matrix_type  dense_matrix_type;
 
     // Public methods
     //==========================================================================
@@ -76,13 +82,13 @@ namespace sill {
     //! Returns the value of the class variable for record i in the given
     //! dataset.
     //! Warning: This does not check if the label_index is valid.
-    size_t label(const dataset& ds, size_t i) const {
+    size_t label(const dataset<la_type>& ds, size_t i) const {
       return ds.finite(i,label_index_);
     }
 
     //! Returns the value of the class variable in the given record.
     //! Warning: This does not check if the label_index is valid.
-    size_t label(const record& r) const {
+    size_t label(const record_type& r) const {
       return r.finite(label_index_);
     }
 
@@ -94,21 +100,21 @@ namespace sill {
 
     //! Returns training accuracy (or estimate of it).
     //! This is not guaranteed to be set (and = -1 if not set).
-    virtual double train_accuracy() const { return -1; }
+    virtual value_type train_accuracy() const { return -1; }
 
     //! Returns the accuracy on the given test data.
-    double test_accuracy(const dataset& testds) const {
+    value_type test_accuracy(const dataset<la_type>& testds) const {
       if (testds.size() == 0) {
         std::cerr << "singlelabel_classifier::test_accuracy() called with an"
                   << " empty dataset." << std::endl;
         assert(false);
         return -1;
       }
-      double test_acc(0);
-      dataset::record_iterator testds_end = testds.end();
-      for (dataset::record_iterator testds_it = testds.begin();
+      value_type test_acc(0);
+      typename dataset<la_type>::record_iterator testds_end = testds.end();
+      for (typename dataset<la_type>::record_iterator testds_it(testds.begin());
            testds_it != testds_end; ++testds_it) {
-        const record& example = *testds_it;
+        const record_type& example = *testds_it;
         if (predict(example) == label(example))
           ++test_acc;
       }
@@ -118,13 +124,13 @@ namespace sill {
 
     //! Returns the accuracy on the given test data.
     //! @param n  max number of examples to be drawn from the given oracle
-    double test_accuracy(oracle& o, size_t n) const {
+    value_type test_accuracy(oracle<la_type>& o, size_t n) const {
       size_t cnt(0);
-      double test_acc(0);
+      value_type test_acc(0);
       while (cnt < n) {
         if (!(o.next()))
           break;
-        const record& example = o.current();
+        const record_type& example = o.current();
         if (predict(example) == label(example))
           ++test_acc;
         ++cnt;
@@ -144,7 +150,7 @@ namespace sill {
     //==========================================================================
 
     //! Predict the label of a new example.
-    virtual std::size_t predict(const record& example) const = 0;
+    virtual std::size_t predict(const record_type& example) const = 0;
 
     virtual std::size_t predict(const assignment& example) const = 0;
 
@@ -154,14 +160,16 @@ namespace sill {
 
     //! Returns the training accuracy after each iteration.
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    virtual std::vector<double> train_accuracies() const {
-      return std::vector<double>();
+    virtual std::vector<value_type>
+    train_accuracies() const {
+      return std::vector<value_type>();
     }
 
     //! Computes the accuracy after each iteration on a test set.
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    virtual std::vector<double> test_accuracies(const dataset& testds) const {
-      return std::vector<double>();
+    virtual std::vector<value_type>
+    test_accuracies(const dataset<la_type>& testds) const {
+      return std::vector<value_type>();
     }
 
     // Save and load methods
@@ -203,6 +211,16 @@ namespace sill {
       }
       return true;
     }
+
+    // Protected data members
+    //==========================================================================
+  protected:
+
+    //! Class variable
+    finite_variable* label_;
+
+    //! Index of class variable in dataset's records
+    size_t label_index_;
 
   }; // class singlelabel_classifier
 

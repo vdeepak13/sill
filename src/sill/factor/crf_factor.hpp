@@ -56,56 +56,50 @@ namespace sill {
     // Input type group
     //--------------------
 
-    /**
-     * The type of input variables used by the factor.
-     * Typically, this type is either sill::variable or its descendant.
-     */
+    //! The type of input variables used by the factor.
+    //! Typically, this type is either sill::variable or its descendant.
     typedef InputVar input_variable_type;
 
-    /**
-     * The type that represents the factor's input variable domain,
-     * that is, the set of input arguments X in the factor.
-     */
-    typedef typename variable_type_group<input_variable_type>::domain_type
-    input_domain_type;
+    typedef variable_type_group<input_variable_type> ivar_group;
+
+    //! Type for the factor's input variable domain,
+    //! that is, the set of input arguments X in the factor.
+    typedef typename ivar_group::domain_type  input_domain_type;
 
     //! Vector of input variables.
-    typedef typename variable_type_group<input_variable_type>::var_vector_type
-    input_var_vector_type;
+    typedef typename ivar_group::var_vector_type  input_var_vector_type;
 
-    //! The type that represents an assignment to input variables.
-    typedef typename variable_type_group<input_variable_type>::assignment_type
-    input_assignment_type;
+    //! Type for an assignment to input variables.
+    typedef typename ivar_group::assignment_type  input_assignment_type;
 
-    //! The type that represents a record for input variables.
-    typedef typename variable_type_group<input_variable_type>::record_type
-    input_record_type;
+    //! Mapping: input variable to input variable.
+    typedef typename ivar_group::var_map_type  input_var_map_type;
+
+    //! Type for a record for input variables.
+    typedef typename ivar_group::record_type  input_record_type;
 
     // Output type group
     //--------------------
 
-    /**
-     * The type of output variables used by the factor.
-     * Typically, this type is either sill::variable or its descendant.
-     */
-    typedef typename OutputFactor::variable_type output_variable_type;
+    //! The type of output variables used by the factor.
+    //! Typically, this type is either sill::variable or its descendant.
+    typedef typename OutputFactor::variable_type  output_variable_type;
 
-    /**
-     * The type that represents the factor's output variable domain,
-     * that is, the set of output arguments Y in the factor.
-     * This type must be equal to set<output_variable_type*>.
-     */
-    typedef typename OutputFactor::domain_type output_domain_type;
+    //! Type for the factor's output variable domain,
+    //! that is, the set of output arguments Y in the factor.
+    typedef typename OutputFactor::domain_type  output_domain_type;
 
     //! Vector of output variables.
-    typedef typename variable_type_group<output_variable_type>::var_vector_type
-    output_var_vector_type;
+    typedef typename OutputFactor::var_vector_type  output_var_vector_type;
 
-    //! The type that represents an assignment to output variables.
-    typedef typename OutputFactor::assignment_type output_assignment_type;
+    //! Type for an assignment to output variables.
+    typedef typename OutputFactor::assignment_type  output_assignment_type;
 
-    //! The type that represents a record for output variables.
-    typedef typename OutputFactor::record_type output_record_type;
+    //! Mapping: output variable to output variable.
+    typedef typename OutputFactor::var_map_type  output_var_map_type;
+
+    //! Type for a record for output variables.
+    typedef typename OutputFactor::record_type  output_record_type;
 
     // Input + output type group
     //--------------------------
@@ -118,32 +112,32 @@ namespace sill {
     variable_type_union<input_variable_type,output_variable_type>::union_type
     variable_type;
 
+    typedef variable_type_group<variable_type> var_group;
+
     /**
-     * The type that represents the factor's variable domain,
+     * Type for the factor's variable domain,
      * that is, the set of arguments X,Y in the factor.
      */
-    typedef typename variable_type_group<variable_type>::domain_type
-    domain_type;
+    typedef typename var_group::domain_type  domain_type;
 
     //! Vector of variables.
-    typedef typename variable_type_group<variable_type>::var_vector_type
-    var_vector_type;
+    typedef typename var_group::var_vector_type  var_vector_type;
 
-    //! The type that represents an assignment to X,Y.
-    typedef typename variable_type_group<variable_type>::assignment_type
-    assignment_type;
+    //! Type for an assignment to X,Y.
+    typedef typename var_group::assignment_type  assignment_type;
 
-    //! The type that represents a record over X,Y.
-    typedef typename variable_type_group<variable_type>::record_type
-    record_type;
+    //! Mapping: variable to variable.
+    typedef typename var_group::var_map_type  var_map_type;
+
+    //! Type for a record over X,Y.
+    typedef typename var_group::record_type  record_type;
 
     // Other types
     //------------
 
     /**
-     * The type that represents the value returned by factor's
-     * operator() and norm_constant().  Typically, this type is either
-     * double or logarithmic<double>.
+     * Type for the value returned by factor's operator() and norm_constant().
+     * Typically, this type is either double or logarithmic<double>.
      */
     typedef typename OutputFactor::result_type result_type;
 
@@ -246,12 +240,12 @@ namespace sill {
      * this returns the expected log likelihood of the distribution P(A | B).
      * (But this does not normalize the factor after conditioning.)
      */
-    virtual double log_expected_value(const dataset& ds) const {
+    virtual double log_expected_value(const dataset<dense_linear_algebra<> >& ds) const {
       double val(0);
       output_factor_type tmp_fctr;
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds.records()) {
+      foreach(const record_type& r, ds.records()) {
         tmp_fctr = condition(r);
         val += ds.weight(i) * std::log(tmp_fctr(r));
         total_ds_weight += ds.weight(i);

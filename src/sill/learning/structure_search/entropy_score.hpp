@@ -106,7 +106,7 @@ namespace sill {
     std::pair<bool, double>
     compute_change(const learnt_decomposable<F>& model, double cur_score,
                    const decomposable_change<F>& change,
-                   dataset_statistics& stats) const {
+                   dataset_statistics<>& stats) const {
       if (is_global) {
         if (!(change.valid(model)))
           return std::make_pair(false, 0.);
@@ -137,7 +137,7 @@ namespace sill {
     std::pair<bool, double>
     estimate_change(const learnt_decomposable<F>& model, double cur_score,
                     const decomposable_change<F>& change,
-                    dataset_statistics& stats) const {
+                    dataset_statistics<>& stats) const {
       return compute_change(model, cur_score, change, stats);
     }
 

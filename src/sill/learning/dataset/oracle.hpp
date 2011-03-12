@@ -17,7 +17,11 @@ namespace sill {
    * Data oracle interface.
    * \author Joseph Bradley
    * \ingroup learning_dataset
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<double,size_t>)
    */
+  template <typename LA = dense_linear_algebra<> >
   class oracle : public datasource {
 
     // Public type declarations
@@ -26,6 +30,12 @@ namespace sill {
 
     //! Base type (datasource)
     typedef datasource base;
+
+    typedef LA la_type;
+
+    typedef record<LA> record_type;
+
+    typedef typename record_type::vector_type vector_type;
 
     // Constructors
     //==========================================================================
@@ -67,7 +77,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns the current record.
-    virtual const record& current() const = 0;
+    virtual const record_type& current() const = 0;
 
     //! Returns the weight of the current example.
     //! Note: This does not have to be implemented.

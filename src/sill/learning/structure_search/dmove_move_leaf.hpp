@@ -78,7 +78,7 @@ namespace sill {
     //! Inserter.
     void
     generate_all_moves(const learnt_decomposable<F>& model, double cur_score,
-                       const decomposable_score<F>& score, dataset_statistics& stats,
+                       const decomposable_score<F>& score, dataset_statistics<>& stats,
                        Inserter& inserter, bool use_estimates = false) const {
       // For each (leaf node, other node) pair,
       foreach(vertex u, model.vertices()) {
@@ -128,7 +128,7 @@ namespace sill {
     generate_new_moves(const learnt_decomposable<F>& model, double cur_score,
                        const decomposable_score<F>& score,
                        const std::vector<clique_change>& clique_changes,
-                       dataset_statistics& stats, Inserter& inserter,
+                       dataset_statistics<>& stats, Inserter& inserter,
                        bool use_estimates = false) const {
       // Pairs (changed leaf nodes, other nodes)
       std::set<vertex> changed_leaf_nodes;
@@ -221,7 +221,7 @@ namespace sill {
     //! @return false if move is invalid, else true
     bool map_score_functor(decomposable_score_functor<F>& func,
                            const learnt_decomposable<F>& model,
-                           dataset_statistics& stats) const {
+                           dataset_statistics<>& stats) const {
       // Check the validity
       if (!(model.contains(move_v)) || !(model.contains(attach_v)) ||
           model.out_degree(move_v) > 1 ||
@@ -283,7 +283,7 @@ namespace sill {
     //! Note: This does NOT check if the move is valid!
     //! Also, this does not calibrate or renormalize the model.
     std::vector<clique_change>
-    commit(learnt_decomposable<F>& model, dataset_statistics& stats) const {
+    commit(learnt_decomposable<F>& model, dataset_statistics<>& stats) const {
       std::vector<clique_change> changes;
       domain_type new_clique(model.clique(move_v));
       vertex neighbor(decomposable<F>::null_vertex());

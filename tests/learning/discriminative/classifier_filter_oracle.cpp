@@ -27,10 +27,10 @@ int main(int argc, char* argv[]) {
   size_t ntrain = 100;
   size_t ntest = 40;
 
-  boost::shared_ptr<vector_dataset> ds_train_ptr
-    = oracle2dataset<vector_dataset>(knorm, ntrain);
+  boost::shared_ptr<vector_dataset<> > ds_train_ptr
+    = oracle2dataset<vector_dataset<> >(knorm, ntrain);
   vector_dataset& ds_train = *ds_train_ptr;
-  dataset_statistics stats(ds_train);
+  dataset_statistics<> stats(ds_train);
 
   stump<> s(stats);
 
@@ -38,8 +38,8 @@ int main(int argc, char* argv[]) {
        << "now making sure that a classifier_filter_oracle works on them."
        << endl;
 
-  boost::shared_ptr<vector_dataset> ds_test_ptr
-    = oracle2dataset<vector_dataset>(knorm, ntest);
+  boost::shared_ptr<vector_dataset<> > ds_test_ptr
+    = oracle2dataset<vector_dataset<> >(knorm, ntest);
   vector_dataset& ds_test = *ds_test_ptr;
   ds_oracle::parameters ds_o_params;
   ds_o_params.auto_reset = false;

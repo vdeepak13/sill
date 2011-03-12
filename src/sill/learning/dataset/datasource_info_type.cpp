@@ -30,6 +30,18 @@ namespace sill {
     // TO DO: CHECK CONSISTENCY
   }
 
+  datasource_info_type::datasource_info_type
+  (const forward_range<finite_variable*>& finite_seq_,
+   const forward_range<vector_variable*>& vector_seq_)
+    : finite_seq(finite_seq_.begin(), finite_seq_.end()),
+      vector_seq(vector_seq_.begin(), vector_seq_.end()) {
+    var_type_order.reserve(finite_seq.size() + vector_seq.size());
+    for (size_t i = 0; i < finite_seq.size(); ++i)
+      var_type_order.push_back(variable::FINITE_VARIABLE);
+    for (size_t i = 0; i < vector_seq.size(); ++i)
+      var_type_order.push_back(variable::VECTOR_VARIABLE);
+  }
+
   datasource_info_type::
   datasource_info_type(const forward_range<variable*>& var_seq) {
     foreach(variable* var, var_seq) {

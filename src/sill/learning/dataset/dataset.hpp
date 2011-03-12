@@ -14,7 +14,6 @@
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/learning/dataset/datasource.hpp>
 #include <sill/learning/dataset/record.hpp>
-#include <sill/math/matrix.hpp>
 #include <sill/range/algorithm.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/range/forward_range.hpp>
@@ -47,6 +46,9 @@
 
 namespace sill {
 
+  // Forward declarations
+  template <typename LA> class ds_oracle;
+
   /**
    * A base class for datasets.
    * This supports weighted datasets, but dataset types inheriting from this
@@ -54,10 +56,12 @@ namespace sill {
    *
    * \author Joseph Bradley, Stanislav Funiak
    * \ingroup learning_dataset
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
+  template <typename LA = dense_linear_algebra<> >
   class dataset : public datasource {
-
-    friend class dataset_view;
 
     // Public type declarations
     //==========================================================================
@@ -66,11 +70,21 @@ namespace sill {
     //! Base type (datasource)
     typedef datasource base;
 
+    typedef LA la_type;
+
+    typedef record<LA> record_type;
+    typedef finite_record finite_record_type;
+    typedef vector_record<LA> vector_record_type;
+
+    typedef typename la_type::matrix_type matrix_type;
+    typedef typename la_type::vector_type vector_type;
+    typedef typename la_type::value_type  value_type;
+
     /**
      * An iterator over the records of a dataset (in record format).
      */
     class record_iterator
-      : public std::iterator<std::forward_iterator_tag, const record> {
+      : public std::iterator<std::forward_iterator_tag, const record_type> {
 
       //! indicates if the current record is valid
       mutable bool r_valid;
@@ -83,9 +97,9 @@ namespace sill {
 
     protected:
       friend class dataset;
-      friend class ds_oracle;
+      friend class ds_oracle<LA>;
 
-      mutable record r;
+      mutable record_type r;
 
       //! Constructs an iterator which owns its data pointed to record i
       record_iterator(const dataset* data, size_t i)
@@ -98,7 +112,7 @@ namespace sill {
       //! @param fin_ptr  pointer to data
       //! @param vec_ptr  pointer to data
       record_iterator(const dataset* data, size_t i,
-                      std::vector<size_t>* fin_ptr, vec* vec_ptr)
+                      std::vector<size_t>* fin_ptr, vector_type* vec_ptr)
         : r_valid(false), data(data), i(i),
           r(data->finite_numbering_ptr(), data->vector_numbering_ptr(),
             fin_ptr, vec_ptr) {
@@ -178,12 +192,12 @@ namespace sill {
         return *this;
       }
 
-      const record& operator*() const {
+      const record_type& operator*() const {
         load_cur_record();
         return r;
       }
 
-      const record* const operator->() const {
+      const record_type* const operator->() const {
         load_cur_record();
         return &r;
       }
@@ -226,7 +240,7 @@ namespace sill {
       //! Returns the weight of the current example, or 0 if the iterator
       //! does not point to an example.
       //! @todo Make this safer!
-      double weight() const {
+      value_type weight() const {
         assert(data);
         return data->weight(i);
       }
@@ -266,7 +280,7 @@ namespace sill {
 
     protected:
       friend class dataset;
-      friend class ds_oracle;
+      friend class ds_oracle<LA>;
 
       //! True if this iterator owns its data.
       bool own;
@@ -368,7 +382,7 @@ namespace sill {
       //! Returns the weight of the current example, or 0 if the iterator
       //! does not point to an example.
       //! @todo Make this safer!
-      double weight() const {
+      value_type weight() const {
         return data->weight(i);
       }
 
@@ -384,60 +398,6 @@ namespace sill {
       }
 
     }; // class assignment_iterator
-
-    // Protected data members
-    //==========================================================================
-  protected:
-
-    friend class record_iterator;
-    friend class assignment_iterator;
-
-    //! Number of data points in this dataset.
-    size_t nrecords;
-
-    //! Indicates if this is a weighted dataset.
-    bool weighted;
-
-    //! Holds the weights for the dataset if it is weighted.
-    vec weights_;
-
-    // Protected functions
-    //==========================================================================
-
-    //! Constructs an iterator which owns its data pointed to record i
-    record_iterator make_record_iterator(size_t i) const {
-      return record_iterator(this, i);
-    }
-
-    //! Constructs an iterator which does not own its data pointed to record i
-    //! @param fin_ptr  pointer to data
-    //! @param vec_ptr  pointer to data
-    record_iterator make_record_iterator
-    (size_t i, std::vector<size_t>* fin_ptr, vec* vec_ptr) const {
-      return record_iterator(this, i, fin_ptr, vec_ptr);
-    }
-
-    //! Constructs an assignment iterator pointed to record i.
-    //! @param own  Passed to assignment_iterator constructor.
-    assignment_iterator make_assignment_iterator(size_t i, bool own) const {
-      return assignment_iterator(this, i, own);
-    }
-
-    //! Load record i into r.
-    //! Record r is assumed to be the correct size for this dataset.
-    virtual void load_record(size_t i, record& r) const = 0;
-
-    //! Load finite data for datapoint i into findata.
-    //! findata is assumed to be the correct size for this dataset.
-    virtual void load_finite(size_t i, std::vector<size_t>& findata) const = 0;
-
-    //! Load vector data for datapoint i into vecdata.
-    //! vecdata is assumed to be the correct size for this dataset.
-    virtual void load_vector(size_t i, vec& vecdata) const = 0;
-
-    //! ONLY for datasets which use assignments as native types:
-    //!  Load the pointer to datapoint i into (*a).
-    virtual void load_assignment_pointer(size_t i, assignment** a) const = 0;
 
     // Constructors
     //==========================================================================
@@ -502,14 +462,14 @@ namespace sill {
     //! Element access which does not do range checking
     //! Note: use records() for more efficient record access.
     //! @todo Make this more efficient.
-    record operator[](size_t i) const;
+    record_type operator[](size_t i) const;
 
     //! Load datapoint i into assignment a
     virtual void load_assignment(size_t i, sill::assignment& a) const = 0;
 
     //! Element access which does range checking
     //! Note: use records() for more efficient record access.
-    record at(size_t i) const;
+    record_type at(size_t i) const;
 
     //! Element access which does range checking.
     assignment at_assignment(size_t i) const;
@@ -521,23 +481,23 @@ namespace sill {
     //! Element access: record i, vector variable j (in the order finite_list(),
     //! but with n-value vector variables using n indices j)
     //! Note: Full record retrievals are more efficient than this function.
-    virtual double vector(size_t i, size_t j) const = 0;
+    virtual value_type vector(size_t i, size_t j) const = 0;
 
     //! Element access: record i, finite variable v
     virtual size_t finite(size_t i, finite_variable* v) const;
 
     /*
     //! Element access: record i, vector variable v.
-    virtual vec vector(size_t i, vector_variable* v) const;
+    virtual vector_type vector(size_t i, vector_variable* v) const;
     */
 
     //! Element access: record i, vector variable v, element j.
-    virtual double vector(size_t i, vector_variable* v, size_t j) const;
+    virtual value_type vector(size_t i, vector_variable* v, size_t j) const;
 
     //! Returns an element, sampled uniformly at random
     //! \todo Fix this to use record weights.
     template <typename Engine>
-    record sample(Engine& engine) const {
+    record_type sample(Engine& engine) const {
       boost::uniform_int<> unif(0, size() - 1);
       return operator[](unif(engine));
     }
@@ -589,10 +549,10 @@ namespace sill {
     }
 
     //! Returns the weight of record i (without bound checking)
-    double weight(size_t i) const;
+    value_type weight(size_t i) const;
 
     //! Returns the weight of record i (with bound checking)
-    double weight_at(size_t i) const;
+    value_type weight_at(size_t i) const;
 
     //! Returns the vector of weights (or an empty vector if the dataset is
     //! not weighted).
@@ -609,7 +569,7 @@ namespace sill {
      *                  (nrecords x variable vector size + 1) matrix.
      *                   (default = false)
      */
-    void get_value_matrix(mat& X, const vector_var_vector& vars,
+    void get_value_matrix(matrix_type& X, const vector_var_vector& vars,
                           bool add_ones = false) const;
 
     /**
@@ -620,10 +580,10 @@ namespace sill {
      * \todo Fix this to use record weights.
      */
     template <typename D>
-    double log_likelihood(const D& model, double base = exp(1.)) const {
+    value_type log_likelihood(const D& model, value_type base = exp(1.)) const {
       // concept_assert((Distribution<D>));
       assert(nrecords > 0);
-      double loglike = 0;
+      value_type loglike = 0;
       for(size_t i = 0; i < nrecords; i++)
         loglike += model.log_likelihood(operator[](i), base);
       return loglike;
@@ -638,15 +598,15 @@ namespace sill {
      * @todo Replace the above function with this one.
      */
     template <typename F>
-    std::pair<double, double> expected_value(F f) const {
-      double sum(0);
-      double sum2(0);
-      double total_weight(0);
+    std::pair<value_type, value_type> expected_value(F f) const {
+      value_type sum(0);
+      value_type sum2(0);
+      value_type total_weight(0);
       if (nrecords == 0)
         return std::make_pair(0,0);
       size_t i(0);
-      foreach(const record& r, records()) {
-        double val(weight(i) * f(r));
+      foreach(const record_type& r, records()) {
+        value_type val(weight(i) * f(r));
         sum += val;
         sum2 += val * val;
         total_weight += weight(i);
@@ -671,7 +631,7 @@ namespace sill {
      *
      * @param  cov   (Return value.) Empirical covariance matrix.
      */
-    void covariance(mat& cov, const vector_var_vector& X) const;
+    void covariance(matrix_type& cov, const vector_var_vector& X) const;
 
     /**
      * Computes the empirical mean and covariance for vector variables X.
@@ -680,7 +640,7 @@ namespace sill {
      * @param  mu   (Return value.) Empirical mean.
      * @param  cov  (Return value.) Empirical covariance matrix.
      */
-    void mean_covariance(vec& mu, mat& cov, const vector_var_vector& X) const;
+    void mean_covariance(vec& mu, matrix_type& cov, const vector_var_vector& X) const;
 
     /**
      * Writes a human-readable representation of the dataset.
@@ -720,27 +680,41 @@ namespace sill {
     virtual void reserve(size_t n) = 0;
 
     //! Adds a new record with weight w (default = 1)
-    void insert(const assignment& a, double w = 1);
+    void insert(const assignment& a, value_type w = 1);
 
     //! Adds a new record with weight w (default = 1)
-    void insert(const record& r, double w = 1) {
+    void insert(const record_type& r, value_type w = 1) {
       insert(r.finite(), r.vector(), w);
+    }
+
+    //! Adds a new record with weight w (default = 1).
+    //! This version fails if this dataset has any vector variables.
+    void insert(const finite_record_type& r, value_type w = 1) {
+      assert(num_vector() == 0);
+      insert(r.finite(), vector_type(), w);
+    }
+
+    //! Adds a new record with weight w (default = 1).
+    //! This version fails if this dataset has any finite variables.
+    void insert(const vector_record_type& r, value_type w = 1) {
+      assert(num_finite() == 0);
+      insert(std::vector<size_t>(), r.vector(), w);
     }
 
     //! Adds a new record with finite variable values fvals and vector variable
     //! values vvals, with weight w (default = 1).
-    void insert(const std::vector<size_t>& fvals, const vec& vvals,
-                double w = 1);
+    void insert(const std::vector<size_t>& fvals, const vector_type& vvals,
+                value_type w = 1);
 
     //! Adds a new record with all values set to 0, with weight w (default = 1).
-    void insert_zero_record(double w = 1);
+    void insert_zero_record(value_type w = 1);
 
     //! Sets record with index i to this value and weight.
-    virtual void set_record(size_t i, const assignment& a, double w = 1) = 0;
+    virtual void set_record(size_t i, const assignment& a, value_type w = 1) = 0;
 
     //! Sets record with index i to this value and weight.
     virtual void set_record(size_t i, const std::vector<size_t>& fvals,
-                            const vec& vvals, double w = 1) = 0;
+                            const vector_type& vvals, value_type w = 1) = 0;
 
     /**
      * Normalizes the vector data so that the empirical mean and variance
@@ -783,11 +757,11 @@ namespace sill {
     void randomize();
 
     //! Randomly reorders the dataset view (this is a mutable operation)
-    virtual void randomize(double random_seed) = 0;
+    virtual void randomize(value_type random_seed) = 0;
 
     //! Makes this dataset weighted with all weights set to w (default 1).
     //! This may only be called on an unweighted dataset.
-    void make_weighted(double w = 1);
+    void make_weighted(value_type w = 1);
 
     //! Set all weights.
     //! This may be called on an unweighted dataset.
@@ -795,7 +769,7 @@ namespace sill {
 
     //! Set a single weight of record i (with bound checking).
     //! This may only be called if the dataset is already weighted.
-    void set_weight(size_t i, double weight_);
+    void set_weight(size_t i, value_type weight_);
 
     //! Clears the dataset of all records.
     //! NOTE: This should not be called if views of the data exist!
@@ -803,13 +777,494 @@ namespace sill {
       nrecords = 0;
     }
 
+    // Protected data members
+    //==========================================================================
+  protected:
+
+    friend class record_iterator;
+    friend class assignment_iterator;
+
+    // From datasource
+    using base::finite_vars;
+    using base::finite_seq;
+    using base::finite_numbering_ptr_;
+    using base::dfinite;
+    using base::finite_class_vars;
+    using base::vector_vars;
+    using base::vector_seq;
+    using base::vector_numbering_ptr_;
+    using base::dvector;
+    using base::vector_class_vars;
+    using base::var_type_order;
+    using base::var_order_map;
+    using base::vector_var_order_map;
+
+    //! Number of data points in this dataset.
+    size_t nrecords;
+
+    //! Indicates if this is a weighted dataset.
+    bool weighted;
+
+    //! Holds the weights for the dataset if it is weighted.
+    vec weights_;
+
+    // Protected functions
+    //==========================================================================
+
+    //! Constructs an iterator which owns its data pointed to record i
+    record_iterator make_record_iterator(size_t i) const {
+      return record_iterator(this, i);
+    }
+
+    //! Constructs an iterator which does not own its data pointed to record i
+    //! @param fin_ptr  pointer to data
+    //! @param vec_ptr  pointer to data
+    record_iterator make_record_iterator
+    (size_t i, std::vector<size_t>* fin_ptr, vector_type* vec_ptr) const {
+      return record_iterator(this, i, fin_ptr, vec_ptr);
+    }
+
+    //! Constructs an assignment iterator pointed to record i.
+    //! @param own  Passed to assignment_iterator constructor.
+    assignment_iterator make_assignment_iterator(size_t i, bool own) const {
+      return assignment_iterator(this, i, own);
+    }
+
+    // Do NOT use these methods unless you know what you are doing!
+    //==========================================================================
+  public:
+
+    //! Load record i into r.
+    //! Record r is assumed to be the correct size for this dataset.
+    virtual void load_record(size_t i, record_type& r) const = 0;
+
+    //! Load finite data for datapoint i into findata.
+    //! findata is assumed to be the correct size for this dataset.
+    virtual void load_finite(size_t i, std::vector<size_t>& findata) const = 0;
+
+    //! Load vector data for datapoint i into vecdata.
+    //! vecdata is assumed to be the correct size for this dataset.
+    virtual void load_vector(size_t i, vector_type& vecdata) const = 0;
+
+    //! ONLY for datasets which use assignments as native types:
+    //!  Load the pointer to datapoint i into (*a).
+    virtual void load_assignment_pointer(size_t i, assignment** a) const = 0;
+
   }; // class dataset
 
   // Free functions
   //==========================================================================
 
   //! Writes a human-readable representation of the dataset.
-  std::ostream& operator<<(std::ostream& out, const dataset& data);
+  template <typename LA>
+  std::ostream& operator<<(std::ostream& out, const dataset<LA>& ds) {
+    ds.print(out);
+    return out;
+  }
+
+  //============================================================================
+  // Implementations of methods in dataset
+  //============================================================================
+
+  // Constructors
+  //==========================================================================
+
+  template <typename LA>
+  void dataset<LA>::save(oarchive& a) const {
+    base::save(a);
+    a << nrecords << weighted << weights_;
+  }
+
+  template <typename LA>
+  void dataset<LA>::load(iarchive& a) {
+    base::load(a);
+    a >> nrecords >> weighted >> weights_;
+  }
+
+  // Getters and queries
+  //==========================================================================
+
+  template <typename LA>
+  record<LA> dataset<LA>::operator[](size_t i) const {
+    record_type r(finite_numbering_ptr_, vector_numbering_ptr_, dvector);
+    load_finite(i, *(r.fin_ptr));
+    load_vector(i, *(r.vec_ptr));
+    return r;
+  }
+
+  template <typename LA>
+  record<LA> dataset<LA>::at(size_t i) const {
+    assert(i < nrecords);
+    return operator[](i);
+  }
+
+  template <typename LA>
+  assignment dataset<LA>::at_assignment(size_t i) const {
+    assert(i < nrecords);
+    assignment a;
+    load_assignment(i, a);
+    return a;
+  }
+
+  template <typename LA>
+  size_t dataset<LA>::finite(size_t i, finite_variable* v) const {
+    return finite(i, safe_get(*finite_numbering_ptr_, v));
+  }
+
+  /*
+    vector_type dataset::vector(size_t i, vector_variable* v) const {
+    assert(v);
+    vector_type val(v->size());
+    for (size_t k(0); k < v->size(); ++k)
+    val[k] = vector(i, safe_get(*vector_numbering_ptr_, v) + k);
+    return val;
+    }
+  */
+
+  template <typename LA>
+  typename dataset<LA>::value_type
+  dataset<LA>::vector(size_t i, vector_variable* v, size_t j) const {
+    assert(v && (j < v->size()));
+    return vector(i, safe_get(*vector_numbering_ptr_, v) + j);
+  }
+
+  template <typename LA>
+  typename dataset<LA>::value_type
+  dataset<LA>::weight(size_t i) const {
+    if (weighted)
+      return weights_[i];
+    else
+      return 1;
+  }
+
+  template <typename LA>
+  typename dataset<LA>::value_type
+  dataset<LA>::weight_at(size_t i) const {
+    assert(i < size());
+    return weight(i);
+  }
+
+  template <typename LA>
+  void dataset<LA>::get_value_matrix(matrix_type& X, const vector_var_vector& vars,
+                                 bool add_ones) const {
+    assert(includes(vector_vars, vector_domain(vars.begin(), vars.end())));
+    size_t vars_size(vector_size(vars));
+    if (add_ones) {
+      if (X.size1() != nrecords || X.size2() != vars_size + 1)
+        X.resize(nrecords, vars_size + 1);
+      X.set_col(vars_size, vec(nrecords, 1.));
+    } else {
+      if (X.size1() != nrecords || X.size2() != vars_size)
+        X.resize(nrecords, vars_size);
+    }
+    for (size_t i(0); i < nrecords; ++i) {
+      size_t l2(0); // index into a row in X
+      for (size_t j(0); j < vars.size(); ++j) {
+        for (size_t k(0); k < vars[j]->size(); ++k) {
+          size_t l(safe_get(*vector_numbering_ptr_, vars[j]) + k);
+          X(i, l2) = vector(i, l);
+          ++l2;
+        }
+      }
+    }
+  }
+
+  template <typename LA>
+  void dataset<LA>::mean(vec& mu, const vector_var_vector& X) const {
+    size_t Xsize(0);
+    foreach(vector_variable* v, X) {
+      if (vector_vars.count(v) == 0)
+        throw std::invalid_argument
+          ("dataset::covariance() given variable not in dataset");
+      Xsize += v->size();
+    }
+    if (mu.size() != Xsize)
+      mu.resize(Xsize);
+    mu.zeros();
+    if (nrecords == 0)
+      return;
+    foreach(const record_type& r, records()) {
+      size_t l(0);
+      for (size_t j(0); j < X.size(); ++j) {
+        size_t ind(safe_get(*vector_numbering_ptr_, X[j]));
+        for (size_t k(0); k < X[j]->size(); ++k) {
+          mu[l] += r.vector(ind + k);
+          ++l;
+        }
+      }
+    }
+    mu /= nrecords;
+  }
+
+  template <typename LA>
+  void dataset<LA>::covariance(matrix_type& cov, const vector_var_vector& X) const {
+    vec mu;
+    mean_covariance(mu, cov, X);
+  }
+
+  template <typename LA>
+  void dataset<LA>::mean_covariance(vec& mu, matrix_type& cov,
+                                const vector_var_vector& X) const {
+    size_t Xsize(0);
+    foreach(vector_variable* v, X) {
+      if (vector_vars.count(v) == 0)
+        throw std::invalid_argument
+          ("dataset::covariance() given variable not in dataset");
+      Xsize += v->size();
+    }
+    if ((cov.size1() != Xsize) || (cov.size2() != Xsize))
+      cov.resize(Xsize, Xsize);
+    cov.zeros();
+    if (nrecords <= 1)
+      return;
+    mean(mu, X);
+    vec tmpvec(Xsize, 0.);
+    foreach(const record_type& r, records()) {
+      r.vector_values(tmpvec, X);
+      tmpvec -= mu;
+      cov += outer_product(tmpvec, tmpvec);
+    }
+    cov /= (nrecords - 1);
+  }
+
+  template <typename LA>
+  std::ostream&
+  dataset<LA>::print(std::ostream& out, const std::string& format) const {
+    if (format == "default") {
+      out << "Data set (";
+      out << finite_seq << " "
+          << vector_seq << ")" << std::endl;
+      for(size_t i = 0; i < nrecords; i++) {
+        record_type r(operator[](i));
+        foreach(size_t f, r.finite())
+          out << f << " ";
+        out << "| ";
+        foreach(value_type v, r.vector())
+          out << v << " ";
+        out << std::endl;
+      }
+    } else if (format == "vars") {
+      foreach(finite_variable* v, finite_seq)
+        out << v->name() << "\t" << v->get_variable_type() << "\t"
+            << v->size() << "\n";
+      foreach(vector_variable* v, vector_seq)
+        out << v->name() << "\t" << v->get_variable_type() << "\t"
+            << v->size() << "\n";
+    } else if (format == "tabbed") {
+      foreach(const record_type& r, records()) {
+        foreach(size_t f, r.finite())
+          out << f << "\t";
+        foreach(value_type v, r.vector())
+          out << v << "\t";
+        out << "\n";
+      }
+    } else if (format == "tabbed_weighted") {
+      size_t i(0);
+      foreach(const record_type& r, records()) {
+        foreach(size_t f, r.finite())
+          out << f << "\t";
+        foreach(value_type v, r.vector())
+          out << v << "\t";
+        out << weight(i) << "\n";
+      }
+    } else {
+      throw std::invalid_argument
+        ("dataset::print() given invalid format parameter: " + format);
+    }
+    return out;
+  } // print
+
+  template <typename LA>
+  std::istream&
+  dataset<LA>::load(std::istream& in, const std::string& format) {
+    if (format == "default") {
+      throw std::runtime_error("dataset::load NOT YET FULLY IMPLEMENTED.");
+    } else if (format == "vars") {
+      throw std::runtime_error("dataset::load NOT YET FULLY IMPLEMENTED.");
+    } else if (format == "tabbed") {
+      clear();
+      std::string line;
+      std::istringstream is;
+      value_type d;
+      size_t s;
+      std::vector<size_t> fvals(num_finite());
+      vector_type vvals(vector_dim());
+      while (in.good()) {
+        getline(in, line);
+        if (line.size() == 0)
+          continue;
+        is.clear();
+        is.str(line);
+        size_t f_i = 0;
+        size_t v_i = 0;
+        for (size_t i = 0; i < num_variables(); ++i) {
+          bool bad_parse = false;
+          switch (var_type_order[i]) {
+          case variable::FINITE_VARIABLE:
+            if (!(is >> s) ||
+                s >= finite_seq[f_i]->size()) {
+              bad_parse = true;
+              break;
+            }
+            fvals[f_i] = s;
+            ++f_i;
+            break;
+          case variable::VECTOR_VARIABLE:
+            for (size_t j = 0; j < vector_seq[v_i]->size(); ++j) {
+              if (!(is >> d)) {
+                bad_parse = true;
+                break;
+              }
+              vvals[v_i + j] = d;
+            }
+            ++v_i;
+            break;
+          default:
+            assert(false);
+          }
+          if (bad_parse) {
+            throw std::runtime_error("dataset::load (tabbed) had bad parse!");
+          }
+        }
+        if (f_i == 0 && v_i == 0)
+          continue;
+        if (f_i != num_finite() || v_i != num_vector()) {
+          throw std::runtime_error
+            ("dataset::load (tabbed) had bad parse (incomplete record)!");
+        }
+        insert(fvals, vvals);
+      }
+    } else if (format == "tabbed_weighted") {
+      throw std::runtime_error("dataset::load NOT YET FULLY IMPLEMENTED.");
+    } else {
+      throw std::invalid_argument
+        ("dataset::load() given invalid format parameter: " + format);
+    }
+    return in;
+  } // load
+
+  // Mutating operations
+  //==========================================================================
+
+  template <typename LA>
+  void dataset<LA>::insert(const assignment& a, value_type w) {
+    if (nrecords == capacity())
+      reserve(std::max<size_t>(1, 2*nrecords));
+    size_t i(nrecords);
+    ++nrecords;
+    set_record(i, a, w);
+  }
+
+  template <typename LA>
+  void dataset<LA>::insert(const std::vector<size_t>& fvals, const vector_type& vvals,
+                       value_type w) {
+    if (nrecords == capacity())
+      reserve(std::max<size_t>(1, 2*nrecords));
+    size_t i(nrecords);
+    ++nrecords;
+    set_record(i, fvals, vvals, w);
+  }
+
+  template <typename LA>
+  void dataset<LA>::insert_zero_record(value_type w) {
+    if (nrecords == capacity())
+      reserve(std::max<size_t>(1, 2*nrecords));
+    size_t i(nrecords);
+    ++nrecords;
+    set_record(i, std::vector<size_t>(num_finite(),0), vec(vector_dim(),0), w);
+  }
+
+  template <typename LA>
+  std::pair<vec, vec> dataset<LA>::normalize() {
+    vec means(dvector, 0);
+    vec std_devs(dvector, 0);
+    value_type total_ds_weight(0);
+    for (size_t i = 0; i < nrecords; ++i) {
+      for (size_t j = 0; j < dvector; ++j) {
+        means[j] += weight(i) * vector(i,j);
+        std_devs[j] += weight(i) * vector(i,j) * vector(i,j);
+      }
+      total_ds_weight += weight(i);
+    }
+    if (total_ds_weight == 0) {
+      means.zeros();
+      std_devs.zeros();
+      return std::make_pair(means, std_devs);
+    }
+    means /= total_ds_weight;
+    std_devs /= total_ds_weight;
+    std_devs = sqrt(std_devs - elem_mult(means, means));
+    normalize(means, std_devs);
+    return std::make_pair(means, std_devs);
+  }
+
+  template <typename LA>
+  void dataset<LA>::normalize(const vec& means, const vec& std_devs) {
+    normalize(means, std_devs, vector_seq);
+  }
+
+  template <typename LA>
+  std::pair<vec, vec> dataset<LA>::normalize(const vector_var_vector& vars) {
+    foreach(vector_variable* v, vars)
+      assert(vector_vars.count(v) != 0);
+    vec means(vector_size(vars), 0);
+    vec std_devs(vector_size(vars), 0);
+    value_type total_ds_weight(0);
+    ivec vars_inds(vector_indices(vars));
+    for (size_t i = 0; i < nrecords; ++i) {
+      for (size_t j = 0; j < vars_inds.size(); ++j) {
+        size_t j2(vars_inds[j]);
+        means[j] += weight(i) * vector(i,j2);
+        std_devs[j] += weight(i) * vector(i,j2) * vector(i,j2);
+      }
+      total_ds_weight += weight(i);
+    }
+    if (total_ds_weight == 0) {
+      means.zeros();
+      std_devs.zeros();
+      return std::make_pair(means, std_devs);
+    }
+    means /= total_ds_weight;
+    std_devs /= total_ds_weight;
+    std_devs = sqrt(std_devs - elem_mult(means, means));
+    normalize(means, std_devs, vars);
+    return std::make_pair(means, std_devs);
+  }
+
+  template <typename LA>
+  void dataset<LA>::normalize2() {
+    normalize2(vector_seq);
+  }
+
+  template <typename LA>
+  void dataset<LA>::randomize() {
+    std::time_t time_tmp;
+    time(&time_tmp);
+    randomize(time_tmp);
+  }
+
+  template <typename LA>
+  void dataset<LA>::make_weighted(value_type w) {
+    assert(weighted == false);
+    weights_.resize(capacity());
+    for (size_t i = 0; i < nrecords; ++i)
+      weights_[i] = w;
+    weighted = true;
+  }
+
+  template <typename LA>
+  void dataset<LA>::set_weights(const vec& weights_) {
+    assert(weights_.size() == size());
+    weighted = true;
+    this->weights_ = weights_;
+  }
+
+  template <typename LA>
+  void dataset<LA>::set_weight(size_t i, value_type weight_) {
+    assert(weighted == true);
+    assert(i < size());
+    weights_[i] = weight_;
+  }
 
 } // namespace sill
 

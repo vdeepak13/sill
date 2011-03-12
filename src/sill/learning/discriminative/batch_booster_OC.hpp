@@ -71,11 +71,19 @@ namespace sill {
   template <typename Objective>
   class batch_booster_OC : public multiclass_booster_OC<Objective> {
 
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef multiclass_booster_OC<Objective> base;
+
+    typedef typename base::la_type la_type;
+    typedef typename base::record_type record_type;
+
     // Protected data members
     //==========================================================================
   protected:
 
-    typedef multiclass_booster_OC<Objective> base;
     using base::label_;
     using base::label_index_;
     using base::nclasses_;
@@ -102,17 +110,17 @@ namespace sill {
 
     //! For loading saved classifier without associated data or
     //! for learning from an oracle.
-    dataset* ds_ptr;
+    dataset<la_type>* ds_ptr;
 
     //! For loading saved classifier without associated data or
     //! for learning from an oracle.
-    dataset_statistics* stats_ptr;
+    dataset_statistics<la_type>* stats_ptr;
 
     //! Stats for dataset
-    dataset_statistics& stats;
+    dataset_statistics<la_type>& stats;
 
     //! Dataset (from stats)
-    const dataset& ds;
+    const dataset<la_type>& ds;
 
     //! Normalized distribution over training examples
     //! distribution[i][l] = weight of example i for label l
@@ -201,7 +209,7 @@ namespace sill {
     explicit batch_booster_OC(batch_booster_OC_parameters params
                               = batch_booster_OC_parameters())
       : base(params), params(params), ntrain(0),
-        ds_ptr(new vector_dataset()), stats_ptr(new dataset_statistics(*ds_ptr)),
+        ds_ptr(new vector_dataset<la_type>()), stats_ptr(new dataset_statistics<la_type>(*ds_ptr)),
         stats(*stats_ptr), ds(*ds_ptr) { }
 
     /**
@@ -209,7 +217,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param params        algorithm parameters
      */
-    explicit batch_booster_OC(dataset_statistics& stats,
+    explicit batch_booster_OC(dataset_statistics<la_type>& stats,
                               batch_booster_OC_parameters params
                               = batch_booster_OC_parameters())
       : base(stats.get_dataset(), params), params(params),
@@ -228,12 +236,12 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param params        algorithm parameters
      */
-    batch_booster_OC(oracle& o, size_t n,
+    batch_booster_OC(oracle<la_type>& o, size_t n,
                      batch_booster_OC_parameters params
                      = batch_booster_OC_parameters())
       : base(o, params), params(params),
-        ds_ptr(new vector_dataset(o.datasource_info())),
-        stats_ptr(new dataset_statistics(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
+        ds_ptr(new vector_dataset<la_type>(o.datasource_info())),
+        stats_ptr(new dataset_statistics<la_type>(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
       for (size_t i = 0; i < n; ++i) {
         if (o.next())
           ds_ptr->insert(o.current().finite(), o.current().vector());
@@ -259,16 +267,16 @@ namespace sill {
     }
 
     //! Train a new multiclass classifier of this type with the given data.
-    boost::shared_ptr<multiclass_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<multiclass_classifier<> >
         bptr(new batch_booster_OC<Objective>(stats, this->params));
       return bptr;
     }
 
     //! Train a new multiclass classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<multiclass_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<multiclass_classifier<> >
         bptr(new batch_booster_OC<Objective>(o, n, this->params));
       return bptr;
     }
@@ -324,21 +332,21 @@ namespace sill {
       // Train weak learner
       size_t m_t((size_t)(params.resampling * std::log(exp(1.) +iteration_)));
       params.weak_learner->random_seed(uniform_prob(rng));
-      dataset_view ds_view(ds);
+      dataset_view<la_type> ds_view(ds);
       ds_view.set_binary_coloring(label_, params.binary_label, coloring);
       if (m_t > 0 && m_t < ds.size()) {
         // Use resampling
         std::vector<size_t> indices(m_t);
         for (size_t i = 0; i < m_t; ++i)
           indices[i] = resampler.sample();
-        dataset_view ds_view2(ds_view);
+        dataset_view<la_type> ds_view2(ds_view);
         ds_view2.set_record_indices(indices);
-        dataset_statistics stats_view(ds_view2);
+        dataset_statistics<la_type> stats_view(ds_view2);
         base_hypotheses.push_back(params.weak_learner->create(stats_view));
       } else {
         // Do not use resampling
         ds_view.set_weights(resampler.distribution());
-        dataset_statistics stats_view(ds_view);
+        dataset_statistics<la_type> stats_view(ds_view);
         base_hypotheses.push_back(params.weak_learner->create(stats_view));
       }
 
@@ -408,13 +416,13 @@ namespace sill {
 
     //! Resets the data source to be used in future rounds of training.
     //! @param  n   max number of examples which may be drawn from the oracle
-    void reset_datasource(oracle& o, size_t n) {
+    void reset_datasource(oracle<la_type>& o, size_t n) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }
 
     //! Resets the data source to be used in future rounds of training.
-    void reset_datasource(dataset_statistics& stats) {
+    void reset_datasource(dataset_statistics<la_type>& stats) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }

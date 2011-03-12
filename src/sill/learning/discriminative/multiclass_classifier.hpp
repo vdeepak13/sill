@@ -107,18 +107,29 @@ namespace sill {
    * Multiclass classifier interface.
    * \author Joseph Bradley
    * \ingroup learning_discriminative
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
-  class multiclass_classifier : public singlelabel_classifier {
+  template <typename LA = dense_linear_algebra<> >
+  class multiclass_classifier : public singlelabel_classifier<LA> {
 
-    typedef singlelabel_classifier base;
-
-    // Data from base class:
-    //  finite_variable* label_
-    //  size_t label_index_
-
-    // Public methods
+    // Public types
     //==========================================================================
   public:
+
+    typedef singlelabel_classifier<LA> base;
+
+    typedef typename base::la_type            la_type;
+    typedef typename base::record_type        record_type;
+    typedef typename base::value_type         value_type;
+    typedef typename base::vector_type        vector_type;
+    typedef typename base::matrix_type        matrix_type;
+    typedef typename base::dense_vector_type  dense_vector_type;
+    typedef typename base::dense_matrix_type  dense_matrix_type;
+
+  private:
+    static_assert(std::numeric_limits<double>::has_infinity);
 
     // Virtual methods from base classes (*means pure virtual):
     //  From learner:
@@ -137,6 +148,7 @@ namespace sill {
 
     // Constructors and destructors
     //==========================================================================
+  public:
 
     multiclass_classifier() : base() { }
 
@@ -147,12 +159,12 @@ namespace sill {
 
     //! Train a new multiclass classifier of this type with the given data.
     virtual boost::shared_ptr<multiclass_classifier>
-    create(dataset_statistics& stats) const = 0;
+    create(dataset_statistics<la_type>& stats) const = 0;
 
     //! Train a new multiclass classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
     virtual boost::shared_ptr<multiclass_classifier>
-    create(oracle& o, size_t n) const = 0;
+    create(oracle<la_type>& o, size_t n) const = 0;
 
     // Getters and helpers
     //==========================================================================
@@ -162,44 +174,57 @@ namespace sill {
 
     //! @return <log likelihood, std dev of log likelihood> estimated using
     //!         given test data
-    std::pair<double, double> test_log_likelihood(const dataset& testds,
-                                                  double base = exp(1.)) const;
+    std::pair<value_type, value_type>
+    test_log_likelihood(const dataset<la_type>& testds,
+                        value_type base = exp(1.)) const;
 
     //! @param n  max number of examples to be drawn from the given oracle
     //! @return <log likelihood, std dev of log likelihood> estimated using
     //!         given test data
-    std::pair<double, double> test_log_likelihood(oracle& o, size_t n,
-                                                  double base = exp(1.)) const;
+    std::pair<value_type, value_type>
+    test_log_likelihood(oracle<la_type>& o, size_t n,
+                        value_type base = exp(1.)) const;
 
     // Prediction methods
     //==========================================================================
+
+    using base::predict;
 
     //! Values indicating the confidences in each label, with
     //!  predict() == max_index(confidence()).
     //! If the classifier does not have actual confidence ratings,
     //!  then this returns values -1 or +1.
-    virtual vec confidences(const record& example) const;
+    virtual dense_vector_type confidences(const record_type& example) const;
 
-    virtual vec confidences(const assignment& example) const;
+    virtual dense_vector_type confidences(const assignment& example) const;
 
     //! Returns a prediction whose value indicates the label
     //! (like confidence()) but whose magnitude may differ.
     //! For boosters, this is the weighted sum of base predictions.
     //! If this is not implemented, then it returns confidence(example).
-    virtual vec predict_raws(const record& example) const {
+    virtual dense_vector_type
+    predict_raws(const record_type& example) const {
       return confidences(example);
     }
 
-    virtual vec predict_raws(const assignment& example) const {
+    virtual dense_vector_type predict_raws(const assignment& example) const {
       return confidences(example);
     }
 
     //! Predict the probability of the class variable having each value.
     //! If this is not implemented, then it returns 1 for the label
     //! given by predict(example) and 0 for the other labels.
-    virtual vec probabilities(const record& example) const;
+    virtual dense_vector_type
+    probabilities(const record_type& example) const;
 
-    virtual vec probabilities(const assignment& example) const;
+    virtual dense_vector_type probabilities(const assignment& example) const;
+
+    // Methods for iterative learners
+    // (None of these are implemented by non-iterative learners.)
+    //==========================================================================
+
+    using base::train_accuracies;
+    using base::test_accuracies;
 
     // Save and load methods
     //==========================================================================
@@ -207,7 +232,148 @@ namespace sill {
     using base::save;
     using base::load;
 
+    // Protected data members
+    //==========================================================================
+  protected:
+
+    using base::label_;
+    using base::label_index_;
+
   }; // class multiclass_classifier
+
+
+  //============================================================================
+  // Implementations of methods in multiclass_classifier
+  //============================================================================
+
+
+  // Getters and helpers
+  //==========================================================================
+
+  template <typename LA>
+  size_t multiclass_classifier<LA>::nclasses() const {
+    if (label_ == NULL) {
+      assert(false);
+      return 0;
+    }
+    return label_->size();
+  }
+
+  template <typename LA>
+  std::pair<typename multiclass_classifier<LA>::value_type,
+            typename multiclass_classifier<LA>::value_type>
+  multiclass_classifier<LA>::test_log_likelihood(const dataset<la_type>& testds,
+                                                 value_type base) const {
+    if (testds.size() == 0) {
+      std::cerr << "multiclass_classifier::test_log_likelihood() called with"
+                << " no data." << std::endl;
+      assert(false);
+      return std::make_pair(0,0);
+    }
+    value_type loglike(0);
+    value_type stddev(0);
+    typename dataset<la_type>::record_iterator testds_end = testds.end();
+    for (typename dataset<la_type>::record_iterator testds_it = testds.begin();
+         testds_it != testds_end; ++testds_it) {
+      const record_type& example = *testds_it;
+      value_type ll(probabilities(example)[label(example)]);
+      if (ll == 0) {
+        loglike = - std::numeric_limits<value_type>::infinity();
+        stddev = std::numeric_limits<value_type>::infinity();
+        break;
+      }
+      ll = std::log(ll);
+      loglike += ll;
+      stddev += ll * ll;
+    }
+    loglike /= std::log(base);
+    stddev /= (std::log(base) * std::log(base));
+    if (testds.size() == 1)
+      return std::make_pair(loglike,
+                            std::numeric_limits<value_type>::infinity());
+    stddev = sqrt((stddev - loglike * loglike / testds.size())
+                  / (testds.size() - 1));
+    loglike /= testds.size();
+    return std::make_pair(loglike, stddev);
+  }
+
+  template <typename LA>
+  std::pair<typename multiclass_classifier<LA>::value_type,
+            typename multiclass_classifier<LA>::value_type>
+  multiclass_classifier<LA>::test_log_likelihood(oracle<la_type>& o, size_t n,
+                                                 value_type base) const {
+    size_t cnt(0);
+    value_type loglike(0);
+    value_type stddev(0);
+    while (cnt < n) {
+      if (!(o.next()))
+        break;
+      const record_type& example = o.current();
+      value_type ll(probabilities(example)[label(example)]);
+      if (ll == 0) {
+        loglike = - std::numeric_limits<value_type>::infinity();
+        stddev = std::numeric_limits<value_type>::infinity();
+        break;
+      }
+      ll = std::log(ll);
+      loglike += ll;
+      stddev += ll * ll;
+      ++cnt;
+    }
+    loglike /= std::log(base);
+    stddev /= (std::log(base) * std::log(base));
+    if (cnt == 0) {
+      std::cerr << "multiclass_classifier::test_log_likelihood() called with"
+                << " an oracle with no data."
+                << std::endl;
+      assert(false);
+      return std::make_pair(0,0);
+    } else if (cnt == 1)
+      return std::make_pair(loglike,
+                            std::numeric_limits<value_type>::infinity());
+    stddev = sqrt((stddev - loglike * loglike / cnt)/(cnt - 1));
+    loglike /= cnt;
+    return std::make_pair(loglike, stddev);
+  }
+
+  // Prediction methods
+  //==========================================================================
+
+  template <typename LA>
+  typename multiclass_classifier<LA>::dense_vector_type
+  multiclass_classifier<LA>::confidences(const record_type& example) const {
+    dense_vector_type v(nclasses(), -1);
+    size_t j(predict(example));
+    v[j] = 1;
+    return v;
+  }
+
+  template <typename LA>
+  typename multiclass_classifier<LA>::dense_vector_type
+  multiclass_classifier<LA>::confidences(const assignment& example) const {
+    dense_vector_type v(nclasses(), -1);
+    size_t j(predict(example));
+    v[j] = 1;
+    return v;
+  }
+
+  template <typename LA>
+  typename multiclass_classifier<LA>::dense_vector_type
+  multiclass_classifier<LA>::probabilities(const record_type& example) const {
+    dense_vector_type v(nclasses(), 0);
+    size_t j(predict(example));
+    v[j] = 1;
+    return v;
+  }
+
+  template <typename LA>
+  typename multiclass_classifier<LA>::dense_vector_type
+  multiclass_classifier<LA>::probabilities(const assignment& example) const{
+    dense_vector_type v(nclasses(), 0);
+    size_t j(predict(example));
+    v[j] = 1;
+    return v;
+  }
 
 } // end of namespace: prl
 

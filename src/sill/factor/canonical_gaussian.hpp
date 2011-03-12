@@ -22,11 +22,13 @@ namespace sill {
    * \ingroup factor_types
    */
   class canonical_gaussian : public gaussian_factor {
+
     friend class moment_gaussian;
 
     // Public type declarations
     //==========================================================================
   public:
+
     //! implements Factor::collapse_type
     typedef canonical_gaussian collapse_type;
 
@@ -180,13 +182,13 @@ namespace sill {
     logarithmic<double> operator()(const vector_assignment& a) const;
 
     //! Evaluates the factor for a record.
-    logarithmic<double> operator()(const vector_record& r) const;
+    logarithmic<double> operator()(const record_type& r) const;
 
     //! Returns the log-likelihood of the factor
     double logv(const vector_assignment& a) const;
 
     //! Returns the log-likelihood of the factor
-    double logv(const vector_record& r) const;
+    double logv(const record_type& r) const;
 
     /**
      * implements Factor::collapse
@@ -222,7 +224,7 @@ namespace sill {
      *                intersect(f.arguments(), r_vars) appear in keys(r).
      *                (default = false)
      */
-    void restrict(canonical_gaussian& f, const vector_record& r,
+    void restrict(canonical_gaussian& f, const record_type& r,
                   const vector_domain& r_vars, bool strict = false) const;
   
     //! implements Factor::subst_args

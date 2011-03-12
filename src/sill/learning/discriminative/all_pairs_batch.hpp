@@ -3,18 +3,16 @@
 #define SILL_LEARNING_DISCRIMINATIVE_ALL_PAIRS_BATCH_HPP
 
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int.hpp>
 #include <boost/random/uniform_real.hpp>
-#include <boost/random/bernoulli_distribution.hpp>
+//#include <boost/random/bernoulli_distribution.hpp>
 
-#include <sill/datastructure/concepts.hpp>
+//#include <sill/datastructure/concepts.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/load_functions.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/oracle.hpp>
+//#include <sill/learning/dataset/oracle.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/math/statistics.hpp>
 
@@ -30,7 +28,7 @@ namespace sill {
 
     //! Specifies base learner type.
     //!  (required)
-    boost::shared_ptr<binary_classifier> base_learner;
+    boost::shared_ptr<binary_classifier<> > base_learner;
 
     //! New variable used to create binary views of the class variable
     //!  (required)
@@ -89,53 +87,16 @@ namespace sill {
    * @see BatchMulticlassClassifier
    * @todo Make a copy constructor and assignment operator which copy WLs.
    */
-  class all_pairs_batch : public multiclass_classifier {
+  class all_pairs_batch : public multiclass_classifier<> {
 
-    // Protected data members
+    // Public types
     //==========================================================================
-  protected:
+  public:
 
-    // Data from base class:
-    //  finite_variable* label_
-    //  size_t label_index_
+    typedef multiclass_classifier<> base;
 
-    typedef multiclass_classifier base;
-
-    all_pairs_batch_parameters params;
-
-    //! random number generator
-    mutable boost::mt11213b rng;
-
-    //! uniform distribution over [0, 1]
-    mutable boost::uniform_real<double> uniform_prob;
-
-    //! Arity of class variable
-    size_t nclasses_;
-
-    /**
-     * base_classifiers[i][j] = classifier for comparing labels
-     *  i (0), j+i+1 (1)
-     * Note: i ranges from 0 to nclasses_-2;
-     *       j ranges from 0 to nclasses_-i-2
-     */
-    std::vector<std::vector<boost::shared_ptr<binary_classifier> > >
-      base_classifiers;
-
-    //! Training accuracies of base classifiers
-    std::vector<std::vector<double> > base_train_acc;
-
-    // Protected methods
-    //==========================================================================
-
-    void init(const datasource& ds);
-
-    //! Train learner.
-    void build(dataset_statistics& stats);
-
-    /*
-    //! Train learner.
-    void build_online(oracle& o);
-    */
+    typedef base::la_type la_type;
+    typedef base::record_type record_type;
 
     // Constructors
     //==========================================================================
@@ -157,7 +118,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit all_pairs_batch(dataset_statistics& stats,
+    explicit all_pairs_batch(dataset_statistics<la_type>& stats,
                              all_pairs_batch_parameters params
                              = all_pairs_batch_parameters())
       : base(stats.get_dataset()), params(params) {
@@ -170,27 +131,30 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param parameters    algorithm parameters
      */
-    all_pairs_batch(oracle& o, size_t n,
+    all_pairs_batch(oracle<la_type>& o, size_t n,
                     all_pairs_batch_parameters params
                     = all_pairs_batch_parameters())
     : base(o), params(params) {
-      boost::shared_ptr<vector_dataset>
-        ds_ptr(oracle2dataset<vector_dataset>(o,n));
-      dataset_statistics stats(*ds_ptr);
+      boost::shared_ptr<vector_dataset<la_type> >
+        ds_ptr(new vector_dataset<la_type>());
+      oracle2dataset(o, n, *ds_ptr);
+      dataset_statistics<la_type> stats(*ds_ptr);
       build(stats);
     }
 
     //! Train a new multiclass classifier of this type with the given data.
-    boost::shared_ptr<multiclass_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> >
+    create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<multiclass_classifier<> >
         bptr(new all_pairs_batch(stats, this->params));
       return bptr;
     }
 
     //! Train a new multiclass classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<multiclass_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> >
+    create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<multiclass_classifier<> >
         bptr(new all_pairs_batch(o, n, this->params));
       return bptr;
     }
@@ -233,7 +197,7 @@ namespace sill {
     //==========================================================================
 
     //! Predict the label of a new example.
-    std::size_t predict(const record& example) const;
+    std::size_t predict(const record_type& example) const;
 
     //! Predict the label of a new example.
     std::size_t predict(const assignment& example) const;
@@ -259,6 +223,50 @@ namespace sill {
      * @return true if successful
      */
     bool load(std::ifstream& in, const datasource& ds, size_t load_part);
+
+    // Protected data members
+    //==========================================================================
+  protected:
+
+    // Data from base class:
+    //  finite_variable* label_
+    //  size_t label_index_
+
+    all_pairs_batch_parameters params;
+
+    //! random number generator
+    mutable boost::mt11213b rng;
+
+    //! uniform distribution over [0, 1]
+    mutable boost::uniform_real<double> uniform_prob;
+
+    //! Arity of class variable
+    size_t nclasses_;
+
+    /**
+     * base_classifiers[i][j] = classifier for comparing labels
+     *  i (0), j+i+1 (1)
+     * Note: i ranges from 0 to nclasses_-2;
+     *       j ranges from 0 to nclasses_-i-2
+     */
+    std::vector<std::vector<boost::shared_ptr<binary_classifier<> > > >
+      base_classifiers;
+
+    //! Training accuracies of base classifiers
+    std::vector<std::vector<double> > base_train_acc;
+
+    // Protected methods
+    //==========================================================================
+
+    void init(const datasource& ds);
+
+    //! Train learner.
+    void build(dataset_statistics<la_type>& stats);
+
+    /*
+    //! Train learner.
+    void build_online(oracle<la_type>& o);
+    */
 
   };  // all_pairs_batch
   

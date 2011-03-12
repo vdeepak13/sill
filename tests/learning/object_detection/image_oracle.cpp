@@ -19,9 +19,9 @@ int main(int argc, char* argv[]) {
   std::string filename
     = (argc > 1) ? argv[1] : "../../../../tests/data/image_varsize.txt";
   universe u;
-  boost::shared_ptr<std::vector<record> >
+  boost::shared_ptr<std::vector<record<> > >
     data_ptr(load_images(filename, u));
-  foreach(const record& img, *data_ptr) {
+  foreach(const record<>& img, *data_ptr) {
     image::write(std::cout, img);
     std::cout << std::endl;
   }
@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
   cout << "\nFixed-sized images:\n" << endl;
   filename = "../../../../tests/data/image_fixedsize.txt";
   data_ptr = load_images(filename, u);
-  foreach(const record& img, *data_ptr) {
+  foreach(const record<>& img, *data_ptr) {
     image::write(std::cout, img);
     std::cout << std::endl;
   }

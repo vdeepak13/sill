@@ -29,8 +29,8 @@ int main(int argc, char** argv) {
   std::string output_filepath(argv[2]);
 
   universe u;
-  boost::shared_ptr<vector_dataset> ds_ptr =
-    data_loader::load_symbolic_dataset<vector_dataset>(input_filepath, u);
+  boost::shared_ptr<vector_dataset<> > ds_ptr =
+    data_loader::load_symbolic_dataset<vector_dataset<> >(input_filepath, u);
 
   symbolic::save_binary_dataset(*ds_ptr, output_filepath);
 

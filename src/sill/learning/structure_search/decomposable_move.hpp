@@ -53,7 +53,7 @@ namespace sill {
     //! Inserter.
     virtual void
     generate_all_moves(const learnt_decomposable<F>& model, double cur_score,
-                       const decomposable_score<F>& score, dataset_statistics& stats,
+                       const decomposable_score<F>& score, dataset_statistics<>& stats,
                        Inserter& inserter, bool use_estimates = false) const =0;
 
     //! Given a model, score, another decomposable_move (which has just been
@@ -64,7 +64,7 @@ namespace sill {
     generate_new_moves(const learnt_decomposable<F>& model, double cur_score,
                        const decomposable_score<F>& score,
                        const std::vector<clique_change>& clique_changes,
-                       dataset_statistics& stats, Inserter& inserter,
+                       dataset_statistics<>& stats, Inserter& inserter,
                        bool use_estimates = false) const = 0;
 
   }; // class decomposable_move

@@ -32,7 +32,7 @@ namespace sill {
   template <typename F>
   void create_empty_decomposable(decomposable<F>& model,
                                  typename F::domain_type vars,
-                                 const dataset_statistics& stats,
+                                 const dataset_statistics<>& stats,
                                  double smoothing = 0) {
     std::vector<F> factors;
     foreach(finite_variable* v, vars)
@@ -119,7 +119,7 @@ namespace sill {
     learnt_decomposable<F> model;
 
     //! Data used for parameter estimation.
-    const dataset_statistics& stats;
+    const dataset_statistics<>& stats;
 
     //! Iterators over subsets of vars of size max_clique_size.
     //! *clique_it holds the next central clique to be loaded by next().
@@ -133,7 +133,7 @@ namespace sill {
      *
      * @param stats   statistics class for parameter estimation
      */
-    explicit star_decomposable_iterator(const dataset_statistics& stats,
+    explicit star_decomposable_iterator(const dataset_statistics<>& stats,
                                         parameters params = parameters())
       : vars(params.vars()), smoothing(params.smoothing()),
         max_clique_size(params.max_clique_size()), stats(stats) {

@@ -30,7 +30,7 @@
   template <>                                                           \
   hybrid_crf_factor<F>*                                                 \
   learn_crf_factor<hybrid_crf_factor<F> >                               \
-  (const dataset& ds,                                                   \
+  (const dataset<F::la_type>& ds,                                       \
    const hybrid_crf_factor<F>::output_domain_type& Y_,                  \
    copy_ptr<hybrid_crf_factor<F>::input_domain_type> X_ptr_,            \
    const hybrid_crf_factor<F>::parameters& params,                      \
@@ -56,7 +56,7 @@ namespace sill {
    */
   template <typename F>
   F*
-  learn_crf_factor(const dataset& ds,
+  learn_crf_factor(const dataset<typename F::la_type>& ds,
                    const typename F::output_domain_type& Y_,
                    copy_ptr<typename F::input_domain_type> X_ptr_,
                    const typename F::parameters& params,
@@ -65,7 +65,7 @@ namespace sill {
   //! Specialization: table_crf_factor
   template <>
   table_crf_factor*
-  learn_crf_factor<table_crf_factor>(const dataset& ds,
+  learn_crf_factor<table_crf_factor>(const dataset<table_crf_factor::la_type>& ds,
                                      const finite_domain& Y_,
                                      copy_ptr<finite_domain> X_ptr_,
                                      const table_crf_factor::parameters& params,
@@ -75,7 +75,7 @@ namespace sill {
   template <>
   log_reg_crf_factor*
   learn_crf_factor<log_reg_crf_factor>
-  (const dataset& ds,
+  (const dataset<log_reg_crf_factor::la_type>& ds,
    const finite_domain& Y_, copy_ptr<domain> X_ptr_,
    const log_reg_crf_factor::parameters& params, unsigned random_seed);
 
@@ -83,7 +83,7 @@ namespace sill {
   template <>
   gaussian_crf_factor*
   learn_crf_factor<gaussian_crf_factor>
-  (const dataset& ds,
+  (const dataset<gaussian_crf_factor::la_type>& ds,
    const vector_domain& Y_, copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
 
@@ -118,7 +118,7 @@ namespace sill {
   (std::vector<typename F::regularization_type>& reg_params,
    vec& means, vec& stderrs,
    const crossval_parameters& cv_params,
-   const dataset& ds,
+   const dataset<typename F::la_type>& ds,
    const typename F::output_domain_type& Y_,
    copy_ptr<typename F::input_domain_type> X_ptr_,
    const typename F::parameters& params,
@@ -131,9 +131,15 @@ namespace sill {
   (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
    vec& means, vec& stderrs,
    const crossval_parameters& cv_params,
-   const dataset& ds, const vector_domain& Y_,
+   const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
+
+
+  //============================================================================
+  // Implementations
+  //============================================================================
+
 
   namespace impl {
 
@@ -164,7 +170,7 @@ namespace sill {
     template <typename F>
     class learn_crf_factor_cv_functor {
 
-      const dataset& ds;
+      const dataset<typename F::la_type>& ds;
 
       const typename F::output_domain_type* Y_ptr;
 
@@ -175,7 +181,7 @@ namespace sill {
     public:
 
       //! Constructor.
-      learn_crf_factor_cv_functor(const dataset& ds,
+      learn_crf_factor_cv_functor(const dataset<typename F::la_type>& ds,
                                  const typename F::output_domain_type& Y_,
                                  copy_ptr<typename F::input_domain_type> X_ptr_,
                                  const typename F::parameters& params)
@@ -194,11 +200,11 @@ namespace sill {
         stderrs.zeros_memset();
         boost::mt11213b rng(random_seed);
         boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
-        dataset_view permuted_view(ds);
+        dataset_view<typename F::la_type> permuted_view(ds);
         permuted_view.set_record_indices(randperm(ds.size(), rng));
         typename F::parameters tmp_params(*params_ptr);
-        dataset_view fold_train_view(permuted_view);
-        dataset_view fold_test_view(permuted_view);
+        dataset_view<typename F::la_type> fold_train_view(permuted_view);
+        dataset_view<typename F::la_type> fold_test_view(permuted_view);
         fold_train_view.save_record_view();
         fold_test_view.save_record_view();
         // For each fold
@@ -243,7 +249,9 @@ namespace sill {
 
     class gcf_learn_crf_factor_cv_functor {
 
-      const dataset& ds;
+      typedef gaussian_crf_factor::la_type la_type;
+
+      const dataset<la_type>& ds;
 
       const vector_domain* Y_ptr;
 
@@ -255,7 +263,7 @@ namespace sill {
 
       //! Constructor.
       gcf_learn_crf_factor_cv_functor
-      (const dataset& ds,
+      (const dataset<la_type>& ds,
        const vector_domain& Y_, copy_ptr<vector_domain> X_ptr,
        const gaussian_crf_factor::parameters& params);
 
@@ -275,7 +283,7 @@ namespace sill {
   (std::vector<typename F::regularization_type>& reg_params,
    vec& means, vec& stderrs,
    const crossval_parameters& cv_params,
-   const dataset& ds,
+   const dataset<typename F::la_type>& ds,
    const typename F::output_domain_type& Y_,
    copy_ptr<typename F::input_domain_type> X_ptr_,
    const typename F::parameters& params,
@@ -314,7 +322,7 @@ namespace sill {
   (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
    vec& means, vec& stderrs,
    const crossval_parameters& cv_params,
-   const dataset& ds, const vector_domain& Y_,
+   const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
 

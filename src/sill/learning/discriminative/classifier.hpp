@@ -12,14 +12,26 @@ namespace sill {
    * Classifier interface.
    * \author Joseph Bradley
    * \ingroup learning_discriminative
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
-  class classifier : public learner {
+  template <typename LA = dense_linear_algebra<> >
+  class classifier : public learner<LA> {
 
-    typedef learner base;
-
-    // Public methods
+    // Public types
     //==========================================================================
   public:
+
+    typedef learner<LA> base;
+
+    typedef typename base::la_type            la_type;
+    typedef typename base::record_type        record_type;
+    typedef typename base::value_type         value_type;
+    typedef typename base::vector_type        vector_type;
+    typedef typename base::matrix_type        matrix_type;
+    typedef typename base::dense_vector_type  dense_vector_type;
+    typedef typename base::dense_matrix_type  dense_matrix_type;
 
     // Virtual methods from base classes (*means pure virtual):
     //  From learner:
@@ -56,11 +68,12 @@ namespace sill {
      * @param  ds  dataset used to estimate statistics needed
      * @return estimated error rate for given data and chosen confidences
      */
-    virtual double set_confidences(const dataset& ds) {
+    virtual value_type
+    set_confidences(const dataset<dense_linear_algebra<> >& ds) {
       std::cerr << "classifier::set_confidences() has not been"
                 << " implemented for this classifier!" << std::endl;
       assert(false);
-      return - std::numeric_limits<double>::max();
+      return - std::numeric_limits<value_type>::max();
     }
 
     /**
@@ -74,11 +87,12 @@ namespace sill {
      * @param n  max number of examples to be drawn from the given oracle
      * @return estimated error rate for given data and chosen confidences
      */
-    virtual double set_confidences(oracle& o, size_t n) {
+    virtual value_type
+    set_confidences(oracle<dense_linear_algebra<> >& o, size_t n) {
       std::cerr << "classifier::set_confidences() has not been"
                 << " implemented for this classifier!" << std::endl;
       assert(false);
-      return - std::numeric_limits<double>::max();
+      return - std::numeric_limits<value_type>::max();
     }
 
     // Save and load methods

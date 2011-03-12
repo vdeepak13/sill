@@ -7,7 +7,7 @@
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
 #include <sill/learning/discriminative/tree_sampler.hpp>
 #include <sill/math/matrix.hpp>
@@ -91,9 +91,18 @@ namespace sill {
    *       between the two.
    */
   template <typename Objective = discriminative::objective_accuracy>
-  class proto_knn : public binary_classifier {
+  class proto_knn : public binary_classifier<> {
 
-    concept_assert((sill::DomainPartitioningObjective<Objective>));
+    //    concept_assert((sill::DomainPartitioningObjective<Objective>));
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef binary_classifier<> base;
+
+    typedef base::la_type la_type;
+    typedef base::record_type record_type;
 
     // Protected data members
     //==========================================================================
@@ -102,8 +111,6 @@ namespace sill {
     // Data from base class:
     //  finite_variable* label_
     //  size_t label_index_
-
-    typedef binary_classifier base;
 
     proto_knn_parameters params;
 
@@ -120,7 +127,7 @@ namespace sill {
     vector_var_vector vector_seq;
 
     //! Set of prototypes
-    std::vector<record> prototypes;
+    std::vector<record<la_type> > prototypes;
 
     //! Prototype labels
     std::vector<size_t> prototype_labels;
@@ -135,7 +142,7 @@ namespace sill {
     //! Returns the Euclidean distance between two records.
     //! Finite values which differ have distance 1.
     //! This skips the class variable.
-    double my_euclidean_distance(const record& r1, const record& r2) const {
+    double my_euclidean_distance(const record<la_type>& r1, const record<la_type>& r2) const {
       double d(0);
       const std::vector<size_t>& finite1 = r1.finite();
       const std::vector<size_t>& finite2 = r2.finite();
@@ -157,7 +164,7 @@ namespace sill {
       return sqrt(d);
     }
 
-    double my_euclidean_distance(const record& r1,const assignment& a) const {
+    double my_euclidean_distance(const record<la_type>& r1,const assignment& a) const {
       double d(0);
       const std::vector<size_t>& finite1 = r1.finite();
       const finite_assignment& finite2 = a.finite();
@@ -190,7 +197,7 @@ namespace sill {
       return sqrt(d);
     }
 
-    void init(const dataset& ds) {
+    void init(const dataset<la_type>& ds) {
       assert(params.valid());
       if (ds.size() < params.n_cand || ds.size() < params.n_proto) {
         std::cerr << "Dataset size for proto_knn is less than N_CAND or"
@@ -205,7 +212,7 @@ namespace sill {
     //! Note: The choices of candidates and prototypes are made with
     //!       replacement, which is reasonable when the dataset size is
     //!       large enough.
-    void build(const dataset& ds, const tree_sampler& sampler) {
+    void build(const dataset<la_type>& ds, const tree_sampler& sampler) {
       // CHOOSE AN INITIAL PROTOTYPE
       // We can choose the first prototype based on the max weight class,
       // so find weight of classes 0,1.
@@ -225,7 +232,7 @@ namespace sill {
       std::vector<double> c_objectives(params.n_cand); // objective values
       for (size_t i2 = 0; i2 < params.n_cand; ++i2) {
         cs[i2] = sampler.sample();
-        const record& c = ds[cs[i2]];
+        const record<la_type>& c = ds[cs[i2]];
         // Candidate c classifies all examples as its label.
         //  (So total_weights[label(c)] are correct.)
         c_objectives[i2] =
@@ -260,7 +267,7 @@ namespace sill {
         // Consider N_CAND possible prototypes
         for (size_t i2 = 0; i2 < params.n_cand; ++i2) {
           cs[i2] = sampler.sample();
-          const record& c = ds[cs[i2]];
+          const record<la_type>& c = ds[cs[i2]];
           tmp_label = label(c);
           new_contingency_table = contingency_table;
           // Compute objective after adding c to prototypes.
@@ -290,7 +297,7 @@ namespace sill {
         // Update cur_pred, cur_dist, contingency_table
         // Note: These could be saved, but that would make this scale
         //       worse with N_CAND.
-        const record& new_proto = prototypes.back();
+        const record<la_type>& new_proto = prototypes.back();
         tmp_label = label(new_proto);
         for (size_t i = 0; i < ds.size(); ++i) {
           double d(my_euclidean_distance(new_proto, ds[i]));
@@ -350,12 +357,12 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit proto_knn(dataset_statistics& stats,
+    explicit proto_knn(dataset_statistics<la_type>& stats,
               proto_knn_parameters params = proto_knn_parameters())
       : base(stats.get_dataset()), params(params),
         finite_seq(stats.get_dataset().finite_list()),
         vector_seq(stats.get_dataset().vector_list()) {
-      const dataset& ds = stats.get_dataset();
+      const dataset<la_type>& ds = stats.get_dataset();
       init(ds);
       tree_sampler::parameters sampler_params;
       sampler_params.random_seed =
@@ -378,12 +385,12 @@ namespace sill {
      * @param sampler       a tree sampler for the dataset distribution
      * @param parameters    algorithm parameters
      */
-    proto_knn(dataset_statistics& stats, const tree_sampler& sampler,
+    proto_knn(dataset_statistics<la_type>& stats, const tree_sampler& sampler,
               proto_knn_parameters params = proto_knn_parameters())
       : base(stats.get_dataset(), Objective::confidence_rated()), params(params),
         finite_seq(stats.get_dataset().finite_list()),
         vector_seq(stats.get_dataset().vector_list()) {
-      const dataset& ds = stats.get_dataset();
+      const dataset<la_type>& ds = stats.get_dataset();
       init(ds);
       if (ds.size() != sampler.distribution().size()) {
         std::cerr << "proto_knn constructor was passed a tree_sampler"
@@ -401,33 +408,34 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param parameters    algorithm parameters
      */
-    proto_knn(oracle& o, size_t n,
+    proto_knn(oracle<la_type>& o, size_t n,
               proto_knn_parameters params = proto_knn_parameters())
       : base(o), params(params),
         finite_seq(o.finite_list()), vector_seq(o.vector_list()) {
-      boost::shared_ptr<vector_dataset>
-        ds_ptr(oracle2dataset<vector_dataset>(o,n));
-      init(*ds_ptr);
+      vector_dataset<la_type> ds;
+      oracle2dataset(o, n, ds);
+      init(ds);
       tree_sampler::parameters sampler_params;
       sampler_params.random_seed
         = boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng);
-      tree_sampler sampler(vec(ds_ptr->size(),1), ds_ptr->size(),
-                           sampler_params);
+      tree_sampler sampler(vec(ds.size(),1), ds.size(), sampler_params);
 
-      build(*ds_ptr, sampler);
+      build(ds, sampler);
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> >
+    create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new proto_knn<Objective>(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> >
+    create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new proto_knn<Objective>(o, n, this->params));
       return bptr;
     }
@@ -465,7 +473,7 @@ namespace sill {
     //==========================================================================
 
     //! Predict the 0/1 label of a new example.
-    std::size_t predict(const record& example) const {
+    std::size_t predict(const record<la_type>& example) const {
       return (confidence(example) > 0 ? 1 : 0);
     }
 
@@ -478,7 +486,7 @@ namespace sill {
     //!  predict() == (confidence() > 0) ? 1 : 0.
     //! If the classifier does not have actual confidence ratings,
     //!  then this should be any value with the correct sign.
-    double confidence(const record& example) const {
+    double confidence(const record<la_type>& example) const {
       double min_dist(std::numeric_limits<double>::max());
       size_t min_i(0);
       for (size_t i = 0; i < prototypes.size(); ++i) {

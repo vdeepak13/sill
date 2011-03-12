@@ -27,7 +27,7 @@ namespace sill {
 
     //! Specifies weak learner type
     //!  (required)
-    boost::shared_ptr<binary_classifier> weak_learner;
+    boost::shared_ptr<binary_classifier<> > weak_learner;
 
     multiclass_booster_OC_parameters() : binary_label(NULL) { }
 
@@ -79,6 +79,15 @@ namespace sill {
   template <typename Objective>
   class multiclass_booster_OC : public multiclass_booster<Objective> {
 
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef multiclass_booster<Objective> base;
+
+    typedef typename base::la_type la_type;
+    typedef typename base::record_type record_type;
+
     // Protected data members
     //==========================================================================
   protected:
@@ -92,8 +101,6 @@ namespace sill {
     //  - timing: The initial value is set here, but further ones must be
     //            added by the children.
     //  - base_hypotheses, colorings: These must be added by the children.
-
-    typedef multiclass_booster<Objective> base;
 
     // Data from base class:
     //  finite_variable* label_
@@ -142,7 +149,7 @@ namespace sill {
     mutable boost::mt11213b rng;
 
     //! Base hypotheses
-    std::vector<boost::shared_ptr<binary_classifier> > base_hypotheses;
+    std::vector<boost::shared_ptr<binary_classifier<> > > base_hypotheses;
     //! Colorings for labels: colorings[t][l] = 0/1 for label l on round t
     std::vector<std::vector<size_t> > colorings;
 
@@ -177,7 +184,7 @@ namespace sill {
       }
     }
 
-    void my_predict_raws(const record& example,
+    void my_predict_raws(const record_type& example,
                          vec& pred) const {
       for (size_t l = 0; l < nclasses_; ++l)
         pred[l] = 0;
@@ -243,7 +250,7 @@ namespace sill {
     }
 
     //! Predict the label of a new example.
-    std::size_t predict(const record& example) const {
+    std::size_t predict(const record_type& example) const {
       my_predict_raws(example, tmp_vector);
       return max_index(tmp_vector, rng);
     }
@@ -252,7 +259,7 @@ namespace sill {
     //! (like confidence()) but whose magnitude may differ.
     //! For boosters, this is the weighted sum of base predictions.
     //! If this is not implemented, then it returns confidence(example).
-    vec predict_raws(const record& example) const {
+    vec predict_raws(const record_type& example) const {
       my_predict_raws(example, tmp_vector);
       return tmp_vector;
     }
@@ -265,7 +272,7 @@ namespace sill {
     //! Compute accuracy for each iteration on a test set.
     //! If ntest is not given, this assumes the oracle has a limit.
     std::vector<double>
-    test_accuracies(oracle& o,
+    test_accuracies(oracle<la_type>& o,
                     size_t ntest = std::numeric_limits<size_t>::max()) const {
       std::vector<double> test_acc(iteration_, 0);
       size_t n = 0;
@@ -291,7 +298,7 @@ namespace sill {
 
     //! Compute accuracy for each iteration on a test set:
     std::vector<double>
-    test_accuracies(const dataset& testds) const {
+    test_accuracies(const dataset<la_type>& testds) const {
       if (testds.size() == 0)
         return std::vector<double>();
 

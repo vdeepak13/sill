@@ -42,7 +42,7 @@ namespace sill {
    * @param in   input filestream for file holding the saved classifier
    * @param ds   datasource used to get variables and variable orderings
    */
-  boost::shared_ptr<binary_classifier>
+  boost::shared_ptr<binary_classifier<> >
   load_binary_classifier(std::ifstream& in, const datasource& ds);
 
   /**
@@ -50,7 +50,7 @@ namespace sill {
    * @param filename  file holding the saved classifier
    * @param ds        datasource used to get variables and variable orderings
    */
-  boost::shared_ptr<binary_classifier>
+  boost::shared_ptr<binary_classifier<> >
   load_binary_classifier(const std::string& filename, const datasource& ds);
 
   /**
@@ -58,7 +58,7 @@ namespace sill {
    * @param in   input filestream for file holding the saved classifier
    * @param ds   datasource used to get variables and variable orderings
    */
-  boost::shared_ptr<multiclass_classifier>
+  boost::shared_ptr<multiclass_classifier<> >
   load_multiclass_classifier(std::ifstream& in, const datasource& ds);
 
   /**
@@ -66,7 +66,7 @@ namespace sill {
    * @param filename  file holding the saved classifier
    * @param ds        datasource used to get variables and variable orderings
    */
-  boost::shared_ptr<multiclass_classifier>
+  boost::shared_ptr<multiclass_classifier<> >
   load_multiclass_classifier(const std::string& filename,
                              const datasource& ds);
 
@@ -84,7 +84,7 @@ namespace sill {
    *                            and any base learners.
    * @return  pointer to empty classifier; or NULL pointer if unable to load
    */
-  boost::shared_ptr<sill::binary_classifier>
+  boost::shared_ptr<sill::binary_classifier<> >
   empty_binary_classifier(std::string learner_name,
                           size_t booster_iterations);
 
@@ -99,7 +99,7 @@ namespace sill {
    *
    * @return  pointer to empty classifier; or NULL pointer if unable to load
    */
-  boost::shared_ptr<sill::multiclass_classifier>
+  boost::shared_ptr<sill::multiclass_classifier<> >
   empty_multiclass_classifier(std::string learner_name, sill::universe& u,
                               size_t booster_iterations);
 

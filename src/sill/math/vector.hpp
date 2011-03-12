@@ -62,6 +62,8 @@ namespace sill {
     typedef const T*        const_pointer;
     typedef const T*        const_iterator;
 
+    typedef size_t index_type;
+
     // The base type
     typedef itpp::Vec<T> base;
 

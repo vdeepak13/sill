@@ -270,6 +270,44 @@ namespace sill {
       fin_ptr = val;
     }
 
+    /**
+     * For each variable in this record,
+     * set the value according to the assignment,
+     * with record variables mapped to assignment variables according to vmap.
+     *
+     * @param a     Assignment covering all variables in this record,
+     *               modulo the variable mapping.
+     * @param vmap  Variable mapping: Variables in record --> Variables in a.
+     */
+    void copy_assignment_mapped(const sill::finite_assignment& a,
+                                const finite_var_map& vmap) {
+      for (std::map<finite_variable*, size_t>::const_iterator it =
+             finite_numbering_ptr->begin();
+           it != finite_numbering_ptr->end();
+           ++it) {
+        this->finite(it->second) = safe_get(a, safe_get(vmap, it->first));
+      }
+    }
+
+    /**
+     * For each variable in this record,
+     * set the value according to the given record,
+     * with variables mapped according to vmap.
+     *
+     * @param r     Record covering all variables in this record,
+     *               modulo the variable mapping.
+     * @param vmap  Variable mapping: Vars in this record --> Vars in other.
+     */
+    void copy_record_mapped(const finite_record& r,
+                            const finite_var_map& vmap) {
+      for (std::map<finite_variable*, size_t>::const_iterator it =
+             finite_numbering_ptr->begin();
+           it != finite_numbering_ptr->end();
+           ++it) {
+        this->finite(it->second) = r.finite(safe_get(vmap,it->first));
+      }
+    }
+
   }; // class finite_record
 
   // Free functions

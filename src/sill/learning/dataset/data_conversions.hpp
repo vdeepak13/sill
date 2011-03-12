@@ -4,9 +4,8 @@
 
 #include <iostream>
 
-#include <boost/serialization/shared_ptr.hpp>
+//#include <boost/serialization/shared_ptr.hpp>
 
-#include <sill/learning/dataset/concepts.hpp>
 #include <sill/learning/dataset/oracle.hpp>
 
 #include <sill/macros_def.hpp>
@@ -40,22 +39,16 @@ namespace sill {
   /**
    * Draw examples from the given oracle to build a dataset.
    */
-  template <typename Dataset>
-  static boost::shared_ptr<Dataset>
-  oracle2dataset(oracle& o, size_t max_records) {
-    concept_assert((sill::Dataset<Dataset>));
-    boost::shared_ptr<Dataset> data_ptr
-      (new Dataset(o.finite_list(), o.vector_list(),
-                   o.variable_type_order()));
-    data_ptr->set_finite_class_variables(o.finite_class_variables());
-    data_ptr->set_vector_class_variables(o.vector_class_variables());
+  template <typename LA>
+  void
+  oracle2dataset(oracle<LA>& o, size_t max_records, dataset<LA>& ds) {
+    ds.reset(o.datasource_info());
     for (size_t i = 0; i < max_records; i++) {
       if (o.next())
-        data_ptr->insert(o.current().finite(), o.current().vector());
+        ds.insert(o.current().finite(), o.current().vector());
       else
         break;
     }
-    return data_ptr;
   }
 
 } // namespace sill

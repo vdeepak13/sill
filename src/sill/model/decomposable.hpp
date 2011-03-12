@@ -626,14 +626,15 @@ namespace sill {
      * Expected log likelihood E[P(X)], where P(X) is this model and
      * the expectation is w.r.t. the given dataset.
      */
-    double expected_log_likelihood(const dataset& ds, double base) const {
+    template <typename LA>
+    double expected_log_likelihood(const dataset<LA>& ds, double base) const {
       if (ds.size() == 0)
         return 0;
       double ll = 0;
       if (!includes(ds.variables(), args)) {
         throw std::runtime_error("decomposable::expected_log_likelihood currently requires that the given dataset includes all variables in the decomposable model.");
       }
-      foreach(const record& r, ds.records()) {
+      foreach(const record<LA>& r, ds.records()) {
         ll += this->log_likelihood(r, base);
       }
       return ll / ds.size();
@@ -644,7 +645,8 @@ namespace sill {
      * the expectation is w.r.t. the given dataset.
      * This version uses log base e.
      */
-    double expected_log_likelihood(const dataset& ds) const {
+    template <typename LA>
+    double expected_log_likelihood(const dataset<LA>& ds) const {
       return expected_log_likelihood(ds, std::exp(1));
     }
 
@@ -665,7 +667,8 @@ namespace sill {
      *
      * @todo Add support for when this model represents P(Y,X,Z).
      */
-    double expected_conditional_log_likelihood(const dataset& ds,
+    template <typename LA>
+    double expected_conditional_log_likelihood(const dataset<LA>& ds,
                                                const domain_type& X,
                                                double base) const {
       if (ds.size() == 0)
@@ -674,7 +677,7 @@ namespace sill {
       if (!includes(ds.variables(), args)) {
         throw std::runtime_error("decomposable::expected_conditional_log_likelihood currently requires that the given dataset includes all variables in the decomposable model.");
       }
-      foreach(const record& r, ds.records()) {
+      foreach(const record<LA>& r, ds.records()) {
         decomposable tmp_model(*this);
         tmp_model.condition(r.assignment(X));
         cll += tmp_model.log_likelihood(r, base);
@@ -682,7 +685,8 @@ namespace sill {
       return cll / ds.size();
     }
 
-    double expected_conditional_log_likelihood(const dataset& ds,
+    template <typename LA>
+    double expected_conditional_log_likelihood(const dataset<LA>& ds,
                                                const domain_type& X) const {
       return expected_conditional_log_likelihood(ds, X, exp(double(1)));
     }
@@ -921,7 +925,8 @@ namespace sill {
      *
      * @todo Add support for when this model represents P(Y,X,Z).
      */
-    double expected_mean_squared_error(const dataset& ds,
+    template <typename LA>
+    double expected_mean_squared_error(const dataset<LA>& ds,
                                        const domain_type& X) const {
       if (ds.size() == 0)
         return 0;
@@ -932,7 +937,7 @@ namespace sill {
            " currently requires that the given dataset includes all variables"+
            " in the decomposable model.");
       }
-      foreach(const record& r, ds.records()) {
+      foreach(const record<LA>& r, ds.records()) {
         decomposable tmp_model(*this);
         tmp_model.condition(r.assignment(X));
         pla += tmp_model.mean_squared_error(r);
@@ -970,7 +975,8 @@ namespace sill {
      *
      * @todo Add support for when this model represents P(Y,X,Z).
      */
-    double expected_per_label_accuracy(const dataset& ds,
+    template <typename LA>
+    double expected_per_label_accuracy(const dataset<LA>& ds,
                                        const domain_type& X) const {
       if (ds.size() == 0)
         return 0;
@@ -978,7 +984,7 @@ namespace sill {
       if (!includes(ds.variables(), args)) {
         throw std::runtime_error("decomposable::expected_per_label_accuracy currently requires that the given dataset includes all variables in the decomposable model.");
       }
-      foreach(const record& r, ds.records()) {
+      foreach(const record<LA>& r, ds.records()) {
         decomposable tmp_model(*this);
         tmp_model.condition(r.assignment(X));
         pla += tmp_model.per_label_accuracy(r);

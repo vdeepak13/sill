@@ -38,9 +38,9 @@ int main(int argc, char* argv[]) {
   random_HMM(bn, rng, u, n, n_states, n_emissions);
 
   syn_oracle_bayes_net<table_factor> bn_oracle(bn);
-  boost::shared_ptr<vector_dataset>
-    ds_ptr(oracle2dataset<vector_dataset>(bn_oracle,n_records));
-  dataset_statistics stats(*ds_ptr);
+  vector_dataset<> ds;
+  oracle2dataset(bn_oracle, n_records, ds);
+  dataset_statistics<> stats(ds);
 
   // Choose some random variables for evidence
   finite_assignment evidence;

@@ -9,13 +9,19 @@ namespace sill {
 
     namespace po = boost::program_options;
     po::options_description
-      sub_desc1(desc_prefix + "Cross Validation Options");
+      sub_desc1(desc_prefix + "CrossVal Options");
     sub_desc1.add_options()
+      ("no_cv",
+       po::bool_switch(&no_cv)->default_value(false),
+       "If true, do not run CV; use fixed_vals instead.")
+      ("fixed_vals",
+       po::value<vec>(&fixed_vals)->default_value(vec(1,0)),
+       "Values to be used if not running CV.")
       ("nfolds",
        po::value<size_t>(&nfolds)->default_value(10),
        "Number of cross validation folds for choosing regularization. (> 1)")
       ("minvals",
-       po::value<vec>(&minvals)->default_value(vec(1,0)),
+       po::value<vec>(&minvals)->default_value(vec(1,.00001)),
        "Minimum values for factor regularization parameters. (>= 0) (Specify as, e.g., \"[.5]\")")
       ("maxvals",
        po::value<vec>(&maxvals)->default_value(vec(1,1)),
@@ -32,5 +38,40 @@ namespace sill {
     desc.add(sub_desc1);
 
   } // add_options
+
+  crossval_parameters crossval_builder::get_parameters(size_t N) {
+    crossval_parameters params(N);
+    params.nfolds = nfolds;
+    if (minvals.size() == N) {
+      params.minvals = minvals;
+    } else if (minvals.size() == 1) {
+      params.minvals = minvals[0];
+    } else {
+      throw std::invalid_argument
+        ("crossval_builder given minvals of length " +
+         to_string(minvals.size()) + " but expected length " + to_string(N));
+    }
+    if (maxvals.size() == N) {
+      params.maxvals = maxvals;
+    } else if (maxvals.size() == 1) {
+      params.maxvals = maxvals[0];
+    } else {
+      throw std::invalid_argument
+        ("crossval_builder given maxvals of length " +
+         to_string(maxvals.size()) + " but expected length " + to_string(N));
+    }
+    if (nvals.size() == N) {
+      params.nvals = nvals;
+    } else if (nvals.size() == 1) {
+      params.nvals = nvals[0];
+    } else {
+      throw std::invalid_argument
+        ("crossval_builder given nvals of length " +
+         to_string(nvals.size()) + " but expected length " + to_string(N));
+    }
+    params.zoom = zoom;
+    params.log_scale = !real_scale;
+    return params;
+  } // get_parameters
 
 } // namespace sill

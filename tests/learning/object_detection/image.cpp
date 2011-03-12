@@ -18,15 +18,15 @@ int main(int argc, char* argv[]) {
   std::string filename
     = argc > 1 ? argv[1] : "../../../../tests/data/image_test.sum";
   universe u;
-  boost::shared_ptr<vector_dataset> data_ptr
-    = data_loader::load_symbolic_dataset<vector_dataset>(filename, u);
+  boost::shared_ptr<vector_dataset<> > data_ptr
+    = data_loader::load_symbolic_dataset<vector_dataset<> >(filename, u);
 
   cout  << "For each image, print original image, rescaled image (1/2 size), "
         << "rescaled image (3/4 size), integral representation of image."
         << endl;
-  for (vector_dataset::record_iterator it = data_ptr->begin();
+  for (vector_dataset<>::record_iterator it = data_ptr->begin();
        it != data_ptr->end(); ++it) {
-    record r(*it);
+    record<> r(*it);
     image::write(cout, r);
     cout << endl;
     image::set_view(r, 0, 0,

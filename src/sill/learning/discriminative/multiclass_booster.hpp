@@ -6,12 +6,12 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <sill/learning/dataset/concepts.hpp>
+//#include <sill/learning/dataset/concepts.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
 #include <sill/learning/discriminative/booster.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/learning/discriminative/tree_sampler.hpp>
@@ -31,7 +31,14 @@ namespace sill {
    * @todo serialization
    */
   template <typename Objective>
-  class multiclass_booster : public multiclass_classifier, public booster {
+  class multiclass_booster : public multiclass_classifier<>, public booster {
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef multiclass_classifier<>::la_type la_type;
+    typedef multiclass_classifier<>::record_type record_type;
 
     // Protected data members
     //==========================================================================
@@ -124,8 +131,8 @@ namespace sill {
     // Constructors and destructors
     //==========================================================================
 
-    explicit multiclass_booster(const classifier* wl_ptr)
-      : multiclass_classifier(), nclasses_(nclasses()),
+    explicit multiclass_booster(const classifier<>* wl_ptr)
+      : multiclass_classifier<>(), nclasses_(nclasses()),
         uniform_prob(boost::uniform_real<double>(0,1)),
         bernoulli_dist(boost::bernoulli_distribution<double>(.5)),
         smoothing(0), iteration_(0) {
@@ -137,8 +144,8 @@ namespace sill {
       timing.push_back(time_tmp);
     }
 
-    multiclass_booster(const datasource& ds, const classifier* wl_ptr)
-      : multiclass_classifier(ds), nclasses_(nclasses()),
+    multiclass_booster(const datasource& ds, const classifier<>* wl_ptr)
+      : multiclass_classifier<>(ds), nclasses_(nclasses()),
         uniform_prob(boost::uniform_real<double>(0,1)),
         bernoulli_dist(boost::bernoulli_distribution<double>(.5)),
         smoothing(0), iteration_(0) {
@@ -188,15 +195,15 @@ namespace sill {
     // Save and load methods
     //==========================================================================
 
-    using multiclass_classifier::save;
-    using multiclass_classifier::load;
+    using multiclass_classifier<>::save;
+    using multiclass_classifier<>::load;
 
     //! Output the learner to a human-readable file which can be reloaded.
     //! @param save_part  0: save function (default), 1: engine, 2: shell
     //! @param save_name  If true, this saves the name of the learner.
     virtual void save(std::ofstream& out, size_t save_part = 0,
                       bool save_name = true) const {
-      multiclass_classifier::save(out, save_part, save_name);
+      multiclass_classifier<>::save(out, save_part, save_name);
       out << (wl_confidence_rated ?"1":"0") << " " << smoothing << " "
           << iteration_ << " " << alphas << " " << timing << "\n";
     }
@@ -211,7 +218,7 @@ namespace sill {
      */
     virtual bool
     load(std::ifstream& in, const datasource& ds, size_t load_part) {
-      if (!(multiclass_classifier::load(in, ds, load_part)))
+      if (!(multiclass_classifier<>::load(in, ds, load_part)))
         return false;
       nclasses_ = nclasses();
       std::string line;

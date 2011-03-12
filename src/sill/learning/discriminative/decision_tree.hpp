@@ -84,9 +84,18 @@ namespace sill {
    *       any binary classifier?
    */
   template <typename Objective = discriminative::objective_information>
-  class decision_tree : public binary_classifier {
+  class decision_tree : public binary_classifier<> {
 
-    concept_assert((sill::DomainPartitioningObjective<Objective>));
+    //    concept_assert((sill::DomainPartitioningObjective<Objective>));
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef binary_classifier<> base;
+
+    typedef base::la_type la_type;
+    typedef base::record_type record_type;
 
     // Protected data members
     //==========================================================================
@@ -95,8 +104,6 @@ namespace sill {
     // Data from base class:
     //  finite_variable* label_
     //  size_t label_index_
-
-    typedef binary_classifier base;
 
     //! Type of decision stump used in decision tree nodes.
     typedef stump<Objective> stump_type;
@@ -150,7 +157,7 @@ namespace sill {
         this->childA = childA; this->childB = childB;
       }
 
-      double confidence(const record& example) const {
+      double confidence(const record_type& example) const {
         if (childA == NULL)
           return s.confidence(example);
         else
@@ -208,14 +215,14 @@ namespace sill {
      * @return  pointer to root of this subtree
      */
     treenode*
-    build_recursive(const dataset_view& train_view,
-                    const dataset_view& test_view,
+    build_recursive(const dataset_view<la_type>& train_view,
+                    const dataset_view<la_type>& test_view,
                     boost::tuple<size_t,size_t,size_t,size_t>& test_results) {
       // Train a stump at 'node' (which has not yet been allocated)
       stump_parameters stump_params;
       stump_params.smoothing = params.smoothing;
       stump_params.random_seed = uniform_int(rng);
-      dataset_statistics stats(train_view);
+      dataset_statistics<la_type> stats(train_view);
       treenode* node = new treenode(stump_type(stats, stump_params));
 
       // Split the data into those labeled 0/1 by the stump.
@@ -263,14 +270,14 @@ namespace sill {
           indices0.size() > cnt0 && indices1.size() > cnt1 &&
           test_indices0.size() > test_cnt0 &&
           test_indices1.size() > test_cnt1) {
-        dataset_view train_view0(train_view);
-        dataset_view test_view0(test_view);
+        dataset_view<la_type> train_view0(train_view);
+        dataset_view<la_type> test_view0(test_view);
         train_view0.set_record_indices(indices0);
         test_view0.set_record_indices(test_indices0);
         boost::tuple<size_t,size_t,size_t,size_t> test_results0;
         node->childB = build_recursive(train_view0, test_view0, test_results0);
-        dataset_view train_view1(train_view);
-        dataset_view test_view1(test_view);
+        dataset_view<la_type> train_view1(train_view);
+        dataset_view<la_type> test_view1(test_view);
         train_view1.set_record_indices(indices1);
         test_view1.set_record_indices(test_indices1);
         boost::tuple<size_t,size_t,size_t,size_t> test_results1;
@@ -304,7 +311,7 @@ namespace sill {
     /**
      *
      */
-    void build(dataset_statistics& stats) {
+    void build(dataset_statistics<la_type>& stats) {
       params.set_smoothing(stats.get_dataset().size(), label_->size());
       assert(params.valid());
       rng.seed(static_cast<unsigned>(params.random_seed));
@@ -312,10 +319,10 @@ namespace sill {
         (-(std::numeric_limits<int>::max()-1),
          (std::numeric_limits<int>::max()-1));
 
-      dataset_view train_view(stats.get_dataset());
+      dataset_view<la_type> train_view(stats.get_dataset());
       train_view.set_record_range
         (0, (size_t)floor((1-params.percent_prune) * stats.get_dataset().size()));
-      dataset_view test_view(stats.get_dataset());
+      dataset_view<la_type> test_view(stats.get_dataset());
       test_view.set_record_range
         ((size_t)floor((1-params.percent_prune) * stats.get_dataset().size()),
          stats.get_dataset().size());
@@ -340,7 +347,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit decision_tree(dataset_statistics& stats,
+    explicit decision_tree(dataset_statistics<la_type>& stats,
                            decision_tree_parameters params
                            = decision_tree_parameters())
       : base(stats.get_dataset()), params(params), root(NULL) {
@@ -353,12 +360,13 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param parameters    algorithm parameters
      */
-    decision_tree(oracle& o, size_t n,
+    decision_tree(oracle<la_type>& o, size_t n,
                   decision_tree_parameters params = decision_tree_parameters())
       : base(o), params(params), root(NULL) {
-      boost::shared_ptr<vector_dataset>
-        ds_ptr(oracle2dataset<vector_dataset>(o,n));
-      dataset_statistics stats(*ds_ptr);
+      boost::shared_ptr<vector_dataset<la_type> >
+        ds_ptr(new vector_dataset<la_type>());
+      oracle2dataset(o, n, *ds_ptr);
+      dataset_statistics<la_type> stats(*ds_ptr);
       build(stats);
     }
 
@@ -368,16 +376,16 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new decision_tree<Objective>(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<binary_classifier>
+    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<> >
         bptr(new decision_tree<Objective>(o, n, this->params));
       return bptr;
     }
@@ -418,7 +426,7 @@ namespace sill {
     //==========================================================================
 
     //! Predict the 0/1 label of a new example.
-    std::size_t predict(const record& example) const {
+    std::size_t predict(const record_type& example) const {
       return (confidence(example) > 0 ? 1 : 0);
     }
 
@@ -431,7 +439,7 @@ namespace sill {
     //!  predict() == (confidence() > 0) ? 1 : 0.
     //! If the classifier does not have actual confidence ratings,
     //!  then this should be any value with the correct sign.
-    double confidence(const record& example) const {
+    double confidence(const record_type& example) const {
       if (root == NULL) return 0;
       return root->confidence(example);
     }

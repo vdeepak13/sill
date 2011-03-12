@@ -6,21 +6,13 @@
 #include <sstream>
 #include <string>
 
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/dataset/oracle.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
-
-  // forward declarations
-  class learner;
-
-  template <typename Char, typename Traits>
-  std::basic_ostream<Char,Traits>&
-  operator<<(std::basic_ostream<Char, Traits>& out,
-             const learner& l);
 
   /**
    * Learner interface.
@@ -65,10 +57,25 @@ namespace sill {
    * @todo Figure out how to save the state of random number generators!
    * @todo Make a generalization of test_accuracy() which computes
    *       std dev, as well as true/false positive/negative rates.
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
+  template <typename LA = dense_linear_algebra<> >
   class learner {
 
-    static_assert(std::numeric_limits<double>::has_infinity);
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef LA la_type;
+
+    typedef record<la_type>                record_type;
+    typedef typename la_type::value_type   value_type;
+    typedef typename la_type::vector_type  vector_type;
+    typedef typename la_type::matrix_type  matrix_type;
+    typedef vector<value_type>             dense_vector_type;
+    typedef matrix<value_type>             dense_matrix_type;
 
     // Constructors and destructors
     //==========================================================================
@@ -91,7 +98,7 @@ namespace sill {
 
     //! Returns the total training time (so far) for the learner.
     //! This is not guaranteed to be implemented.
-    virtual double training_time() const {
+    virtual value_type training_time() const {
       return -1;
     }
 
@@ -106,7 +113,7 @@ namespace sill {
 
     //! Resets the random seed in the learner's random number generator
     //! and parameters.
-    virtual void random_seed(double value) { }
+    virtual void random_seed(value_type value) { }
 
     // Methods for iterative learners
     // (None of these are implemented by non-iterative learners.)
@@ -122,8 +129,8 @@ namespace sill {
 
     //! Returns the total time elapsed after each iteration.
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    virtual std::vector<double> elapsed_times() const {
-      return std::vector<double>();
+    virtual std::vector<value_type> elapsed_times() const {
+      return std::vector<value_type>();
     }
 
     //! Does the next step of training (updating the current classifier).
@@ -137,13 +144,15 @@ namespace sill {
     //! Resets the data source to be used in future rounds of training.
     //! @param  n   max number of examples which may be drawn from the oracle
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    virtual void reset_datasource(oracle& o, size_t n) {
+    virtual void
+    reset_datasource(oracle<dense_linear_algebra<> >& o, size_t n) {
       assert(false);
     }
 
     //! Resets the data source to be used in future rounds of training.
     //! ITERATIVE ONLY: This may be implemented by iterative learners.
-    virtual void reset_datasource(dataset_statistics& stats) {
+    virtual void
+    reset_datasource(dataset_statistics<dense_linear_algebra<> >& stats) {
       assert(false);
     }
 
@@ -251,18 +260,13 @@ namespace sill {
 
   }; // class learner
 
-  // Free functions
-  //==========================================================================
-
-  template <typename Char, typename Traits>
-  std::basic_ostream<Char,Traits>&
-  operator<<(std::basic_ostream<Char, Traits>& out,
-             const learner& l) {
+  template <typename LA>
+  std::ostream& operator<<(std::ostream& out, const learner<LA>& l) {
     l.print(out);
     return out;
   }
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

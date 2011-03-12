@@ -35,14 +35,18 @@ namespace sill {
    * \ingroup learning_dataset
    * @todo Think of a better way to choose the default radius.
    */
-  class syn_oracle_knorm : public oracle {
+  class syn_oracle_knorm : public oracle<dense_linear_algebra<> > {
 
     // Public type declarations
     //==========================================================================
   public:
 
+    typedef dense_linear_algebra<> la_type;
+
     //! The base type (oracle)
-    typedef oracle base;
+    typedef oracle<la_type> base;
+
+    typedef record<la_type> record_type;
 
     struct parameters {
 
@@ -117,7 +121,7 @@ namespace sill {
     boost::uniform_smallint<> discrete_uniform_dist;
 
     //! Current record
-    record current_rec;
+    record_type current_rec;
 
     // Private methods
     //==========================================================================
@@ -168,7 +172,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns the current record.
-    const record& current() const {
+    const record_type& current() const {
       return current_rec;
     }
 

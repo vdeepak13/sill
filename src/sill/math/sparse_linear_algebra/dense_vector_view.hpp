@@ -40,6 +40,14 @@ namespace sill {
     dense_vector_view()
       : base(0), values_(NULL) { }
 
+    //! Constructor with data.
+    dense_vector_view(index_type n, const_iterator it)
+      : base(n), values_(it) { }
+
+    //! Constructor from a dense vector.
+    dense_vector_view(const vector<T>& v)
+      : base(v.size()), values_(v.begin()) { }
+
     // NO DESTRUCTOR.
     // This is a light view of data; it does not own the data.
 
@@ -84,7 +92,7 @@ namespace sill {
     using base::n_;
 
     //! Pointer to values.
-    const value_type* values_;
+    const_iterator values_;
 
   }; // class dense_vector_view
 

@@ -21,13 +21,16 @@ namespace sill {
    * \author Joseph Bradley
    * \todo Support color images. (Does it not?)
    */
-  class sliding_windows_oracle : public oracle {
-
-    typedef oracle base;
+  class sliding_windows_oracle : public oracle<dense_linear_algebra<> > {
 
     // Public types
     //==========================================================================
   public:
+
+    typedef dense_linear_algebra<> la_type;
+
+    typedef oracle<la_type> base;
+    typedef base::record_type record_type;
 
     struct parameters {
 
@@ -115,10 +118,10 @@ namespace sill {
     size_t current_col;
 
     //! Current image
-    record current_rec;
+    record_type current_rec;
 
     //! Record used if a non-image record is required
-    record non_image_rec;
+    record_type non_image_rec;
 
     //! Initialize oracle.
     void init();
@@ -167,7 +170,7 @@ namespace sill {
      * @param params     parameters
      */
     sliding_windows_oracle
-    (const record& img, const vector_var_vector& var_order,
+    (const record_type& img, const vector_var_vector& var_order,
      size_t window_h, size_t window_w, parameters params = parameters())
       : base(finite_var_vector(), var_order,
              std::vector<variable::variable_typenames>(var_order.size(),variable::VECTOR_VARIABLE)),
@@ -186,7 +189,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns the current record.
-    const record& current() const;
+    const record_type& current() const;
 
     //! Increments the oracle to the next record.
     //! This returns true iff the operation was successful; false indicates

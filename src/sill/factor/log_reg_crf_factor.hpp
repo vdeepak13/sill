@@ -22,7 +22,7 @@ namespace sill {
    */
   class log_reg_crf_factor
     : public learnable_crf_factor<variable, table_factor,
-                                  multiclass_logistic_regression::opt_variables,
+                                  multiclass_logistic_regression<>::opt_variables,
                                   1> {
 
     // Public types
@@ -32,7 +32,11 @@ namespace sill {
     //! Base class
     typedef
     learnable_crf_factor<variable, table_factor,
-                         multiclass_logistic_regression::opt_variables, 1> base;
+                         multiclass_logistic_regression<>::opt_variables, 1>
+    base;
+
+    typedef base::la_type la_type;
+    typedef record<la_type> record_type;
 
     //! Parameters used for learning feature values from data.
     struct parameters {
@@ -101,7 +105,7 @@ namespace sill {
     double smoothing;
 
     //! Temporary to avoid reallocation; used for computing gradients.
-    mutable record tmp_record;
+    mutable record_type tmp_record;
 
     //! Temporary used to avoid reallocation for conditioning.
     mutable table_factor conditioned_f;
@@ -161,7 +165,7 @@ namespace sill {
      *          the given input variable (X) instantiation;
      *          in real space
      */
-    const table_factor& condition(const record& r) const;
+    const table_factor& condition(const record_type& r) const;
 
     /**
      * Returns the empirical expectation of the log of this factor.
@@ -194,7 +198,7 @@ namespace sill {
     }
 
     //! This has not been implemented for this class.
-    void fix_records(const record& r) {
+    void fix_records(const record_type& r) {
     }
 
     //! This has not been implemented for this class.
@@ -204,12 +208,12 @@ namespace sill {
     //! The weights which, along with the feature values, define the factor.
     //! This uses log-space or real-space, whatever is currently set,
     //! but it should only be used with log-space.
-    const multiclass_logistic_regression::opt_variables& weights() const;
+    const multiclass_logistic_regression<>::opt_variables& weights() const;
 
     //! The weights which, along with the feature values, define the factor.
     //! This uses log-space or real-space, whatever is currently set,
     //! but it should only be used with log-space.
-    multiclass_logistic_regression::opt_variables& weights();
+    multiclass_logistic_regression<>::opt_variables& weights();
 
     // Public: Learning methods from learnable_crf_factor interface
     // =========================================================================
@@ -219,8 +223,8 @@ namespace sill {
     //! @param grad   Pre-allocated vector to which to add the gradient.
     //! @param r      Datapoint.
     //! @param w      Weight by which to multiply the added values.
-    void add_gradient(multiclass_logistic_regression::opt_variables& grad,
-                      const record& r, double w) const;
+    void add_gradient(multiclass_logistic_regression<>::opt_variables& grad,
+                      const record_type& r, double w) const;
 
     /**
      * Adds the expectation of the gradient of the log of this factor
@@ -234,8 +238,8 @@ namespace sill {
      * @param w      Weight by which to multiply the added values.
      */
     void
-    add_expected_gradient(multiclass_logistic_regression::opt_variables& grad,
-                          const record& r, const table_factor& fy,
+    add_expected_gradient(multiclass_logistic_regression<>::opt_variables& grad,
+                          const record_type& r, const table_factor& fy,
                           double w = 1) const;
 
     /**
@@ -244,7 +248,7 @@ namespace sill {
      *   add_expected_gradient(grad, r, fy, -1 * w);
      */
     void
-    add_combined_gradient(optimization_vector& grad, const record& r,
+    add_combined_gradient(optimization_vector& grad, const record_type& r,
                           const output_factor_type& fy, double w = 1) const;
 
     /**
@@ -255,7 +259,7 @@ namespace sill {
      * @param w       Weight by which to multiply the added values.
      */
     void
-    add_hessian_diag(optimization_vector& hessian, const record& r,
+    add_hessian_diag(optimization_vector& hessian, const record_type& r,
                      double w) const;
 
     /**
@@ -270,7 +274,7 @@ namespace sill {
      * @param w       Weight by which to multiply the added values.
      */
     void
-    add_expected_hessian_diag(optimization_vector& hessian, const record& r,
+    add_expected_hessian_diag(optimization_vector& hessian, const record_type& r,
                               const table_factor& fy, double w) const;
 
     /**
@@ -285,7 +289,7 @@ namespace sill {
      * @param w       Weight by which to multiply the added values.
      */
     void
-    add_expected_squared_gradient(optimization_vector& sqrgrad, const record& r,
+    add_expected_squared_gradient(optimization_vector& sqrgrad, const record_type& r,
                                   const table_factor& fy, double w) const;
 
     /**

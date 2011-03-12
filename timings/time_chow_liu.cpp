@@ -41,10 +41,10 @@ int main(int argc, char* argv[]) {
   syn_oracle_bayes_net<table_factor>::parameters syn_oracle_params;
   syn_oracle_params.random_seed = o_random_seed;
   syn_oracle_bayes_net<table_factor> bn_oracle(bn);
-  boost::shared_ptr<assignment_dataset>
-    train_ds_ptr(oracle2dataset<assignment_dataset>(bn_oracle, ntrain));
-  boost::shared_ptr<assignment_dataset>
-    test_ds_ptr(oracle2dataset<assignment_dataset>(bn_oracle, ntest));
+  assignment_dataset<> train_ds;
+  oracle2dataset(bn_oracle, ntrain, train_ds);
+  assignment_dataset<> test_ds;
+  oracle2dataset(bn_oracle, ntest, test_ds);
 
   // Time creation of Chow-Liu trees.
   size_t ntrials = 1;
@@ -55,8 +55,8 @@ int main(int argc, char* argv[]) {
   t.restart();
   for (size_t n(0); n < ntrials; ++n) {
     cout << "doing trial " << n << std::endl;
-    chow_liu<table_factor> chowliu(train_ds_ptr->finite_variables(),
-                                   *train_ds_ptr);
+    chow_liu<table_factor> chowliu(train_ds.finite_variables(),
+                                   train_ds);
     const decomposable<table_factor>& model = chowliu.model();
     cout << model << std::endl;
     if (argc == 1000)
@@ -65,9 +65,9 @@ int main(int argc, char* argv[]) {
       cout << " implementation using factors2thin_decomposable: "
            << t.elapsed() / ntrials << std::endl;
       double ll(0);
-      foreach(const record& rec, test_ds_ptr->records())
+      foreach(const record<>& rec, test_ds.records())
         ll += model.log_likelihood(rec);
-      ll /= test_ds_ptr->size();
+      ll /= test_ds.size();
       cout << "   avg test log likelihood = " << ll << std::endl;
     }
   }

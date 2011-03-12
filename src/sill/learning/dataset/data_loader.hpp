@@ -7,7 +7,7 @@
 #include <boost/serialization/shared_ptr.hpp>
 
 #include <sill/base/variable_type_group.hpp>
-#include <sill/learning/dataset/concepts.hpp>
+//#include <sill/learning/dataset/concepts.hpp>
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/learning/dataset/oracle.hpp>
 #include <sill/learning/dataset/symbolic_oracle.hpp>
@@ -38,7 +38,8 @@ namespace sill {
      * If 'ds_name' is not recognized, this tries to load 'ds_name' as a .sum
      * file.
      */
-    boost::shared_ptr<sill::oracle>
+    template <typename LA>
+    boost::shared_ptr<oracle<LA> >
     load_oracle(sill::universe& u, std::string ds_name, double random_seed);
 
     /**
@@ -48,7 +49,8 @@ namespace sill {
      * If 'ds_name' is not recognized, this tries to load 'ds_name' as a .sum
      * file.
      */
-    boost::shared_ptr<sill::oracle>
+    template <typename LA>
+    boost::shared_ptr<oracle<LA> >
     load_oracle(const sill::datasource_info_type& info,
                 std::string ds_name, double random_seed);
 
@@ -61,7 +63,8 @@ namespace sill {
      * @param auto_reset    See symbolic_oracle::parameters.
      * @return data oracle
      */
-    boost::shared_ptr<symbolic_oracle>
+    template <typename LA>
+    boost::shared_ptr<symbolic_oracle<LA> >
     load_symbolic_oracle(const std::string& filename, universe& u,
                          size_t record_limit = 0, bool auto_reset = false);
 
@@ -74,7 +77,8 @@ namespace sill {
      * @param auto_reset    See symbolic_oracle::parameters.
      * @return data oracle
      */
-    boost::shared_ptr<symbolic_oracle>
+    template <typename LA>
+    boost::shared_ptr<symbolic_oracle<LA> >
     load_symbolic_oracle
     (const std::string& filename, const datasource_info_type& info,
      size_t record_limit = 0, bool auto_reset = false);
@@ -98,18 +102,16 @@ namespace sill {
                const vector_var_vector& vector_vars,
                const std::vector<variable::variable_typenames>& var_type_order
                = std::vector<variable::variable_typenames>()) {
-      concept_assert((sill::Dataset<Dataset>));
+      //      concept_assert((sill::Dataset<Dataset>));
       boost::shared_ptr<Dataset>
         data_ptr(new Dataset(finite_vars, vector_vars, var_type_order));
       datasource_info_type ds_info;
       ds_info.finite_seq = finite_vars;
       ds_info.vector_seq = vector_vars;
       ds_info.var_type_order = var_type_order;
-      symbolic_oracle o(filename, ds_info);
-      /*
-      data_ptr->set_finite_class_variables(o.finite_class_variables());
-      data_ptr->set_vector_class_variables(o.vector_class_variables());
-      */
+      symbolic_oracle<typename Dataset::la_type> o(filename, ds_info);
+//      data_ptr->set_finite_class_variables(o.finite_class_variables());
+//      data_ptr->set_vector_class_variables(o.vector_class_variables());
       while(o.next())
         data_ptr->insert(o.current(), o.weight());
       return data_ptr;
@@ -126,9 +128,9 @@ namespace sill {
     load_symbolic_dataset(const std::string& filename, universe& u,
                           size_t max_records
                           = std::numeric_limits<size_t>::max()) {
-      concept_assert((sill::Dataset<Dataset>));
-      boost::shared_ptr<symbolic_oracle>
-        o_ptr(load_symbolic_oracle(filename, u));
+      //      concept_assert((sill::Dataset<Dataset>));
+      boost::shared_ptr<symbolic_oracle<typename Dataset::la_type> >
+        o_ptr(load_symbolic_oracle<typename Dataset::la_type>(filename, u));
       boost::shared_ptr<Dataset>
         data_ptr(new Dataset(o_ptr->datasource_info()));
       for (size_t i = 0; i < max_records; i++) {
@@ -154,9 +156,9 @@ namespace sill {
                           Dataset& ds,
                           size_t max_records
                           = std::numeric_limits<size_t>::max()) {
-      concept_assert((sill::Dataset<Dataset>));
-      boost::shared_ptr<symbolic_oracle>
-        o_ptr(load_symbolic_oracle(filename, u));
+      //      concept_assert((sill::Dataset<Dataset>));
+      boost::shared_ptr<symbolic_oracle<typename Dataset::la_type> >
+        o_ptr(load_symbolic_oracle<typename Dataset::la_type>(filename, u));
       ds = Dataset(o_ptr->datasource_info());
       for (size_t i = 0; i < max_records; i++) {
         if (o_ptr->next())
@@ -180,9 +182,9 @@ namespace sill {
     load_symbolic_dataset
     (const std::string& filename, const datasource_info_type& info,
      size_t max_records = std::numeric_limits<size_t>::max()) {
-      concept_assert((sill::Dataset<Dataset>));
-      boost::shared_ptr<symbolic_oracle>
-        o_ptr(load_symbolic_oracle(filename, info));
+      //      concept_assert((sill::Dataset<Dataset>));
+      boost::shared_ptr<symbolic_oracle<typename Dataset::la_type> >
+        o_ptr(load_symbolic_oracle<typename Dataset::la_type>(filename, info));
       boost::shared_ptr<Dataset>
         data_ptr(new Dataset(o_ptr->datasource_info()));
       for (size_t i = 0; i < max_records; i++) {
@@ -210,9 +212,9 @@ namespace sill {
     (const std::string& filename, const datasource_info_type& info,
      Dataset& ds,
      size_t max_records = std::numeric_limits<size_t>::max()) {
-      concept_assert((sill::Dataset<Dataset>));
-      boost::shared_ptr<symbolic_oracle>
-        o_ptr(load_symbolic_oracle(filename, info));
+      //      concept_assert((sill::Dataset<Dataset>));
+      boost::shared_ptr<symbolic_oracle<typename Dataset::la_type> >
+        o_ptr(load_symbolic_oracle<typename Dataset::la_type>(filename, info));
       ds = Dataset(o_ptr->datasource_info());
       for (size_t i = 0; i < max_records; i++) {
         if (o_ptr->next())
@@ -277,6 +279,95 @@ namespace sill {
     template <>
     void load_variables<variable>
     (std::istream& in, domain& vars, const datasource& ds);
+
+
+    //==========================================================================
+    // Implementations of above functions
+    //==========================================================================
+
+    // Free functions: loading oracles
+    //==========================================================================
+
+    template <typename LA>
+    boost::shared_ptr<oracle<LA> >
+    load_oracle(sill::universe& u, std::string ds_name, double random_seed) {
+      using namespace sill;
+      boost::shared_ptr<oracle<LA> > oracle_ptr;
+      if (ds_name == "knorm") {
+        size_t nfeatures = 20;
+        size_t k = 2;
+        vector_var_vector var_order;
+        std::vector<variable::variable_typenames> var_type_order
+          (nfeatures, variable::VECTOR_VARIABLE);
+        var_type_order.push_back(variable::FINITE_VARIABLE);
+        for (size_t j = 0; j < nfeatures; j++)
+          var_order.push_back(u.new_vector_variable(1));
+        syn_oracle_knorm::parameters params;
+        params.random_seed = random_seed;
+        oracle_ptr.reset(new syn_oracle_knorm(var_order, u.new_finite_variable(k),
+                                              var_type_order, params));
+      } else if (ds_name == "majority") {
+        size_t nfeatures = 100;
+        finite_var_vector var_order;
+        for (size_t j = 0; j <= nfeatures; j++)
+          var_order.push_back(u.new_finite_variable(2));
+        syn_oracle_majority::parameters params;
+        params.random_seed = random_seed;
+        oracle_ptr.reset(new syn_oracle_majority(var_order, params));
+      } else {
+        symbolic::parameters params(load_symbolic_summary(ds_name, u));
+        oracle_ptr.reset(new symbolic_oracle<LA>(params));
+      }
+      return oracle_ptr;
+    }
+
+    template <typename LA>
+    boost::shared_ptr<oracle<LA> >
+    load_oracle(const sill::datasource_info_type& info,
+                std::string ds_name, double random_seed) {
+      using namespace sill;
+      boost::shared_ptr<oracle<LA> > oracle_ptr;
+      if (ds_name == "knorm") {
+        syn_oracle_knorm::parameters params;
+        params.random_seed = random_seed;
+        oracle_ptr.reset(new syn_oracle_knorm(info.vector_seq,
+                                              info.finite_seq.front(),
+                                              info.var_type_order, params));
+      } else if (ds_name == "majority") {
+        syn_oracle_majority::parameters params;
+        params.random_seed = random_seed;
+        oracle_ptr.reset(new syn_oracle_majority(info.finite_seq, params));
+      } else {
+        symbolic::parameters params(load_symbolic_summary(ds_name, info));
+        oracle_ptr.reset(new symbolic_oracle<LA>(params));
+      }
+      return oracle_ptr;
+    }
+
+    template <typename LA>
+    boost::shared_ptr<symbolic_oracle<LA> >
+    load_symbolic_oracle(const std::string& filename, universe& u,
+                         size_t record_limit, bool auto_reset) {
+      symbolic::parameters sym_params(load_symbolic_summary(filename, u));
+      typename symbolic_oracle<LA>::parameters params;
+      params.record_limit = record_limit;
+      params.auto_reset = auto_reset;
+      return boost::shared_ptr<symbolic_oracle<LA> >
+        (new symbolic_oracle<LA>(sym_params, params));
+    }
+
+    template <typename LA>
+    boost::shared_ptr<symbolic_oracle<LA> >
+    load_symbolic_oracle
+    (const std::string& filename, const datasource_info_type& info,
+     size_t record_limit, bool auto_reset) {
+      symbolic::parameters sym_params(load_symbolic_summary(filename,info));
+      typename symbolic_oracle<LA>::parameters params;
+      params.record_limit = record_limit;
+      params.auto_reset = auto_reset;
+      return boost::shared_ptr<symbolic_oracle<LA> >
+        (new symbolic_oracle<LA>(sym_params, params));
+    }
 
   } // namespace data_loader
 

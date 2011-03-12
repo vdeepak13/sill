@@ -7,7 +7,7 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/concepts.hpp>
+//#include <sill/factor/concepts.hpp>
 #include <sill/iterator/subset_iterator.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/learn_crf_factor.hpp>
@@ -38,7 +38,7 @@ namespace sill {
   template <typename FactorType>
   class pwl_crf_parameter_learner {
 
-    concept_assert((sill::LearnableCRFfactor<FactorType>));
+    //    concept_assert((sill::LearnableCRFfactor<FactorType>));
 
     // Public classes
     //==========================================================================
@@ -162,7 +162,7 @@ namespace sill {
     //! Returns the score for the factor Phi(Yvars, X_Yvars),
     //! plus the trained factor.
     std::pair<double, crf_factor*>
-    factor_score(const dataset& ds,
+    factor_score(const dataset<>& ds,
                  const output_domain_type& Yvars,
                  copy_ptr<input_domain_type> Xvars_ptr,
                  boost::mt11213b& rng) const {
@@ -184,7 +184,7 @@ namespace sill {
       return std::make_pair(r_ptr->log_expected_value(ds), r_ptr);
     } // factor_score()
 
-    void build(const dataset& ds, const crf_graph_type& graph) {
+    void build(const dataset<>& ds, const crf_graph_type& graph) {
       if (!params.crf_factor_params_ptr)
         params.crf_factor_params_ptr.reset
           (new typename crf_factor::parameters());
@@ -223,7 +223,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     pwl_crf_parameter_learner
-    (const dataset& ds, const crf_graph_type& graph,
+    (const dataset<>& ds, const crf_graph_type& graph,
      parameters params = parameters())
       : params(params), total_score_(0) {
       build(ds, graph);

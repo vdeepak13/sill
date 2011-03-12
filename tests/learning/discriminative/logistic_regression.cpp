@@ -8,7 +8,7 @@
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/logistic_regression.hpp>
 #include <sill/learning/learn_factor.hpp>
 
@@ -26,12 +26,12 @@ int main(int argc, char* argv[]) {
   /*
   size_t ntrain = 30162;
   size_t ntest = 15060;
-  boost::shared_ptr<vector_dataset> ds_train_ptr
-    = data_loader::load_symbolic_dataset<vector_dataset>
+  boost::shared_ptr<vector_dataset<> > ds_train_ptr
+    = data_loader::load_symbolic_dataset<vector_dataset<> >
     ("/Users/jbradley/data/uci/adult/adult-train.sum", u, ntrain);
   vector_dataset& ds_train = *ds_train_ptr;
-  boost::shared_ptr<vector_dataset> ds_test_ptr
-    = data_loader::load_symbolic_dataset<vector_dataset>
+  boost::shared_ptr<vector_dataset<> > ds_test_ptr
+    = data_loader::load_symbolic_dataset<vector_dataset<> >
     ("/Users/jbradley/data/uci/adult/adult-test.sum",
      ds_train.finite_list(),
      ds_train.vector_list(), ds_train.variable_type_order(), ntest);
@@ -52,12 +52,10 @@ int main(int argc, char* argv[]) {
   syn_oracle_knorm knorm(create_syn_oracle_knorm(2,20,u,oracle_params));
   finite_variable* class_var = knorm.finite_class_variables().front();
   cout << knorm;
-  boost::shared_ptr<vector_dataset> ds_train_ptr
-    = oracle2dataset<vector_dataset>(knorm, ntrain);
-  vector_dataset& ds_train = *ds_train_ptr;
-  boost::shared_ptr<vector_dataset> ds_test_ptr
-    = oracle2dataset<vector_dataset>(knorm, ntest);
-  vector_dataset& ds_test = *ds_test_ptr;
+  vector_dataset<> ds_train;
+  oracle2dataset(knorm, ntrain, ds_train);
+  vector_dataset<> ds_test;
+  oracle2dataset(knorm, ntest, ds_test);
 
   /*
   size_t ntrain = 500;
@@ -65,18 +63,18 @@ int main(int argc, char* argv[]) {
   syn_oracle_majority majority(create_syn_oracle_majority(9,u));
   finite_variable* class_var = majority.finite_class_variables().front();
   cout << majority;
-  boost::shared_ptr<vector_dataset> ds_train_ptr
-    = oracle2dataset<vector_dataset>(majority, ntrain);
+  boost::shared_ptr<vector_dataset<> > ds_train_ptr
+    = oracle2dataset<vector_dataset<> >(majority, ntrain);
   vector_dataset& ds_train = *ds_train_ptr;
-  boost::shared_ptr<vector_dataset> ds_test_ptr
-    = oracle2dataset<vector_dataset>(majority, ntest);
+  boost::shared_ptr<vector_dataset<> > ds_test_ptr
+    = oracle2dataset<vector_dataset<> >(majority, ntest);
   vector_dataset& ds_test = *ds_test_ptr;
   */
 
-  dataset_statistics stats(ds_train);
+  dataset_statistics<> stats(ds_train);
 
   cout << "Marginal over training set class variables:\n"
-       << learn_marginal<table_factor>(make_domain(class_var), ds_train)
+       << learn_factor<table_factor>::learn_marginal(make_domain(class_var), ds_train)
        << endl;
 
   logistic_regression_parameters lr_params;

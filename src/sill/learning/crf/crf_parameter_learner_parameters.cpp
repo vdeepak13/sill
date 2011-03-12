@@ -1,7 +1,5 @@
 
-#include <sill/learning/crf/crf_parameter_learner.hpp>
-
-#include <sill/macros_def.hpp>
+#include <sill/learning/crf/crf_parameter_learner_parameters.hpp>
 
 namespace sill {
 
@@ -21,5 +19,3 @@ namespace sill {
   } // crf_parameter_learner_parameters::valid
 
 }  // namespace sill
-
-#include <sill/macros_undef.hpp>

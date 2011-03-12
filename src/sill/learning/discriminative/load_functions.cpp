@@ -2,7 +2,7 @@
 #include <sill/learning/discriminative/batch_booster.hpp>
 #include <sill/learning/discriminative/batch_booster_OC.hpp>
 #include <sill/learning/discriminative/boosters.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/decision_tree.hpp>
 #include <sill/learning/discriminative/filtering_booster.hpp>
 #include <sill/learning/discriminative/load_functions.hpp>
@@ -92,13 +92,13 @@ namespace sill {
     }
   }
 
-  boost::shared_ptr<binary_classifier>
+  boost::shared_ptr<binary_classifier<> >
   load_binary_classifier(std::ifstream& in, const datasource& ds) {
     using namespace sill::discriminative;
     using namespace sill::boosting;
     std::string line;
     getline(in, line);
-    boost::shared_ptr<binary_classifier> ptr;
+    boost::shared_ptr<binary_classifier<> > ptr;
     std::string name, obj, base;
     boost::tie(name, obj, base) = parse_learner_name(line);
     if (base.size() > 0) {
@@ -153,22 +153,22 @@ namespace sill {
     return ptr;
   }
 
-  boost::shared_ptr<binary_classifier>
+  boost::shared_ptr<binary_classifier<> >
   load_binary_classifier(const std::string& filename, const datasource& ds) {
     std::ifstream in(filename.c_str(), std::ios::in);
-    boost::shared_ptr<binary_classifier> c
+    boost::shared_ptr<binary_classifier<> > c
       = load_binary_classifier(in, ds);
     in.close();
     return c;
   }
 
-  boost::shared_ptr<multiclass_classifier>
+  boost::shared_ptr<multiclass_classifier<> >
   load_multiclass_classifier(std::ifstream& in, const datasource& ds) {
     using namespace sill::discriminative;
     using namespace sill::boosting;
     std::string line;
     getline(in, line);
-    boost::shared_ptr<multiclass_classifier> ptr;
+    boost::shared_ptr<multiclass_classifier<> > ptr;
     std::string name, obj, base;
     boost::tie(name, obj, base) = parse_learner_name(line);
     if (base.size() > 0) {
@@ -191,25 +191,25 @@ namespace sill {
     return ptr;
   }
 
-  boost::shared_ptr<multiclass_classifier>
+  boost::shared_ptr<multiclass_classifier<> >
   load_multiclass_classifier(const std::string& filename,
                              const datasource& ds) {
     std::ifstream in(filename.c_str(), std::ios::in);
-    boost::shared_ptr<multiclass_classifier> c
+    boost::shared_ptr<multiclass_classifier<> > c
       = load_multiclass_classifier(in, ds);
     in.close();
     return c;
   }
 
-  boost::shared_ptr<sill::binary_classifier>
+  boost::shared_ptr<sill::binary_classifier<> >
   empty_binary_classifier(std::string learner_name,
                           size_t booster_iterations) {
     using namespace sill::discriminative;
     using namespace sill::boosting;
     std::string name, obj, base;
     boost::tie(name, obj, base) = parse_learner_name(learner_name);
-    boost::shared_ptr<binary_classifier> learner_ptr;
-    boost::shared_ptr<binary_classifier> base_learner_ptr;
+    boost::shared_ptr<binary_classifier<> > learner_ptr;
+    boost::shared_ptr<binary_classifier<> > base_learner_ptr;
     if (base.size() > 0) {
       base_learner_ptr = empty_binary_classifier(base, booster_iterations);
       if (base_learner_ptr.get() == NULL) {
@@ -285,16 +285,16 @@ namespace sill {
     return learner_ptr;
   }
 
-  boost::shared_ptr<sill::multiclass_classifier>
+  boost::shared_ptr<sill::multiclass_classifier<> >
   empty_multiclass_classifier(std::string learner_name, sill::universe& u,
                               size_t booster_iterations) {
     using namespace sill::boosting;
     std::string name, obj, base;
     boost::tie(name, obj, base) = parse_learner_name(learner_name);
-    boost::shared_ptr<multiclass_classifier> learner_ptr;
+    boost::shared_ptr<multiclass_classifier<> > learner_ptr;
     bool base_learner_is_binary(false);
-    boost::shared_ptr<binary_classifier> binary_base_ptr;
-    boost::shared_ptr<multiclass_classifier> multiclass_base_ptr;
+    boost::shared_ptr<binary_classifier<> > binary_base_ptr;
+    boost::shared_ptr<multiclass_classifier<> > multiclass_base_ptr;
     if (base.size() > 0) {
       binary_base_ptr = empty_binary_classifier(base, booster_iterations);
       if (binary_base_ptr.use_count() > 0) {

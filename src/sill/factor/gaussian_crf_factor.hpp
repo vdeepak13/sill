@@ -88,6 +88,10 @@ namespace sill {
     typedef learnable_crf_factor<vector_variable, canonical_gaussian,
                                  gaussian_opt_vector, 2> base;
 
+    typedef base::la_type la_type;
+    typedef record<la_type> record_type;
+    typedef vector_record<la_type> vector_record_type;
+
     //! Parameters used for learn_crf_factor().
     struct parameters {
 
@@ -179,7 +183,7 @@ namespace sill {
      * Constructor.  Takes a linear_regression and constructs the corresponding
      * gaussian_crf_factor.
      */
-    gaussian_crf_factor(const linear_regression& lr, const dataset& ds);
+    gaussian_crf_factor(const linear_regression& lr, const dataset<la_type>& ds);
 
     /**
      * Constructor.  Takes a moment_gaussian and constructs the corresponding
@@ -277,7 +281,7 @@ namespace sill {
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
-    double v(const vector_record& r) const;
+    double v(const vector_record_type& r) const;
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
@@ -285,7 +289,7 @@ namespace sill {
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
-    double logv(const record_type& r) const;
+    double logv(const vector_record_type& r) const;
 
     /**
      * If this factor is f(Y,X), compute f(Y, X = x).
@@ -308,7 +312,7 @@ namespace sill {
      *          the given input variable (X) instantiation;
      *          in real space
      */
-    const canonical_gaussian& condition(const vector_record& r) const;
+    const canonical_gaussian& condition(const vector_record_type& r) const;
 
     /**
      * If this factor is f(Y,X), compute f(Y, X = x).
@@ -363,7 +367,7 @@ namespace sill {
      */
     gaussian_crf_factor&
     partial_expectation_in_log_space(const output_domain_type& Y_part,
-                                     const dataset& ds);
+                                     const dataset<la_type>& ds);
 
     /**
      * If this factor is f(Y_retain, Y_other, X),
@@ -405,7 +409,7 @@ namespace sill {
      * this returns the expected log likelihood of the distribution P(A | B).
      * This uses real-space; i.e., the log of this factor is in log-space.
      */
-    double log_expected_value(const dataset& ds) const;
+    double log_expected_value(const dataset<la_type>& ds) const;
 
     //! implements Factor::combine_in
     gaussian_crf_factor&
@@ -450,7 +454,7 @@ namespace sill {
      * This option MUST be turned off before using this factor with records
      * with different variable orderings!
      */
-    void fix_records(const vector_record& r) {
+    void fix_records(const vector_record_type& r) {
       r.vector_indices(head_indices_, head_);
       r.vector_indices(tail_indices_, tail_);
       fixed_records_ = true;
@@ -484,7 +488,7 @@ namespace sill {
     //! @param grad   Pre-allocated vector to which to add the gradient.
     //! @param r      Datapoint.
     //! @param w      Weight by which to multiply the added values.
-    void add_gradient(optimization_vector& grad, const vector_record& r,
+    void add_gradient(optimization_vector& grad, const vector_record_type& r,
                       double w) const;
 
     /**
@@ -500,7 +504,7 @@ namespace sill {
      * @tparam YFactor  Factor type for a distribution over Y variables.
      */
     void add_expected_gradient(optimization_vector& grad,
-                               const vector_record& r,
+                               const vector_record_type& r,
                                const canonical_gaussian& fy,
                                double w = 1) const;
 
@@ -517,7 +521,7 @@ namespace sill {
      * @tparam YFactor  Factor type for a distribution over Y variables.
      */
     void add_expected_gradient(optimization_vector& grad,
-                               const vector_record& r,
+                               const vector_record_type& r,
                                const moment_gaussian& fy, double w = 1) const;
 
     /**
@@ -526,7 +530,7 @@ namespace sill {
      *   add_expected_gradient(grad, r, fy, -1 * w);
      */
     void
-    add_combined_gradient(optimization_vector& grad, const vector_record& r,
+    add_combined_gradient(optimization_vector& grad, const vector_record_type& r,
                           const canonical_gaussian& fy, double w = 1.) const;
 
     /**
@@ -535,7 +539,7 @@ namespace sill {
      *   add_expected_gradient(grad, r, fy, -1 * w);
      */
     void
-    add_combined_gradient(optimization_vector& grad, const vector_record& r,
+    add_combined_gradient(optimization_vector& grad, const vector_record_type& r,
                           const moment_gaussian& fy, double w = 1.) const;
 
     /**
@@ -546,7 +550,7 @@ namespace sill {
      * @param w       Weight by which to multiply the added values.
      */
     void
-    add_hessian_diag(optimization_vector& hessian, const vector_record& r,
+    add_hessian_diag(optimization_vector& hessian, const vector_record_type& r,
                      double w) const;
 
     /**
@@ -562,12 +566,12 @@ namespace sill {
      */
     void
     add_expected_hessian_diag(optimization_vector& hessian,
-                              const vector_record& r,
+                              const vector_record_type& r,
                               const canonical_gaussian& fy, double w) const;
 
     void
     add_expected_hessian_diag(optimization_vector& hessian,
-                              const vector_record& r,
+                              const vector_record_type& r,
                               const moment_gaussian& fy, double w) const;
 
     /**
@@ -583,12 +587,12 @@ namespace sill {
      */
     void
     add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                  const vector_record& r,
+                                  const vector_record_type& r,
                                   const canonical_gaussian& fy, double w) const;
 
     void
     add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                  const vector_record& r,
+                                  const vector_record_type& r,
                                   const moment_gaussian& fy, double w) const;
 
     /**
@@ -676,7 +680,7 @@ namespace sill {
     //--------------------------------------------------------------------------
 
     //! Get Y,X values from record.
-    void get_yx_values(const vector_record& r, vec& y, vec& x) const {
+    void get_yx_values(const vector_record_type& r, vec& y, vec& x) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
         y = rvec(head_indices_);
@@ -688,7 +692,7 @@ namespace sill {
     }
 
     //! Get Y values from record.
-    void get_y_values(const vector_record& r, vec& y) const {
+    void get_y_values(const vector_record_type& r, vec& y) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
         y = rvec(head_indices_);
@@ -698,7 +702,7 @@ namespace sill {
     }
 
     //! Get Y,X values from record.
-    void get_x_values(const vector_record& r, vec& x) const {
+    void get_x_values(const vector_record_type& r, vec& x) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
         x = rvec(tail_indices_);
@@ -714,7 +718,7 @@ namespace sill {
      * @param x_in_tail   X values in tail variables of conditional Gaussian.
      */
     void
-    get_x_values(const vector_record& r, vec& x_in_head, vec& x_in_tail) const {
+    get_x_values(const vector_record_type& r, vec& x_in_head, vec& x_in_tail) const {
       // TO DO: Support fixed_records_.
       if (!relabeled) {
         throw std::runtime_error

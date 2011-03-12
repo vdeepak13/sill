@@ -3,13 +3,14 @@
 #define SILL_VARIABLE_TYPE_GROUP_HPP
 
 #include <sill/base/assignment.hpp>
+#include <sill/math/sparse_linear_algebra/linear_algebra_types.hpp>
 
 namespace sill {
 
   // Forward declarations
   class finite_record;
-  class vector_record;
-  class record;
+  template <typename LA> class vector_record;
+  template <typename LA> class record;
 
   /**
    * Struct which, given a variable type as a template parameter, specifies:
@@ -17,13 +18,17 @@ namespace sill {
    *  - var_vector_type
    *  - assignment_type
    *  - record_type
+   *
+   * @tparam V   Variable type.
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
-  template <typename V>
+  template <typename V, typename LA = dense_linear_algebra<> >
   struct variable_type_group {
   };
 
-  template <>
-  struct variable_type_group <finite_variable> {
+  template <typename LA>
+  struct variable_type_group <finite_variable, LA> {
 
     typedef finite_domain domain_type;
 
@@ -37,8 +42,8 @@ namespace sill {
 
   };
 
-  template <>
-  struct variable_type_group <vector_variable> {
+  template <typename LA>
+  struct variable_type_group <vector_variable, LA> {
 
     typedef vector_domain domain_type;
 
@@ -46,14 +51,14 @@ namespace sill {
 
     typedef vector_assignment assignment_type;
 
-    typedef vector_record record_type;
+    typedef vector_record<LA> record_type;
 
     typedef vector_var_map var_map_type;
 
   };
 
-  template <>
-  struct variable_type_group <variable> {
+  template <typename LA>
+  struct variable_type_group <variable, LA> {
 
     typedef domain domain_type;
 
@@ -61,7 +66,7 @@ namespace sill {
 
     typedef assignment assignment_type;
 
-    typedef record record_type;
+    typedef record<LA> record_type;
 
     typedef var_map var_map_type;
 

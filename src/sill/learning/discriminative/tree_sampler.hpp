@@ -9,7 +9,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>
@@ -44,10 +44,7 @@ namespace sill {
       //!  (default = true)
       bool allow_sampling;
 
-      parameters() : allow_sampling(true) {
-        std::time_t time_tmp;
-        time(&time_tmp);
-        random_seed = time_tmp;
+      parameters() : random_seed(time(NULL)), allow_sampling(true) {
       }
 
       void save(std::ofstream& out) const {

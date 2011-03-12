@@ -41,6 +41,13 @@ namespace sill {
    */
   class image_oracle {
 
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef image::la_type la_type;
+    typedef image::record_type         record_type;
+
     // Protected data members
     //==========================================================================
   protected:
@@ -64,7 +71,7 @@ namespace sill {
     std::string current_name_;
 
     //! Current image's record
-    record current_rec;
+    record_type current_rec;
 
     //! Universe
     universe& u;
@@ -131,7 +138,7 @@ namespace sill {
     }
 
     //! Returns the current image's record.
-    const record& current() const {
+    const record_type& current() const {
       return current_rec;
     }
 
@@ -152,7 +159,7 @@ namespace sill {
    * Load a set of variable-size grayscale images from a data file.
    * @see image.hpp
    */
-  boost::shared_ptr<std::vector<record> >
+  boost::shared_ptr<std::vector<image_oracle::record_type> >
   load_images(const std::string& filename, universe& u);
 
 } // namespace sill

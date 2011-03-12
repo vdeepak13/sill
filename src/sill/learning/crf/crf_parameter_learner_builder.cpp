@@ -61,6 +61,7 @@ namespace sill {
 
   const crf_parameter_learner_parameters&
   crf_parameter_learner_builder::get_parameters() {
+    cpl_params.opt_method = real_opt_builder.method();
     cpl_params.gm_params = real_opt_builder.get_gd_parameters();
     cpl_params.gm_params.debug = (cpl_params.debug > 0 ?
                                   cpl_params.debug - 1 :

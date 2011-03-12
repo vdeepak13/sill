@@ -21,14 +21,14 @@ namespace sill {
    * \ingroup learning_dataset
    */
   template <typename Factor>
-  class syn_oracle_bayes_net : public oracle {
+  class syn_oracle_bayes_net : public oracle<> {
 
     // Public type declarations
     //==========================================================================
   public:
 
     //! The base type (oracle)
-    typedef oracle base;
+    typedef oracle<> base;
 
     struct parameters {
 
@@ -57,7 +57,7 @@ namespace sill {
     boost::mt11213b rng;
 
     //! Current record
-    record current_rec;
+    record<> current_rec;
 
     // Constructors
     //==========================================================================
@@ -83,12 +83,11 @@ namespace sill {
     //==========================================================================
 
     //! Returns the current record.
-    const record& current() const {
+    const record<>& current() const {
       return current_rec;
     }
 
-    template <typename Char, typename Traits>
-    void write(std::basic_ostream<Char, Traits>& out) const {
+    void write(std::ostream& out) const {
       out << "Bayesian network oracle using model:\n"
           << bn << "\n";
     }
@@ -111,9 +110,9 @@ namespace sill {
   // Free functions
   //==========================================================================
 
-  template <typename Factor, typename Char, typename Traits>
-  std::basic_ostream<Char,Traits>&
-  operator<<(std::basic_ostream<Char, Traits>& out,
+  template <typename Factor>
+  std::ostream&
+  operator<<(std::ostream& out,
              const syn_oracle_bayes_net<Factor>& model) {
     model.write(out);
     return out;

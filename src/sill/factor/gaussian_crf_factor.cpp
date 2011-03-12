@@ -59,7 +59,7 @@ namespace sill {
   }
 
   gaussian_crf_factor::
-  gaussian_crf_factor(const linear_regression& lr, const dataset& ds)
+  gaussian_crf_factor(const linear_regression& lr, const dataset<dense_linear_algebra<> >& ds)
     : base(make_domain(lr.Yvector()),
            copy_ptr<vector_domain>
            (new vector_domain(make_domain(lr.Xvector())))),
@@ -314,7 +314,7 @@ namespace sill {
     return exp(logv(a));
   }
 
-  double gaussian_crf_factor::v(const vector_record& r) const {
+  double gaussian_crf_factor::v(const vector_record_type& r) const {
     return exp(logv(r));
   }
 
@@ -329,7 +329,7 @@ namespace sill {
     return (-.5) * inner_prod(y, y);
   }
 
-  double gaussian_crf_factor::logv(const record_type& r) const {
+  double gaussian_crf_factor::logv(const vector_record_type& r) const {
     if (head_.size() == 0)
       return conditioned_f(r);
     vec y(ov.C.size1(), 0);
@@ -355,7 +355,7 @@ namespace sill {
   }
 
   const canonical_gaussian&
-  gaussian_crf_factor::condition(const vector_record& r) const {
+  gaussian_crf_factor::condition(const vector_record_type& r) const {
     if (relabeled) {
       gaussian_crf_factor gcf(*this);
       gcf.partial_condition(r, output_domain_type(), *Xdomain_ptr_);
@@ -449,7 +449,7 @@ namespace sill {
   gaussian_crf_factor&
   gaussian_crf_factor::
   partial_expectation_in_log_space(const output_domain_type& Y_part,
-                                   const dataset& ds) {
+                                   const dataset<dense_linear_algebra<> >& ds) {
     if (ds.size() == 0) {
       throw std::invalid_argument
         (std::string("gaussian_crf_factor::partial_expectation_in_log_space") +
@@ -463,7 +463,7 @@ namespace sill {
     vector_assignment va;
     mat lambda(cg.inf_matrix().size1(), cg.inf_matrix().size2(), 0);
     vec eta(cg.inf_vector().size(), 0);
-    foreach(const record& r, ds.records()) {
+    foreach(const vector_record_type& r, ds.records()) {
       r.add_assignment(Y_part, va);
       canonical_gaussian tmpcg(cg.restrict(va));
       lambda += tmpcg.inf_matrix();
@@ -565,11 +565,11 @@ namespace sill {
     return *this;
   }
 
-  double gaussian_crf_factor::log_expected_value(const dataset& ds) const {
+  double gaussian_crf_factor::log_expected_value(const dataset<dense_linear_algebra<> >& ds) const {
     double val(0.);
     double total_ds_weight(0);
     size_t i(0);
-    foreach(const vector_record& r, ds.records()) {
+    foreach(const vector_record_type& r, ds.records()) {
       vec y(ov.C.size1(), 0);
       vec x(ov.C.size2(), 0);
       get_yx_values(r, y, x);
@@ -669,7 +669,7 @@ namespace sill {
 
   void gaussian_crf_factor::add_gradient
   (gaussian_crf_factor::optimization_vector& grad,
-   const vector_record& r, double w) const {
+   const vector_record_type& r, double w) const {
     vec y(ov.A.size1(), 0);
     if (y.size() == 0)
       return;
@@ -687,7 +687,7 @@ namespace sill {
   }
 
   void gaussian_crf_factor::add_expected_gradient(optimization_vector& grad,
-                                                  const vector_record& r,
+                                                  const vector_record_type& r,
                                                   const canonical_gaussian& fy,
                                                   double w) const {
     add_expected_gradient(grad, r, moment_gaussian(fy), w);
@@ -695,7 +695,7 @@ namespace sill {
 
   void
   gaussian_crf_factor::add_expected_gradient(optimization_vector& grad,
-                                             const vector_record& r,
+                                             const vector_record_type& r,
                                              const moment_gaussian& fy,
                                              double w) const {
     if (relabeled) {
@@ -723,14 +723,14 @@ namespace sill {
 
   void
   gaussian_crf_factor::
-  add_combined_gradient(optimization_vector& grad, const vector_record& r,
+  add_combined_gradient(optimization_vector& grad, const vector_record_type& r,
                         const canonical_gaussian& fy, double w) const {
     add_combined_gradient(grad, r, moment_gaussian(fy), w);
   }
 
   void
   gaussian_crf_factor::add_combined_gradient
-  (optimization_vector& grad, const vector_record& r,
+  (optimization_vector& grad, const vector_record_type& r,
    const moment_gaussian& fy, double w) const {
     if (relabeled) {
       throw std::runtime_error
@@ -763,7 +763,7 @@ namespace sill {
   }
 
   void gaussian_crf_factor::
-  add_hessian_diag(optimization_vector& hessian, const vector_record& r,
+  add_hessian_diag(optimization_vector& hessian, const vector_record_type& r,
                    double w) const {
     if (relabeled) {
       throw std::runtime_error
@@ -793,14 +793,14 @@ namespace sill {
 
   void gaussian_crf_factor::
   add_expected_hessian_diag(optimization_vector& hessian,
-                            const vector_record& r,
+                            const vector_record_type& r,
                             const canonical_gaussian& fy, double w) const {
     add_expected_hessian_diag(hessian, r, moment_gaussian(fy), w);
   }
 
   void gaussian_crf_factor::
   add_expected_hessian_diag(optimization_vector& hessian,
-                            const vector_record& r,
+                            const vector_record_type& r,
                             const moment_gaussian& fy, double w) const {
     if (relabeled) {
       throw std::runtime_error
@@ -830,14 +830,14 @@ namespace sill {
 
   void gaussian_crf_factor::
   add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                const vector_record& r,
+                                const vector_record_type& r,
                                 const canonical_gaussian& fy, double w) const{
     add_expected_squared_gradient(sqrgrad, r, moment_gaussian(fy), w);
   }
 
   void gaussian_crf_factor::
   add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                const vector_record& r,
+                                const vector_record_type& r,
                                 const moment_gaussian& fy, double w) const {
     if (relabeled) {
       throw std::runtime_error

@@ -201,6 +201,10 @@ namespace sill {
      * This renormalizes the factors.
      *
      * @todo Make this more efficient.
+     *
+     * @bug Gaussian and table factors do not handle normalization in the same
+     *      way since table factors do not have the concept of head/tail vars.
+     *      Fix that!
      */
     bayesian_network&
     condition(const assignment_type& a_, const domain_type& restrict_vars) {
@@ -209,11 +213,21 @@ namespace sill {
         if (a_.count(v))
           a[v] = safe_get(a_, v);
       }
+      domain_type akeys(keys(a));
       bayesian_network tmp_bn;
       foreach(variable_type* v, vertices()) {
-        F tmpf = factor(v).restrict(a);
-        if (tmpf.arguments().count(v)) {
-          tmpf.normalize();
+        if (includes(akeys, factor(v).arguments())) {
+          // Do nothing.
+        } else if (akeys.count(v)) {
+          // Some parents of v remain.
+          assert(false); // Not yet implemented.
+        } else {
+          // v and maybe some parents remain.
+          F tmpf(factor(v).restrict(a));
+
+          assert(false);
+          tmpf.normalize(); // RIGHT HERE NOW: REMOVE THIS ONCE I'M DONE WITH regen_synthetic_mog_crf_truth.
+
           tmp_bn.add_factor(v, tmpf);
         }
       }

@@ -8,6 +8,7 @@
 #include <sill/base/variable_type_group.hpp>
 #include <sill/copy_ptr.hpp>
 #include <sill/learning/dataset/datasource_info_type.hpp>
+#include <sill/learning/dataset/record_conversions.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -93,16 +94,29 @@ namespace sill {
                                           finite_assignment& fa) const;
 
     //! Converts the given vector record data into a vector assignment.
-    void convert_vector_record2assignment(const vec& vecdata,
-                                          vector_assignment& va) const;
+    template <typename VecType>
+    void convert_vector_record2assignment(const VecType& vecdata,
+                                          vector_assignment& va) const {
+      assert(vecdata.size() == dvector);
+      va.clear();
+      foreach(const vector_var_index_pair& p, *vector_numbering_ptr_) {
+        VecType tmpvec(p.first->size());
+        for(size_t j = 0; j < p.first->size(); j++)
+          tmpvec[j] = vecdata[j+p.second];
+        va[p.first] = tmpvec;
+      }
+    }
 
     //! Converts the given finite assignment into finite record data.
     void convert_finite_assignment2record(const finite_assignment& fa,
                                           std::vector<size_t>& findata) const;
 
     //! Converts the given vector assignment into vector record data.
-    void convert_vector_assignment2record(const vector_assignment& va,
-                                          vec& vecdata) const;
+    template <typename VecType>
+    void convert_vector_assignment2record
+    (const vector_assignment& va, VecType& vecdata) const {
+      vector_assignment2vector(va, vector_seq, vecdata);
+    }
 
     //! Add a finite variable to this datasource.
     //! This adds the variable to the end of the variable ordering.
@@ -340,27 +354,6 @@ namespace sill {
 
     //! Sets the vector class variables
     void set_vector_class_variables(const vector_domain& class_vars);
-
-    // Static helpers
-    //==========================================================================
-
-    //! Builds vector_numbering.
-    static void
-    build_vector_numbering(const vector_var_vector& vvec,
-                           std::map<vector_variable*, size_t>& idx) {
-      idx.clear();
-      size_t n = 0;
-      foreach(vector_variable* v, vvec) {
-        std::pair<std::map<vector_variable*, size_t>::iterator, bool>
-          it_inserted(idx.insert(std::make_pair(v, n)));
-        n += v->size();
-        if (!it_inserted.second) {
-          throw std::runtime_error
-            (std::string("build_vector_numbering(vvec,idx)") +
-             " was given v with duplicate elements!");
-        }
-      }
-    }
 
   }; // class datasource
 

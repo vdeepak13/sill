@@ -21,7 +21,7 @@ namespace sill {
 
     //! Specifies base learner type
     //!  (required)
-    boost::shared_ptr<multiclass_classifier> base_learner;
+    boost::shared_ptr<multiclass_classifier<> > base_learner;
 
     //! New variable used to create a merged view of the class variables
     //!  (required)
@@ -69,13 +69,20 @@ namespace sill {
    * \author Joseph Bradley
    * \ingroup learning_discriminative
    */
-  class multiclass2multilabel : public multilabel_classifier {
+  class multiclass2multilabel : public multilabel_classifier<> {
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef multilabel_classifier<> base;
+
+    typedef base::la_type la_type;
+    typedef base::record_type record_type;
 
     // Protected data members
     //==========================================================================
   protected:
-
-    typedef multilabel_classifier base;
 
     // Data from base class:
     //  finite_var_vector labels_
@@ -84,16 +91,16 @@ namespace sill {
     multiclass2multilabel_parameters params;
 
     //! Dataset view for converting records
-    boost::shared_ptr<dataset_view> ds_light_view;
+    boost::shared_ptr<dataset_view<la_type> > ds_light_view;
 
     //! Base classifier
-    boost::shared_ptr<multiclass_classifier> base_learner;
+    boost::shared_ptr<multiclass_classifier<> > base_learner;
 
     //! Dataset structure for records which this classifier takes.
     datasource_info_type datasource_info_;
 
     //! Temp record for avoiding reallocation.
-    mutable record tmp_rec;
+    mutable record_type tmp_rec;
 
     //! Temp assignment for avoiding reallocation.
     mutable assignment tmp_assign;
@@ -103,7 +110,7 @@ namespace sill {
 
     void init_only(const datasource& ds);
 
-    void build(const dataset& orig_ds);
+    void build(const dataset<la_type>& orig_ds);
 
     // Public methods
     //==========================================================================
@@ -147,7 +154,7 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit multiclass2multilabel(dataset_statistics& stats,
+    explicit multiclass2multilabel(dataset_statistics<la_type>& stats,
                                    multiclass2multilabel_parameters params
                                    = multiclass2multilabel_parameters())
       : base(stats.get_dataset()), params(params),
@@ -161,12 +168,12 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param parameters    algorithm parameters
      */
-    multiclass2multilabel(oracle& o, size_t n,
+    multiclass2multilabel(oracle<la_type>& o, size_t n,
                           multiclass2multilabel_parameters params
                           = multiclass2multilabel_parameters())
     : base(o), params(params), datasource_info_(o.datasource_info()) {
-      boost::shared_ptr<vector_dataset>
-        ds_ptr(oracle2dataset<vector_dataset>(o,n));
+      boost::shared_ptr<vector_dataset<la_type> > ds_ptr(new vector_dataset<la_type>());
+      oracle2dataset(o, n, *ds_ptr);
       build(*ds_ptr);
     }
 
@@ -174,7 +181,7 @@ namespace sill {
      * Constructor which uses a pre-learned classifier.
      * @param ds  Datasource used for training.
      */
-    multiclass2multilabel(boost::shared_ptr<multiclass_classifier> base_learner,
+    multiclass2multilabel(boost::shared_ptr<multiclass_classifier<> > base_learner,
                           const datasource& ds,
                           multiclass2multilabel_parameters params
                           = multiclass2multilabel_parameters())
@@ -184,16 +191,18 @@ namespace sill {
     }
 
     //! Train a new multilabel classifier of this type with the given data.
-    boost::shared_ptr<multilabel_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<multilabel_classifier>
+    boost::shared_ptr<multilabel_classifier<> >
+    create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<multilabel_classifier<> >
         bptr(new multiclass2multilabel(stats, this->params));
       return bptr;
     }
 
     //! Train a new multilabel classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<multilabel_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<multilabel_classifier>
+    boost::shared_ptr<multilabel_classifier<> >
+    create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<multilabel_classifier<> >
         bptr(new multiclass2multilabel(o, n, this->params));
       return bptr;
     }
@@ -248,21 +257,21 @@ namespace sill {
 
     //! Predict the labels of a new example, storing the predictions in
     //! the given vector/assignment v.
-    void predict(const record& example, std::vector<size_t>& v) const;
+    void predict(const record_type& example, std::vector<size_t>& v) const;
 
     void predict(const assignment& example, std::vector<size_t>& v) const;
 
-    void predict(const record& example, finite_assignment& a) const;
+    void predict(const record_type& example, finite_assignment& a) const;
 
     void predict(const assignment& example, finite_assignment& a) const;
 
     //! For each label, predict the marginal probability of each class.
-    std::vector<vec> marginal_probabilities(const record& example) const;
+    std::vector<vec> marginal_probabilities(const record_type& example) const;
     std::vector<vec> marginal_probabilities(const assignment& example) const;
 
     //! Returns a factor which gives the probability for each assignment
     //! to the labels.
-    table_factor probabilities(const record& example) const;
+    table_factor probabilities(const record_type& example) const;
 
     table_factor probabilities(const assignment& example) const;
 
@@ -293,13 +302,13 @@ namespace sill {
     // UNSAFE METHODS TO BE CHANGED LATER
     // =========================================================================
 
-    boost::shared_ptr<multiclass_classifier> get_base_learner_ptr() const {
+    boost::shared_ptr<multiclass_classifier<> > get_base_learner_ptr() const {
       return base_learner;
     }
 
     //! Sets the given record to be the proper size for passing to
     //! convert_record_for_base().
-    void prepare_record_for_base(record& new_r) const {
+    void prepare_record_for_base(record_type& new_r) const {
       new_r = tmp_rec;
     }
 
@@ -307,7 +316,7 @@ namespace sill {
     //! to a new one (in the data format used by this class' base learner.
     //! @todo Figure out a better way to do this; this is needed by
     //!       log_reg_crf_factor.
-    void convert_record_for_base(const record& orig_r, record& new_r) const {
+    void convert_record_for_base(const record_type& orig_r, record_type& new_r) const {
       ds_light_view->convert_record(orig_r, new_r);
     }
 

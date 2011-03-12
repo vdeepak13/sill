@@ -90,6 +90,10 @@ namespace sill {
     // =========================================================================
   public:
 
+    typedef dense_linear_algebra<> la_type;
+
+    typedef record<la_type> record_type;
+
     //! The type of potentials/factors.
     typedef F factor_type;
 
@@ -111,7 +115,7 @@ namespace sill {
       cross_val_functor(const model_type& model_, size_t score_type)
         : model_(model_), score_type(score_type) { }
 
-      double operator()(const record& r) const {
+      double operator()(const record_type& r) const {
         switch(score_type) {
         case 0: // log likelihood
           return - model_.log_likelihood(r);
@@ -139,13 +143,13 @@ namespace sill {
      */
     decomposable_parameter_learner
     (const typename model_type::jt_type& structure,
-     const dataset& ds, const parameters& params = parameters())
+     const dataset<la_type>& ds, const parameters& params = parameters())
       : params(params) {
       model_.clear();
       std::vector<factor_type> marginals;
       foreach(const typename decomposable<factor_type>::vertex& v,
               structure.vertices()) {
-        marginals.push_back(learn_marginal<factor_type>
+        marginals.push_back(learn_factor<factor_type>::learn_marginal
                             (structure.clique(v), ds, params.regularization));
       }
       model_.initialize(structure, marginals);
@@ -181,7 +185,7 @@ namespace sill {
     double choose_lambda
     (std::vector<double>& reg_params, vec& means, vec& stderrs,
      const crossval_parameters& cv_params,
-     const typename model_type::jt_type& structure, const dataset& ds,
+     const typename model_type::jt_type& structure, const dataset<la_type>& ds,
      const parameters& params, size_t score_type, unsigned random_seed) {
       assert(score_type < 4);
       choose_lambda_helper clh(structure, ds, score_type, params);
@@ -208,14 +212,14 @@ namespace sill {
 
       const typename model_type::jt_type& structure;
 
-      const dataset& ds;
+      const dataset<la_type>& ds;
 
       size_t score_type;
 
       const parameters& params_;
 
       choose_lambda_helper
-      (const typename model_type::jt_type& structure, const dataset& ds,
+      (const typename model_type::jt_type& structure, const dataset<la_type>& ds,
        size_t score_type, const parameters& params_)
         : structure(structure), ds(ds), score_type(score_type),
           params_(params_) { }
@@ -233,12 +237,12 @@ namespace sill {
         stderrs.zeros_memset();
 
         boost::mt11213b rng(random_seed);
-        dataset_view permuted_view(ds);
+        dataset_view<la_type> permuted_view(ds);
         permuted_view.set_record_indices(randperm(ds.size(), rng));
         parameters fold_params(params_);
-        boost::shared_ptr<dataset_view>
-          fold_train_ptr(new dataset_view(permuted_view));
-        dataset_view fold_test(permuted_view);
+        boost::shared_ptr<dataset_view<la_type> >
+          fold_train_ptr(new dataset_view<la_type>(permuted_view));
+        dataset_view<la_type> fold_test(permuted_view);
         fold_train_ptr->save_record_view();
         fold_test.save_record_view();
         for (size_t fold(0); fold < n_folds; ++fold) {
@@ -249,9 +253,9 @@ namespace sill {
           fold_train_ptr->set_cross_validation_fold(fold, n_folds, false);
           fold_test.set_cross_validation_fold(fold, n_folds, true);
           // Make a hard copy of the training set for efficiency.
-          vector_dataset tmp_train_ds(fold_train_ptr->datasource_info(),
+          vector_dataset<la_type> tmp_train_ds(fold_train_ptr->datasource_info(),
                                       fold_train_ptr->size());
-          foreach(const record& r, fold_train_ptr->records())
+          foreach(const record_type& r, fold_train_ptr->records())
             tmp_train_ds.insert(r);
           for (size_t k(0); k < lambdas.size(); ++k) {
             fold_params.regularization = lambdas[k][0];

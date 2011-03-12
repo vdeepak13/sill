@@ -200,27 +200,24 @@ namespace sill {
    * \ingroup factor_concepts
    * \see table_factor
    */
+  /* // JOSEPH B.: I COMMENTED THIS OUT FOR TEMPLATIZING BY LINEAR ALGEBRA TYPE
   template <typename F>
   struct LearnableDistributionFactor : DistributionFactor<F> {
 
     typedef typename DistributionFactor<F>::assignment_type assignment_type;
     typedef typename DistributionFactor<F>::domain_type domain_type;
 
-    /**
-     * Learns a marginal factor P(X) from data.
-     * @param X          Variables in marginal.
-     * @param ds         Training data.
-     * @param smoothing  Regularization (>= 0).
-     */
+    //! Learns a marginal factor P(X) from data.
+    //! @param X          Variables in marginal.
+    //! @param ds         Training data.
+    //! @param smoothing  Regularization (>= 0).
     static F
     learn_marginal(const typename F::domain_type& X, const dataset& ds,
                    double smoothing);
 
-    /**
-     * Learns a conditional factor P(A | B, C=c) from data.
-     * @param ds         Training data.
-     * @param smoothing  Regularization (>= 0).
-     */
+    //! Learns a conditional factor P(A | B, C=c) from data.
+    //! @param ds         Training data.
+    //! @param smoothing  Regularization (>= 0).
     static F
     learn_conditional(const typename F::domain_type& A,
                       const typename F::domain_type& B,
@@ -241,6 +238,7 @@ namespace sill {
     static const assignment_type& a_constref;
 
   }; // concept LearnableDistributionFactor
+  */
 
   //============================================================================
   // CONDITIONAL FACTORS
@@ -273,6 +271,9 @@ namespace sill {
    * concepts within the LearnableCRFfactor concept class).
    *
    * @author Joseph Bradley
+   *
+   * @todo Once factors are templatized by linear algebra type,
+   *       add back methods here which use datasets/records.
    */
   template <class F>
   struct CRFfactor
@@ -281,74 +282,52 @@ namespace sill {
     // Public types
     // =========================================================================
 
-    /**
-     * The type that represents the value returned by factor's
-     * operator() and norm_constant().  Typically, this type is either
-     * double or logarithmic<double>.
-     */
+    //! The type that represents the value returned by factor's
+    //! operator() and norm_constant().  Typically, this type is either
+    //! double or logarithmic<double>.
     typedef typename F::result_type result_type;
 
-    /**
-     * The type of input variables used by the factor.
-     * Typically, this type is either sill::variable or its descendant.
-     */
+    //! The type of input variables used by the factor.
+    //! Typically, this type is either sill::variable or its descendant.
     typedef typename F::input_variable_type input_variable_type;
 
-    /**
-     * The type of output variables used by the factor.
-     * Typically, this type is either sill::variable or its descendant.
-     */
+    //! The type of output variables used by the factor.
+    //! Typically, this type is either sill::variable or its descendant.
     typedef typename F::output_variable_type output_variable_type;
 
-    /**
-     * The type of variables used by the factor.
-     * Typically, this type is either sill::variable or its descendant.
-     * Both input_variable_type and output_variable_type should inherit
-     * from this type.
-     */
+    //! The type of variables used by the factor.
+    //! Typically, this type is either sill::variable or its descendant.
+    //! Both input_variable_type and output_variable_type should inherit
+    //! from this type.
     typedef typename F::variable_type variable_type;
 
-    /**
-     * The type that represents the factor's input variable domain,
-     * that is, the set of input arguments X in the factor.
-     * This type must be equal to set<input_variable_type*>.
-     */
+    //! The type that represents the factor's input variable domain,
+    //! that is, the set of input arguments X in the factor.
+    //! This type must be equal to set<input_variable_type*>.
     typedef typename F::input_domain_type input_domain_type;
 
-    /**
-     * The type that represents the factor's output variable domain,
-     * that is, the set of output arguments Y in the factor.
-     * This type must be equal to set<output_variable_type*>.
-     */
+    //! The type that represents the factor's output variable domain,
+    //! that is, the set of output arguments Y in the factor.
+    //! This type must be equal to set<output_variable_type*>.
     typedef typename F::output_domain_type output_domain_type;
 
-    /**
-     * The type that represents the factor's variable domain,
-     * that is, the set of arguments X,Y in the factor.
-     * This type must be equal to set<variable_type*>.
-     */
+    //! The type that represents the factor's variable domain,
+    //! that is, the set of arguments X,Y in the factor.
+    //! This type must be equal to set<variable_type*>.
     typedef typename F::domain_type domain_type;
 
-    /**
-     * The type that represents an assignment to input variables.
-     */
+    //! The type that represents an assignment to input variables.
     typedef typename F::input_assignment_type input_assignment_type;
 
-    /**
-     * The type that represents an assignment to output variables.
-     */
+    //! The type that represents an assignment to output variables.
     typedef typename F::output_assignment_type output_assignment_type;
 
-    /**
-     * The type that represents an assignment.
-     */
+    //! The type that represents an assignment.
     typedef typename F::assignment_type assignment_type;
 
-    /**
-     * The type which this factor f(Y,X) outputs to represent f(Y, X=x).
-     * For finite Y, this will probably be table_factor;
-     * for vector Y, this will probably be a subtype of gaussian_factor.
-     */
+    //! The type which this factor f(Y,X) outputs to represent f(Y, X=x).
+    //! For finite Y, this will probably be table_factor;
+    //! for vector Y, this will probably be a subtype of gaussian_factor.
     typedef typename F::output_factor_type output_factor_type;
 
     //! Type which parametrizes this factor, usable for optimization and
@@ -410,32 +389,26 @@ namespace sill {
     // Public methods: Probabilistic queries
     // =========================================================================
 
-    /**
-     * If this factor is f(Y,X), compute f(Y, X = x).
-     *
-     * @param a  This must assign values to all X in this factor
-     *           (but may assign values to any other variables as well).
-     * @return  table factor representing the factor with
-     *          the given input variable (X) instantiation
-     */
+    //! If this factor is f(Y,X), compute f(Y, X = x).
+    //!
+    //! @param a  This must assign values to all X in this factor
+    //!           (but may assign values to any other variables as well).
+    //! @return  table factor representing the factor with
+    //!          the given input variable (X) instantiation
     const output_factor_type& condition(const assignment& a) const;
 
-    /**
-     * If this factor is f(Y,X), compute f(Y, X = x).
-     *
-     * @param r Record with values for X in this factor
-     *          (which may have values for any other variables as well).
-     * @return  table factor representing the factor with
-     *          the given input variable (X) instantiation
-     */
-    const output_factor_type& condition(const record& r) const;
+    //! If this factor is f(Y,X), compute f(Y, X = x).
+    //!
+    //! @param r Record with values for X in this factor
+    //!          (which may have values for any other variables as well).
+    //! @return  table factor representing the factor with
+    //!          the given input variable (X) instantiation
+//    const output_factor_type& condition(const record& r) const;
 
-    /**
-     * Returns the empirical expectation of the log of this factor.
-     * In particular, if this factor represents P(A|B), then
-     * this returns the expected log likelihood of the distribution P(A | B).
-     */
-    double log_expected_value(const dataset& ds) const;
+    //! Returns the empirical expectation of the log of this factor.
+    //! In particular, if this factor represents P(A|B), then
+    //! this returns the expected log likelihood of the distribution P(A | B).
+//    double log_expected_value(const dataset& ds) const;
 
     concept_usage(CRFfactor) {
       sill::same_type(f_const_ref.output_arguments(), od_const_ref);
@@ -452,8 +425,8 @@ namespace sill {
       f_const_ref.print(out);
 
       sill::same_type(f_const_ref.condition(a_const_ref), of_const_ref);
-      sill::same_type(f_const_ref.condition(rec_const_ref), of_const_ref);
-      sill::same_type(f_const_ref.log_expected_value(ds_const_ref), d);
+//      sill::same_type(f_const_ref.condition(rec_const_ref), of_const_ref);
+//      sill::same_type(f_const_ref.log_expected_value(ds_const_ref), d);
       out << f_const_ref;
     }
 
@@ -471,11 +444,11 @@ namespace sill {
     static optimization_vector& opt_vec_ref;
     static std::ostream& out;
 
-    static const record& rec_const_ref;
+//    static const record& rec_const_ref;
     static const output_factor_type& of_const_ref;
 
     static const assignment& a_const_ref;
-    static const dataset& ds_const_ref;
+//    static const dataset& ds_const_ref;
     double d;
 
   };  // struct CRFfactor
@@ -483,7 +456,11 @@ namespace sill {
   /**
    * CRFfactor which supports gradient-based parameter learning,
    * as well as structure learning using pwl_crf_learner.
+   *
+   * @todo Once factors are templatized by linear algebra type,
+   *       add back methods here which use datasets/records.
    */
+  /*
   template <class F>
   struct LearnableCRFfactor
     : public CRFfactor<F> {
@@ -506,156 +483,103 @@ namespace sill {
     typedef typename CRFfactor<F>::output_factor_type output_factor_type;
     typedef typename CRFfactor<F>::optimization_vector optimization_vector;
 
-    /**
-     * Type of parameters passed to learning methods.
-     * This should have at least this value:
-     *  - regularization_type reg
-     */
+    //! Type of parameters passed to learning methods.
+    //! This should have at least this value:
+    //!  - regularization_type reg
     typedef typename F::parameters parameters;
 
-    /**
-     * Regularization information.  This should contain, e.g., the type
-     * of regularization being used and the strength.
-     * This should have 3 values:
-     *  - size_t regularization: type of regularization
-     *  - static const size_t nlambdas: dimensionality of lambdas
-     *  - vec lambdas: regularization parameters
-     */
+    //! Regularization information.  This should contain, e.g., the type
+    //! of regularization being used and the strength.
+    //! This should have 3 values:
+    //!  - size_t regularization: type of regularization
+    //!  - static const size_t nlambdas: dimensionality of lambdas
+    //!  - vec lambdas: regularization parameters
     typedef typename F::regularization_type regularization_type;
 
     // Public methods: Learning methods
     // =========================================================================
 
-    /**
-     * Adds the gradient of the log of this factor w.r.t. the weights,
-     * evaluated at the given datapoint with the current weights.
-     * @param grad   Pre-allocated vector to which to add the gradient.
-     * @param r      Datapoint.
-     * @param w      Weight by which to multiply the added values.
-     */
+    //! Adds the gradient of the log of this factor w.r.t. the weights,
+    //! evaluated at the given datapoint with the current weights.
+    //! @param grad   Pre-allocated vector to which to add the gradient.
+    //! @param r      Datapoint.
+    //! @param w      Weight by which to multiply the added values.
     void
     add_gradient(optimization_vector& grad, const record& r, double w) const;
 
-    /**
-     * Adds the expectation of the gradient of the log of this factor
-     * w.r.t. the weights, evaluated with the current weights and at the
-     * given datapoint for the X values.  The expectation is over the Y
-     * values and w.r.t. the given factor's distribution.
-     * @param grad   Pre-allocated vector to which to add the gradient.
-     * @param r      Datapoint.
-     * @param fy     Distribution over (at least) the Y variables in this
-     *               factor.
-     * @param w      Weight by which to multiply the added values.
-     * @tparam YFactor  Factor type for a distribution over Y variables.
-     */
+    //! Adds the expectation of the gradient of the log of this factor
+    //! w.r.t. the weights, evaluated with the current weights and at the
+    //! given datapoint for the X values.  The expectation is over the Y
+    //! values and w.r.t. the given factor's distribution.
+    //! @param grad   Pre-allocated vector to which to add the gradient.
+    //! @param r      Datapoint.
+    //! @param fy     Distribution over (at least) the Y variables in this
+    //!               factor.
+    //! @param w      Weight by which to multiply the added values.
+    //! @tparam YFactor  Factor type for a distribution over Y variables.
     void add_expected_gradient(optimization_vector& grad, const record& r,
                                const output_factor_type& fy, double w) const;
 
-    /**
-     * This is equivalent to (but faster than) calling:
-     *   add_gradient(grad, r, w);
-     *   add_expected_gradient(grad, r, fy, -1 * w);
-     */
+    //! This is equivalent to (but faster than) calling:
+    //!   add_gradient(grad, r, w);
+    //!   add_expected_gradient(grad, r, fy, -1 * w);
     void add_combined_gradient(optimization_vector& grad, const record& r,
                                const output_factor_type& fy, double w) const;
 
-    /**
-     * Adds the diagonal of the Hessian of the log of this factor w.r.t. the
-     * weights, evaluated at the given datapoint with the current weights.
-     * @param hessian Pre-allocated vector to which to add the hessian.
-     * @param r       Datapoint.
-     * @param w       Weight by which to multiply the added values.
-     */
+    //! Adds the diagonal of the Hessian of the log of this factor w.r.t. the
+    //! weights, evaluated at the given datapoint with the current weights.
+    //! @param hessian Pre-allocated vector to which to add the hessian.
+    //! @param r       Datapoint.
+    //! @param w       Weight by which to multiply the added values.
     void
     add_hessian_diag(optimization_vector& hessian, const record& r,
                      double w) const;
 
-    /**
-     * Adds the expectation of the diagonal of the Hessian of the log of this
-     * factor w.r.t. the weights, evaluated with the current weights and at the
-     * given datapoint for the X values.  The expectation is over the Y
-     * values and w.r.t. the given factor's distribution.
-     * @param hessian Pre-allocated vector to which to add the Hessian.
-     * @param r       Datapoint.
-     * @param fy      Distribution over (at least) the Y variables in this
-     *                factor.
-     * @param w       Weight by which to multiply the added values.
-     */
+    //! Adds the expectation of the diagonal of the Hessian of the log of this
+    //! factor w.r.t. the weights, evaluated with the current weights and at the
+    //! given datapoint for the X values.  The expectation is over the Y
+    //! values and w.r.t. the given factor's distribution.
+    //! @param hessian Pre-allocated vector to which to add the Hessian.
+    //! @param r       Datapoint.
+    //! @param fy      Distribution over (at least) the Y variables in this
+    //!                factor.
+    //! @param w       Weight by which to multiply the added values.
     template <typename YFactor>
     void
     add_expected_hessian_diag(optimization_vector& hessian, const record& r,
                               const YFactor& fy, double w) const;
 
-    /**
-     * Adds the expectation of the element-wise square of the gradient of the
-     * log of this factor w.r.t. the weights, evaluated with the current
-     * weights and at the given datapoint for the X values. The expectation is
-     * over the Y values and w.r.t. the given factor's distribution.
-     * @param sqrgrad Pre-allocated vector to which to add the squared gradient.
-     * @param r       Datapoint.
-     * @param fy      Distribution over (at least) the Y variables in this
-     *                factor.
-     * @param w       Weight by which to multiply the added values.
-     */
+    //! Adds the expectation of the element-wise square of the gradient of the
+    //! log of this factor w.r.t. the weights, evaluated with the current
+    //! weights and at the given datapoint for the X values. The expectation is
+    //! over the Y values and w.r.t. the given factor's distribution.
+    //! @param sqrgrad Pre-allocated vector to which to add the squared gradient.
+    //! @param r       Datapoint.
+    //! @param fy      Distribution over (at least) the Y variables in this
+    //!                factor.
+    //! @param w       Weight by which to multiply the added values.
     template <typename YFactor>
     void
     add_expected_squared_gradient(optimization_vector& sqrgrad, const record& r,
                                   const YFactor& fy, double w) const;
 
-    /**
-     * Returns the regularization penalty for the current weights and
-     * the given regularization parameters.
-     */
+    //! Returns the regularization penalty for the current weights and
+    //! the given regularization parameters.
     double regularization_penalty(const regularization_type& reg) const;
 
-    /**
-     * Adds the gradient of the regularization term for the current weights
-     * and the given regularization parameters.
-     * @param w       Weight by which to multiply the added values.
-     */
+    //! Adds the gradient of the regularization term for the current weights
+    //! and the given regularization parameters.
+    //! @param w       Weight by which to multiply the added values.
     void add_regularization_gradient(optimization_vector& grad,
                                      const regularization_type& reg,
                                      double w) const;
 
-    /**
-     * Adds the diagonal of the Hessian of the regularization term for the
-     * current weights and the given regularization parameters.
-     * @param w       Weight by which to multiply the added values.
-     */
+    //! Adds the diagonal of the Hessian of the regularization term for the
+    //! current weights and the given regularization parameters.
+    //! @param w       Weight by which to multiply the added values.
     void add_regularization_hessian_diag(optimization_vector& hd,
                                          const regularization_type& reg,
                                          double w) const;
-
-    /**
-     * Returns a newly allocated factor which represents P(Y | X),
-     * learned from data.
-     */
-    /*
-    static F*
-    learn_crf_factor
-    (boost::shared_ptr<dataset> ds_ptr,
-     const output_domain_type& Y_, copy_ptr<input_domain_type> X_ptr_,
-     unsigned random_seed, const parameters& params);
-    */
-    /**
-     * Returns a newly allocated factor which represents P(Y | X),
-     * learned from data.
-     * This does cross validation to choose regularization parameters.
-     *
-     * @param reg_params (Return value.) Parameters which were tried.
-     * @param means      (Return value.) Means of scores for the given lambdas.
-     * @param stderrs    (Return value.) Std errors of scores for the lambdas.
-     * @param cv_params  Parameters specifying how to do cross validation.
-     */
-    /*
-    static F*
-    learn_crf_factor_cv
-    (std::vector<regularization_type>& reg_params, vec& means, vec& stderrs,
-     const crossval_parameters& cv_params,
-     boost::shared_ptr<dataset> ds_ptr,
-     const output_domain_type& Y_, copy_ptr<input_domain_type> X_ptr_,
-     unsigned random_seed, const parameters& params);
-    */
 
     concept_usage(LearnableCRFfactor) {
       sill::same_type(params_const_ref.valid(), b);
@@ -679,16 +603,6 @@ namespace sill {
       sill::same_type(d, f_const_ref.regularization_penalty(reg));
       f_const_ref.add_regularization_gradient(opt_vec_ref, reg, d);
       f_const_ref.add_regularization_hessian_diag(opt_vec_ref, reg, d);
-      /*
-      sill::same_type(learn_crf_factor<F>(ds_shared_ptr, od_const_ref,
-                                        id_copy_ptr, uns, params_const_ref),
-                     f_ptr);
-      sill::same_type(learn_crf_factor_cv<F>
-                     (reg_params, vec_ref, vec_ref, cv_params_const_ref,
-                      ds_shared_ptr, od_const_ref, id_copy_ptr, uns,
-                      params_const_ref),
-                     f_ptr);
-      */
     }
 
   private:
@@ -705,7 +619,7 @@ namespace sill {
     static const record& rec_const_ref;
     static const output_factor_type& of_const_ref;
     static const assignment& a_const_ref;
-    static const dataset& ds_const_ref;
+//    static const dataset& ds_const_ref;
     double d;
 
     static const parameters& params_const_ref;
@@ -714,7 +628,7 @@ namespace sill {
     vec tmpvec;
 
     static const regularization_type& reg;
-    boost::shared_ptr<dataset> ds_shared_ptr;
+//    boost::shared_ptr<dataset> ds_shared_ptr;
     unsigned uns;
 
     output_factor_type of;
@@ -726,6 +640,7 @@ namespace sill {
     static const crossval_parameters& cv_params_const_ref;
 
   }; // struct LearnableCRFfactor
+  */
 
 } // namespace sill
 

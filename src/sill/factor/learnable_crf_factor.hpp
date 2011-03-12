@@ -62,22 +62,30 @@ namespace sill {
     //! Base class
     typedef crf_factor<InputVar, OutputFactor, OptVector> base;
 
+    typedef dense_linear_algebra<> la_type;
+
     // Import types from base.
-    typedef typename base::input_variable_type input_variable_type;
-    typedef typename base::input_domain_type input_domain_type;
+    typedef typename base::input_variable_type   input_variable_type;
+    typedef typename base::input_domain_type     input_domain_type;
     typedef typename base::input_assignment_type input_assignment_type;
-    typedef typename base::input_record_type input_record_type;
-    typedef typename base::output_variable_type output_variable_type;
-    typedef typename base::output_domain_type output_domain_type;
+    typedef typename base::input_var_vector_type input_var_vector_type;
+    typedef typename base::input_var_map_type    input_var_map_type;
+    typedef typename base::input_record_type     input_record_type;
+    typedef typename base::output_variable_type   output_variable_type;
+    typedef typename base::output_domain_type     output_domain_type;
     typedef typename base::output_assignment_type output_assignment_type;
-    typedef typename base::output_record_type output_record_type;
-    typedef typename base::variable_type variable_type;
-    typedef typename base::domain_type domain_type;
+    typedef typename base::output_var_vector_type output_var_vector_type;
+    typedef typename base::output_var_map_type    output_var_map_type;
+    typedef typename base::output_record_type     output_record_type;
+    typedef typename base::variable_type   variable_type;
+    typedef typename base::domain_type     domain_type;
     typedef typename base::assignment_type assignment_type;
-    typedef typename base::record_type record_type;
-    typedef typename base::result_type result_type;
-    typedef typename base::output_factor_type output_factor_type;
-    typedef typename base::optimization_vector optimization_vector;
+    typedef typename base::var_vector_type var_vector_type;
+    typedef typename base::var_map_type    var_map_type;
+    typedef typename base::record_type     record_type;
+    typedef typename base::result_type          result_type;
+    typedef typename base::output_factor_type   output_factor_type;
+    typedef typename base::optimization_vector  optimization_vector;
 
     typedef crf_regularization_type<NLambdas> regularization_type;
 

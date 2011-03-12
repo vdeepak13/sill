@@ -85,7 +85,7 @@ namespace sill {
       train_acc = 0;
       train_log_like = 0;
       for (size_t i = 0; i < ds.size(); ++i) {
-        const record& rec = ds[i];
+        const record_type& rec = ds[i];
         double v(confidence(rec));
         const std::vector<size_t>& findata = rec.finite();
         const vec& vecdata = rec.vector();
@@ -148,7 +148,7 @@ namespace sill {
     bool logistic_regression::step_stochastic_gradient_descent() {
       if (!(o.next()))
         return false;
-      const record& rec = o.current();
+      const record_type& rec = o.current();
       double ex_weight(o.weight());
       total_train += ex_weight;
       double v(confidence(rec));
@@ -227,7 +227,7 @@ namespace sill {
     // Prediction methods
     //==========================================================================
 
-    double logistic_regression::confidence(const record& example) const {
+    double logistic_regression::confidence(const record_type& example) const {
       double v(b);
       const std::vector<size_t>& findata = example.finite();
       for (size_t j(0); j < finite_indices.size(); ++j) {

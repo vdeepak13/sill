@@ -52,8 +52,12 @@ namespace sill {
     //! implements Factor::variable_type
     typedef finite_variable variable_type;
 
+    typedef finite_var_vector var_vector_type;
+
     //! implements Factor::assignment_type
     typedef finite_assignment assignment_type;
+
+    typedef finite_var_map var_map_type;
 
     //! implements Factor::record_type
     typedef finite_record record_type;

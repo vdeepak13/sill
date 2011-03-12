@@ -40,9 +40,9 @@ int main() {
   learnt_decomposable<table_factor> model(bn.factors(), ld_params);
 
   syn_oracle_bayes_net<table_factor> bn_oracle(bn);
-  boost::shared_ptr<vector_dataset>
-    ds_ptr(oracle2dataset<vector_dataset>(bn_oracle,n_records));
-  dataset_statistics stats(*ds_ptr);
+  vector_dataset<> ds;
+  oracle2dataset(bn_oracle, n_records, ds);
+  dataset_statistics<> stats(ds);
 
   // CREATE_EMPTY_DECOMPOSABLE
 

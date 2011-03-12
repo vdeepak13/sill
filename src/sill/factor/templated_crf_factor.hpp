@@ -44,22 +44,30 @@ namespace sill {
     typedef F factor_type;
 
     // Import types from base.
-    typedef typename base::input_variable_type input_variable_type;
-    typedef typename base::input_domain_type input_domain_type;
+    typedef typename base::input_variable_type   input_variable_type;
+    typedef typename base::input_domain_type     input_domain_type;
     typedef typename base::input_assignment_type input_assignment_type;
-    typedef typename base::input_record_type input_record_type;
-    typedef typename base::output_variable_type output_variable_type;
-    typedef typename base::output_domain_type output_domain_type;
+    typedef typename base::input_var_vector_type input_var_vector_type;
+    typedef typename base::input_var_map_type    input_var_map_type;
+    typedef typename base::input_record_type     input_record_type;
+    typedef typename base::output_variable_type   output_variable_type;
+    typedef typename base::output_domain_type     output_domain_type;
     typedef typename base::output_assignment_type output_assignment_type;
-    typedef typename base::output_record_type output_record_type;
-    typedef typename base::variable_type variable_type;
-    typedef typename base::domain_type domain_type;
+    typedef typename base::output_var_vector_type output_var_vector_type;
+    typedef typename base::output_var_map_type    output_var_map_type;
+    typedef typename base::output_record_type     output_record_type;
+    typedef typename base::variable_type   variable_type;
+    typedef typename base::domain_type     domain_type;
     typedef typename base::assignment_type assignment_type;
-    typedef typename base::record_type record_type;
-    typedef typename base::result_type result_type;
-    typedef typename base::output_factor_type output_factor_type;
-    typedef typename base::optimization_vector optimization_vector;
-    typedef typename base::regularization_type regularization_type;
+    typedef typename base::var_vector_type var_vector_type;
+    typedef typename base::var_map_type    var_map_type;
+    typedef typename base::record_type     record_type;
+    typedef typename base::result_type          result_type;
+    typedef typename base::output_factor_type   output_factor_type;
+    typedef typename base::optimization_vector  optimization_vector;
+    typedef typename base::regularization_type  regularization_type;
+
+    typedef typename base::la_type la_type;
 
     //! Parameters used for learn_crf_factor().
     typedef typename F::parameters parameters;
@@ -86,23 +94,9 @@ namespace sill {
      *                      Note: This class uses this same pointer,
      *                      rather than doing a deep copy.
      */
-    templated_crf_factor
-    (boost::shared_ptr<F> factor_ptr_)
+    templated_crf_factor(boost::shared_ptr<F> factor_ptr_)
       : base(*factor_ptr_), factor_ptr_(factor_ptr_), fixed_records_(false) {
-      typename variable_type_group<variable_type>::var_vector_type base_vars;
-      typename variable_type_group<input_variable_type>::var_vector_type
-        base_input_vars;
-      foreach(output_variable_type* v, factor_ptr_->output_arguments()) {
-        base_vars.push_back(v);
-        vmap_base2this[v] = v;
-      }
-      foreach(input_variable_type* v, factor_ptr_->input_arguments()) {
-        base_vars.push_back(v);
-        base_input_vars.push_back(v);
-        vmap_base2this[v] = v;
-      }
-      base_record = record_type(base_vars);
-      base_input_record = input_record_type(base_input_vars);
+      init();
     }
 
     /**
@@ -129,25 +123,22 @@ namespace sill {
      const typename variable_type_group<input_variable_type>::var_map_type&
      Xvarmap)
       : base(), factor_ptr_(factor_ptr_), fixed_records_(false) {
-      assert(factor_ptr_);
-      typename variable_type_group<variable_type>::var_vector_type base_vars;
-      typename variable_type_group<input_variable_type>::var_vector_type
-        base_input_vars;
-      foreach(output_variable_type* v, factor_ptr_->output_arguments()) {
-        output_variable_type* my_v = safe_get(Yvarmap, v);
-        Ydomain_.insert(my_v);
-        base_vars.push_back(v);
-        vmap_base2this[v] = my_v;
-      }
-      foreach(input_variable_type* v, factor_ptr_->input_arguments()) {
-        input_variable_type* my_v = safe_get(Xvarmap, v);
-        Xdomain_ptr_->insert(my_v);
-        base_vars.push_back(v);
-        base_input_vars.push_back(v);
-        vmap_base2this[v] = my_v;
-      }
-      base_record = record_type(base_vars);
-      base_input_record = input_record_type(base_input_vars);
+      init(Yvarmap,Xvarmap);
+    }
+
+    /**
+     * Constructor a factor with default parameters.
+     *
+     * NOTE: This creates a new base factor since it does not have another
+     *       factor from which to create a template.
+     *
+     * @param Y   Output arguments.
+     * @param X   Input arguments.
+     */
+    templated_crf_factor(const output_domain_type& Y_,
+                         const input_domain_type& X_)
+      : base(Y_, X_), factor_ptr_(new F(Y_,X_)), fixed_records_(false) {
+      init();
     }
 
     /**
@@ -211,28 +202,32 @@ namespace sill {
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
     double v(const assignment_type& a) const {
-      fill_record_with_assignment(base_record, a, vmap_base2this);
+//      fill_record_with_assignment(base_record, a, vmap_base2this);
+      base_record.copy_assignment_mapped(a, vmap_base2this);
       return factor_ptr_->v(base_record);
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
     double v(const record_type& r) const {
-      fill_record_with_record(base_record, r, vmap_base2this);
+//      fill_record_with_record(base_record, r, vmap_base2this);
+      base_record.copy_record_mapped(r, vmap_base2this);
       return factor_ptr_->v(base_record);
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
     double logv(const assignment_type& a) const {
-      fill_record_with_assignment(base_record, a, vmap_base2this);
+//      fill_record_with_assignment(base_record, a, vmap_base2this);
+      base_record.copy_assignment_mapped(a, vmap_base2this);
       return factor_ptr_->logv(base_record);
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
     double logv(const record_type& r) const {
-      fill_record_with_record(base_record, r, vmap_base2this);
+//      fill_record_with_record(base_record, r, vmap_base2this);
+      base_record.copy_record_mapped(r, vmap_base2this);
       return factor_ptr_->logv(base_record);
     }
 
@@ -247,7 +242,8 @@ namespace sill {
      *          in real space
      */
     const output_factor_type& condition(const input_assignment_type& a) const {
-      fill_record_with_assignment(base_input_record, a, vmap_base2this);
+//      fill_record_with_assignment(base_input_record, a, vmap_base2this);
+      base_input_record.copy_assignment_mapped(a, vmap_base2this);
       tmp_factor = factor_ptr_->condition(base_input_record);
       tmp_factor.subst_args(vmap_base2this);
       return tmp_factor;
@@ -263,7 +259,8 @@ namespace sill {
      *          in real space
      */
     const output_factor_type& condition(const input_record_type& r) const {
-      fill_record_with_record(base_input_record, r, vmap_base2this);
+//      fill_record_with_record(base_input_record, r, vmap_base2this);
+      base_input_record.copy_record_mapped(r, vmap_base2this);
       tmp_factor = factor_ptr_->condition(base_input_record);
       tmp_factor.subst_args(vmap_base2this);
       return tmp_factor;
@@ -275,12 +272,12 @@ namespace sill {
      * this returns the expected log likelihood of the distribution P(A | B).
      * This uses real-space; i.e., the log of this factor is in log-space.
      */
-    double log_expected_value(const dataset& ds) const {
+    double log_expected_value(const dataset<la_type>& ds) const {
       double val(0);
       output_factor_type tmp_fctr;
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds.records()) {
+      foreach(const record_type& r, ds.records()) {
         val += ds.weight(i) * logv(r);
         total_ds_weight += ds.weight(i);
         ++i;
@@ -351,7 +348,8 @@ namespace sill {
     //! @param w      Weight by which to multiply the added values.
     void add_gradient(optimization_vector& grad, const record_type& r,
                       double w) const {
-      fill_record_with_record(base_record, r, vmap_base2this);
+//      fill_record_with_record(base_record, r, vmap_base2this);
+      base_record.copy_record_mapped(r, vmap_base2this);
       factor_ptr_->add_gradient(grad, base_record, w);
     }
 
@@ -371,7 +369,8 @@ namespace sill {
                                const input_record_type& r,
                                const output_factor_type& fy,
                                double w = 1) const {
-      fill_record_with_record(base_input_record, r, vmap_base2this);
+//      fill_record_with_record(base_input_record, r, vmap_base2this);
+      base_input_record.copy_record_mapped(r, vmap_base2this);
       factor_ptr_->add_expected_gradient(grad, base_input_record, fy, w);
     }
 
@@ -383,7 +382,8 @@ namespace sill {
     void
     add_combined_gradient(optimization_vector& grad, const record_type& r,
                           const output_factor_type& fy, double w = 1.) const {
-      fill_record_with_record(base_record, r, vmap_base2this);
+//      fill_record_with_record(base_record, r, vmap_base2this);
+      base_record.copy_record_mapped(r, vmap_base2this);
       factor_ptr_->add_combined_gradient(grad, base_record, fy, w);
     }
 
@@ -397,7 +397,8 @@ namespace sill {
     void
     add_hessian_diag(optimization_vector& hessian, const record_type& r,
                      double w) const {
-      fill_record_with_record(base_record, r, vmap_base2this);
+//      fill_record_with_record(base_record, r, vmap_base2this);
+      base_record.copy_record_mapped(r, vmap_base2this);
       factor_ptr_->add_hessian_diag(hessian, base_record, w);
     }
 
@@ -416,7 +417,8 @@ namespace sill {
     add_expected_hessian_diag(optimization_vector& hessian,
                               const input_record_type& r,
                               const output_factor_type& fy, double w) const {
-      fill_record_with_record(base_input_record, r, vmap_base2this);
+//      fill_record_with_record(base_input_record, r, vmap_base2this);
+      base_input_record.copy_record_mapped(r, vmap_base2this);
       factor_ptr_->add_expected_hessian_diag(hessian, base_input_record, fy, w);
     }
 
@@ -435,7 +437,8 @@ namespace sill {
     add_expected_squared_gradient
     (optimization_vector& sqrgrad, const input_record_type& r,
      const output_factor_type& fy, double w) const {
-      fill_record_with_record(base_input_record, r, vmap_base2this);
+//      fill_record_with_record(base_input_record, r, vmap_base2this);
+      base_input_record.copy_record_mapped(r, vmap_base2this);
       factor_ptr_->add_expected_squared_gradient(sqrgrad, base_input_record,
                                                  fy, w);
     }
@@ -494,6 +497,54 @@ namespace sill {
 
     // Private methods
     // =========================================================================
+
+    //! Initialize with identity variable map.
+    //! Given: factor_ptr_ is set
+    //! Init: vmap_base2this, base_record, base_input_record
+    void init() {
+      assert(factor_ptr_);
+      var_vector_type base_vars;
+      input_var_vector_type base_input_vars;
+      foreach(output_variable_type* v, factor_ptr_->output_arguments()) {
+        base_vars.push_back(v);
+        vmap_base2this[v] = v;
+      }
+      foreach(input_variable_type* v, factor_ptr_->input_arguments()) {
+        base_vars.push_back(v);
+        base_input_vars.push_back(v);
+        vmap_base2this[v] = v;
+      }
+      base_record = record_type(base_vars);
+      base_input_record = input_record_type(base_input_vars);
+    }
+
+    //! Initialize with the given variable maps.
+    //! Given: factor_ptr_ is set
+    //! Init: vmap_base2this, base_record, base_input_record
+    void
+    init(const typename variable_type_group<output_variable_type>::var_map_type&
+         Yvarmap,
+         const typename variable_type_group<input_variable_type>::var_map_type&
+         Xvarmap) {
+      assert(factor_ptr_);
+      var_vector_type base_vars;
+      input_var_vector_type base_input_vars;
+      foreach(output_variable_type* v, factor_ptr_->output_arguments()) {
+        output_variable_type* my_v = safe_get(Yvarmap, v);
+        Ydomain_.insert(my_v);
+        base_vars.push_back(v);
+        vmap_base2this[v] = my_v;
+      }
+      foreach(input_variable_type* v, factor_ptr_->input_arguments()) {
+        input_variable_type* my_v = safe_get(Xvarmap, v);
+        Xdomain_ptr_->insert(my_v);
+        base_vars.push_back(v);
+        base_input_vars.push_back(v);
+        vmap_base2this[v] = my_v;
+      }
+      base_record = record_type(base_vars);
+      base_input_record = input_record_type(base_input_vars);
+    }
 
   };  // class templated_crf_factor
 

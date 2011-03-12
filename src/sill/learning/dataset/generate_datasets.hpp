@@ -19,8 +19,8 @@ namespace sill {
    * and insert them into the given dataset.
    * Any samples already in the dataset are kept.
    */
-  template <typename F, typename RandomNumGen>
-  void generate_dataset(dataset& ds,
+  template <typename LA, typename F, typename RandomNumGen>
+  void generate_dataset(dataset<LA>& ds,
                         const decomposable<F>& model,
                         size_t n, RandomNumGen& rng) {
     for (size_t i(0); i < n; ++i) {
@@ -33,8 +33,8 @@ namespace sill {
    * and insert them into the given dataset.
    * Any samples already in the dataset are kept.
    */
-  template <typename F, typename RandomNumGen>
-  void generate_dataset(dataset& ds,
+  template <typename LA, typename F, typename RandomNumGen>
+  void generate_dataset(dataset<LA>& ds,
                         const bayesian_network<F>& model,
                         size_t n, RandomNumGen& rng) {
     for (size_t i(0); i < n; ++i) {
@@ -47,8 +47,8 @@ namespace sill {
    * and insert them into the given dataset.
    * Any samples already in the dataset are kept.
    */
-  template <typename F, typename CRFfactor, typename RandomNumGen>
-  void generate_dataset(dataset& ds,
+  template <typename LA, typename F, typename CRFfactor, typename RandomNumGen>
+  void generate_dataset(dataset<LA>& ds,
                         const decomposable<F>& Xmodel,
                         const crf_model<CRFfactor>& YgivenXmodel,
                         size_t n, RandomNumGen& rng) {

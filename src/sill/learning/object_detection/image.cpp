@@ -12,7 +12,7 @@ namespace sill {
     // Publics methods: getting image info
     //==========================================================================
   
-    double image::get_pixel(const record& r, size_t row, size_t col) {
+    double image::get_pixel(const record_type& r, size_t row, size_t col) {
       const vec& vecdata = r.vector();
 //      assert(row < view_height(vecdata) && col < view_width(vecdata));
       if (view_scalew(vecdata) != 1 || view_scaleh(vecdata) != 1)
@@ -25,7 +25,7 @@ namespace sill {
                        + view_col(vecdata) + col];
     }
 
-    void image::get_simple_view(const record& r, record& newr) {
+    void image::get_simple_view(const record_type& r, record_type& newr) {
       const vec& vecdata = r.vector();
       assert(vecdata.size() >=
              true_height(vecdata) * true_width(vecdata) + NMETADATA);
@@ -37,7 +37,7 @@ namespace sill {
       get_simple_view(r, newr, var_order);
     }
 
-    void image::get_simple_view(const record& r, record& newr,
+    void image::get_simple_view(const record_type& r, record_type& newr,
                                 vector_var_vector var_order) {
       vector_var_vector vector_list(r.vector_list());
       const vec& vecdata = r.vector();
@@ -161,7 +161,7 @@ namespace sill {
     // Publics methods: modifying images
     //==========================================================================
 
-    record image::blank_image(const record& img) {
+  image::record_type image::blank_image(const record_type& img) {
       const vec& vecdata = img.vector();
       copy_ptr<std::map<vector_variable*, size_t> >
         vec_numbering_ptr(new std::map<vector_variable*, size_t>());
@@ -179,7 +179,7 @@ namespace sill {
           vec_numbering_ptr->operator[](it->first) = it->second;
         else if (it->second == imgsize)
           vec_numbering_ptr->operator[](it->first) = newimgsize;
-      record newimg(img.finite_numbering_ptr, vec_numbering_ptr,
+      record_type newimg(img.finite_numbering_ptr, vec_numbering_ptr,
                     newimgsize * pixelsize + NMETADATA);
       vec& newvec = newimg.vector();
       representation(newvec) = 0;
@@ -195,7 +195,7 @@ namespace sill {
       return newimg;
     }
 
-    void image::set(record& r, size_t row, size_t col, double val) {
+    void image::set(record_type& r, size_t row, size_t col, double val) {
       vec& vecdata = r.vector();
       assert(row < view_height(vecdata) && col < view_width(vecdata));
       assert(view_scaleh(vecdata) == 1 && view_scalew(vecdata) == 1);
@@ -203,7 +203,7 @@ namespace sill {
                        + view_col(vecdata) + col)] = val;
     }
 
-    void image::raw2integral(record& r) {
+    void image::raw2integral(record_type& r) {
       vec& vecdata = r.vector();
       assert(representation(vecdata) == 0);
       representation(vecdata) = 1;
@@ -227,14 +227,14 @@ namespace sill {
             - vecdata[offsets[i-1]+j-(size_t)depth(vecdata)];
     }
 
-    record image::raw2integral(const record& r) {
-      record r2(r.finite_numbering_ptr, r.vector_numbering_ptr,
+  image::record_type image::raw2integral(const record_type& r) {
+      record_type r2(r.finite_numbering_ptr, r.vector_numbering_ptr,
                 r.vector().size());
       raw2integral(r2);
       return r2;
     }
 
-    void image::reset_view(record& r) {
+    void image::reset_view(record_type& r) {
       vec& vecdata = r.vector();
       view_row(vecdata) = 0;
       view_col(vecdata) = 0;
@@ -244,7 +244,7 @@ namespace sill {
       view_scalew(vecdata) = 1;
     }
 
-    void image::set_view(record& r, size_t row, size_t col, size_t h, size_t w,
+    void image::set_view(record_type& r, size_t row, size_t col, size_t h, size_t w,
                          double scaleh, double scalew) {
       vec& vecdata = r.vector();
       assert(h > 0 && w > 0);

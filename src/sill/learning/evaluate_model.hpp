@@ -67,7 +67,7 @@ namespace sill {
      * @param model  This should be normalized already.
      */
     evaluate_finite_decomposable(const decomposable<table_factor>& model,
-                                 const dataset& ds)
+                                 const dataset<>& ds)
       : avg_log_likelihood(0,0), avg_per_label_accuracy(0,0),
         avg_accuracy(0,0) {
       vec log_likelihoods(ds.size(),0);

@@ -26,8 +26,8 @@ create_finite_var_data
 (sill::finite_var_vector& Y, sill::finite_var_vector& X,
  sill::finite_var_vector& YX, sill::table_factor& truth_YX,
  sill::table_factor& truth_Y_given_X, sill::table_factor& truth_X,
- sill::vector_assignment_dataset& train_ds,
- sill::vector_assignment_dataset& test_ds,
+ sill::vector_assignment_dataset<>& train_ds,
+ sill::vector_assignment_dataset<>& test_ds,
  size_t ntrain, size_t ntest, size_t Ysize, size_t Xsize,
  sill::universe& u, boost::mt11213b& rng) {
 
@@ -65,7 +65,7 @@ create_finite_var_data
   // Generate a dataset
   cout << "Sampling " << (ntrain+ntest) << " samples from the model" << endl;
   train_ds =
-    vector_assignment_dataset(YX, vector_var_vector(),
+    vector_assignment_dataset<>(YX, vector_var_vector(),
                               std::vector<variable::variable_typenames>
                               (YX.size(), variable::FINITE_VARIABLE));
   for (size_t i(0); i < ntrain; ++i) {
@@ -73,7 +73,7 @@ create_finite_var_data
     train_ds.insert(assignment(fa));
   }
   test_ds =
-    vector_assignment_dataset(YX, vector_var_vector(),
+    vector_assignment_dataset<>(YX, vector_var_vector(),
                               std::vector<variable::variable_typenames>
                               (YX.size(), variable::FINITE_VARIABLE));
   for (size_t i(0); i < ntest; ++i) {
@@ -90,8 +90,8 @@ test_learn_crf_factor
 (double& learn_crf_factor_time, F* & f1,
  const typename sill::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
  const typename sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
- const sill::vector_assignment_dataset& train_ds,
- const sill::vector_assignment_dataset& test_ds, bool do_cv,
+ const sill::vector_assignment_dataset<>& train_ds,
+ const sill::vector_assignment_dataset<>& test_ds, bool do_cv,
  const sill::crossval_parameters& cv_params,
  typename F::parameters& f_params, boost::mt11213b& rng) {
 
@@ -142,14 +142,14 @@ test_learn_crf_factor
        << (*f1) << endl;
 
   double f_ll(0);
-  foreach(const record& r, train_ds.records()) {
+  foreach(const record<>& r, train_ds.records()) {
     typename F::output_factor_type f(f1->condition(r));
     f.normalize();
     f_ll += f.logv(r);
   }
   f_ll /= train_ds.size();
   double f_test_ll(0);
-  foreach(const record& r, test_ds.records()) {
+  foreach(const record<>& r, test_ds.records()) {
     typename F::output_factor_type f(f1->condition(r));
     f.normalize();
     f_test_ll += f.logv(r);
@@ -169,8 +169,8 @@ test_crf_parameter_learner
  sill::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
  const typename
  sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
- const sill::vector_assignment_dataset& train_ds,
- const sill::vector_assignment_dataset& test_ds, bool do_cv,
+ const sill::vector_assignment_dataset<>& train_ds,
+ const sill::vector_assignment_dataset<>& test_ds, bool do_cv,
  size_t cpl_method, size_t line_search_type,
  const sill::crossval_parameters& cv_params,
  boost::mt11213b& rng) {
@@ -247,12 +247,12 @@ test_crf_parameter_learner
        << endl;
 
   double cpl_ll(0);
-  foreach(const record& r, train_ds.records()) {
+  foreach(const record<>& r, train_ds.records()) {
     cpl_ll += cpl.current_model().log_likelihood(r);
   }
   cpl_ll /= train_ds.size();
   double cpl_test_ll(0);
-  foreach(const record& r, test_ds.records()) {
+  foreach(const record<>& r, test_ds.records()) {
     cpl_test_ll += cpl.current_model().log_likelihood(r);
   }
   cpl_test_ll /= test_ds.size();
@@ -263,10 +263,10 @@ test_crf_parameter_learner
 template <typename F>
 static void
 print_results
-(const sill::vector_assignment_dataset& train_ds,
- const sill::vector_assignment_dataset& test_ds,
- const sill::vector_assignment_dataset& orig_ds,
- const sill::vector_assignment_dataset& orig_test_ds,
+(const sill::vector_assignment_dataset<>& train_ds,
+ const sill::vector_assignment_dataset<>& test_ds,
+ const sill::vector_assignment_dataset<>& orig_ds,
+ const sill::vector_assignment_dataset<>& orig_test_ds,
  const typename sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
  const typename F::output_factor_type& truth_YX,
  const typename F::output_factor_type& truth_Y_given_X,
@@ -279,12 +279,12 @@ print_results
 
   // Compare the results.
   double joint_ll(0);
-  foreach(const record& r, orig_ds.records()) {
+  foreach(const record<>& r, orig_ds.records()) {
     joint_ll += truth_YX.logv(r);
   }
   joint_ll /= orig_ds.size();
   double true_ll(0);
-  foreach(const record& r, orig_ds.records()) {
+  foreach(const record<>& r, orig_ds.records()) {
     typename F::output_factor_type
       f(truth_Y_given_X.restrict
         (r.assignment(domain(X.begin(), X.end()))));
@@ -294,12 +294,12 @@ print_results
   true_ll /= orig_ds.size();
 
   double joint_test_ll(0);
-  foreach(const record& r, orig_test_ds.records()) {
+  foreach(const record<>& r, orig_test_ds.records()) {
     joint_test_ll += truth_YX.logv(r);
   }
   joint_test_ll /= test_ds.size();
   double true_test_ll(0);
-  foreach(const record& r, orig_test_ds.records()) {
+  foreach(const record<>& r, orig_test_ds.records()) {
     typename F::output_factor_type
       f(truth_Y_given_X.restrict
         (r.assignment(domain(X.begin(), X.end()))));
@@ -408,8 +408,8 @@ int main(int argc, char** argv) {
     table_factor truth_YX;
     table_factor truth_Y_given_X;
     table_factor truth_X;
-    vector_assignment_dataset train_ds;
-    vector_assignment_dataset test_ds;
+    vector_assignment_dataset<> train_ds;
+    vector_assignment_dataset<> test_ds;
 
     create_finite_var_data(Y, X, YX, truth_YX, truth_Y_given_X, truth_X,
                            train_ds, test_ds,
@@ -455,8 +455,8 @@ int main(int argc, char** argv) {
     table_factor truth_YX;
     table_factor truth_Y_given_X;
     table_factor truth_X;
-    vector_assignment_dataset train_ds;
-    vector_assignment_dataset test_ds;
+    vector_assignment_dataset<> train_ds;
+    vector_assignment_dataset<> test_ds;
 
     create_finite_var_data(Y, X, YX, truth_YX, truth_Y_given_X, truth_X,
                            train_ds, test_ds,
@@ -547,14 +547,14 @@ int main(int argc, char** argv) {
 
     // Generate a dataset
     cout << "Sampling " << (ntrain+ntest) << " samples from the model" << endl;
-    vector_assignment_dataset train_ds(finite_var_vector(), YX, 
+    vector_assignment_dataset<> train_ds(finite_var_vector(), YX, 
                                        std::vector<variable::variable_typenames>
                                        (YX.size(), variable::VECTOR_VARIABLE));
     for (size_t i(0); i < ntrain; ++i) {
       vector_assignment fa(truth_YX.sample(rng));
       train_ds.insert(assignment(fa));
     }
-    vector_assignment_dataset
+    vector_assignment_dataset<>
       test_ds(finite_var_vector(), YX, 
               std::vector<variable::variable_typenames>
               (YX.size(), variable::VECTOR_VARIABLE));
@@ -562,11 +562,11 @@ int main(int argc, char** argv) {
       vector_assignment fa(truth_YX.sample(rng));
       test_ds.insert(assignment(fa));
     }
-    vector_assignment_dataset orig_ds(train_ds.datasource_info());
-    foreach(const record& r, train_ds.records())
+    vector_assignment_dataset<> orig_ds(train_ds.datasource_info());
+    foreach(const record<>& r, train_ds.records())
       orig_ds.insert(r);
-    vector_assignment_dataset orig_test_ds(test_ds.datasource_info());
-    foreach(const record& r, test_ds.records())
+    vector_assignment_dataset<> orig_test_ds(test_ds.datasource_info());
+    foreach(const record<>& r, test_ds.records())
       orig_test_ds.insert(r);
 
     if (normalize_data) {

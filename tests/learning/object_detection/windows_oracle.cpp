@@ -27,11 +27,11 @@ int main(int argc, char* argv[]) {
     = argc > 1 ? argv[1] : "../../../../tests/data/image_varsize.txt";
   universe u;
   copy_ptr<image_oracle> o_ptr(new image_oracle(filename, u));
-  std::vector<record> data;
+  std::vector<record<> > data;
   while(o_ptr->next())
     data.push_back(o_ptr->current());
   cout << "Original images:" << endl;
-  foreach(const record& img, data) {
+  foreach(const record<>& img, data) {
     image::write(cout, img);
     cout << endl;
   }

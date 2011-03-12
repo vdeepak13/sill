@@ -12,7 +12,7 @@ namespace sill {
 
     // Free functions
     //==========================================================================
-
+    /*
   boost::shared_ptr<sill::oracle>
   load_oracle(sill::universe& u, std::string ds_name, double random_seed) {
     using namespace sill;
@@ -89,6 +89,7 @@ namespace sill {
     return boost::shared_ptr<symbolic_oracle>
       (new symbolic_oracle(sym_params, params));
   }
+    */
 
   // Free functions: Utilities
   //==========================================================================

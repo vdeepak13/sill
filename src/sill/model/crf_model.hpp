@@ -746,7 +746,8 @@ namespace sill {
      *
      * @return E[ log P(Y=y | X=x) ], or 0 if the dataset is empty.
      */
-    double expected_log_likelihood(const dataset& ds) const {
+    template <typename LA>
+    double expected_log_likelihood(const dataset<LA>& ds) const {
       if (ds.size() == 0)
         return 0;
       double ll(0);
@@ -777,7 +778,8 @@ namespace sill {
      *
      * @return  expected mean squared error, or 0 if the dataset is empty.
      */
-    double expected_mean_squared_error(const dataset& ds) const {
+    template <typename LA>
+    double expected_mean_squared_error(const dataset<LA>& ds) const {
       if (ds.size() == 0)
         return 0;
       double mse(0);
@@ -818,7 +820,8 @@ namespace sill {
      *
      * @return  expected per-label accuracy, or 0 if the dataset is empty.
      */
-    double expected_per_label_accuracy(const dataset& ds) const {
+    template <typename LA>
+    double expected_per_label_accuracy(const dataset<LA>& ds) const {
       if (ds.size() == 0)
         return 0;
       double acc(0);

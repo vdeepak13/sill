@@ -134,11 +134,19 @@ namespace sill {
   template <typename Objective>
   class filtering_booster_OC : public multiclass_booster_OC<Objective> {
 
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef multiclass_booster_OC<Objective> base;
+
+    typedef typename base::la_type la_type;
+    typedef typename base::record_type record_type;
+
     // Protected data members
     //==========================================================================
   protected:
 
-    typedef multiclass_booster_OC<Objective> base;
     using base::label_;
     using base::label_index_;
     using base::nclasses_;
@@ -161,13 +169,13 @@ namespace sill {
     filtering_booster_OC_parameters params;
 
     //! Dataset passed to weak learner (avoids reallocation each round)
-    vector_dataset ds;
+    vector_dataset<la_type> ds;
 
     //! Dataset oracle (for batch mode)
-    ds_oracle* ds_o_ptr;
+    ds_oracle<la_type>* ds_o_ptr;
 
     //! Data oracle
-    oracle& o;
+    oracle<la_type>& o;
 
     //! Average p_t.
     //! These are calculated from the examples used to calculate edges,
@@ -366,7 +374,7 @@ namespace sill {
     explicit filtering_booster_OC(filtering_booster_OC_parameters params
                                   = filtering_booster_OC_parameters())
       : base(params), params(params), ds(),
-        ds_o_ptr(new ds_oracle(ds)), o(*ds_o_ptr) { }
+        ds_o_ptr(new ds_oracle<la_type>(ds)), o(*ds_o_ptr) { }
 
     /**
      * Constructor for a multiclass filtering booster.
@@ -374,7 +382,7 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param params        algorithm parameters
      */
-    filtering_booster_OC(oracle& o, size_t n,
+    filtering_booster_OC(oracle<la_type>& o, size_t n,
                          filtering_booster_OC_parameters params
                          = filtering_booster_OC_parameters())
       : base(o, params), params(params), ds(o.datasource_info()),
@@ -391,12 +399,12 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit filtering_booster_OC(dataset_statistics& stats,
+    explicit filtering_booster_OC(dataset_statistics<la_type>& stats,
                                   filtering_booster_OC_parameters params
                                   = filtering_booster_OC_parameters())
       : base(stats.get_dataset(), params), params(params),
         ds(stats.get_dataset().datasource_info()),
-        ds_o_ptr(new ds_oracle(stats.get_dataset())), o(*ds_o_ptr) {
+        ds_o_ptr(new ds_oracle<la_type>(stats.get_dataset())), o(*ds_o_ptr) {
       assert(stats.get_dataset().is_weighted() == false);
       init();
       for (size_t t = 0; t < this->params.init_iterations; ++t)
@@ -410,16 +418,16 @@ namespace sill {
     }
 
     //! Train a new multiclass classifier of this type with the given data.
-    boost::shared_ptr<multiclass_classifier> create(dataset_statistics& stats) const {
-      boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<multiclass_classifier<> >
         bptr(new filtering_booster_OC<Objective>(stats, this->params));
       return bptr;
     }
 
     //! Train a new multiclass classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<multiclass_classifier> create(oracle& o, size_t n) const {
-      boost::shared_ptr<multiclass_classifier>
+    boost::shared_ptr<multiclass_classifier<> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<multiclass_classifier<> >
         bptr(new filtering_booster_OC<Objective>(o, n, this->params));
       return bptr;
     }
@@ -519,14 +527,14 @@ namespace sill {
       // Train the weak learner
       params.weak_learner->random_seed
         (boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
-      dataset_view ds_view(ds);
+      dataset_view<la_type> ds_view(ds);
       ds_view.set_binary_coloring(label_, params.binary_label, coloring);
-      dataset_statistics stats(ds_view);
+      dataset_statistics<la_type> stats(ds_view);
       base_hypotheses.push_back(params.weak_learner->create(stats));
 
       // Compute edge and alpha
       double edge = 0;
-      binary_classifier& base_hypothesis = *(base_hypotheses.back());
+      binary_classifier<>& base_hypothesis = *(base_hypotheses.back());
       if (params.n_t > 0) {
         // Use n examples
         size_t n = (params.scale_n_t
@@ -659,12 +667,12 @@ namespace sill {
 
     //! Resets the data source to be used in future rounds of training.
     //! @param  n   max number of examples which may be drawn from the oracle
-    void reset_datasource(oracle& o, size_t n) {
+    void reset_datasource(oracle<la_type>& o, size_t n) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }
     //! Resets the data source to be used in future rounds of training.
-    void reset_datasource(dataset_statistics& stats) {
+    void reset_datasource(dataset_statistics<la_type>& stats) {
       assert(false);
       // TODO: IMPLEMENT THIS
     }

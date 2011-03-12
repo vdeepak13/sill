@@ -15,14 +15,21 @@ namespace sill {
    * just using, e.g., symbolic_oracle.
    * \author Joseph Bradley
    * \ingroup learning_dataset
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<double,size_t>)
    */
-  class ds_oracle : public oracle {
+  template <typename LA = dense_linear_algebra<> >
+  class ds_oracle : public oracle<LA> {
 
     // Public type declarations
     //==========================================================================
   public:
+
     //! The base type (oracle)
-    typedef oracle base;
+    typedef oracle<LA> base;
+
+    typedef record<LA> record_type;
 
     struct parameters {
 
@@ -48,14 +55,14 @@ namespace sill {
     parameters params;
 
     //! Dataset
-    const dataset& ds;
+    const dataset<LA>& ds;
 
     //! Iterator into the dataset; this points to the record which will be
     //! loaded when next() is called.
-    dataset::record_iterator ds_it;
+    typename dataset<LA>::record_iterator ds_it;
 
     //! Iterator into the dataset (end iterator)
-    dataset::record_iterator ds_end;
+    typename dataset<LA>::record_iterator ds_end;
 
     //! Count of number of examples drawn
     size_t records_used;
@@ -72,7 +79,7 @@ namespace sill {
     /**
      * Constructs a dataset-based oracle.
      */
-    explicit ds_oracle(const dataset& ds, parameters params = parameters())
+    explicit ds_oracle(const dataset<LA>& ds, parameters params = parameters())
       : base(ds.datasource_info()),
         params(params), ds(ds), ds_it(ds.end()), ds_end(ds.end()),
         records_used(0), initialized(false) {
@@ -83,7 +90,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns the current record.
-    const record& current() const {
+    const record_type& current() const {
       return ds_it.r;
     }
 
@@ -104,7 +111,31 @@ namespace sill {
     //! This returns true iff the operation was successful; false indicates
     //! a depleted oracle.
     //! NOTE: This must be explicitly called after the oracle is constructed.
-    bool next();
+    bool next() {
+      if (params.record_limit != 0 && records_used >= params.record_limit)
+        return false;
+      if (!initialized) {
+        ds_it = ds.begin();
+        if (ds_it == ds_end)
+          return false;
+        initialized = true;
+      } else {
+        ++ds_it;
+        if (ds_it == ds_end) {
+          if (params.auto_reset) {
+            ds_it = ds.begin();
+          }
+          else {
+            return false;
+          }
+        }
+      }
+      ds_it.load_cur_record();
+//      current_record = ds_it.r;
+      //      current_record = ds_it.get_record_ref();
+      ++records_used;
+      return true;
+    } // next
 
   }; // class ds_oracle
 

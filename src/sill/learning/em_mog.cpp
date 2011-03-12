@@ -6,7 +6,7 @@
 
 namespace sill {
 
-  em_mog::em_mog(const dataset* data, size_t k)
+  em_mog::em_mog(const dataset<la_type>* data, size_t k)
     : data(data), n(data->size()), k(k), w(zeros(n,k)) {}
 
   double em_mog::expectation(const mixture_gaussian& mixture) {
@@ -16,9 +16,9 @@ namespace sill {
     size_t i = 0; // the record
       
     // computes the probability of each sample
-    foreach(const record& record, data->records()) {
+    foreach(const record_type& r, data->records()) {
       for(size_t j = 0; j < k; j++)
-        w(i, j) = mixture[j](record.vector());
+        w(i, j) = mixture[j](r.vector());
       double p_i = sum(w.row(i));
       logl += log(p_i);
       w.divide_row(i++, p_i);

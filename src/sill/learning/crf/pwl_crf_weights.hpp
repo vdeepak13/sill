@@ -7,7 +7,7 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/concepts.hpp>
+//#include <sill/factor/concepts.hpp>
 #include <sill/iterator/subset_iterator.hpp>
 #include <sill/learning/crf/crf_X_mapping.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
@@ -29,7 +29,7 @@ namespace sill {
   template <typename FactorType>
   struct pwl_crf_weights_parameters {
 
-    concept_assert((sill::LearnableCRFfactor<FactorType>));
+    //    concept_assert((sill::LearnableCRFfactor<FactorType>));
 
     //! CRF factor regularization type.
     typedef typename FactorType::regularization_type crf_factor_reg_type;
@@ -137,7 +137,7 @@ namespace sill {
   template <typename FactorType>
   class pwl_crf_weights {
 
-    concept_assert((sill::LearnableCRFfactor<FactorType>));
+    //    concept_assert((sill::LearnableCRFfactor<FactorType>));
 
     // Public classes
     //==========================================================================
@@ -208,7 +208,7 @@ namespace sill {
     mutable boost::uniform_int<int> unif_int;
 
     //! Training data.
-    const dataset& ds;
+    const dataset<>& ds;
 
     //! Output variables.
     output_domain_type Yvars_;
@@ -374,7 +374,7 @@ namespace sill {
      * @param learning_mode  0 = regular; 1 = templated.
      */
     pwl_crf_weights
-    (const dataset& ds, const output_domain_type& Yvars_,
+    (const dataset<>& ds, const output_domain_type& Yvars_,
      const crf_X_mapping<crf_factor>& X_mapping_, bool learning_mode_,
      parameters params = parameters())
       : params(params), learning_mode_(learning_mode_), ds(ds),
@@ -492,7 +492,7 @@ namespace sill {
         edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds.records()) {
+      foreach(const record_type& r, ds.records()) {
         tmp_fctr = r_ptr->condition(r);
         tmp_fctr.normalize();
         edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);
@@ -540,7 +540,7 @@ namespace sill {
         vertex_part_map_[y12pair] = std::make_pair(r1_ptr, r2_ptr);
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds.records()) {
+      foreach(const record_type& r, ds.records()) {
         tmp_fctr = r_ptr->condition(r);
         tmp_fctr.normalize();
         edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);
@@ -585,7 +585,7 @@ namespace sill {
         edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       double total_ds_weight(0);
       size_t i(0);
-      foreach(const record& r, ds.records()) {
+      foreach(const record_type& r, ds.records()) {
         tmp_fctr = r_ptr->condition(r);
         tmp_fctr.normalize();
         edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);

@@ -21,15 +21,14 @@ int main(int argc, char* argv[]) {
   // Create a dataset with vector variables to work with
   universe u;
   syn_oracle_knorm knorm(create_syn_oracle_knorm(2,3,u));
-  boost::shared_ptr<assignment_dataset> ds_ptr
-    = oracle2dataset<assignment_dataset>(knorm, 10);
-  assignment_dataset& ds = *ds_ptr;
+  assignment_dataset<> ds;
+  oracle2dataset(knorm, 10, ds);
   cout << "Dataset:\n" << ds << endl;
 
   // Print the data, along with its order dataset_statistics.
   cout << "Computing order stats and, for each vector variable, printing "
        << "the record values in increasing order:\n" << endl;
-  dataset_statistics stats(ds);
+  dataset_statistics<> stats(ds);
   stats.compute_order_stats();
   const std::vector<std::vector<size_t> >& order_stats = stats.order_stats();
   const vector_var_vector& vector_list = ds.vector_list();

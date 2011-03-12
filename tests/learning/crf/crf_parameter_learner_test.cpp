@@ -29,7 +29,7 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
          const sill::decomposable<typename F::output_factor_type>& YXmodel,
          const sill::datasource_info_type& ds_info,
          size_t ntrain, size_t ntest,
-         bool do_cv, const sill::vec& fixed_lambda, boost::mt11213b& rng,
+         bool no_cv, const sill::vec& fixed_lambda, boost::mt11213b& rng,
          typename sill::crf_parameter_learner<F>::parameters& cpl_params,
          sill::crossval_builder& cv_builder, bool init_with_pwl) {
 
@@ -45,9 +45,9 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
   // Generate a dataset
   cout << "Sampling " << ntrain << " training samples and "
        << ntest << " test samples from the model" << endl;
-  vector_assignment_dataset train_ds(ds_info, ntrain);
+  vector_assignment_dataset<> train_ds(ds_info, ntrain);
   generate_dataset(train_ds, YXmodel, ntrain, rng);
-  vector_assignment_dataset test_ds(ds_info, ntest);
+  vector_assignment_dataset<> test_ds(ds_info, ntest);
   generate_dataset(test_ds, YXmodel, ntest, rng);
 
   double true_train_ll = YgivenXmodel.expected_log_likelihood(train_ds);
@@ -64,14 +64,16 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
     pwl_crf_parameter_learner<F> pcpl(train_ds, YgivenXmodel, pcpl_params);
     init_model = pcpl.model();
   }
-  if (do_cv) {
+  if (no_cv) {
+    cpl_params.lambdas = fixed_lambda;
+  } else {
     crossval_parameters
       cv_params(cv_builder.get_parameters(regularization_type::nlambdas));
     cv_params.nfolds = std::min(ntrain, cv_params.nfolds);
     crf_validation_functor<F>
       crf_val_func((init_with_pwl ? init_model : YgivenXmodel),
                    cpl_params, init_with_pwl);
-    validation_framework
+    validation_framework<>
       val_frame(train_ds, cv_params, crf_val_func, unif_int(rng));
     cpl_params.lambdas = val_frame.best_lambdas();
 
@@ -84,8 +86,6 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
          << "stderrs: " << val_frame.stderrs() << "\n"
          << "Chose lambdas = " << cpl_params.lambdas << "\n"
          << endl;
-  } else {
-    cpl_params.lambdas = fixed_lambda;
   }
   cpl_params.random_seed = unif_int(rng);
   crf_model<F> learned_model;
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
   //  CRF parameter learner parameters
   crf_parameter_learner_builder cpl_builder;
   //  CV parameters
-  bool do_cv;
+  bool no_cv;
   vec fixed_lambda; // if not doing CV
   crossval_builder cv_builder;
   //  Other parameters
@@ -163,12 +163,14 @@ int main(int argc, char** argv) {
     ("factor_type",
      po::value<std::string>(&factor_type)->default_value("table"),
      "Factor type: table, gaussian.");
+  /*
   //  CV parameters
   desc.add_options()
     ("do_cv", po::bool_switch(&do_cv),
      "Do cross validation to choose lambdas for parameter learning.")
     ("fixed_lambda", po::value<vec>(&fixed_lambda)->default_value(vec(1,0)),
      "Fixed lambda (1 or 2 values, depending on factor type)");
+  */
   //  Other parameters
   desc.add_options()
     ("init_with_pwl",
@@ -206,6 +208,8 @@ int main(int argc, char** argv) {
     cout << desc << endl;
     return 1;
   }
+  no_cv = cv_builder.no_cv;
+  fixed_lambda = cv_builder.fixed_vals;
 
   boost::mt11213b rng(random_seed);
   boost::uniform_int<int> unif_int(0,std::numeric_limits<int>::max());
@@ -237,7 +241,7 @@ int main(int argc, char** argv) {
     */
 
     run_test<table_crf_factor>
-      (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, do_cv, fixed_lambda, rng,
+      (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, no_cv, fixed_lambda, rng,
        cpl_params, cv_builder, init_with_pwl);
   } else if (factor_type == "gaussian") {
     decomposable<canonical_gaussian> YXmodel;
@@ -263,7 +267,7 @@ int main(int argc, char** argv) {
     */
 
     run_test<gaussian_crf_factor>
-      (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, do_cv, fixed_lambda, rng,
+      (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, no_cv, fixed_lambda, rng,
        cpl_params, cv_builder, init_with_pwl);
   } else {
     assert(false);

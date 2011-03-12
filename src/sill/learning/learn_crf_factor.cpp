@@ -10,7 +10,7 @@
   template <>                                                           \
   hybrid_crf_factor<F>*                                                 \
   learn_crf_factor<hybrid_crf_factor<F> >                               \
-  (const dataset& ds,                                                   \
+  (const dataset<hybrid_crf_factor<F>::la_type>& ds,                    \
    const hybrid_crf_factor<F>::output_domain_type& Y_,                  \
    copy_ptr<hybrid_crf_factor<F>::input_domain_type> X_ptr_,            \
    const hybrid_crf_factor<F>::parameters& params,                      \
@@ -37,7 +37,7 @@
        *sub_X_ptr_);                                                    \
                                                                         \
     foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {  \
-      dataset_view sub_ds(ds);                                          \
+      dataset_view<hybrid_crf_factor<F>::la_type> sub_ds(ds);           \
       sub_ds.restrict_to_assignment(x2);                                \
       size_t i =                                                        \
         hybrid_crf_factor<F>::subfactor_index(x2, x2_vec, x2_multipliers); \
@@ -67,7 +67,7 @@
   (std::vector<hybrid_crf_factor<F>::regularization_type>& reg_params,  \
    vec& means, vec& stderrs,                                            \
    const crossval_parameters& cv_params,                                \
-   const dataset& ds,                                                   \
+   const dataset<hybrid_crf_factor<F>::la_type>& ds,                    \
    const hybrid_crf_factor<F>::output_domain_type& Y_,                  \
    copy_ptr<hybrid_crf_factor<F>::input_domain_type> X_ptr_,            \
    const hybrid_crf_factor<F>::parameters& params,                      \
@@ -101,7 +101,7 @@
                                                                         \
     size_t return_j(0);                                                 \
     foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {  \
-      dataset_view sub_ds(ds);                                          \
+      dataset_view<hybrid_crf_factor<F>::la_type> sub_ds(ds);           \
       sub_ds.restrict_to_assignment(x2);                                \
       size_t i =                                                        \
         hybrid_crf_factor<F>::subfactor_index(x2, x2_vec, x2_multipliers); \
@@ -138,7 +138,7 @@ namespace sill {
   template <>
   table_crf_factor*
   learn_crf_factor<table_crf_factor>
-  (const dataset& ds,
+  (const dataset<table_crf_factor::la_type>& ds,
    const finite_domain& Y_, copy_ptr<finite_domain> X_ptr_,
    const table_crf_factor::parameters& params, unsigned random_seed) {
     assert(includes(ds.finite_variables(), Y_));
@@ -146,8 +146,8 @@ namespace sill {
     assert(includes(ds.finite_variables(), *X_ptr_));
     assert(params.valid());
     return new table_crf_factor
-      (learn_marginal<table_factor>(set_union(Y_, *X_ptr_), ds,
-                                    params.reg.lambdas[0]),
+      (learn_factor<table_factor>::learn_marginal(set_union(Y_, *X_ptr_), ds,
+                                                  params.reg.lambdas[0]),
        Y_, false);
   } // learn_crf_factor<table_crf_factor>
 
@@ -156,7 +156,7 @@ namespace sill {
   template <>
   log_reg_crf_factor*
   learn_crf_factor<log_reg_crf_factor>
-  (const dataset& ds,
+  (const dataset<log_reg_crf_factor::la_type>& ds,
    const finite_domain& Y_, copy_ptr<domain> X_ptr_,
    const log_reg_crf_factor::parameters& params, unsigned random_seed) {
     if (!includes(ds.finite_variables(), Y_)) {
@@ -170,7 +170,7 @@ namespace sill {
     assert(includes(ds.variables(), *X_ptr_));
     assert(params.valid());
     // Set up dataset view
-    dataset_view ds_view(ds);
+    dataset_view<log_reg_crf_factor::la_type> ds_view(ds);
     std::set<size_t> finite_indices;
     size_t new_class_var_size(1);
     foreach(finite_variable* v, Y_) {
@@ -194,7 +194,7 @@ namespace sill {
     }
     ds_view.set_variable_indices(finite_indices, vector_indices);
     ds_view.set_finite_class_variables(Y_);
-    dataset_statistics stats(ds_view);
+    dataset_statistics<log_reg_crf_factor::la_type> stats(ds_view);
     // Train multilabel logistic regressor
     multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
     mlr_params.regularization = params.reg.regularization;
@@ -203,8 +203,8 @@ namespace sill {
       = params.u.new_finite_variable(new_class_var_size);
     multiclass2multilabel_parameters m2m_params;
     m2m_params.base_learner =
-      boost::shared_ptr<multiclass_classifier>
-      (new multiclass_logistic_regression(mlr_params));
+      boost::shared_ptr<multiclass_classifier<> >
+      (new multiclass_logistic_regression<>(mlr_params));
     m2m_params.random_seed = random_seed;
     m2m_params.new_label = new_merged_var;
     return new log_reg_crf_factor
@@ -218,7 +218,7 @@ namespace sill {
   template <>
   gaussian_crf_factor*
   learn_crf_factor<gaussian_crf_factor>
-  (const dataset& ds,
+  (const dataset<gaussian_crf_factor::la_type>& ds,
    const vector_domain& Y_, copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed) {
     assert(ds.size() > 0);
@@ -307,7 +307,7 @@ namespace sill {
 
     gcf_learn_crf_factor_cv_functor::
     gcf_learn_crf_factor_cv_functor
-    (const dataset& ds,
+    (const dataset<la_type>& ds,
      const vector_domain& Y_, copy_ptr<vector_domain> X_ptr,
      const gaussian_crf_factor::parameters& params)
       : ds(ds), Y_ptr(&Y_), X_ptr(X_ptr), params_ptr(&params) {
@@ -376,10 +376,10 @@ namespace sill {
 
       double ll_constant = -.5 * vector_size(Yvec) * std::log(2. * pi());
 
-      dataset_view permuted_view(ds);
+      dataset_view<la_type> permuted_view(ds);
       permuted_view.set_record_indices(randperm(ds.size(), rng));
-      dataset_view fold_train_view(permuted_view);
-      dataset_view fold_test_view(permuted_view);
+      dataset_view<la_type> fold_train_view(permuted_view);
+      dataset_view<la_type> fold_test_view(permuted_view);
       fold_train_view.save_record_view();
       fold_test_view.save_record_view();
       mat Xdata; // X data matrix (nrecords x nvars)
@@ -555,7 +555,7 @@ namespace sill {
   (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
    vec& means, vec& stderrs,
    const crossval_parameters& cv_params,
-   const dataset& ds, const vector_domain& Y_,
+   const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed) {
 
@@ -589,7 +589,6 @@ namespace sill {
 
 
   GEN_LEARN_CRF_FACTOR_CV_HYBRID_DEF(gaussian_crf_factor)
-
 
 }; // namespace sill
 

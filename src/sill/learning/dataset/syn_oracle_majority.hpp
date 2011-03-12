@@ -24,14 +24,18 @@ namespace sill {
    * \ingroup learning_dataset
    * @author Joseph Bradley
    */
-  class syn_oracle_majority : public oracle {
+  class syn_oracle_majority : public oracle<dense_linear_algebra<> > {
 
     // Public type declarations
     //==========================================================================
   public:
 
+    typedef dense_linear_algebra<> la_type;
+
     //! The base type (oracle)
-    typedef oracle base;
+    typedef oracle<la_type> base;
+
+    typedef record<la_type> record_type;
 
     struct parameters {
 
@@ -96,7 +100,7 @@ namespace sill {
     std::vector<size_t> voting;
 
     //! Current record
-    record current_rec;
+    record_type current_rec;
 
     // Private methods
     //==========================================================================
@@ -128,7 +132,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns the current record.
-    const record& current() const {
+    const record_type& current() const {
       return current_rec;
     }
 

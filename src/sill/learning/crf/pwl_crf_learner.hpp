@@ -6,7 +6,7 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/concepts.hpp>
+//#include <sill/factor/concepts.hpp>
 #include <sill/iterator/subset_iterator.hpp>
 #include <sill/learning/crf/pwl_crf_weights.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
@@ -27,7 +27,7 @@ namespace sill {
   struct pwl_crf_learner_parameters
     : public pwl_crf_weights_parameters<FactorType> {
 
-    concept_assert((sill::LearnableCRFfactor<FactorType>));
+    //    concept_assert((sill::LearnableCRFfactor<FactorType>));
 
     typedef pwl_crf_weights_parameters<FactorType> base;
 
@@ -92,7 +92,7 @@ namespace sill {
   template <typename FactorType>
   class pwl_crf_learner {
 
-    concept_assert((sill::LearnableCRFfactor<FactorType>));
+    //    concept_assert((sill::LearnableCRFfactor<FactorType>));
 
     // Public classes
     //==========================================================================
@@ -263,7 +263,7 @@ namespace sill {
      * If learning a tree, go ahead and learn it.
      * Otherwise, fill queue with potential edges and their scores.
      */
-    void init(const dataset& ds,
+    void init(const dataset<>& ds,
               const output_domain_type& Yvars) {
       assert(params.valid());
       boost::mt11213b rng(params.random_seed);
@@ -376,7 +376,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     pwl_crf_learner
-    (const dataset& ds, const output_domain_type& Yvars,
+    (const dataset<>& ds, const output_domain_type& Yvars,
      const crf_X_mapping<crf_factor>& X_mapping,
      parameters params = parameters())
       : params(params), weight_functor_(ds, Yvars, X_mapping, 0, params),
@@ -450,7 +450,7 @@ namespace sill {
     choose_lambda
     (vec& means, vec& stderrs,
      const std::vector<crf_factor_reg_type>& reg_params,
-     size_t n_folds, const dataset& ds, const output_domain_type& Yvars,
+     size_t n_folds, const dataset<>& ds, const output_domain_type& Yvars,
      const crf_X_mapping<crf_factor>& X_mapping,
      const typename crf_factor::parameters& params,
      unsigned random_seed = time(NULL)) {
@@ -463,11 +463,11 @@ namespace sill {
       stderrs.zeros();
       boost::mt11213b rng(random_seed);
       std::vector<output_variable_type*> Yvector(Yvars.begin(), Yvars.end());
-      dataset_view permuted_view(ds);
+      dataset_view<> permuted_view(ds);
       permuted_view.set_record_indices(randperm(ds.size(), rng));
       typename crf_factor::parameters tmp_params(params);
-      dataset_view fold_train_view(permuted_view);
-      dataset_view fold_test_view(permuted_view);
+      dataset_view<> fold_train_view(permuted_view);
+      dataset_view<> fold_test_view(permuted_view);
       fold_train_view.save_record_view();
       fold_test_view.save_record_view();
       // For each fold
@@ -526,7 +526,7 @@ namespace sill {
     choose_lambda_fancy
     (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
      const crossval_parameters& cv_params,
-     const dataset& ds, const output_domain_type& Yvars,
+     const dataset<>& ds, const output_domain_type& Yvars,
      const crf_X_mapping<crf_factor>& X_mapping,
      const typename crf_factor::parameters& params,
      unsigned random_seed = time(NULL)) {

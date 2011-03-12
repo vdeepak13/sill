@@ -191,6 +191,10 @@ namespace sill {
     //==========================================================================
   public:
 
+    typedef dense_linear_algebra<> la_type;
+
+    typedef record<la_type> record_type;
+
     //! Optimization variables (which fit the OptimizationVector concept).
     //! These are the regression weights: y ~ Ax + b
     struct opt_vector {
@@ -609,7 +613,7 @@ namespace sill {
 
     //! Learn stuff.
     //! @param  own_data  Set to false if using outside Ydata,Xdata.
-    void init(const dataset& ds, bool own_data);
+    void init(const dataset<la_type>& ds, bool own_data);
 
     //! Take one step of gradient descent.
     //! @return  true iff learner may be trained further (and has not converged)
@@ -641,7 +645,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     explicit linear_regression
-    (const dataset& ds,
+    (const dataset<la_type>& ds,
      linear_regression_parameters params = linear_regression_parameters())
       : params(params),
         Yvec(ds.vector_class_variables()), Yvec_size(vector_size(Yvec)),
@@ -670,7 +674,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     linear_regression
-    (const dataset& ds, const mat& Ydata, const mat& Xdata,
+    (const dataset<la_type>& ds, const mat& Ydata, const mat& Xdata,
      linear_regression_parameters params = linear_regression_parameters())
       : params(params),
         Yvec(ds.vector_class_variables()), Yvec_size(vector_size(Yvec)),
@@ -693,7 +697,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     linear_regression
-    (const dataset& ds, const vector_var_vector& Yvec,
+    (const dataset<la_type>& ds, const vector_var_vector& Yvec,
      const vector_var_vector& Xvec,
      linear_regression_parameters params = linear_regression_parameters())
       : params(params), Yvec(Yvec), Yvec_size(vector_size(Yvec)),
@@ -723,7 +727,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     explicit linear_regression
-    (const dataset& ds, const vector_var_vector& Yvec,
+    (const dataset<la_type>& ds, const vector_var_vector& Yvec,
      const vector_var_vector& Xvec, const mat& Ydata, const mat& Xdata,
      linear_regression_parameters params = linear_regression_parameters())
       : params(params), Yvec(Yvec), Yvec_size(vector_size(Yvec)),
@@ -964,8 +968,9 @@ namespace sill {
 
     //! Predict the output values y for a new example x.
     //! The values are in the order returned by Yvector().
-    vec predict(const record& example) const {
-      vector_record2vector(example, Xvec, tmpx);
+    vec predict(const record_type& example) const {
+//      vector_record2vector(example, Xvec, tmpx);
+      example.vector_values(tmpx, Xvec);
       return (weights_.A * tmpx + weights_.b);
     }
 
@@ -978,14 +983,15 @@ namespace sill {
 
     //! Compute the mean squared error on the given data.
     //! @return <mean, std error>
-    std::pair<double, double> mean_squared_error(const dataset& testds) const {
+    std::pair<double, double> mean_squared_error(const dataset<la_type>& testds) const {
       double s(0);
       double s2(0);
       double totalw(0);
       size_t i(0);
       vec tmpy(Yvec_size, 0.);
-      foreach(const record& r, testds.records()) {
-        vector_record2vector(r, Yvec, tmpy);
+      foreach(const record_type& r, testds.records()) {
+//        vector_record2vector(r, Yvec, tmpy);
+        r.vector_values(tmpy, Yvec);
         tmpy -= predict(r);
         double tmpval(testds.weight(i) * inner_prod(tmpy, tmpy));
         totalw += testds.weight(i);
@@ -1011,15 +1017,16 @@ namespace sill {
      * @todo Support weighted datasets!
      */
     std::pair<double, double>
-    median_squared_error(const dataset& testds) const {
+    median_squared_error(const dataset<la_type>& testds) const {
       assert(!testds.is_weighted());
       if (testds.size() == 0)
         return std::make_pair(0., 0.);
       std::vector<double> errors(testds.size(), 0.);
       size_t i(0);
       vec tmpy(Yvec_size, 0.);
-      foreach(const record& r, testds.records()) {
-        vector_record2vector(r, Yvec, tmpy);
+      foreach(const record_type& r, testds.records()) {
+//        vector_record2vector(r, Yvec, tmpy);
+        r.vector_values(tmpy, Yvec);
         tmpy -= predict(r);
         double tmpval(inner_prod(tmpy, tmpy));
         errors[i] = tmpval;
@@ -1098,7 +1105,7 @@ namespace sill {
     choose_lambda_easy
     (const vector_var_vector& Yvec, const vector_var_vector& Xvec,
      const linear_regression_parameters& lr_params,
-     const dataset& ds, unsigned random_seed = time(NULL));
+     const dataset<la_type>& ds, unsigned random_seed = time(NULL));
 
     /**
      * This is identical to the other choose_lambda_easy(), except that Y, X are
@@ -1116,7 +1123,7 @@ namespace sill {
     static double
     choose_lambda_easy
     (const linear_regression_parameters& lr_params,
-     const dataset& ds, unsigned random_seed = time(NULL));
+     const dataset<la_type>& ds, unsigned random_seed = time(NULL));
 
     /**
      * Choose the regularization parameter lambda via brute-force
@@ -1148,7 +1155,7 @@ namespace sill {
      const vector_var_vector& Yvec, const vector_var_vector& Xvec,
      size_t n_folds, const vec& lambdas,
      const linear_regression_parameters& lr_params,
-     size_t zoom, const dataset& ds, unsigned random_seed = time(NULL));
+     size_t zoom, const dataset<la_type>& ds, unsigned random_seed = time(NULL));
 
     /**
      * Choose the regularization parameter lambda for via LOOCV,
@@ -1180,7 +1187,7 @@ namespace sill {
     (vec& all_lambdas, vec& scores, vec& stderrs,
      const vector_var_vector& Yvec, const vector_var_vector& Xvec,
      const vec& lambdas, const linear_regression_parameters& lr_params,
-     size_t zoom, const dataset& ds, bool return_regressor,
+     size_t zoom, const dataset<la_type>& ds, bool return_regressor,
      unsigned random_seed = time(NULL));
 
     // Debugging methods

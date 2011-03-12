@@ -83,14 +83,14 @@ int main(int argc, char** argv) {
 
   // Generate a dataset
   cout << "Sampling " << (ntrain+ntest) << " samples from the model" << endl;
-  vector_assignment_dataset ds(finite_var_vector(), YX, 
+  vector_assignment_dataset<> ds(finite_var_vector(), YX, 
                                std::vector<variable::variable_typenames>
                                (YX.size(), variable::VECTOR_VARIABLE));
   for (size_t i(0); i < ntrain; ++i) {
     vector_assignment fa(truth.sample(rng));
     ds.insert(assignment(fa));
   }
-  vector_assignment_dataset
+  vector_assignment_dataset<>
     test_ds(finite_var_vector(), YX, 
             std::vector<variable::variable_typenames>
             (YX.size(), variable::VECTOR_VARIABLE));
@@ -142,12 +142,12 @@ int main(int argc, char** argv) {
 
   // Compare the results.
   double joint_ll(0);
-  foreach(const record& r, ds.records()) {
+  foreach(const record<>& r, ds.records()) {
     joint_ll += truth.logv(r);
   }
   joint_ll /= ds.size();
   double true_ll(0);
-  foreach(const record& r, ds.records()) {
+  foreach(const record<>& r, ds.records()) {
     moment_gaussian mg(true_conditional.restrict
                        (r.assignment(make_domain<vector_variable>(X))));
     mg.normalize();
@@ -155,25 +155,25 @@ int main(int argc, char** argv) {
   }
   true_ll /= ds.size();
   double gcf_ll(0);
-  foreach(const record& r, ds.records()) {
+  foreach(const record<>& r, ds.records()) {
     canonical_gaussian cg(f1->condition(r));
     cg.normalize();
     gcf_ll += cg.logv(r);
   }
   gcf_ll /= ds.size();
   double cpl_ll(0);
-  foreach(const record& r, ds.records()) {
+  foreach(const record<>& r, ds.records()) {
     cpl_ll += cpl.current_model().log_likelihood(r);
   }
   cpl_ll /= ds.size();
 
   double joint_test_ll(0);
-  foreach(const record& r, test_ds.records()) {
+  foreach(const record<>& r, test_ds.records()) {
     joint_test_ll += truth.logv(r);
   }
   joint_test_ll /= test_ds.size();
   double true_test_ll(0);
-  foreach(const record& r, test_ds.records()) {
+  foreach(const record<>& r, test_ds.records()) {
     moment_gaussian mg(true_conditional.restrict
                        (r.assignment(make_domain<vector_variable>(X))));
     mg.normalize();
@@ -181,14 +181,14 @@ int main(int argc, char** argv) {
   }
   true_test_ll /= test_ds.size();
   double gcf_test_ll(0);
-  foreach(const record& r, test_ds.records()) {
+  foreach(const record<>& r, test_ds.records()) {
     canonical_gaussian cg(f1->condition(r));
     cg.normalize();
     gcf_test_ll += cg.logv(r);
   }
   gcf_test_ll /= test_ds.size();
   double cpl_test_ll(0);
-  foreach(const record& r, test_ds.records()) {
+  foreach(const record<>& r, test_ds.records()) {
     cpl_test_ll += cpl.current_model().log_likelihood(r);
   }
   cpl_test_ll /= test_ds.size();
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
    */
   gaussian_crf_factor tmp_gcf(true_conditional);
   double tmp_gcf_ll(0.);
-  foreach(const record& r, ds.records()) {
+  foreach(const record<>& r, ds.records()) {
     canonical_gaussian tmpcg(tmp_gcf.condition(r));
     tmp_gcf_ll += tmpcg.normalize().logv(r);
   }

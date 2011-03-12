@@ -47,9 +47,9 @@ int main(int argc, char* argv[]) {
   syn_oracle_bayes_net<table_factor>::parameters bn_oracle_params;
   bn_oracle_params.random_seed = random_seed2;
   syn_oracle_bayes_net<table_factor> bn_oracle(bn, bn_oracle_params);
-  boost::shared_ptr<vector_dataset>
-    ds_ptr(oracle2dataset<vector_dataset>(bn_oracle,n_records));
-  dataset_statistics stats(*ds_ptr);
+  vector_dataset<> ds;
+  oracle2dataset(bn_oracle, n_records, ds);
+  dataset_statistics<> stats(ds);
 
   // Create an initial model
   bool use_estimates = false;

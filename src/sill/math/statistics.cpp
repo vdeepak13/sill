@@ -67,6 +67,32 @@ namespace sill {
     return std::make_pair(median, sorted[median_i]);
   }
 
+  namespace statistics {
+
+    std::string generalized_mean_string(generalized_mean_enum gm) {
+      switch (gm) {
+      case MEAN:
+        return "mean";
+      case MEDIAN:
+        return "median";
+      default:
+        assert(false); return "";
+      }
+    }
+
+    std::string generalized_deviation_string(generalized_mean_enum gm) {
+      switch (gm) {
+      case MEAN:
+        return "stderr";
+      case MEDIAN:
+        return "MAD";
+      default:
+        assert(false); return "";
+      }
+    }
+
+  } // namespace statistics
+
   // Order statistics
   //============================================================================
 

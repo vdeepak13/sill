@@ -9,7 +9,7 @@ namespace sill {
     //==========================================================================
 
     std::vector<boost::tuple<size_t, size_t, size_t, size_t> >
-    sliding_windows::predict(record& example) const {
+    sliding_windows::predict(record_type& example) const {
       std::vector<boost::tuple<size_t, size_t, size_t, size_t> > windows;
       for (double scale = 1; ; scale /= params.scale) {
         // newrows, newcols are height, width of scaled image
@@ -45,7 +45,7 @@ namespace sill {
               // look at window (i,j,window_h,window_w) (after scaling)
               image::set_view(example, i, j, window_h, window_w,
                               scaleh, scalew);
-              record ex2;
+              record_type ex2;
               image::get_simple_view(example, ex2, params.vector_seq);
               if (base_classifier.predict_raw(ex2) > cutoff)
                 windows.push_back
@@ -62,9 +62,9 @@ namespace sill {
       return windows;
     }
 
-    std::vector<record>
-    sliding_windows::intensity_maps(record& example) const {
-      std::vector<record> pics;
+    std::vector<sliding_windows::record_type>
+    sliding_windows::intensity_maps(record_type& example) const {
+      std::vector<record_type> pics;
       for (double scale = 1; ; scale /= params.scale) {
         // newrows, newcols are height, width of scaled image
         size_t newrows = floor(image::true_height(example) * scale);
@@ -79,7 +79,7 @@ namespace sill {
         double scalew(((double)(newcols)/image::true_width(example)
                        + scale) / 2.);
         image::set_view(example, 0, 0, newrows, newcols, scaleh, scalew);
-        record pic(image::blank_image(example));
+        record_type pic(image::blank_image(example));
         size_t offset_h = (window_h - params.shift) / 2;
         size_t offset_w = (window_w - params.shift) / 2;
         if (params.image_records) {
@@ -106,7 +106,7 @@ namespace sill {
               // look at window (i,j,window_h,window_w) (after scaling)
               image::set_view(example, i, j, window_h, window_w,
                               scaleh, scalew);
-              record ex2;
+              record_type ex2;
               image::get_simple_view(example, ex2, params.vector_seq);
               double conf = base_classifier.predict_raw(ex2);
               for (size_t i2 = i + offset_h;

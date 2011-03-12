@@ -53,6 +53,8 @@ namespace sill {
     typedef typename base::optimization_vector optimization_vector;
     typedef typename base::regularization_type regularization_type;
 
+    typedef typename base::la_type la_type;
+
     //! Parameters used for learn_crf_factor().
     struct parameters {
     }; // struct parameters
@@ -125,14 +127,14 @@ namespace sill {
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
-    double v(const vector_assignment& a) const {
+    double v(const assignment_type& a) const {
       throw std::runtime_error
         ("mixture_crf_factor HAS LOTS OF UNIMPLEMENTED METHODS!");
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
-    double v(const vector_record& r) const {
+    double v(const record_type& r) const {
       throw std::runtime_error
         ("mixture_crf_factor HAS LOTS OF UNIMPLEMENTED METHODS!");
     }

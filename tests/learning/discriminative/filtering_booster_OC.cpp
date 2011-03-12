@@ -7,7 +7,7 @@
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/filtering_booster_OC.hpp>
 #include <sill/learning/discriminative/boosters.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/stump.hpp>
 #include <sill/learning/learn_factor.hpp>
 
@@ -32,23 +32,23 @@ int main(int argc, char* argv[]) {
 
   // Load a dataset to work with
   universe u;
-  boost::shared_ptr<vector_dataset> ds_ptr
-    = data_loader::load_symbolic_dataset<vector_dataset>
+  boost::shared_ptr<vector_dataset<> > ds_ptr
+    = data_loader::load_symbolic_dataset<vector_dataset<> >
     ("/Users/jbradley/data/uci/letter.sum", u, ntrain + ntest);
   
   ds_ptr->randomize(2987513);
-  dataset_view ds_train(*ds_ptr);
+  dataset_view<> ds_train(*ds_ptr);
   ds_train.set_record_range(0, ntrain);
-  dataset_view ds_test(*ds_ptr);
+  dataset_view<> ds_test(*ds_ptr);
   ds_test.set_record_range(ntrain, ntrain + ntest);
-  dataset_statistics stats_train(ds_train);
+  dataset_statistics<> stats_train(ds_train);
 
   finite_variable* class_var = ds_train.finite_class_variables().front();
   size_t class_var_index = ds_train.record_index(class_var);
   finite_variable* binary_var = u.new_finite_variable(2);
 
   cout << "Marginal (from training set) over class variable:\n"
-       << learn_marginal<table_factor>(make_domain(class_var), ds_train)
+       << learn_factor<table_factor>::learn_marginal(make_domain(class_var), ds_train)
        << endl;
 
   typedef stump<> wl_type;

@@ -86,7 +86,7 @@ namespace sill {
      * @param ds            Dataset to use for computing marginals.
      */
     chow_liu(const forward_range<typename F::variable_type*>& X_,
-             const dataset& ds, const parameters& params = parameters())
+             const dataset<>& ds, const parameters& params = parameters())
       : params(params) {
 
       typedef typename F::variable_type variable_type;
@@ -106,8 +106,8 @@ namespace sill {
           typename F::domain_type
             edge_dom(make_domain<variable_type>(X[i],X[j]));
           F f((params.lambda < 0 ?
-               learn_marginal<F>(edge_dom, ds) :
-               learn_marginal<F>(edge_dom, ds, params.lambda)));
+               learn_factor<F>::learn_marginal(edge_dom, ds) :
+               learn_factor<F>::learn_marginal(edge_dom, ds, params.lambda)));
           double mi(f.mutual_information(make_domain(X[i]), make_domain(X[j])));
           g.add_edge(X[i], X[j], std::make_pair(mi, f));
           if (params.retain_edge_score_mapping) {

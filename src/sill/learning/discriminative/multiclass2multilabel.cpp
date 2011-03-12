@@ -33,15 +33,15 @@ namespace sill {
         assert(false);
         return;
       }
-      vector_dataset orig_ds(ds.datasource_info());
-      dataset_view ds_view(orig_ds, true);
+      vector_dataset<la_type> orig_ds(ds.datasource_info());
+      dataset_view<la_type> ds_view(orig_ds, true);
       ds_view.set_merged_variables(orig_ds.finite_class_variables(),
                                    params.new_label);
       ds_light_view = ds_view.create_light_view();
       tmp_rec = ds_view[0];
     }
 
-    void multiclass2multilabel::build(const dataset& orig_ds) {
+    void multiclass2multilabel::build(const dataset<la_type>& orig_ds) {
       assert(params.valid());
       size_t new_label_size(1);
       for (size_t j = 0; j < labels_.size(); ++j)
@@ -51,10 +51,10 @@ namespace sill {
         assert(false);
         return;
       }
-      dataset_view ds_view(orig_ds, true);
+      dataset_view<la_type> ds_view(orig_ds, true);
       ds_view.set_merged_variables(orig_ds.finite_class_variables(),
                                    params.new_label);
-      dataset_statistics stats(ds_view);
+      dataset_statistics<la_type> stats(ds_view);
 
       boost::mt11213b rng(static_cast<unsigned>(params.random_seed));
       params.base_learner->random_seed
@@ -67,7 +67,7 @@ namespace sill {
     // Prediction methods
     //==========================================================================
 
-    void multiclass2multilabel::predict(const record& example, std::vector<size_t>& v) const {
+    void multiclass2multilabel::predict(const record_type& example, std::vector<size_t>& v) const {
       ds_light_view->convert_record(example, tmp_rec);
       size_t pred(base_learner->predict(tmp_rec));
       ds_light_view->revert_merged_value(pred, v);
@@ -78,7 +78,7 @@ namespace sill {
       ds_light_view->revert_merged_value(base_learner->predict(tmp_assign), v);
     }
 
-    void multiclass2multilabel::predict(const record& example, finite_assignment& a) const {
+    void multiclass2multilabel::predict(const record_type& example, finite_assignment& a) const {
       ds_light_view->convert_record(example, tmp_rec);
       ds_light_view->revert_merged_value(base_learner->predict(tmp_rec), a);
     }
@@ -88,7 +88,7 @@ namespace sill {
       ds_light_view->revert_merged_value(base_learner->predict(tmp_assign), a);
     }
 
-    std::vector<vec> multiclass2multilabel::marginal_probabilities(const record& example) const {
+    std::vector<vec> multiclass2multilabel::marginal_probabilities(const record_type& example) const {
       table_factor probs(probabilities(example));
       std::vector<vec> v(labels_.size());
       for (size_t j(0); j < labels_.size(); ++j) {
@@ -116,7 +116,7 @@ namespace sill {
       return v;
     }
 
-    table_factor multiclass2multilabel::probabilities(const record& example) const {
+    table_factor multiclass2multilabel::probabilities(const record_type& example) const {
       ds_light_view->convert_record(example, tmp_rec);
       return make_dense_table_factor(labels_,
                                      base_learner->probabilities(tmp_rec));
@@ -145,7 +145,7 @@ namespace sill {
       params.load(in, ds);
       ds_light_view->load(in, NULL, params.new_label);
       base_learner = load_multiclass_classifier(in, ds);
-      tmp_rec = record(ds.finite_numbering_ptr(), ds.vector_numbering_ptr(),
+      tmp_rec = record_type(ds.finite_numbering_ptr(), ds.vector_numbering_ptr(),
                        ds.vector_dim());
       return true;
     }

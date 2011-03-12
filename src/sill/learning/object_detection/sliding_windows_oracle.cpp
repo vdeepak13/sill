@@ -12,7 +12,7 @@ namespace sill {
       }
       if (!(image_records_)) {
         non_image_rec =
-          record(finite_numbering_ptr_, vector_numbering_ptr_, dvector);
+          record_type(finite_numbering_ptr_, vector_numbering_ptr_, dvector);
 //        if (class_variable_ != NULL)
 //          non_image_rec.finite().back() = label_;
       }
@@ -52,7 +52,7 @@ namespace sill {
     // Public methods
     //==========================================================================
 
-    const record& sliding_windows_oracle::current() const {
+    const sliding_windows_oracle::record_type& sliding_windows_oracle::current() const {
       if (image_records_) {
         return current_rec;
       } else {

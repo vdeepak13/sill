@@ -17,8 +17,8 @@
 
 namespace sill {
 
+  // Forward declaration
   class canonical_gaussian;
-  //  class gaussian_factor;
 
   /**
    * Implementation of a Gaussian factor in the moment form.
@@ -27,11 +27,13 @@ namespace sill {
    * \ingroup factor_types
    */
   class moment_gaussian : public gaussian_factor {
+
     friend class canonical_gaussian;
 
     // Public type declarations
     //==========================================================================
   public:
+
     //! implements Factor::collapse_type
     typedef moment_gaussian collapse_type;
 

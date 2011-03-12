@@ -38,7 +38,7 @@ namespace sill {
     // Protected methods
     //==========================================================================
 
-    void classifier_cascade::init(const dataset& rare_ds) {
+    void classifier_cascade::init(const dataset<la_type>& rare_ds) {
       assert(params.valid());
       assert(base_ds.comparable(common_o));
       rng.seed(static_cast<unsigned>(params.random_seed));
@@ -59,7 +59,7 @@ namespace sill {
     bool classifier_cascade::next_example() {
       size_t filter_count(0);
       while (common_o.next()) {
-        const record& r = common_o.current();
+        const record<la_type>& r = common_o.current();
         if (predict(r) != label(r))
           return true;
         ++filter_count;
@@ -110,7 +110,7 @@ namespace sill {
         }
 
       // Train a new classifier
-      dataset_statistics stats(base_ds);
+      dataset_statistics<la_type> stats(base_ds);
       if (base_classifiers.size() >= params.base_classifiers.size()) {
         params.base_classifiers.back()->random_seed
           (boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
@@ -214,7 +214,7 @@ namespace sill {
       }
     }
 
-    std::size_t classifier_cascade::predict(const record& example) const {
+    std::size_t classifier_cascade::predict(const record<la_type>& example) const {
       if (params.rare_class == 0) {
         for (size_t t = 0; t < base_classifiers.size(); ++t)
           if (base_classifiers[t]->predict_raw(example) > thresholds[t])

@@ -16,13 +16,13 @@ namespace sill {
    */
   template <typename T, typename Index = size_t>
   class sparse_vector
-    : public vector_base<T,Index> {
+    : public sparse_vector_i<T,Index> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef vector_base<T,Index> base;
+    typedef sparse_vector_i<T,Index> base;
 
     typedef typename base::value_type           value_type;
     typedef typename base::index_type           index_type;
@@ -80,20 +80,13 @@ namespace sill {
     //! elements.
     //! NOTE: This does NOT currently retain old values.
     void resize(index_type n, index_type k) {
-      this->n = n;
-      this->k = k;
+      this->n_ = n;
       indices_.resize(k);
       values_.resize(k);
     }
 
     // Getters and setters: values
     //==========================================================================
-
-    //! Set to all zeros.
-    void zeros() {
-      indices_.resize(0);
-      values_.resize(0);
-    }
 
     //! Return the index for the i^th non-zero element.
     index_type index(index_type i) const {
@@ -115,9 +108,24 @@ namespace sill {
       return values_[i];
     }
 
+    //! Indices of non-zeros.
+    const dense_vector_view<index_type,index_type> indices() const {
+      return dense_vector_view<index_type,index_type>(indices_);
+    }
+
+    //! Values of non-zeros.
+    const dense_vector_view<value_type,index_type> values() const {
+      return dense_vector_view<value_type,index_type>(values_);
+    }
+
     //! Get a const iterator to the beginning of the indices.
     const_index_iterator begin_indices() const {
       return indices_.begin();
+    }
+
+    //! Get a const iterator to the end of the indices.
+    const_index_iterator end_indices() const {
+      return indices_.end();
     }
 
     //! Get a const iterator to the beginning of the values.
@@ -125,14 +133,9 @@ namespace sill {
       return values_.begin();
     }
 
-    //! Indices of non-zeros.
-    const vector<index_type>& indices() const {
-      return indices_;
-    }
-
-    //! Values of non-zeros.
-    const vector<value_type>& values() const {
-      return values_;
+    //! Get a const iterator to the end of the values.
+    const_iterator end_values() const {
+      return values_.end();
     }
 
     // Utilities
@@ -151,6 +154,15 @@ namespace sill {
       for (index_type i(0); i < num_non_zeros(); ++i)
         out << index(i) << "(" << value(i) << ") ";
       out << "]";
+    }
+
+    // Operations
+    //==========================================================================
+
+    //! Set to all zeros.
+    void zeros() {
+      indices_.resize(0);
+      values_.resize(0);
     }
 
     // Protected data and methods

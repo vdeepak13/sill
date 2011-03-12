@@ -30,6 +30,10 @@ namespace sill {
                                CONJUGATE_GRADIENT_DIAG_PREC, LBFGS,
                                STOCHASTIC_GRADIENT };
 
+    //! Indicates whether the optimization method is stochastic
+    //! (requires an oracle).
+    static bool is_stochastic(real_optimizer_type rot);
+
   private:
 
     /**

@@ -23,13 +23,16 @@ namespace sill {
    * \todo Make this store the images it is given so it doesn't have to copy
    *       them on each next().
    */
-  class random_windows_oracle : public oracle {
-
-    typedef oracle base;
+  class random_windows_oracle : public oracle<dense_linear_algebra<> > {
 
     // Public types
     //==========================================================================
   public:
+
+    typedef dense_linear_algebra<> la_type;
+
+    typedef oracle<la_type> base;
+    typedef base::record_type record_type;
 
     /**
      * PARAMETERS
@@ -89,13 +92,13 @@ namespace sill {
     size_t window_w;
 
     //! Set of images
-    std::vector<record> images;
+    std::vector<record_type> images;
 
     //! Index into images, pointing to current image
     size_t images_i;
 
     //! Current record (used when params.image_records == false)
-    record current_rec;
+    record_type current_rec;
 
     //! Initialize oracle.
     void init();
@@ -115,7 +118,7 @@ namespace sill {
      * @param params     parameters
      */
     random_windows_oracle
-    (const std::vector<record>& images,
+    (const std::vector<record_type>& images,
      const vector_var_vector& var_order,
      size_t window_h, size_t window_w, parameters params = parameters())
       : base(finite_var_vector(), var_order,
@@ -130,7 +133,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns the current record.
-    const record& current() const;
+    const record_type& current() const;
 
     //! Increments the oracle to the next record.
     //! This returns true iff the operation was successful; false indicates

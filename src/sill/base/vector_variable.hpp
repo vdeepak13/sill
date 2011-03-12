@@ -5,9 +5,10 @@
 #include <set>
 #include <map>
 
-#include <sill/math/vector.hpp>
 #include <sill/base/variable.hpp>
+#include <sill/math/vector.hpp>
 #include <sill/serialization/serialize.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -23,17 +24,12 @@ namespace sill {
     //! The type of values taken on by a vector variable
     typedef vec value_type;
 
-    // Private data members
-    //==========================================================================
-  private:
-    //! The number of dimensions of this vector variable.
-    size_t size_;
-    
-
     // Public functions
     //==========================================================================
   public:
+
     vector_variable() { }
+
     //! Creates a vector variable with the given name and dimension
     vector_variable(const std::string& name, size_t size)
       : variable(name), size_(size) { }
@@ -75,7 +71,14 @@ namespace sill {
     //! process, the archive must be provided with the universe. 
     //! Otherwise the deserialization can be performed an attached universe.
     void load(iarchive& ar);
-    
+
+    // Private data members
+    //==========================================================================
+  private:
+
+    //! The number of dimensions of this vector variable.
+    size_t size_;
+
   }; // class vector_variable
 
   /**

@@ -1,3 +1,3 @@
 set(PRL_PARAMETER_SOURCES
-  gaussian
+#  gaussian
   PARENT_SCOPE)

@@ -6,10 +6,12 @@
 #include <boost/timer.hpp>
 
 #include <sill/factor/concepts.hpp>
+#include <sill/learning/crf/crf_parameter_learner_parameters.hpp>
+#include <sill/learning/crf/crf_validation_functor.hpp>
 #include <sill/learning/crossval_methods.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
-#include <sill/learning/validation/parameter_grid.hpp>
+#include <sill/learning/validation/validation_framework.hpp>
 #include <sill/math/permutations.hpp>
 #include <sill/math/is_finite.hpp>
 #include <sill/math/statistics.hpp>
@@ -17,136 +19,14 @@
 #include <sill/optimization/conjugate_gradient.hpp>
 #include <sill/optimization/gradient_descent.hpp>
 #include <sill/optimization/lbfgs.hpp>
-#include <sill/optimization/real_optimizer_builder.hpp>
 #include <sill/optimization/stochastic_gradient.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
 
-  /**
-   * Parameters for crf_parameter_learner.
-   *
-   * This allows easy parsing of command-line options via Boost Program Options.
-   *
-   * Usage: Create your own Options Description desc.
-   *        Call this struct's add_options() method with desc to add synthetic
-   *        model options to desc.
-   *        Parse the command line using the modified options description.
-   *        Pass this struct (which now holds the parsed options) to
-   *        crf_parameter_learner.
-   */
-  struct crf_parameter_learner_parameters {
-
-    // Optimization parameters
-    //==========================================================================
-
-    //! Optimization method.
-    real_optimizer_builder::real_optimizer_type opt_method;
-
-    //! Gradient method parameters.
-    gradient_method_parameters gm_params;
-
-    //! Conjugate gradient update method.
-    size_t cg_update_method;
-
-    //! L-BFGS M.
-    size_t lbfgs_M;
-
-    // Learning parameters
-    //==========================================================================
-
-    /**
-     * Regularization type:
-     *  - 0: none
-     *  - 2: L2 regularization (default)
-     */
-    size_t regularization;
-
-    /**
-     * Regularization parameters; see factor type for details and defaults.
-     * In general, these values should be proportional to the number of
-     * pseudoexamples to be represented by the regularization.
-     *
-     * Note: If the factor type requires k lambda values and this vector is of
-     *       length 1, then the 1 value is copied for all k lambdas.
-     *       Otherwise, if the length of lambdas does not fit the factor type,
-     *       an error is thrown.
-     *
-     * (default = 0)
-     */
-    vec lambdas;
-
-    /**
-     * Number of initial iterations of parameter learning to run.
-     *  (default = 0)
-     */
-    size_t init_iterations;
-
-    /**
-     * Time limit in seconds for initial iterations of parameter learning.
-     * If 0, there is no limit.
-     *  (default = 0)
-     */
-    size_t init_time_limit;
-
-    /**
-     * Amount of perturbation (Uniform[-perturb,perturb]) to use in choosing
-     * initial weights for the features.  Should be >= 0.
-     *  (default = 0)
-     */
-    double perturb;
-
-    // Other parameters
-    //==========================================================================
-
-    /**
-     * Random seed.
-     *  (default = time)
-     */
-    unsigned random_seed;
-
-    //! If true, do not use the share_computation option in computing the
-    //! objective, gradient, etc.
-    //!  (default = false)
-    bool no_shared_computation;
-
-    /**
-     * If true, this turns on the fixed_records option for the learned model.
-     * Note: You can turn this on yourself once you retrieve the learned model.
-     *  (default = false)
-     */
-    bool keep_fixed_records;
-
-    /**
-     * Print debugging info.
-     *  - 0: none (default)
-     *  - 1: fixed amount per construction; none per iteration
-     *  - 2: fixed amount per iteration
-     *  - 3: print info whenever objective, gradient, etc. routines are called
-     *  - higher: reverts to highest debugging mode
-     */
-    size_t debug;
-
-    // Methods
-    //==========================================================================
-
-    crf_parameter_learner_parameters()
-      : opt_method(real_optimizer_builder::CONJUGATE_GRADIENT),
-        regularization(2), lambdas(1,0), init_iterations(0),
-        init_time_limit(0), perturb(0), random_seed(time(NULL)),
-        no_shared_computation(false), keep_fixed_records(false), debug(0) { }
-
-    /**
-     * @param  print_warnings   If true, print warnings to STDERR about invalid
-     *                          options.
-     *                          (default = true)
-     *
-     * @return true iff the parameters are valid
-     */
-    bool valid(bool print_warnings = true) const;
-
-  }; // struct crf_parameter_learner_parameters
+  // Forward declarations
+  template <typename F> class crf_validation_functor;
 
   /**
    * This is a class which represents algorithms for learning a crf_model
@@ -167,11 +47,15 @@ namespace sill {
   template <typename F>
   class crf_parameter_learner {
 
-    concept_assert((LearnableCRFfactor<F>));
+//    concept_assert((LearnableCRFfactor<F>));
 
     // Public type declarations
     // =========================================================================
   public:
+
+    typedef dense_linear_algebra<> la_type;
+
+    typedef record<la_type> record_type;
 
     //! The type of potentials/factors.
     typedef F crf_factor;
@@ -200,7 +84,7 @@ namespace sill {
       cross_val_functor(const crf_model_type& crf_, size_t score_type)
         : crf_(crf_), score_type(score_type) { }
 
-      double operator()(const record& r) const {
+      double operator()(const record_type& r) const {
         switch(score_type) {
         case 0: // log likelihood
           return - crf_.log_likelihood(r);
@@ -452,12 +336,27 @@ namespace sill {
     }; // stochastic_everything_functor
 
     //! Types for optimization methods
-    typedef gradient_method<opt_variables,everything_functor,everything_functor> gradient_method_type;
-    typedef gradient_descent<opt_variables,everything_functor,everything_functor> gradient_descent_type;
-    typedef conjugate_gradient<opt_variables,everything_functor,everything_functor> conjugate_gradient_type;
-    typedef conjugate_gradient<opt_variables,everything_functor,everything_functor,everything_functor> prec_conjugate_gradient_type;
-    typedef lbfgs<opt_variables,everything_functor,everything_functor> lbfgs_type;
-    typedef stochastic_gradient<opt_variables,stochastic_everything_functor> stochastic_gradient_type;
+    typedef
+    gradient_method<opt_variables,everything_functor,everything_functor>
+    gradient_method_type;
+
+    typedef
+    gradient_descent<opt_variables,everything_functor,everything_functor>
+    gradient_descent_type;
+
+    typedef
+    conjugate_gradient<opt_variables,everything_functor,everything_functor>
+    conjugate_gradient_type;
+
+    typedef conjugate_gradient<opt_variables,everything_functor,
+                               everything_functor,everything_functor>
+    prec_conjugate_gradient_type;
+
+    typedef lbfgs<opt_variables,everything_functor,everything_functor>
+    lbfgs_type;
+
+    typedef stochastic_gradient<opt_variables,stochastic_everything_functor>
+    stochastic_gradient_type;
 
     // Private data members
     // =========================================================================
@@ -468,13 +367,13 @@ namespace sill {
     typename crf_factor::regularization_type regularization;
 
     //! Training dataset
-    const dataset& ds;
+    const dataset<la_type>& ds;
 
     //! Iterator for training dataset
-    mutable dataset::record_iterator ds_it;
+    mutable typename dataset<la_type>::record_iterator ds_it;
 
     //! Iterator at end of training dataset
-    dataset::record_iterator ds_end;
+    typename dataset<la_type>::record_iterator ds_end;
 
     //! The underlying CRF model.
     //! This is mutable to allow for evaluation of new weight values during
@@ -631,8 +530,9 @@ namespace sill {
       case real_optimizer_builder::STOCHASTIC_GRADIENT:
         {
           stochastic_gradient_parameters sg_params;
-          sg_params.step_multiplier =
-            std::exp(std::log(.0001) / params.init_iterations);
+          if (params.init_iterations != 0)
+            sg_params.step_multiplier =
+              std::exp(std::log(.0001) / params.init_iterations);
           stochastic_gradient_ptr =
             new stochastic_gradient_type
             (*stochastic_everything_functor_ptr, crf_.weights(), sg_params);
@@ -846,7 +746,7 @@ namespace sill {
 
       size_t i(unif_int(rng));
       ds_it.reset(i);
-      const record& r = *ds_it;
+      const record_type& r = *ds_it;
       crf_tmp_weights = crf_.weights();
       crf_.weights() = x;
       const decomposable<typename crf_factor::output_factor_type>& Ymodel =
@@ -993,7 +893,7 @@ namespace sill {
       crf_tmp_weights = crf_.weights();
       crf_.weights() = x;
       while (ds_it != ds_end) {
-        const record& rec = *ds_it;
+        const record_type& rec = *ds_it;
         const decomposable<typename crf_factor::output_factor_type>&
           Ymodel = crf_.condition(rec);
         obj -= ds.weight(i) * Ymodel.log_likelihood(rec);
@@ -1087,7 +987,7 @@ namespace sill {
 
       bool keep_weights;
 
-      const dataset& ds;
+      const dataset<la_type>& ds;
 
       size_t score_type;
 
@@ -1095,7 +995,7 @@ namespace sill {
 
       choose_lambda_helper
       (const crf_model_type& model, bool keep_weights,
-       const dataset& ds, size_t score_type, const parameters& params_)
+       const dataset<la_type>& ds, size_t score_type, const parameters& params_)
         : model(model), keep_weights(keep_weights), ds(ds),
           score_type(score_type), params_(params_) { }
 
@@ -1111,11 +1011,11 @@ namespace sill {
         stderrs.resize(lambdas.size());
         stderrs.zeros_memset();
         boost::mt11213b rng(random_seed);
-        dataset_view permuted_view(ds);
+        dataset_view<la_type> permuted_view(ds);
         permuted_view.set_record_indices(randperm(ds.size(), rng));
         parameters fold_params(params_);
-        dataset_view fold_train(permuted_view);
-        dataset_view fold_test(permuted_view);
+        dataset_view<la_type> fold_train(permuted_view);
+        dataset_view<la_type> fold_test(permuted_view);
         fold_train.save_record_view();
         fold_test.save_record_view();
         for (size_t fold(0); fold < n_folds; ++fold) {
@@ -1126,9 +1026,9 @@ namespace sill {
           fold_train.set_cross_validation_fold(fold, n_folds, false);
           fold_test.set_cross_validation_fold(fold, n_folds, true);
           // Make a hard copy of the training set for efficiency.
-          vector_assignment_dataset
+          vector_assignment_dataset<la_type>
             tmp_train_ds(fold_train.datasource_info(), fold_train.size());
-          foreach(const record& r, fold_train.records())
+          foreach(const record_type& r, fold_train.records())
             tmp_train_ds.insert(r);
           for (size_t k(0); k < lambdas.size(); ++k) {
             fold_params.lambdas = lambdas[k];
@@ -1197,7 +1097,7 @@ namespace sill {
      * Initializes a CRF model learner using the given graph structure.
      */
     crf_parameter_learner(const typename crf_model_type::crf_graph_type& graph,
-                          const dataset& ds,
+                          const dataset<la_type>& ds,
                           const parameters& params = parameters())
       : params(params),
         ds(ds), ds_it(ds.begin()), ds_end(ds.end()),
@@ -1222,7 +1122,7 @@ namespace sill {
      * @param keep_weights  If false, the model weights are re-initialized.
      */
     crf_parameter_learner(const crf_model_type& model,
-                          const dataset& ds,
+                          const dataset<la_type>& ds,
                           bool keep_weights,
                           const parameters& params = parameters())
       : params(params),
@@ -1385,15 +1285,12 @@ namespace sill {
      *                    algorithm parameters.
      *
      * @return  chosen regularization parameters
-     *
-     * @todo Change this to sort lambdas and do them in decreasing order,
-     *       using previous results to warm-start each optimization.
      */
     static
     vec choose_lambda
     (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
      const crossval_parameters& cv_params,
-     const crf_model_type& model, bool keep_weights, const dataset& ds,
+     const crf_model_type& model, bool keep_weights, const dataset<la_type>& ds,
      const parameters& params, size_t score_type, unsigned random_seed) {
       assert(score_type < 4);
       choose_lambda_helper clh(model, keep_weights, ds, score_type, params);
@@ -1429,21 +1326,79 @@ namespace sill {
      *                    algorithm parameters.
      *
      * @return  chosen regularization parameters
-     *
-     * @todo Change this to sort lambdas and do them in decreasing order,
-     *       using previous results to warm-start each optimization.
      */
     static
     vec choose_lambda
     (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
      const crossval_parameters& cv_params,
      const typename crf_model_type::crf_graph_type& structure,
-     const dataset& ds, const parameters& params, size_t score_type,
+     const dataset<la_type>& ds, const parameters& params, size_t score_type,
      unsigned random_seed) {
       crf_model_type model(structure);
       return choose_lambda(reg_params, means, stderrs,
                            cv_params, model, false, ds,
                            params, score_type, random_seed);
+    }
+
+
+    /**
+     * Choose regularization parameters via n-fold cross validation.
+     *
+     * @param cv_params   Parameters specifying how to do cross validation.
+     * @param model       CRF model on which to do parameter learning.
+     * @param keep_weights  If true, keep weights in model; if false, set to 0.
+     * @param ds          Training data.
+     * @param params      Parameters for this class.
+     * @param score_type  0: log likelihood, 1: per-label accuracy,
+     *                    2: all-or-nothing label accuracy,
+     *                    3: mean squared error
+     * @param random_seed This uses this random seed, not the one in the
+     *                    algorithm parameters.
+     *
+     * @return  chosen regularization parameters
+     */
+    static
+    vec
+    choose_lambda(const crossval_parameters& cv_params,
+                  const crf_model_type& model, bool keep_weights,
+                  const dataset<la_type>& ds, const parameters& params,
+                  size_t score_type, unsigned random_seed) {
+      assert(score_type == 0); // others not yet implemented
+      crf_validation_functor<F> crf_val_func(model, params, keep_weights);
+      validation_framework<la_type>
+        val_frame(ds, cv_params, crf_val_func, random_seed);
+      return val_frame.best_lambdas();
+    }
+
+    /**
+     * Choose regularization parameters via n-fold cross validation.
+     *
+     * @param cv_params   Parameters specifying how to do cross validation.
+     * @param structure   CRF structure.
+     * @param ds          Training data.
+     * @param params      Parameters for this class.
+     * @param score_type  0: log likelihood, 1: per-label accuracy,
+     *                    2: all-or-nothing label accuracy,
+     *                    3: mean squared error
+     * @param random_seed This uses this random seed, not the one in the
+     *                    algorithm parameters.
+     *
+     * @return  chosen regularization parameters
+     *
+     * WARNING: This version does not work with templated factors.
+     *          Use the above choose_lambda instead.
+     */
+    static
+    vec
+    choose_lambda(const crossval_parameters& cv_params,
+                  const typename crf_model_type::crf_graph_type& structure,
+                  const dataset<la_type>& ds, const parameters& params,
+                  size_t score_type, unsigned random_seed) {
+      assert(score_type == 0); // others not yet implemented
+      crf_validation_functor<F> crf_val_func(structure, params);
+      validation_framework<la_type>
+        val_frame(ds, cv_params, crf_val_func, random_seed);
+      return val_frame.best_lambdas();
     }
 
   }; // crf_parameter_learner

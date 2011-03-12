@@ -39,8 +39,8 @@ int main(int argc, char** argv) {
   mlr_params.init_iterations = 100;
   mlr_params.regularization = 0;
   mlr_params.lambda = .01;
-  mlr_params.method = 1;
-  mlr_params.convergence_zero = .01;
+  mlr_params.opt_method = real_optimizer_builder::CONJUGATE_GRADIENT;
+  mlr_params.gm_params.convergence_zero = .01;
   bool learn_tree = true;
   size_t debug_mode = 2;
   double edge_reg = 0;
@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 
   // Generate a dataset
   cout << "Sampling " << nsamples << " training samples from the model" << endl;
-  assignment_dataset ds(YX, vector_var_vector(),
+  assignment_dataset<> ds(YX, vector_var_vector(),
                         std::vector<variable::variable_typenames>
                         (YX.size(), variable::FINITE_VARIABLE));
   for (size_t i(0); i < nsamples; ++i) {

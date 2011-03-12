@@ -10,7 +10,7 @@
 #include <sill/learning/discriminative/logistic_regression.hpp>
 #include <sill/learning/discriminative/batch_booster.hpp>
 #include <sill/learning/discriminative/boosters.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/filtering_booster.hpp>
 #include <sill/learning/discriminative/stump.hpp>
 
@@ -36,16 +36,14 @@ int main(int argc, char* argv[]) {
   size_t niterations = 200;
   double random_seed = 340891347;
 
-  boost::shared_ptr<vector_dataset> ds_train_ptr
-    = oracle2dataset<vector_dataset>(knorm, ntrain);
-  boost::shared_ptr<vector_dataset> ds_test_ptr
-    = oracle2dataset<vector_dataset>(knorm, ntest);
-  vector_dataset& ds_train = *ds_train_ptr;
-  vector_dataset& ds_test = *ds_test_ptr;
-  dataset_statistics stats(ds_train);
+  vector_dataset<> ds_train;
+  oracle2dataset(knorm, ntrain, ds_train);
+  vector_dataset<> ds_test;
+  oracle2dataset(knorm, ntest, ds_test);
+  dataset_statistics<> stats(ds_train);
 
   typedef stump<> wl_type;
-  boost::shared_ptr<binary_classifier> wl_ptr(new wl_type());
+  boost::shared_ptr<binary_classifier<> > wl_ptr(new wl_type());
   std::vector<double> test_accuracies;
 
   typedef batch_booster<boosting::adaboost>

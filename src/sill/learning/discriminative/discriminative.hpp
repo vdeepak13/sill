@@ -4,9 +4,9 @@
 
 #include <algorithm>
 
-#include <sill/datastructure/concepts.hpp>
+//#include <sill/datastructure/concepts.hpp>
 #include <sill/functional.hpp>
-#include <sill/learning/discriminative/concepts.hpp>
+//#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>

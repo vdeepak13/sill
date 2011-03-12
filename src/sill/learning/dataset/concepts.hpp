@@ -13,8 +13,6 @@
 
 namespace sill {
 
-  class record;
-
   /**
    * Concept for a data source (online or batch source).
    */

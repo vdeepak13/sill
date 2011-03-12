@@ -97,7 +97,7 @@ namespace sill {
     //! Variables to include in learned model
     domain_type variables;
     //! marginal source
-    dataset_statistics& stats;
+    dataset_statistics<>& stats;
     //! Score used for structure search (same as in params)
     const decomposable_score<factor_type>& score;
     //! Types of moves allowed in search
@@ -145,7 +145,7 @@ namespace sill {
      * @param allowed_moves    types of moves allowed in search
      * @param initial_model    initial structure
      */
-    decomposable_search(const domain_type& variables, dataset_statistics& stats,
+    decomposable_search(const domain_type& variables, dataset_statistics<>& stats,
                         const decomposable_score<factor_type>& score,
                         const std::vector<decomposable_move_type*>&
                         allowed_moves,

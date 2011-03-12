@@ -258,7 +258,7 @@ namespace sill {
   }
 
   logarithmic<double>
-  canonical_gaussian::operator()(const vector_record& r) const {
+  canonical_gaussian::operator()(const record_type& r) const {
     return logarithmic<double>(logv(r), log_tag());
   }
 
@@ -270,7 +270,7 @@ namespace sill {
     return - 0.5*inner_prod(v, lambda*v) + inner_prod(v, eta) + log_mult;
   }
 
-  double canonical_gaussian::logv(const vector_record& r) const {
+  double canonical_gaussian::logv(const record_type& r) const {
     if (eta.size() == 0)
       return 0;
     vec v(eta.size(), 0.);
@@ -331,7 +331,7 @@ namespace sill {
   } // restrict(a)
 
   void canonical_gaussian::
-  restrict(canonical_gaussian& f, const vector_record& r,
+  restrict(canonical_gaussian& f, const record_type& r,
            const vector_domain& r_vars, bool strict) const {
     // Determine the retained (x) and the restricted variables (y)
     vector_var_vector x, y;

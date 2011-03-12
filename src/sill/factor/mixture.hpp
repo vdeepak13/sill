@@ -46,6 +46,7 @@ namespace sill {
     typedef typename F::domain_type domain_type;
 
     typedef typename F::var_vector_type var_vector_type;
+    typedef typename F::var_map_type    var_map_type;
 
     //! The result of a collapse operation
     typedef mixture collapse_type;

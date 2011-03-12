@@ -22,7 +22,7 @@ namespace sill {
       }
       if (!(params.image_records)) {
         current_rec =
-          record(finite_numbering_ptr_, vector_numbering_ptr_, dvector);
+          record_type(finite_numbering_ptr_, vector_numbering_ptr_, dvector);
       }
       if (params.class_variable != NULL) {
         size_t class_var_index = images.front().finite_numbering_ptr->size();
@@ -43,7 +43,7 @@ namespace sill {
     // Public methods
     //==========================================================================
 
-    const record& random_windows_oracle::current() const {
+  const random_windows_oracle::record_type& random_windows_oracle::current() const {
       if (params.image_records)
         return images[images_i];
       else
@@ -53,7 +53,7 @@ namespace sill {
     bool random_windows_oracle::next() {
       // Choose an image
       images_i = (size_t)(uniform_int(rng));
-      record& img = images[images_i];
+      record_type& img = images[images_i];
       // Choose a scaling
       double min_scale(std::max((double)(window_h) / image::true_height(img),
                                 (double)(window_w) / image::true_width(img)));

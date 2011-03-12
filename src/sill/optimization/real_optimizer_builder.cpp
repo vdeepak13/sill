@@ -3,6 +3,21 @@
 
 namespace sill {
 
+  bool real_optimizer_builder::is_stochastic(real_optimizer_type rot) {
+    switch (rot) {
+    case GRADIENT_DESCENT:
+    case CONJUGATE_GRADIENT:
+    case CONJUGATE_GRADIENT_DIAG_PREC:
+    case LBFGS:
+      return false;
+    case STOCHASTIC_GRADIENT:
+      return true;
+    default:
+      assert(false);
+      return false;
+    }
+  }
+
   real_optimizer_builder::real_optimizer_type
   real_optimizer_builder::method() const {
     if (method_string == "gradient_descent") {

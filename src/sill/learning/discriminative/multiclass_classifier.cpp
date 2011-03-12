@@ -15,7 +15,7 @@ namespace sill {
       return label_->size();
     }
 
-    std::pair<double, double> multiclass_classifier::test_log_likelihood(const dataset& testds,
+    std::pair<double, double> multiclass_classifier::test_log_likelihood(const dataset<la_type>& testds,
                                                   double base) const {
       if (testds.size() == 0) {
         std::cerr << "multiclass_classifier::test_log_likelihood() called with"
@@ -25,10 +25,10 @@ namespace sill {
       }
       double loglike(0);
       double stddev(0);
-      dataset::record_iterator testds_end = testds.end();
-      for (dataset::record_iterator testds_it = testds.begin();
+      dataset<la_type>::record_iterator testds_end = testds.end();
+      for (dataset<la_type>::record_iterator testds_it = testds.begin();
            testds_it != testds_end; ++testds_it) {
-        const record& example = *testds_it;
+        const record_type& example = *testds_it;
         double ll(probabilities(example)[label(example)]);
         if (ll == 0) {
           loglike = - std::numeric_limits<double>::infinity();
@@ -49,7 +49,7 @@ namespace sill {
       return std::make_pair(loglike, stddev);
     }
 
-    std::pair<double, double> multiclass_classifier::test_log_likelihood(oracle& o, size_t n,
+    std::pair<double, double> multiclass_classifier::test_log_likelihood(oracle<la_type>& o, size_t n,
                                                   double base) const {
       size_t cnt(0);
       double loglike(0);
@@ -57,7 +57,7 @@ namespace sill {
       while (cnt < n) {
         if (!(o.next()))
           break;
-        const record& example = o.current();
+        const record_type& example = o.current();
         double ll(probabilities(example)[label(example)]);
         if (ll == 0) {
           loglike = - std::numeric_limits<double>::infinity();
@@ -87,7 +87,7 @@ namespace sill {
     // Prediction methods
     //==========================================================================
 
-    vec multiclass_classifier::confidences(const record& example) const {
+    vec multiclass_classifier::confidences(const record_type& example) const {
       vec v(nclasses(), -1);
       size_t j(predict(example));
       v[j] = 1;
@@ -101,7 +101,7 @@ namespace sill {
       return v;
     }
 
-    vec multiclass_classifier::probabilities(const record& example) const {
+    vec multiclass_classifier::probabilities(const record_type& example) const {
       vec v(nclasses(), 0);
       size_t j(predict(example));
       v[j] = 1;

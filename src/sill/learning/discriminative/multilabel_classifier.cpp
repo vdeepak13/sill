@@ -14,25 +14,25 @@ namespace sill {
       return v;
     }
 
-    void multilabel_classifier::label(const dataset& ds, size_t i, std::vector<size_t>& v) const {
+    void multilabel_classifier::label(const dataset<la_type>& ds, size_t i, std::vector<size_t>& v) const {
       v.resize(labels_.size());
       for (size_t j = 0; j < labels_.size(); ++j)
         v[j] = ds.finite(i,label_indices_[j]);
     }
 
-    void multilabel_classifier::label(const dataset& ds, size_t i, vec& v) const {
+    void multilabel_classifier::label(const dataset<la_type>& ds, size_t i, vec& v) const {
       v.resize(labels_.size());
       for (size_t j = 0; j < labels_.size(); ++j)
         v[j] = ds.finite(i,label_indices_[j]);
     }
 
-    void multilabel_classifier::label(const record& r, std::vector<size_t>& v) const {
+    void multilabel_classifier::label(const record_type& r, std::vector<size_t>& v) const {
       v.resize(labels_.size());
       for (size_t j = 0; j < labels_.size(); ++j)
         v[j] = r.finite(label_indices_[j]);
     }
 
-    void multilabel_classifier::label(const record& r, vec& v) const {
+    void multilabel_classifier::label(const record_type& r, vec& v) const {
       v.resize(labels_.size());
       for (size_t j = 0; j < labels_.size(); ++j)
         v[j] = r.finite(label_indices_[j]);
@@ -57,7 +57,7 @@ namespace sill {
         fa[labels_[j]] = r[label_indices_[j]];
     }
 
-    vec multilabel_classifier::test_accuracy(const dataset& testds) const {
+    vec multilabel_classifier::test_accuracy(const dataset<la_type>& testds) const {
       vec test_acc(nlabels(), 0);
       if (testds.size() == 0) {
         std::cerr << "multilabel_classifier::test_accuracy() called with an"
@@ -65,11 +65,11 @@ namespace sill {
         assert(false);
         return test_acc;
       }
-      dataset::record_iterator testds_end = testds.end();
+      dataset<la_type>::record_iterator testds_end = testds.end();
       std::vector<size_t> truth;
-      for (dataset::record_iterator testds_it = testds.begin();
+      for (dataset<la_type>::record_iterator testds_it = testds.begin();
            testds_it != testds_end; ++testds_it) {
-        const record& example = *testds_it;
+        const record_type& example = *testds_it;
         std::vector<size_t> pred(predict(example));
         label(example, truth);
         for (size_t j(0); j < labels_.size(); ++j)
@@ -81,7 +81,7 @@ namespace sill {
       return test_acc;
     }
 
-    std::pair<double, double> multilabel_classifier::test_log_likelihood(const dataset& testds,
+    std::pair<double, double> multilabel_classifier::test_log_likelihood(const dataset<la_type>& testds,
                                                   double base) const {
       if (testds.size() == 0) {
         std::cerr << "multilabel_classifier::test_log_likelihood() called with"
@@ -91,11 +91,11 @@ namespace sill {
       }
       double loglike(0);
       double stddev(0);
-      dataset::record_iterator testds_end = testds.end();
+      dataset<la_type>::record_iterator testds_end = testds.end();
       finite_assignment fa;
-      for (dataset::record_iterator testds_it = testds.begin();
+      for (dataset<la_type>::record_iterator testds_it = testds.begin();
            testds_it != testds_end; ++testds_it) {
-        const record& example = *testds_it;
+        const record_type& example = *testds_it;
         assign_labels(example.finite(), fa);
         double ll(probabilities(example).v(fa));
         if (ll == 0) {
@@ -120,7 +120,7 @@ namespace sill {
     // Prediction methods
     //==========================================================================
 
-    std::vector<size_t> multilabel_classifier::predict(const record& example) const {
+    std::vector<size_t> multilabel_classifier::predict(const record_type& example) const {
       std::vector<size_t> preds(labels_.size());
       predict(example, preds);
       return preds;
@@ -132,7 +132,7 @@ namespace sill {
       return preds;
     }
 
-    std::vector<vec> multilabel_classifier::confidences(const record& example) const {
+    std::vector<vec> multilabel_classifier::confidences(const record_type& example) const {
       std::vector<vec> c(labels_.size());
       std::vector<size_t> preds(predict(example));
       for (size_t j = 0; j < labels_.size(); ++j) {
@@ -153,7 +153,7 @@ namespace sill {
     }
 
     std::vector<vec>
-    multilabel_classifier::marginal_probabilities(const record& example) const {
+    multilabel_classifier::marginal_probabilities(const record_type& example) const {
       std::vector<vec> c(labels_.size());
       std::vector<size_t> preds(predict(example));
       for (size_t j = 0; j < labels_.size(); ++j) {
@@ -174,7 +174,7 @@ namespace sill {
       return c;
     }
 
-    table_factor multilabel_classifier::probabilities(const record& example) const {
+    table_factor multilabel_classifier::probabilities(const record_type& example) const {
       table_factor f(labels_, 0);
       finite_assignment fa;
       predict(example, fa);

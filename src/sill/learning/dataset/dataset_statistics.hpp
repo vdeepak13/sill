@@ -12,6 +12,7 @@
 #include <sill/range/concepts.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/learn_factor.hpp>
 
 #include <sill/range/algorithm.hpp>
 
@@ -37,19 +38,25 @@ namespace sill {
    * \ingroup learning_dataset
    * @todo Hold data in pointers to save space.
    * @todo Include distribution (or reference to it) in this class.
+   *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<double,size_t>)
    */
+  template <typename LA = dense_linear_algebra<> >
   class dataset_statistics {
 
     // Public type declarations
     //==========================================================================
   public:
 
+    typedef record<LA> record_type;
+
     // Protected data members
     //==========================================================================
   protected:
 
     //! The associated dataset.
-    const dataset& ds;
+    const dataset<LA>& ds;
 
     // Protected data members: order statistics
     //==========================================================================
@@ -67,12 +74,12 @@ namespace sill {
     struct order_stats_functor {
 
     private:
-      const dataset& ds;
+      const dataset<LA>& ds;
       size_t v;
 
     public:
       //! @param v  index for vector variable
-      order_stats_functor(const dataset& ds, size_t v) : ds(ds), v(v) { }
+      order_stats_functor(const dataset<LA>& ds, size_t v) : ds(ds), v(v) { }
 
       //! @return true iff record i comes before record j w.r.t. vector value v
       bool operator()(size_t i, size_t j) {
@@ -107,11 +114,11 @@ namespace sill {
     //==========================================================================
   public:
 
-    explicit dataset_statistics(const dataset& ds)
+    explicit dataset_statistics(const dataset<LA>& ds)
       : ds(ds) { }
 
     //! Return associated dataset.
-    const dataset& get_dataset() const { return ds; }
+    const dataset<LA>& get_dataset() const { return ds; }
 
     //! Free up space by clearing all saved statistics
     void clear_all() {
@@ -221,13 +228,134 @@ namespace sill {
 
     //! Return a vector of the minimum values of all vector variables in 'vars'.
     static vec
-    vector_var_min(const dataset& data, const vector_var_vector& vars);
+    vector_var_min(const dataset<LA>& data, const vector_var_vector& vars);
 
     //! Return a vector of the maximum values of all vector variables in 'vars'.
     static vec
-    vector_var_max(const dataset& data, const vector_var_vector& vars);
+    vector_var_max(const dataset<LA>& data, const vector_var_vector& vars);
 
   };  // class dataset_statistics
+
+  //============================================================================
+  // Implementations of methods in dataset_statistics
+  //============================================================================
+
+  // Public methods: order statistics
+  //==========================================================================
+
+  template <typename LA>
+  void dataset_statistics<LA>::compute_order_stats(size_t v) {
+    if (ds.empty())
+      return;
+    if (order_stats_.size() != ds.vector_dim())
+      order_stats_.resize(ds.vector_dim());
+    if (order_stats_[v].size() == ds.size())
+      return;
+    order_stats_[v].resize(ds.size());
+    for (size_t i = 0; i < ds.size(); i++)
+      order_stats_[v][i] = i;
+    std::sort(order_stats_[v].begin(), order_stats_[v].end(),
+              order_stats_functor(ds, v));
+  }
+
+  template <typename LA>
+  void dataset_statistics<LA>::compute_order_stats() {
+    if (ds.empty())
+      return;
+    for (size_t v = 0; v < ds.vector_dim(); v++)
+      compute_order_stats(v);
+  }
+
+  // Public methods: mutual information
+  //==========================================================================
+
+  template <typename LA>
+  void dataset_statistics<LA>::compute_mutual_info
+  (size_t i, size_t j, double smoothing) {
+    if (smoothing < 0)
+      smoothing = .01 / ds.size();
+    assert(i != j);
+    if (i > j) {
+      size_t k = i;
+      i = j;
+      j = k;
+    }
+    if (ds.empty())
+      return;
+    if (mutual_info_.size() != ds.num_finite() - 1)
+      mutual_info_.resize(ds.num_finite() - 1);
+    if (mutual_info_[i].size() == ds.num_finite() - i - 1)
+      mutual_info_[i].resize(ds.num_finite() - i - 1);
+    assert(i < ds.num_finite() && j < ds.num_finite());
+    finite_variable* vi = ds.finite_list()[i];
+    finite_variable* vj = ds.finite_list()[j];
+    table_factor fij
+      (learn_factor<table_factor>::learn_marginal
+       (make_domain<finite_variable>(vi, vj), ds, smoothing));
+    mutual_info_[i][j - i - 1] =
+      fij.mutual_information(make_domain(vi), make_domain(vj));
+  }
+
+  template <typename LA>
+  void dataset_statistics<LA>::compute_mutual_info(double smoothing) {
+    if (ds.empty())
+      return;
+    for (size_t i = 0; i < ds.num_finite() - 1; ++i)
+      for (size_t j = i+1; j < ds.num_finite(); ++j)
+        compute_mutual_info(i, j, smoothing);
+  }
+
+  // Public methods: marginals
+  //==========================================================================
+
+  template <typename LA>
+  const table_factor&
+  dataset_statistics<LA>::marginal(const finite_domain& d, double smoothing) const {
+    if (!(marginal_map.count(d)))
+      marginal_map[d] =
+        learn_factor<table_factor>::learn_marginal(d, ds, smoothing);
+    return marginal_map[d];
+  }
+
+  template <typename LA>
+  void dataset_statistics<LA>::clear_marginals() const {
+    marginal_map.clear();
+  }
+
+  // Public methods: min/max of each vector variable
+  //==========================================================================
+
+  template <typename LA>
+  vec
+  dataset_statistics<LA>::vector_var_min(const dataset<LA>& data,
+                                         const vector_var_vector& vars){
+    vec mins(vector_size(vars));
+    vec vals(mins.size());
+    foreach(const record_type& r, data.records()) {
+      r.vector_values(vals, vars);
+      for (size_t j(0); j < vals.size(); ++j) {
+        if (mins[j] > vals[j])
+          mins[j] = vals[j];
+      }
+    }
+    return mins;
+  }
+
+  template <typename LA>
+  vec
+  dataset_statistics<LA>::vector_var_max(const dataset<LA>& data,
+                                         const vector_var_vector& vars){
+    vec maxs(vector_size(vars));
+    vec vals(maxs.size());
+    foreach(const record_type& r, data.records()) {
+      r.vector_values(vals, vars);
+      for (size_t j(0); j < vals.size(); ++j) {
+        if (maxs[j] < vals[j])
+          maxs[j] = vals[j];
+      }
+    }
+    return maxs;
+  }
 
 } // namespace sill
 
