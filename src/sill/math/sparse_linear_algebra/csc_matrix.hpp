@@ -469,13 +469,6 @@ namespace sill {
 
   }; // class csc_matrix
 
-  template <typename T, typename Index>
-  std::ostream&
-  operator<<(std::ostream& out, const csc_matrix<T,Index>& mat) {
-    mat.print(out);
-    return out;
-  }
-
   namespace impl {
 
     // Definitions of impl methods declared above.

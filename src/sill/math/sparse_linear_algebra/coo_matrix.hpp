@@ -447,25 +447,6 @@ namespace sill {
 
   }; // class coo_matrix
 
-  // Free Functions: Definitions
-  //============================================================================
-
-  template <typename T, typename Index>
-  std::ostream&
-  operator<<(std::ostream& out, const coo_matrix<T,Index>& m) {
-    m.print(out);
-    return out;
-  }
-
-  /*
-  template <typename T, typename Index>
-  void
-  transpose(coo_matrix<T,Index>& mat) {
-    mat.row_indices().swap(mat.col_indices());
-    std::swap(mat.m_, mat.n_);
-  }
-  */
-
 }; // namespace sill
 
 #endif // #ifndef _SILL_COO_MATRIX_HPP_

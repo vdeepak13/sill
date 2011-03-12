@@ -57,6 +57,14 @@ namespace sill {
       return m_ * n_;
     }
 
+    // Utilities
+    //==========================================================================
+
+    //! Print to the given output stream.
+    virtual void print(std::ostream& out) const {
+      out << "[" << m_ << " x " << n_ << " matrix]";
+    }
+
     // Operators
     //==========================================================================
 
@@ -76,6 +84,13 @@ namespace sill {
     index_type n_;
 
   }; // class matrix_base
+
+  template <typename T, typename Index>
+  std::ostream&
+  operator<<(std::ostream& out, const matrix_base<T,Index>& mat) {
+    mat.print(out);
+    return out;
+  }
 
 } // namespace sill
 

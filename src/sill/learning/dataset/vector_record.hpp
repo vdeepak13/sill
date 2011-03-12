@@ -8,7 +8,7 @@
 #include <sill/base/stl_util.hpp>
 #include <sill/copy_ptr.hpp>
 #include <sill/learning/dataset/datasource_info_type.hpp>
-#include <sill/math/sparse_linear_algebra/linear_algebra_types.hpp>
+#include <sill/math/linear_algebra_types.hpp>
 
 #include <sill/macros_def.hpp>
 

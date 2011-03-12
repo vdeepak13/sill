@@ -28,6 +28,9 @@ namespace sill {
     typedef typename vector_type::value_type value_type;
     typedef typename vector_type::index_type index_type;
 
+    typedef vector<T>  dense_vector_type;
+    typedef matrix<T>  dense_matrix_type;
+
   };
 
   //! Dense linear algebra specification.
@@ -38,6 +41,9 @@ namespace sill {
     typedef csc_matrix<T,Index>     matrix_type;
     typedef typename vector_type::value_type value_type;
     typedef typename vector_type::index_type index_type;
+
+    typedef vector<T>  dense_vector_type;
+    typedef matrix<T>  dense_matrix_type;
 
   };
 
