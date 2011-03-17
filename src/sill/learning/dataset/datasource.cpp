@@ -77,10 +77,9 @@ namespace sill {
       fa[p.first] = findata[p.second];
   }
 
-  /*
-  void datasource::
-  convert_vector_record2assignment(const vec& vecdata,
-                                   vector_assignment& va) const {
+  void
+  datasource::convert_vector_record2assignment(const vec& vecdata,
+                                               vector_assignment& va) const {
     assert(vecdata.size() == dvector);
     va.clear();
     foreach(const vector_var_index_pair& p, *vector_numbering_ptr_) {
@@ -90,21 +89,12 @@ namespace sill {
       va[p.first] = tmpvec;
     }
   }
-  */
 
   void datasource::
   convert_finite_assignment2record(const finite_assignment& fa,
                                    std::vector<size_t>& findata) const {
     finite_assignment2vector(fa, finite_seq, findata);
   }
-
-  /*
-  void datasource::
-  convert_vector_assignment2record(const vector_assignment& va,
-                                   vec& vecdata) const {
-    vector_assignment2vector(va, vector_seq, vecdata);
-  }
-  */
 
   void datasource::add_finite_variable(finite_variable* v, bool make_class) {
     if (finite_vars.count(v))

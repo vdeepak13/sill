@@ -89,7 +89,7 @@ namespace sill {
   }
 
   void
-  table_factor::restrict(table_factor& f, const finite_assignment& a) const {
+  table_factor::restrict(const finite_assignment& a, table_factor& f) const {
     finite_var_vector retained;
     // More efficient set difference: the domain of the factor is
     // supposed to be small, but evidence size can be very large.
@@ -120,8 +120,14 @@ namespace sill {
   }
 
   void table_factor::
-  restrict(table_factor& f, const finite_assignment& a,
-           const finite_domain& a_vars, bool strict) const {
+  restrict(const finite_assignment& a, const finite_domain& a_vars,
+           table_factor& f) const {
+    this->restrict(a, a_vars, false, f);
+  }
+
+  void table_factor::
+  restrict(const finite_assignment& a, const finite_domain& a_vars,
+           bool strict, table_factor& f) const {
     finite_var_vector retained;
     // More efficient set difference: the domain of the factor is
     // supposed to be small, but evidence size can be very large.
@@ -131,7 +137,10 @@ namespace sill {
       else {
         if (a.find(v) == a.end()) {
           if (strict) {
-            throw std::invalid_argument("table_factor::restrict(f,a,a_vars,strict) was given strict=true, but intersect(f.arguments(), a_vars) contained a variable which did not appear in keys(a).");
+            throw std::invalid_argument
+              (std::string("table_factor::restrict(f,a,a_vars,strict)") +
+               " was given strict=true, but intersect(f.arguments(), a_vars)" +
+               " contained a variable which did not appear in keys(a).");
           }
           retained.push_back(v);
         }
@@ -160,7 +169,7 @@ namespace sill {
   } // restrict
 
   void
-  table_factor::restrict(table_factor& f, const finite_record& r) const {
+  table_factor::restrict(const finite_record& r, table_factor& f) const {
     finite_var_vector retained;
     // More efficient set difference: the domain of the factor is
     // supposed to be small, but evidence size can be very large.
@@ -191,8 +200,14 @@ namespace sill {
   } // restrict
 
   void table_factor::
-  restrict(table_factor& f, const finite_record& r,
-           const finite_domain& r_vars, bool strict) const {
+  restrict(const finite_record& r, const finite_domain& r_vars,
+           table_factor& f) const {
+    this->restrict(r, r_vars, false, f);
+  }
+
+  void table_factor::
+  restrict(const finite_record& r, const finite_domain& r_vars,
+           bool strict, table_factor& f) const {
     finite_var_vector retained;
     // More efficient set difference: the domain of the factor is
     // supposed to be small, but evidence size can be very large.
@@ -203,7 +218,7 @@ namespace sill {
         if (!r.has_variable(v)) {
           if (strict) {
             throw std::invalid_argument
-              (std::string("table_factor::restrict(f,r,r_vars,strict)") +
+              (std::string("table_factor::restrict(r,r_vars,strict,f)") +
                " was given strict=true, but intersect(f.arguments(), r_vars)" +
                " contained a variable which did not appear in keys(r).");
           }

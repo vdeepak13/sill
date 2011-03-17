@@ -11,11 +11,11 @@
 namespace sill {
 
   // Forward declarations
-  template <typename T, typename Index> class coo_matrix_view;
-  template <typename T, typename Index> class csc_matrix;
-  template <typename T, typename Index> class csc_matrix_view;
-  template <typename T, typename Index> class sparse_vector;
-  template <typename T, typename Index> class sparse_vector_view;
+  template <typename T, typename SizeType> class coo_matrix_view;
+  template <typename T, typename SizeType> class csc_matrix;
+  template <typename T, typename SizeType> class csc_matrix_view;
+  template <typename T, typename SizeType> class sparse_vector;
+  template <typename T, typename SizeType> class sparse_vector_view;
 
   /**
    * Sparse matrix class: Coordinate (COO) format
@@ -33,20 +33,20 @@ namespace sill {
    *  - The matrix can be built incrementally in an efficient way.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam Index    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., size_t).
    */
-  template <typename T, typename Index = size_t>
+  template <typename T, typename SizeType = size_t>
   class coo_matrix
-    : public matrix_base<T,Index> {
+    : public matrix_base<T,SizeType> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef matrix_base<T,Index> base;
+    typedef matrix_base<T,SizeType> base;
 
     typedef typename base::value_type           value_type;
-    typedef typename base::index_type           index_type;
+    typedef typename base::size_type           size_type;
     typedef typename base::const_iterator       const_iterator;
     typedef typename base::iterator             iterator;
     typedef typename base::const_index_iterator const_index_iterator;
@@ -64,40 +64,40 @@ namespace sill {
      * the reserved capacity for k non-zeros.
      * @param k  (default = 0)
      */
-    coo_matrix(index_type m, index_type n, index_type k = 0)
+    coo_matrix(size_type m, size_type n, size_type k = 0)
       : base(m,n), k_(k) {
       resize_data(k, false);
     }
 
     //! Constructor from another type.
-    template <typename OtherT, typename OtherIndex>
-    explicit coo_matrix(const coo_matrix<OtherT,OtherIndex>& other)
+    template <typename OtherT, typename OtherSizeType>
+    explicit coo_matrix(const coo_matrix<OtherT,OtherSizeType>& other)
       : base(other.num_rows(), other.num_cols()), k_(other.num_non_zeros()),
         row_indices_(other.row_indices()), col_indices_(other.col_indices()),
         values_(other.values()) {
     }
 
     //! Constructor from another type.
-    template <typename OtherT, typename OtherIndex>
-    explicit coo_matrix(const csc_matrix<OtherT,OtherIndex>& other)
+    template <typename OtherT, typename OtherSizeType>
+    explicit coo_matrix(const csc_matrix<OtherT,OtherSizeType>& other)
       : base(other.num_rows(), other.num_cols()), k_(other.num_non_zeros()),
         row_indices_(k_), col_indices_(k_), values_(k_) {
       this->operator=(other);
     }
 
     //! Assignment from a matrix in CSC format.
-    template <typename OtherT, typename OtherIndex>
-    coo_matrix& operator=(const csc_matrix<OtherT,OtherIndex>& other) {
+    template <typename OtherT, typename OtherSizeType>
+    coo_matrix& operator=(const csc_matrix<OtherT,OtherSizeType>& other) {
       base::operator=(other);
       k_ = other.num_non_zeros();
       row_indices_.resize(k_);
       col_indices_.resize(k_);
       values_.resize(k_);
-      index_type l(0);
-      for (index_type j(0); j < other.num_cols(); ++j) {
-        const sparse_vector_view<OtherT,OtherIndex>
+      size_type l(0);
+      for (size_type j(0); j < other.num_cols(); ++j) {
+        const sparse_vector_view<OtherT,OtherSizeType>
           other_col_j(other.column(j));
-        for (index_type i(0); i < other_col_j.num_non_zeros(); ++i) {
+        for (size_type i(0); i < other_col_j.num_non_zeros(); ++i) {
           row_indices_[l] = other_col_j.index(i);
           col_indices_[l] = j;
           values_[l] = other_col_j.value(i);
@@ -107,11 +107,26 @@ namespace sill {
       return *this;
     }
 
+    // Serialization
+    //==========================================================================
+
+    void save(oarchive& ar) const {
+      base::save(ar);
+      ar << row_indices_ << col_indices_ << values_;
+    }
+
+    void load(iarchive& ar) {
+      base::load(ar);
+      ar >> row_indices_ >> col_indices_ >> values_;
+    }
+
     // Getters and setters: dimensions
     //==========================================================================
 
     using base::num_cols;
+    using base::size1;
     using base::num_rows;
+    using base::size2;
     using base::size;
 
     /**
@@ -125,7 +140,7 @@ namespace sill {
      *                   space for non-zeros.
      *                   (default = false)
      */
-    void resize(index_type m, index_type n, index_type k = 0,
+    void resize(size_type m, size_type n, size_type k = 0,
                 bool copy_data = false) {
       if (m == m_ && n == n_ && k == k_)
         return;
@@ -146,7 +161,7 @@ namespace sill {
     }
 
     //! Number of spaces reserved for non-zeros.
-    index_type capacity() const {
+    size_type capacity() const {
       return row_indices_.size();
     }
 
@@ -155,7 +170,7 @@ namespace sill {
      * If cap > m * n, then this throws a std::invalid_argument exception.
      * If cap <= current capacity, then this does nothing.
      */
-    void reserve(index_type cap) {
+    void reserve(size_type cap) {
       if (cap <= capacity())
         return;
       if (cap > m_ * n_)
@@ -169,14 +184,14 @@ namespace sill {
 
     //! Return a mutable reference to A(i,j).
     //! This is NOT bound-checked.
-    value_type& operator()(index_type i, index_type j) {
+    value_type& operator()(size_type i, size_type j) {
       std::pair<bool, value_type*> found_val(find(i,j));
       if (found_val.first) {
         return *(found_val.second);
       } else {
         if (k_ >= capacity())
           reserve(k_ + 1);
-        index_type old_k(k_);
+        size_type old_k(k_);
         ++k_;
         row_indices_[old_k] = i;
         col_indices_[old_k] = j;
@@ -186,7 +201,7 @@ namespace sill {
 
     //! Return a mutable reference to A(i,j).
     //! This is NOT bound-checked.
-    value_type operator()(index_type i, index_type j) const {
+    value_type operator()(size_type i, size_type j) const {
       std::pair<bool, value_type*> found_val(find(i,j));
       if (found_val.first) {
         return *(found_val.second);
@@ -196,14 +211,14 @@ namespace sill {
     }
 
     //! Number of non-zero elements.
-    index_type num_non_zeros() const {
+    size_type num_non_zeros() const {
       return k_;
     }
 
     //! Sets the number of non-zero elements; this is helpful if building the
     //! matrix by directly inserting elements into row_indices, col_indices,
     //! and values.
-    void set_num_non_zeros(index_type new_k) {
+    void set_num_non_zeros(size_type new_k) {
       assert(new_k <= m_ * n_);
       if (k_ > row_indices_.size())
         resize_data(new_k, true);
@@ -211,30 +226,30 @@ namespace sill {
     }
 
     //! i^th row index.
-    index_type row_index(index_type i) const {
+    size_type row_index(size_type i) const {
       assert(i < k_);
       return row_indices_[i];
     }
 
     //! i^th column index.
-    index_type col_index(index_type i) const {
+    size_type col_index(size_type i) const {
       assert(i < k_);
       return col_indices_[i];
     }
 
     //! i^th non-zero value.
-    value_type value(index_type i) const {
+    value_type value(size_type i) const {
       assert(i < k_);
       return values_[i];
     }
 
     //! Row indices.
-    vector<index_type>& row_indices() {
+    vector<size_type>& row_indices() {
       return row_indices_;
     }
 
     //! Column indices.
-    vector<index_type>& col_indices() {
+    vector<size_type>& col_indices() {
       return col_indices_;
     }
 
@@ -244,12 +259,12 @@ namespace sill {
     }
 
     //! Row indices.
-    const vector<index_type>& row_indices() const {
+    const vector<size_type>& row_indices() const {
       return row_indices_;
     }
 
     //! Column indices.
-    const vector<index_type>& col_indices() const {
+    const vector<size_type>& col_indices() const {
       return col_indices_;
     }
 
@@ -277,9 +292,9 @@ namespace sill {
     }
 
     //! Return a vector of the number of non-zeros in each column.
-    vector<index_type> non_zeros_per_column() const {
-      vector<index_type> sizes(num_cols(), 0);
-      for (index_type k(0); k < num_non_zeros(); ++k)
+    vector<size_type> non_zeros_per_column() const {
+      vector<size_type> sizes(num_cols(), 0);
+      for (size_type k(0); k < num_non_zeros(); ++k)
         ++sizes[col_index(k)];
       return sizes;
     }
@@ -297,7 +312,7 @@ namespace sill {
      * Permute the columns of this matrix.
      * @param perm  Permutation: perm[i] = new column index for column i
      */
-    void permute_columns(const vector<index_type>& perm) {
+    void permute_columns(const vector<size_type>& perm) {
       if (perm.size() != num_cols()) {
         throw std::runtime_error
           (std::string("coo_matrix<T>::permute_columns(perm)") +
@@ -315,15 +330,15 @@ namespace sill {
      * This shifts the indices of other columns as necessary.
      * @return vector[i] = new column index for original column i
      */
-    vector<index_type> remove_all_zero_cols() {
-      vector<index_type> col_sizes(non_zeros_per_column());
+    vector<size_type> remove_all_zero_cols() {
+      vector<size_type> col_sizes(non_zeros_per_column());
       if (col_sizes.size() == 0)
         return col_sizes;
       // TO DO: Replace the below code with a prescan call.
-      index_type carry(col_sizes[0] != 0 ? 1 : 0);
+      size_type carry(col_sizes[0] != 0 ? 1 : 0);
       col_sizes[0] = 0;
-      for (index_type k(1); k < col_sizes.size(); ++k) {
-        index_type next_carry = (col_sizes[k] != 0 ? 1 : 0);
+      for (size_type k(1); k < col_sizes.size(); ++k) {
+        size_type next_carry = (col_sizes[k] != 0 ? 1 : 0);
         col_sizes[k] = col_sizes[k-1] + carry;
         carry = next_carry;
       }
@@ -341,7 +356,7 @@ namespace sill {
         const_iterator row_it = row_indices().begin();
         const_iterator col_it = col_indices().begin();
         const_iterator value_it = values().begin();
-        index_type i = 0;
+        size_type i = 0;
         while (row_it != row_indices().end()) {
           if (i == 0)
             out << "[";
@@ -372,9 +387,9 @@ namespace sill {
      *
      * This does not currently check bounds for the given indices.
      */
-    void reset_nocopy(index_type m, index_type n,
-                      vector<index_type>& new_row_indices,
-                      vector<index_type>& new_col_indices,
+    void reset_nocopy(size_type m, size_type n,
+                      vector<size_type>& new_row_indices,
+                      vector<size_type>& new_col_indices,
                       vector<value_type>& new_values) {
       k_ = new_row_indices.size();
       if (m * n < k_ ||
@@ -394,7 +409,7 @@ namespace sill {
     //! Set m,n,k by force.
     //! WARNING: Do not use this unless you know what you are doing!
     void
-    unsafe_set_mnk(index_type newm, index_type newn, index_type newk) {
+    unsafe_set_mnk(size_type newm, size_type newn, size_type newk) {
       m_ = newm;
       n_ = newn;
       k_ = newk;
@@ -408,26 +423,26 @@ namespace sill {
     using base::n_;
 
     //! Number of non-zero elements.
-    index_type k_;
+    size_type k_;
 
-    vector<index_type> row_indices_;
+    vector<size_type> row_indices_;
 
-    vector<index_type> col_indices_;
+    vector<size_type> col_indices_;
 
     vector<value_type> values_;
 
     //! Resize all vectors, copying the data.
-    void resize_data(index_type cap, bool copy_data) {
+    void resize_data(size_type cap, bool copy_data) {
       row_indices_.resize(cap, copy_data);
       col_indices_.resize(cap, copy_data);
       values_.resize(cap, copy_data);
     }
 
     //! Look for element A(i,j).  Return <found, pointer to value>.
-    std::pair<bool, const value_type*> find(index_type i, index_type j) const {
+    std::pair<bool, const value_type*> find(size_type i, size_type j) const {
       // TO DO: Update this when I add the option to sort the values
       //        by index.
-      for (index_type p(0); p < k_; ++p) {
+      for (size_type p(0); p < k_; ++p) {
         if ((row_indices_[p] == i) && (col_indices_[p] == j))
           return std::make_pair(true, &values_[p]);
       }
@@ -435,10 +450,10 @@ namespace sill {
     }
 
     //! Look for element A(i,j).  Return <found, pointer to value>.
-    std::pair<bool, value_type*> find(index_type i, index_type j) {
+    std::pair<bool, value_type*> find(size_type i, size_type j) {
       // TO DO: Update this when I add the option to sort the values
       //        by index.
-      for (index_type p(0); p < k_; ++p) {
+      for (size_type p(0); p < k_; ++p) {
         if ((row_indices_[p] == i) && (col_indices_[p] == j))
           return std::make_pair(true, &values_[p]);
       }

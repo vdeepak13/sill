@@ -12,6 +12,8 @@
 #include <iostream>
 #include <boost/numeric/conversion/bounds.hpp>
 
+#include <sill/math/operations.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -300,8 +302,7 @@ namespace sill {
   struct abs_difference : public std::binary_function<T, T, T>
   {
     T operator()(const T& a, const T& b) const {
-      using std::abs;
-      return abs(a - b);
+      return std::abs(a - b);
     }
   };
 
@@ -313,11 +314,10 @@ namespace sill {
   struct abs_difference_log : public std::binary_function<T, T, T>
   {
     T operator()(const T& a, const T& b) const {
-      using std::abs;
       using std::log;
       if((double(a)<=std::numeric_limits<double>::min()) || 
          (double(b)<=std::numeric_limits<double>::min())) return 0.0; 
-      else return abs(log(a) - log(b));
+      else return std::abs(log(a) - log(b));
     }
   };
 

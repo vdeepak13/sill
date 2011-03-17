@@ -360,10 +360,11 @@ namespace sill {
   namespace impl {
 
     //! Used for function sorted_indices(vec)
+    template <typename VecType>
     class sorted_indices_comparator {
-      const vec& v;
+      const VecType& v;
     public:
-      explicit sorted_indices_comparator(const vec& v) : v(v) { }
+      explicit sorted_indices_comparator(const VecType& v) : v(v) { }
       bool operator()(size_t a, size_t b) const { return (v[a] < v[b]); }
     }; // class sorted_indices_comparator
 
@@ -386,7 +387,27 @@ namespace sill {
 
   //! Given a vector of values, return a list of indices which give the values
   //! in increasing order.
-  std::vector<size_t> sorted_indices(const vec& v);
+  template <typename VecType>
+  std::vector<size_t> sorted_indices(const VecType& v) {
+    std::vector<size_t> ind(v.size());
+    for (size_t i(0); i < v.size(); ++i)
+      ind[i] = i;
+    impl::sorted_indices_comparator<VecType> comp(v);
+    std::sort(ind.begin(), ind.end(), comp);
+    return ind;
+  }
+
+  //! Given a vector of values, return a list of indices which give the values
+  //! in increasing order.
+  template <typename VecType, typename IndexVecType>
+  IndexVecType sorted_indices(const VecType& v) {
+    IndexVecType ind(v.size());
+    for (size_t i(0); i < v.size(); ++i)
+      ind[i] = i;
+    impl::sorted_indices_comparator<VecType> comp(v);
+    std::sort(ind.begin(), ind.end(), comp);
+    return ind;
+  }
 
   //! Given a vector of vecs, return a list of indices which give the vecs
   //! in lexigraphical order (increasing).

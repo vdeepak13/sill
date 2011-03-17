@@ -592,7 +592,16 @@ namespace sill {
 
     //! Restrict which stores the result in the given factor f.
     //! This avoids reallocation if f has been pre-allocated.
-    void restrict(table_factor& f, const finite_assignment& a) const;
+    void restrict(const finite_assignment& a, table_factor& f) const;
+
+    /**
+     * Restrict which stores the result in the given factor f.
+     * This avoids reallocation if f has been pre-allocated.
+     * @param a_vars  Only restrict away arguments of this factor which
+     *                appear in both keys(a) and a_vars.
+     */
+    void restrict(const finite_assignment& a, const finite_domain& a_vars,
+                  table_factor& f) const;
 
     /**
      * Restrict which stores the result in the given factor f.
@@ -601,14 +610,22 @@ namespace sill {
      *                appear in both keys(a) and a_vars.
      * @param strict  Require that all variables which are in
      *                intersect(f.arguments(), a_vars) appear in keys(a).
-     *                (default = false)
      */
-    void restrict(table_factor& f, const finite_assignment& a,
-                  const finite_domain& a_vars, bool strict = false) const;
+    void restrict(const finite_assignment& a, const finite_domain& a_vars,
+                  bool strict, table_factor& f) const;
 
     //! Restrict which stores the result in the given factor f.
     //! This avoids reallocation if f has been pre-allocated.
-    void restrict(table_factor& f, const finite_record& r) const;
+    void restrict(const finite_record& r, table_factor& f) const;
+
+    /**
+     * Restrict which stores the result in the given factor f.
+     * This avoids reallocation if f has been pre-allocated.
+     * @param r_vars  Only restrict away arguments of this factor which
+     *                appear in both keys(r) and r_vars.
+     */
+    void restrict(const finite_record& r, const finite_domain& r_vars,
+                  table_factor& f) const;
 
     /**
      * Restrict which stores the result in the given factor f.
@@ -617,10 +634,9 @@ namespace sill {
      *                appear in both keys(r) and r_vars.
      * @param strict  Require that all variables which are in
      *                intersect(f.arguments(), r_vars) appear in keys(r).
-     *                (default = false)
      */
-    void restrict(table_factor& f, const finite_record& r,
-                  const finite_domain& r_vars, bool strict = false) const;
+    void restrict(const finite_record& r, const finite_domain& r_vars,
+                  bool strict, table_factor& f) const;
 
     /**
      * Restrict which stores the result in the given factor f whose argument

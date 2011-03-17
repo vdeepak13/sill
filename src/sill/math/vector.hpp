@@ -62,8 +62,6 @@ namespace sill {
     typedef const T*        const_pointer;
     typedef const T*        const_iterator;
 
-    typedef size_t index_type;
-
     // The base type
     typedef itpp::Vec<T> base;
 
@@ -76,10 +74,13 @@ namespace sill {
 
     //! Constructs a vector with the specified dimension
     //! Note: the vector is not necessarily zero-initialized
-    explicit vector(size_t size) : base(size) { }
+    explicit vector(size_t size) : base(size) {
+      assert(size <= (size_t)(std::numeric_limits<int>::max()));
+    }
 
     //! Constructs a vector filled with the given element
     vector(size_t size, T value) : base(size) {
+      assert(size <= (size_t)(std::numeric_limits<int>::max()));
       std::fill_n(base::data, size, value);
     }
 
@@ -87,10 +88,14 @@ namespace sill {
     vector(const base& v) : base(v) { }
 
     //! Creates a vector from a C array (the contents of the array is copied).
-    vector(const T* array, size_t size) : base(array, size) { }
+    vector(const T* array, size_t size) : base(array, size) {
+      assert(size <= (size_t)(std::numeric_limits<int>::max()));
+    }
 
     //! Creates a vector from an STL vector (the contents is copied)
-    vector(const std::vector<T>& v) : base(&v[0], v.size()) { }
+    vector(const std::vector<T>& v) : base(&v[0], v.size()) {
+      assert(v.size() <= (size_t)(std::numeric_limits<int>::max()));
+    }
 
     //! Conversion from human-readable representation
     vector(const char* str) : base(str) { }
@@ -103,6 +108,14 @@ namespace sill {
     vector(const itpp::Vec<U>& v) : base(v.size()) {
       for(size_t i = 0; i < size(); i++)
         base::set(i, v[i]);
+    }
+
+    //! Swap with another matrix.
+    //! @todo Make this more efficient!
+    void swap(vector& other) {
+      vector tmp(other);
+      other = *this;
+      *this = tmp;
     }
 
     // Range interface
@@ -545,6 +558,7 @@ namespace sill {
 
     // Serialization
     //==========================================================================
+
     void save(oarchive& ar) const {
       ar << size();
       for(size_t i = 0; i < size(); i++) {

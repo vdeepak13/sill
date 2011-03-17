@@ -220,12 +220,21 @@ namespace sill {
      *
      * @param r_vars  Only restrict away arguments of this factor which
      *                appear in both keys(r) and r_vars.
+     */
+    void restrict(const record_type& r, const vector_domain& r_vars,
+                  canonical_gaussian& f) const;
+
+    /**
+     * Restrict which stores the result in the given factor f.
+     * TO DO: Avoid reallocation if f has been pre-allocated.
+     *
+     * @param r_vars  Only restrict away arguments of this factor which
+     *                appear in both keys(r) and r_vars.
      * @param strict  Require that all variables which are in
      *                intersect(f.arguments(), r_vars) appear in keys(r).
-     *                (default = false)
      */
-    void restrict(canonical_gaussian& f, const record_type& r,
-                  const vector_domain& r_vars, bool strict = false) const;
+    void restrict(const record_type& r, const vector_domain& r_vars,
+                  bool strict, canonical_gaussian& f) const;
   
     //! implements Factor::subst_args
     canonical_gaussian& subst_args(const vector_var_map& map);

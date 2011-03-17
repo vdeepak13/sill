@@ -15,23 +15,23 @@ namespace sill {
    * See coo_matrix for info on the storage format.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam Index    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., size_t).
    *
    * @todo Add a bit which indicates if the indices have been sorted
    *       to allow efficient access.
    */
-  template <typename T, typename Index>
+  template <typename T, typename SizeType>
   class coo_matrix_view
-    : public matrix_base<T,Index> {
+    : public matrix_base<T,SizeType> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef matrix_base<T,Index> base;
+    typedef matrix_base<T,SizeType> base;
 
     typedef typename base::value_type           value_type;
-    typedef typename base::index_type           index_type;
+    typedef typename base::size_type           size_type;
     typedef typename base::const_iterator       const_iterator;
     typedef typename base::iterator             iterator;
     typedef typename base::const_index_iterator const_index_iterator;
@@ -46,8 +46,8 @@ namespace sill {
 
     /* // TO DO: ONLY PERMIT THIS VIA coo_matrix::view().
     //! Constructor from a host matrix.
-    template <typename OtherT, typename OtherIndex>
-    coo_matrix_view(const coo_matrix<OtherT,OtherIndex>& other)
+    template <typename OtherT, typename OtherSizeType>
+    coo_matrix_view(const coo_matrix<OtherT,OtherSizeType>& other)
       : base(other), k_(other.num_non_zeros()),
         row_indices_(other.row_indices_.begin()),
         col_indices_(other.col_indices_.begin()),
@@ -60,8 +60,14 @@ namespace sill {
     // Getters and setters: dimensions
     //==========================================================================
 
+    using base::num_rows;
+    using base::size1;
+    using base::num_cols;
+    using base::size2;
+    using base::size;
+
     //! Number of non-zero elements.
-    index_type num_non_zeros() const {
+    size_type num_non_zeros() const {
       return k_;
     }
 
@@ -109,22 +115,22 @@ namespace sill {
     using base::n_;
 
     //! Number of non-zero elements.
-    index_type k_;
+    size_type k_;
 
     //! Pointer to row indices.
-    index_type* row_indices_;
+    size_type* row_indices_;
 
     //! Pointer to column indices.
-    index_type* col_indices_;
+    size_type* col_indices_;
 
     //! Pointer to values.
     value_type* values_;
 
     /*
     //! Constructor for a matrix with the given data.
-    coo_matrix_view(index_type m, index_type n,
-                          index_type* col_indices_,
-                          index_type* row_indices_,
+    coo_matrix_view(size_type m, size_type n,
+                          size_type* col_indices_,
+                          size_type* row_indices_,
                           value_type* values_)
       : base(m,n), col_indices_(col_indices_), row_indices_(row_indices_),
         values_(values_) { }

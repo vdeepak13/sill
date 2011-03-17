@@ -331,8 +331,14 @@ namespace sill {
   } // restrict(a)
 
   void canonical_gaussian::
-  restrict(canonical_gaussian& f, const record_type& r,
-           const vector_domain& r_vars, bool strict) const {
+  restrict(const record_type& r, const vector_domain& r_vars,
+           canonical_gaussian& f) const {
+    this->restrict(r, r_vars, false, f);
+  }
+
+  void canonical_gaussian::
+  restrict(const record_type& r, const vector_domain& r_vars,
+           bool strict, canonical_gaussian& f) const {
     // Determine the retained (x) and the restricted variables (y)
     vector_var_vector x, y;
     foreach(vector_variable* v, arg_list) {
@@ -342,7 +348,7 @@ namespace sill {
         if (!r.has_variable(v)) {
           if (strict) {
             throw std::invalid_argument
-              (std::string("canonical_gaussian::restrict(f,r,r_vars,strict)") +
+              (std::string("canonical_gaussian::restrict(r,r_vars,strict,f)") +
                " was given strict=true, but intersect(f.arguments(), r_vars)" +
                " contained a variable which did not appear in keys(r).");
           }

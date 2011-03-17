@@ -3,6 +3,7 @@
 #define _SILL_MATRIX_BASE_HPP_
 
 #include <sill/math/sparse_linear_algebra/linear_algebra_base.hpp>
+#include <sill/serialization/serialize.hpp>
 
 namespace sill {
 
@@ -10,19 +11,19 @@ namespace sill {
    * Matrix base class
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam Index    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., size_t).
    */
-  template <typename T, typename Index>
+  template <typename T, typename SizeType>
   class matrix_base {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef linear_algebra_base<T,Index> la_base;
+    typedef linear_algebra_base<T,SizeType> la_base;
 
     typedef typename la_base::value_type           value_type;
-    typedef typename la_base::index_type           index_type;
+    typedef typename la_base::size_type           size_type;
     typedef typename la_base::const_iterator       const_iterator;
     typedef typename la_base::iterator             iterator;
     typedef typename la_base::const_index_iterator const_index_iterator;
@@ -36,26 +37,38 @@ namespace sill {
       : m_(0), n_(0) { }
 
     //! Constructor for a matrix with m rows and n columns.
-    matrix_base(index_type m, index_type n)
+    matrix_base(size_type m, size_type n)
       : m_(m), n_(n) { }
+
+    // Serialization
+    //==========================================================================
+
+    void save(oarchive& ar) const {
+      ar << m_ << n_;
+    }
+
+    void load(iarchive& ar) {
+      ar >> m_ >> n_;
+    }
 
     // Getters and setters: dimensions
     //==========================================================================
 
     //! Number of rows.
-    index_type num_rows() const {
-      return m_;
-    }
+    size_type num_rows() const { return m_; }
+
+    //! Number of rows.
+    size_type size1() const { return m_; }
 
     //! Number of columns.
-    index_type num_cols() const {
-      return n_;
-    }
+    size_type num_cols() const { return n_; }
+
+    //! Number of columns.
+    size_type size2() const { return n_; }
 
     //! Total number of elements (rows x columns).
-    index_type size() const {
-      return m_ * n_;
-    }
+    //! NOTE: This is hard-coded to use size_t to support larger matrices.
+    size_t size() const { return (size_t)m_ * (size_t)n_; }
 
     // Utilities
     //==========================================================================
@@ -78,16 +91,16 @@ namespace sill {
   protected:
 
     //! Number of rows.
-    index_type m_;
+    size_type m_;
 
     //! Number of columns.
-    index_type n_;
+    size_type n_;
 
   }; // class matrix_base
 
-  template <typename T, typename Index>
+  template <typename T, typename SizeType>
   std::ostream&
-  operator<<(std::ostream& out, const matrix_base<T,Index>& mat) {
+  operator<<(std::ostream& out, const matrix_base<T,SizeType>& mat) {
     mat.print(out);
     return out;
   }

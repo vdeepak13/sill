@@ -20,77 +20,36 @@
 namespace sill {
 
   //! Dense linear algebra specification.
-  template <typename T = double, typename Index = size_t>
+  template <typename T = double, typename SizeType = size_t>
   struct dense_linear_algebra {
 
     typedef vector<T>  vector_type;
     typedef matrix<T>  matrix_type;
     typedef typename vector_type::value_type value_type;
-    typedef typename vector_type::index_type index_type;
+    typedef typename vector_type::size_type  size_type;
 
     typedef vector<T>  dense_vector_type;
     typedef matrix<T>  dense_matrix_type;
+
+    typedef ivec  index_vector_type;
 
   };
 
   //! Dense linear algebra specification.
-  template <typename T = double, typename Index = size_t>
+  template <typename T = double, typename SizeType = size_t>
   struct sparse_linear_algebra {
 
-    typedef sparse_vector<T,Index>  vector_type;
-    typedef csc_matrix<T,Index>     matrix_type;
+    typedef sparse_vector<T,SizeType>  vector_type;
+    typedef csc_matrix<T,SizeType>     matrix_type;
     typedef typename vector_type::value_type value_type;
-    typedef typename vector_type::index_type index_type;
+    typedef typename vector_type::size_type  size_type;
 
     typedef vector<T>  dense_vector_type;
     typedef matrix<T>  dense_matrix_type;
 
-  };
-
-  /**
-   * Specifies dense/sparse linear algebra.
-   *
-   * This should be used as a template parameter to classes which can be
-   * instantiated using either dense or sparse linear algebra.
-   */
-//  enum linear_algebra_enum { DENSE_LINEAR_ALGEBRA, SPARSE_LINEAR_ALGEBRA };
-
-  /**
-   * Class which defines vector/matrix types,
-   * given a dense/sparse linear algebra specifier.
-   *
-   * @tparam T      Type of value (e.g., float).
-   * @tparam Index  Type of value (e.g., size_t).
-   * @tparam LA     Dense/sparse linear algebra specifier.
-   */
-//  template <typename T, typename Index, linear_algebra_enum LA>
-//  struct linear_algebra_types { };
-
-/*
-  //! Specialization for dense linear algebra.
-  template <typename T, typename Index>
-  struct linear_algebra_types<T, Index, DENSE_LINEAR_ALGEBRA> {
-
-    typedef T          value_type;
-    typedef Index      index_type;
-    typedef vector<T>  vector_type;
-    typedef matrix<T>  matrix_type;
+    typedef ivec  index_vector_type;
 
   };
-
-  //! Specialization for sparse linear algebra.
-  //! Note that csc_matrix is the default matrix representation;
-  //! classes should be specialized to use other representations as needed.
-  template <typename T, typename Index>
-  struct linear_algebra_types<T, Index, SPARSE_LINEAR_ALGEBRA> {
-
-    typedef T                       value_type;
-    typedef Index                   index_type;
-    typedef sparse_vector<T,Index>  vector_type;
-    typedef csc_matrix<T,Index>  matrix_type;
-
-  };
-*/
 
 } // namespace sill
 

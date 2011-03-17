@@ -406,11 +406,11 @@ namespace sill {
     vec means(dvector,0);
     vec std_devs(dvector,0);
     double total_ds_weight(0);
-    vec tmpvec(dvector,0);
+    vector_type tmpvec(dvector,0);
     for (size_t i = 0; i < nrecords; ++i) {
       means += weight(i) * vector_data[i];
       tmpvec = vector_data[i];
-      tmpvec *= tmpvec;
+      tmpvec.elem_mult(tmpvec);
       std_devs += weight(i) * tmpvec;
       total_ds_weight += weight(i);
     }
@@ -442,7 +442,7 @@ namespace sill {
 
   template <typename LA>
   void vector_dataset<LA>::normalize(const vec& means, const vec& std_devs,
-                                 const vector_var_vector& vars) {
+                                     const vector_var_vector& vars) {
     foreach(vector_variable* v, vars)
       assert(vector_vars.count(v) != 0);
     ivec vars_inds(vector_indices(vars));
@@ -481,23 +481,12 @@ namespace sill {
   template <typename LA>
   void vector_dataset<LA>::randomize(double random_seed) {
     boost::mt11213b rng(static_cast<unsigned>(random_seed));
-    std::vector<size_t> fin_tmp(finite_seq.size());
-    vec vec_tmp;
-    vec_tmp.resize(dvector);
-    double weight_tmp;
     for (size_t i = 0; i < nrecords-1; ++i) {
       size_t j = (size_t)(boost::uniform_int<int>(i,nrecords-1)(rng));
-      sill::copy(finite_data[i], fin_tmp.begin());
-      sill::copy(finite_data[j], finite_data[i].begin());
-      sill::copy(fin_tmp, finite_data[j].begin());
-      sill::copy(vector_data[i], vec_tmp.begin());
-      sill::copy(vector_data[j], vector_data[i].begin());
-      sill::copy(vec_tmp, vector_data[j].begin());
-      if (weighted) {
-        weight_tmp = weights_[i];
-        weights_[i] = weights_[j];
-        weights_[j] = weight_tmp;
-      }
+      finite_data[i].swap(finite_data[j]);
+      vector_data[i].swap(vector_data[j]);
+      if (weighted)
+        std::swap(weights_[i], weights_[j]);
     }
   }
 
@@ -505,7 +494,8 @@ namespace sill {
   //==========================================================================
 
   template <typename LA>
-  void vector_dataset<LA>::load_assignment(size_t i, sill::assignment& a) const {
+  void
+  vector_dataset<LA>::load_assignment(size_t i, sill::assignment& a) const {
     assert(i < nrecords);
     convert_finite_record2assignment(finite_data[i], a.finite());
     convert_vector_record2assignment(vector_data[i], a.vector());
@@ -525,7 +515,7 @@ namespace sill {
 
   template <typename LA>
   void
-  vector_dataset<LA>::load_finite(size_t i, std::vector<size_t>& findata) const {
+  vector_dataset<LA>::load_finite(size_t i, std::vector<size_t>& findata) const{
     findata = finite_data[i];
   }
 
@@ -535,7 +525,8 @@ namespace sill {
   }
 
   template <typename LA>
-  void vector_dataset<LA>::load_assignment_pointer(size_t i, assignment** a) const {
+  void
+  vector_dataset<LA>::load_assignment_pointer(size_t i, assignment** a) const {
     assert(false);
   }
 

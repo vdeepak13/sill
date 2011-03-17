@@ -96,15 +96,6 @@ namespace sill {
   // Order statistics
   //============================================================================
 
-  std::vector<size_t> sorted_indices(const vec& v) {
-    std::vector<size_t> ind(v.size());
-    for (size_t i(0); i < v.size(); ++i)
-      ind[i] = i;
-    impl::sorted_indices_comparator comp(v);
-    std::sort(ind.begin(), ind.end(), comp);
-    return ind;
-  }
-
   std::vector<size_t> sorted_indices(const std::vector<vec>& v) {
     std::vector<size_t> ind(v.size());
     for (size_t i(0); i < v.size(); ++i)

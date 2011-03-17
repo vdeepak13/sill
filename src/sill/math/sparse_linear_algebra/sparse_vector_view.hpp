@@ -2,10 +2,13 @@
 #ifndef _SILL_SPARSE_VECTOR_VIEW_HPP_
 #define _SILL_SPARSE_VECTOR_VIEW_HPP_
 
-#include <sill/math/sparse_linear_algebra/sparse_vector_i.hpp>
 #include <sill/math/sparse_linear_algebra/dense_vector_view.hpp>
+#include <sill/math/sparse_linear_algebra/sparse_vector.hpp>
 
 namespace sill {
+
+  // Forward declaration
+  template <typename T, typename SizeType> class sparse_vector;
 
   /**
    * Sparse vector view
@@ -26,20 +29,20 @@ namespace sill {
    *     - extracting views of rows or columns of matrices.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam Index    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., size_t).
    */
-  template <typename T, typename Index>
+  template <typename T, typename SizeType>
   class sparse_vector_view
-    : public sparse_vector_i<T,Index> {
+    : public vector_base<T,SizeType> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef sparse_vector_i<T,Index> base;
+    typedef vector_base<T,SizeType> base;
 
     typedef typename base::value_type           value_type;
-    typedef typename base::index_type           index_type;
+    typedef typename base::size_type           size_type;
     typedef typename base::const_iterator       const_iterator;
     typedef typename base::iterator             iterator;
     typedef typename base::const_index_iterator const_index_iterator;
@@ -59,10 +62,17 @@ namespace sill {
      * @param indices_  Pointer to array of indices of non-zero elements.
      * @param values_   Pointer to array of values of non-zero elements.
      */
-    sparse_vector_view(index_type n, index_type k,
-                       const index_type* indices_,
+    sparse_vector_view(size_type n, size_type k,
+                       const size_type* indices_,
                        const value_type* values_)
       : base(n), k_(k), indices_(indices_), values_(values_) { }
+
+    /**
+     * Constructor from a sparse_vector.
+     */
+    sparse_vector_view(const sparse_vector<T,SizeType>& sv)
+      : base(sv), k_(sv.num_non_zeros()), indices_(sv.indices().begin()),
+        values_(sv.values().begin()) { }
 
     // NO DESTRUCTOR.
     // This is a light view of data; it does not own the data.
@@ -74,7 +84,7 @@ namespace sill {
     using base::size;
 
     //! Number of non-zero elements.
-    index_type num_non_zeros() const {
+    size_type num_non_zeros() const {
       return k_;
     }
 
@@ -84,12 +94,12 @@ namespace sill {
     /*
     //! Return v[i].
     //! This is NOT bound-checked.
-    const value_type& operator[](index_type i) const {
-      index_type from(0);
-      index_type to(k_);
+    const value_type& operator[](size_type i) const {
+      size_type from(0);
+      size_type to(k_);
       while (from < to) {
-        index_type j((from + to)/2);
-        index_type ind_j(indices_[j]);
+        size_type j((from + to)/2);
+        size_type ind_j(indices_[j]);
         if (ind_j == i)
           return values_[j];
         if (i < ind_j)
@@ -107,29 +117,29 @@ namespace sill {
     /*
     //! Return v[i].
     //! This is NOT bound-checked.
-    const value_type& operator()(index_type i) const {
+    const value_type& operator()(size_type i) const {
       return operator[](i);
     }
     */
 
     //! Return the index for the i^th non-zero element.
-    index_type index(index_type i) const {
+    size_type index(size_type i) const {
       return indices_[i];
     }
 
     //! Return the value for the i^th non-zero element.
-    value_type value(index_type i) const {
+    value_type value(size_type i) const {
       return values_[i];
     }
 
     //! Get a const view of the indices.
-    const dense_vector_view<index_type,index_type> indices() const {
-      return dense_vector_view<index_type,index_type>(k_, indices_);
+    const dense_vector_view<size_type,size_type> indices() const {
+      return dense_vector_view<size_type,size_type>(k_, indices_);
     }
 
     //! Get a const view of the values.
-    const dense_vector_view<value_type,index_type> values() const {
-      return dense_vector_view<value_type,index_type>(k_, values_);
+    const dense_vector_view<value_type,size_type> values() const {
+      return dense_vector_view<value_type,size_type>(k_, values_);
     }
 
     //! Get a const iterator to the beginning of the indices.
@@ -162,15 +172,23 @@ namespace sill {
     using base::n_;
 
     //! Number of non-zero elements.
-    index_type k_;
+    size_type k_;
 
     //! Pointer to indices.
-    const index_type* indices_;
+    const size_type* indices_;
 
     //! Pointer to values.
     const value_type* values_;
 
   }; // class sparse_vector_view
+
+
+  //! Helper function for creating views.
+  template <typename T, typename SizeType>
+  sparse_vector_view<T,SizeType>
+  make_sparse_vector_view(const sparse_vector<T,SizeType>& v) {
+    return sparse_vector_view<T,SizeType>(v);
+  }
 
 } // namespace sill
 

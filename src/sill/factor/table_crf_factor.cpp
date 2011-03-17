@@ -43,7 +43,7 @@ namespace sill {
 
   const table_factor&
   table_crf_factor::condition(const finite_assignment& a) const {
-    f.f.restrict(conditioned_f, a, input_arguments(), true);
+    f.f.restrict(a, input_arguments(), true, conditioned_f);
     if (log_space_)
       conditioned_f.update(exponent<double>());
     return conditioned_f;
@@ -86,7 +86,7 @@ namespace sill {
     table_factor new_f;
     table_factor tmp_f;
     foreach(const finite_record& r, ds.records()) {
-      f.f.restrict(tmp_f, r, Y_part);
+      f.f.restrict(r, Y_part, tmp_f);
       tmp_f /= ds.size();
       new_f += tmp_f;
     }
@@ -118,7 +118,7 @@ namespace sill {
                                       const finite_domain& Y_part,
                                       const finite_domain& X_part) {
     table_factor new_f;
-    f.f.restrict(new_f, a, set_union(Y_part, X_part), true);
+    f.f.restrict(a, set_union(Y_part, X_part), true, new_f);
     f.f = new_f;
     foreach(finite_variable* v, Y_part)
       Ydomain_.erase(v);
@@ -133,7 +133,7 @@ namespace sill {
                                       const finite_domain& Y_part,
                                       const finite_domain& X_part) {
     table_factor new_f;
-    f.f.restrict(new_f, r, set_union(Y_part, X_part), true);
+    f.f.restrict(r, set_union(Y_part, X_part), true, new_f);
     f.f = new_f;
     foreach(finite_variable* v, Y_part)
       Ydomain_.erase(v);
@@ -150,14 +150,14 @@ namespace sill {
     size_t i(0);
     if (log_space()) {
       foreach(const finite_record& r, ds.records()) {
-        f.f.restrict(tmp_fctr, r, input_arguments(), true);
+        f.f.restrict(r, input_arguments(), true, tmp_fctr);
         val += ds.weight(i) * tmp_fctr(r);
         total_ds_weight += ds.weight(i);
         ++i;
       }
     } else {
       foreach(const finite_record& r, ds.records()) {
-        f.f.restrict(tmp_fctr, r, input_arguments(), true);
+        f.f.restrict(r, input_arguments(), true, tmp_fctr);
         val += ds.weight(i) * std::log(tmp_fctr(r));
         total_ds_weight += ds.weight(i);
         ++i;

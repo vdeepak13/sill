@@ -273,36 +273,6 @@ namespace sill {
   }
 
   /**
-   * Concatenates two std::vectors of variables / processes.
-   * \relates variable
-   */
-  template <typename V>
-  std::vector<V*> concat(const std::vector<V*>& vec1,
-                         const std::vector<V*>& vec2) {
-    std::vector<V*> vec;
-    vec.reserve(vec1.size() + vec2.size());
-    vec.insert(vec.end(), vec1.begin(), vec1.end());
-    vec.insert(vec.end(), vec2.begin(), vec2.end());
-    return vec;
-  }
-
-  /**
-   * Concatenates three std::vectors of variables / processes.
-   * \relates variable
-   */
-  template <typename V>
-  std::vector<V*> concat(const std::vector<V*>& vec1,
-                         const std::vector<V*>& vec2,
-                         const std::vector<V*>& vec3) {
-    std::vector<V*> vec;
-    vec.reserve(vec1.size() + vec2.size() + vec3.size());
-    vec.insert(vec.end(), vec1.begin(), vec1.end());
-    vec.insert(vec.end(), vec2.begin(), vec2.end());
-    vec.insert(vec.end(), vec3.begin(), vec3.end());
-    return vec;
-  }
-
-  /**
    * Substitutes variables in a domain.
    *
    * @param  vars  a set of variables
@@ -314,7 +284,8 @@ namespace sill {
    * @return the image of vars under subst
    */
   template<class V>
-  std::set<V*> subst_vars(const std::set<V*>& vars, const std::map<V*, V*>& map) {
+  std::set<V*>
+  subst_vars(const std::set<V*>& vars, const std::map<V*, V*>& map) {
     concept_assert((Variable<V>));
     if (vars.empty()) return vars;
     std::set<V*> new_vars;

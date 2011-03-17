@@ -2,6 +2,8 @@ link_libraries(itpp)
 
 subdirs(function sparse_linear_algebra)
 
+add_executable(geometry geometry.cpp)
+
 #add_executable(gdl gdl.cpp)
 add_executable(multinomial_distribution multinomial_distribution.cpp)
 #add_executable(quaternion quaternion.cpp)

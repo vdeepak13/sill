@@ -70,8 +70,6 @@ namespace sill {
     typedef const T*        const_pointer;
     typedef const T*        const_iterator;
 
-    typedef size_t index_type;
-
     // Constructors
     //==========================================================================
   public:
@@ -80,20 +78,25 @@ namespace sill {
 
     //! Creates a matrix with of size (nrows, ncols)
     //! Note: the matrix is not necessarily zero-initialized
-    matrix(size_t nrows, size_t ncols) : base(nrows, ncols) { }
+    matrix(size_t nrows, size_t ncols) : base(nrows, ncols) {
+      assert(nrows * ncols <= (size_t)(std::numeric_limits<int>::max()));
+    }
 
     //! Creates a matrix filled with the given element
     matrix(size_t nrows, size_t ncols, T value) : base(nrows, ncols) {
+      assert(nrows * ncols <= (size_t)(std::numeric_limits<int>::max()));
       std::fill_n(base::data, nrows*ncols, value);
     }
 
     //! Creates a vector from a C-array (the array contents are copied).
     matrix(const T* array, size_t nrows, size_t ncols, bool row_major = true) 
-      : base(array, nrows, ncols, row_major) { }
+      : base(array, nrows, ncols, row_major) {
+      assert(nrows * ncols <= (size_t)(std::numeric_limits<int>::max()));
+    }
 
     //! Conversion from the base class
     matrix(const base& mat) : base(mat) { }
-    
+
     //! Creates a matrix that is equivalent to a column vector
     explicit matrix(const itpp::Vec<T>& vec) : base(vec) { }
 
@@ -272,6 +275,7 @@ namespace sill {
     //! Changes the dimensions of the matrix. 
     //! \param copy if true, retains the original data
     void resize(size_t nrows, size_t ncols, bool copy = false) { 
+      assert(nrows * ncols <= (size_t)(std::numeric_limits<int>::max()));
       base::set_size(nrows, ncols, copy);
     }
     

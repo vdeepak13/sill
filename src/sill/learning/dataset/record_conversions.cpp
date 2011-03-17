@@ -19,27 +19,27 @@ namespace sill {
     }
   }
 
-  /*
-  void fill_record_with_assignment(finite_record& r, const finite_assignment& a,
-                                   const finite_var_map& vmap) {
-    for (std::map<finite_variable*, size_t>::const_iterator it =
-           r.finite_numbering_ptr->begin();
-         it != r.finite_numbering_ptr->end();
-         ++it) {
-      r.finite(it->second) = safe_get(a, safe_get(vmap, it->first));
+  void
+  vector_assignment2vector(const vector_assignment& va,
+                           const vector_var_vector& vector_seq,
+                           vec& vecdata) {
+    vecdata.resize(vector_size(vector_seq));
+    size_t k(0); // index into vecdata
+    vector_assignment::const_iterator va_end = va.end();
+    foreach(vector_variable* v, vector_seq) {
+      vector_assignment::const_iterator it(va.find(v));
+      if (it == va_end) {
+        throw std::runtime_error
+          (std::string("vector_assignment2vector(va,vector_seq,vecdata)") +
+           " given vector_seq with variables not appearing in given" +
+           " assignment.");
+      }
+      const vec& tmpvec = it->second;
+      for (size_t j(0); j < v->size(); j++)
+        vecdata[k + j] = tmpvec[j];
+      k += v->size();
     }
   }
-
-  void fill_record_with_record(finite_record& to, const finite_record& from,
-                               const finite_var_map& vmap) {
-    for (std::map<finite_variable*, size_t>::const_iterator it =
-           to.finite_numbering_ptr->begin();
-         it != to.finite_numbering_ptr->end();
-         ++it) {
-      to.finite(it->second) = from.finite(safe_get(vmap,it->first));
-    }
-  }
-  */
 
 } // namespace sill
 

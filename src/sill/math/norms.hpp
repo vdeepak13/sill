@@ -5,6 +5,8 @@
 #include <itpp/stat/misc_stat.h>
 #include <itpp/base/matfunc.h>
 
+#include <sill/math/sparse_linear_algebra/sparse_vector.hpp>
+
 namespace sill {
 
   template <typename T>
@@ -30,6 +32,22 @@ namespace sill {
   template <typename T>
   double norm_2(const itpp::Vec<T>& v) {
     return sqrt(dot(v,v));
+  }
+
+
+  template <typename T, typename Index>
+  double norm_inf(const sparse_vector<T,Index>& v) {
+    return max(abs(v));
+  }
+
+  template <typename T, typename Index>
+  double norm_1(const sparse_vector<T,Index>& v) {
+    return v.L1norm();
+  }
+
+  template <typename T, typename Index>
+  double norm_2(const sparse_vector<T,Index>& v) {
+    return v.L2norm();
   }
   
 } // namespace sill

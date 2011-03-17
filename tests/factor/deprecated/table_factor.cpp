@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
 //   dense_factor f1 = random_factor<dense_table>(wxy, 0, 1);
 //   std::cout << f1 << std::endl;
 //   assignment a; a[x_v] = 0;
-//   dense_factor f2 = restrict(f1, a);
+//   dense_factor f2 = restrict(a, f1);
 //   std::cout << f2 << std::endl;
 
   // Test sparse and dense table combine/collapse factor operations
@@ -129,7 +129,7 @@ int main(int argc, char** argv) {
 //     if (fill_factor<0.5) {
 //       assignment a1;
 //       a1[x_v] = 0;
-//       dense_factor ff = restrict(h_xyz_dense, a1);
+//       dense_factor ff = restrict(a1, h_xyz_dense);
 //       std::cout << ff << std::endl;
 //       std::cout << h_xyz_dense << std::endl;
 //     }

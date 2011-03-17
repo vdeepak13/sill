@@ -3,6 +3,7 @@
 #define _SILL_VECTOR_BASE_HPP_
 
 #include <sill/math/sparse_linear_algebra/linear_algebra_base.hpp>
+#include <sill/serialization/serialize.hpp>
 
 namespace sill {
 
@@ -10,23 +11,21 @@ namespace sill {
    * Vector base class
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam Index    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., size_t).
    */
-  template <typename T, typename Index>
+  template <typename T, typename SizeType>
   class vector_base {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef linear_algebra_base<T,Index> la_base;
-
-    typedef typename la_base::value_type           value_type;
-    typedef typename la_base::index_type           index_type;
-    typedef typename la_base::const_iterator       const_iterator;
-    typedef typename la_base::iterator             iterator;
-    typedef typename la_base::const_index_iterator const_index_iterator;
-    typedef typename la_base::index_iterator       index_iterator;
+    typedef T                 value_type;
+    typedef SizeType          size_type;
+    typedef const T*          const_iterator;
+    typedef T*                iterator;
+    typedef const size_type*  const_index_iterator;
+    typedef size_type*        index_iterator;
 
     // Constructors
     //==========================================================================
@@ -36,19 +35,30 @@ namespace sill {
       : n_(0) { }
 
     //! Constructor for a vector with n elements.
-    vector_base(index_type n)
+    vector_base(size_type n)
       : n_(n) { }
+
+    // Serialization
+    //==========================================================================
+
+    void save(oarchive& ar) const {
+      ar << n_;
+    }
+
+    void load(iarchive& ar) {
+      ar >> n_;
+    }
 
     // Getters and setters: dimensions
     //==========================================================================
 
     //! Length of the vector.
-    index_type size() const {
+    size_type size() const {
       return n_;
     }
 
     //! Length of the vector.
-    index_type length() const {
+    size_type length() const {
       return size();
     }
 
@@ -65,7 +75,7 @@ namespace sill {
   protected:
 
     //! Number of elements.
-    index_type n_;
+    size_type n_;
 
   }; // class vector_base
 

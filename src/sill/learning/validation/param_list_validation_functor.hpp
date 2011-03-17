@@ -34,11 +34,11 @@ namespace sill {
 
     //! Results corresponding to the last parameters passed to test().
     //! These results are the ones used to choose the best parameters.
-    vector_type results;
+    vec results;
 
     //! Results corresponding to the last lambdas passed to test().
     //! These results are all ones returned by the model_validation_functor.
-    std::map<std::string, vector_type> all_results;
+    std::map<std::string, vec> all_results;
 
     param_list_validation_functor()
       : unif_int(0, std::numeric_limits<int>::max()) { }
@@ -53,7 +53,7 @@ namespace sill {
      *
      * @param lambdas  List of parameter values to test.
      */
-    virtual void test(const std::vector<vector_type>& lambdas,
+    virtual void test(const std::vector<vec>& lambdas,
                       const dataset<la_type>& train_ds,
                       const dataset<la_type>& test_ds,
                       unsigned random_seed,
@@ -72,7 +72,7 @@ namespace sill {
           results[i] = mv_func.train(train_ds, test_ds, lambdas[i], false,
                                      unif_int(rng));
           foreach(const result_value_pair& rvp, mv_func.result_map()) {
-            all_results[rvp.first] = vector_type(lambdas.size(), 0);
+            all_results[rvp.first] = vec(lambdas.size(), 0);
             all_results[rvp.first][i] = rvp.second;
           }
         } else {

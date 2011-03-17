@@ -14,12 +14,12 @@
 namespace sill {
 
   // Forward declarations
-  template <typename T, typename Index> class csc_matrix;
-  template <typename T, typename Index> class csc_matrix_view;
-  template <typename T, typename Index> class coo_matrix;
-  template <typename T, typename Index> class coo_matrix_view;
-  template <typename T, typename Index> class sparse_vector;
-  template <typename T, typename Index> class sparse_vector_view;
+  template <typename T, typename SizeType> class csc_matrix;
+  template <typename T, typename SizeType> class csc_matrix_view;
+  template <typename T, typename SizeType> class coo_matrix;
+  template <typename T, typename SizeType> class coo_matrix_view;
+  template <typename T, typename SizeType> class sparse_vector;
+  template <typename T, typename SizeType> class sparse_vector_view;
 
   namespace impl {
 
@@ -106,20 +106,20 @@ namespace sill {
    *  - This view type is most useful for working with constant matrices.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam Index    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., size_t).
    */
-  template <typename T, typename Index = size_t>
+  template <typename T, typename SizeType = size_t>
   class csc_matrix
-    : public matrix_base<T,Index> {
+    : public matrix_base<T,SizeType> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef matrix_base<T,Index> base;
+    typedef matrix_base<T,SizeType> base;
 
     typedef typename base::value_type           value_type;
-    typedef typename base::index_type           index_type;
+    typedef typename base::size_type           size_type;
     typedef typename base::const_iterator       const_iterator;
     typedef typename base::iterator             iterator;
     typedef typename base::const_index_iterator const_index_iterator;
@@ -133,16 +133,16 @@ namespace sill {
       : base() { }
 
     //! Copy constructor.
-    template <typename OtherT, typename OtherIndex>
+    template <typename OtherT, typename OtherSizeType>
     explicit
-    csc_matrix(const csc_matrix<OtherT,OtherIndex>& other)
+    csc_matrix(const csc_matrix<OtherT,OtherSizeType>& other)
       : base(other),
         col_offsets_(other.col_offsets()), row_indices_(other.row_indices()),
         values_(other.values()) { }
 
     //! Assignment operator.
-    template <typename OtherT, typename OtherIndex>
-    csc_matrix& operator=(const csc_matrix<OtherT,OtherIndex>& other) {
+    template <typename OtherT, typename OtherSizeType>
+    csc_matrix& operator=(const csc_matrix<OtherT,OtherSizeType>& other) {
       m_ = other.num_rows();
       n_ = other.num_cols();
       col_offsets_ = other.col_offsets();
@@ -152,42 +152,57 @@ namespace sill {
     }
 
     //! Constructor from a matrix in coordinate (COO) format.
-    template <typename OtherT, typename OtherIndex>
-    explicit csc_matrix(const coo_matrix<OtherT, OtherIndex>& other)
+    template <typename OtherT, typename OtherSizeType>
+    explicit csc_matrix(const coo_matrix<OtherT, OtherSizeType>& other)
       : base(other.num_rows(), other.num_cols()) {
       convert_matrix(other, *this);
     }
 
     //! Assignment from a matrix in coordinate (COO) format.
-    template <typename OtherT, typename OtherIndex>
-    csc_matrix& operator=(const coo_matrix<OtherT, OtherIndex>& other) {
+    template <typename OtherT, typename OtherSizeType>
+    csc_matrix& operator=(const coo_matrix<OtherT, OtherSizeType>& other) {
       convert_matrix(other, *this);
       return *this;
     }
 
     //! Constructor from a matrix in dense format.
-    template <typename OtherT, typename OtherIndex>
+    template <typename OtherT, typename OtherSizeType>
     explicit csc_matrix(const matrix<OtherT>& other)
       : base(other.num_rows(), other.num_cols()) {
       convert_matrix(other, *this);
     }
 
     //! Assignment from a matrix in coordinate (COO) format.
-    template <typename OtherT, typename OtherIndex>
+    template <typename OtherT, typename OtherSizeType>
     csc_matrix& operator=(const matrix<OtherT>& other) {
       convert_matrix(other, *this);
       return *this;
+    }
+
+    // Serialization
+    //==========================================================================
+
+    void save(oarchive& ar) const {
+      base::save(ar);
+      ar << col_offsets_ << row_indices_ << values_;
+    }
+
+    void load(iarchive& ar) {
+      base::load(ar);
+      ar >> col_offsets_ >> row_indices_ >> values_;
     }
 
     // Getters and setters: dimensions
     //==========================================================================
 
     using base::num_rows;
+    using base::size1;
     using base::num_cols;
+    using base::size2;
     using base::size;
 
     //! Number of non-zero elements.
-    index_type num_non_zeros() const {
+    size_type num_non_zeros() const {
       return row_indices_.size();
     }
 
@@ -197,7 +212,7 @@ namespace sill {
      * @param k  Number of non-zeros.
      *           (default = 0)
      */
-    void resize(index_type m, index_type n, index_type k = 0,
+    void resize(size_type m, size_type n, size_type k = 0,
                 bool copy_data = false) {
       if (copy_data)
         assert(false); // TO DO
@@ -218,20 +233,20 @@ namespace sill {
     //==========================================================================
 
     //! Return a const view of column j of the matrix.
-    sparse_vector_view<value_type,index_type> column(index_type j) const {
+    sparse_vector_view<value_type,size_type> column(size_type j) const {
       if (j < num_cols()) {
-        index_type co_j = col_offsets_[j];
-        index_type co_jp1 = col_offsets_[j+1];
-        return sparse_vector_view<value_type,index_type>
+        size_type co_j = col_offsets_[j];
+        size_type co_jp1 = col_offsets_[j+1];
+        return sparse_vector_view<value_type,size_type>
           (num_rows(), co_jp1 - co_j, row_indices_.begin() + co_j,
            values_.begin() + co_j);
       } else {
-        return sparse_vector_view<value_type,index_type>();
+        return sparse_vector_view<value_type,size_type>();
       }
     }
 
     //! Returns element A(i,j).
-    value_type operator()(index_type i, index_type j) const {
+    value_type operator()(size_type i, size_type j) const {
       std::pair<bool, const value_type*> found_valptr(this->find(i,j));
       if (found_valptr.first)
         return *(found_valptr.second);
@@ -240,13 +255,13 @@ namespace sill {
     }
 
     //! Look for element A(i,j).  Return <found, pointer to value>.
-    std::pair<bool, const value_type*> find(index_type i, index_type j) const {
+    std::pair<bool, const value_type*> find(size_type i, size_type j) const {
       assert(i < num_rows() && j < num_cols());
-      index_type from(col_offsets_[j]);
-      index_type to(col_offsets_[j+1]);
+      size_type from(col_offsets_[j]);
+      size_type to(col_offsets_[j+1]);
       while (from < to) {
-        index_type mid((from + to) / 2);
-        index_type mid_i(row_indices_[mid]);
+        size_type mid((from + to) / 2);
+        size_type mid_i(row_indices_[mid]);
         if (mid_i == i)
           return std::make_pair(true, &values_[mid]);
         else if (mid_i < i)
@@ -258,13 +273,13 @@ namespace sill {
     }
 
     //! Look for element A(i,j).  Return <found, pointer to value>.
-    std::pair<bool, value_type*> find(index_type i, index_type j) {
+    std::pair<bool, value_type*> find(size_type i, size_type j) {
       assert(i < num_rows() && j < num_cols());
-      index_type from(col_offsets_[j]);
-      index_type to(col_offsets_[j+1]);
+      size_type from(col_offsets_[j]);
+      size_type to(col_offsets_[j+1]);
       while (from < to) {
-        index_type mid((from + to) / 2);
-        index_type mid_i(row_indices_[mid]);
+        size_type mid((from + to) / 2);
+        size_type mid_i(row_indices_[mid]);
         if (mid_i == i)
           return std::make_pair(true, &values_[mid]);
         else if (mid_i < i)
@@ -276,26 +291,26 @@ namespace sill {
     }
 
     //! Return a const view of the row indices for column j.
-    const dense_vector_view<index_type,index_type>
-    row_indices(index_type j) const {
+    const dense_vector_view<size_type,size_type>
+    row_indices(size_type j) const {
       assert(j < num_cols());
-      return dense_vector_view<index_type,index_type>
+      return dense_vector_view<size_type,size_type>
         (col_offsets_[j+1] - col_offsets_[j],
          row_indices_.begin() + col_offsets_[j]);
     }
 
     //! Return a const view of the values for column j.
-    const dense_vector_view<value_type,index_type> values(index_type j) const {
+    const dense_vector_view<value_type,size_type> values(size_type j) const {
       assert(j < num_cols());
-      return dense_vector_view<value_type,index_type>
+      return dense_vector_view<value_type,size_type>
         (col_offsets_[j+1] - col_offsets_[j],
          values_.begin() + col_offsets_[j]);
     }
 
     //! Return a mutable view of the values for column j.
-    dense_vector_view<value_type,index_type> values(index_type j) {
+    dense_vector_view<value_type,size_type> values(size_type j) {
       assert(j < num_cols());
-      return dense_vector_view<value_type,index_type>
+      return dense_vector_view<value_type,size_type>
         (col_offsets_[j+1] - col_offsets_[j],
          values_.begin() + col_offsets_[j]);
     }
@@ -303,12 +318,12 @@ namespace sill {
     //! Column offsets (length n+1)
     //!  col_offsets_[i] = offset in row_indices_ and values_ for column i
     //!  col_offsets_[n] = number of non-zeros
-    const vector<index_type>& col_offsets() const {
+    const vector<size_type>& col_offsets() const {
       return col_offsets_;
     }
 
     //! Row indices (length k)
-    const vector<index_type>& row_indices() const {
+    const vector<size_type>& row_indices() const {
       return row_indices_;
     }
 
@@ -318,20 +333,20 @@ namespace sill {
     }
 
     //! Return the maximum number of non-zeros in any column.
-    index_type max_non_zeros_per_column() const {
-      index_type k(0);
-      for (index_type j(0); j < num_cols(); ++j) {
+    size_type max_non_zeros_per_column() const {
+      size_type k(0);
+      for (size_type j(0); j < num_cols(); ++j) {
         k = max(k, col_offsets_[j+1] - col_offsets_[j]);
       }
       return k;
     }
 
     //! Return a vector of the number of non-zeros in each column.
-    vector<index_type> non_zeros_per_column() const {
+    vector<size_type> non_zeros_per_column() const {
       if (col_offsets_.size() <= 1)
-        return vector<index_type>();
-      vector<index_type> sizes(col_offsets_.size() - 1);
-      for (index_type j(0); j < num_cols(); ++j) {
+        return vector<size_type>();
+      vector<size_type> sizes(col_offsets_.size() - 1);
+      for (size_type j(0); j < num_cols(); ++j) {
         sizes[j] = col_offsets_[j+1] - col_offsets_[j];
       }
       return sizes;
@@ -343,9 +358,9 @@ namespace sill {
     //! Returns the transpose of the matrix.
     csc_matrix transpose() const {
       // TO DO: Do more efficiently.
-      coo_matrix<value_type, index_type> coomat(*this);
+      coo_matrix<value_type, size_type> coomat(*this);
       coomat.set_transpose();
-      return csc_matrix<value_type, index_type>(coomat);
+      return csc_matrix<value_type, size_type>(coomat);
     }
 
     /**
@@ -369,9 +384,9 @@ namespace sill {
         if (v.size() != num_cols()) {
           throw std::invalid_argument("csc_matrix::vector_ew_apply given vector not matching matrix dimensions");
         }
-        for (index_type j(0); j < num_cols(); ++j) {
-          index_type co_j = col_offsets_[j];
-          index_type co_jp1 = col_offsets_[j+1];
+        for (size_type j(0); j < num_cols(); ++j) {
+          size_type co_j = col_offsets_[j];
+          size_type co_jp1 = col_offsets_[j+1];
           while (co_j < co_jp1) {
             values_[co_j] = op(values_[co_j], v[j]);
             ++co_j;
@@ -396,17 +411,17 @@ namespace sill {
         out << "[]";
         return;
       } else {
-        for (index_type j(0); j < num_cols(); ++j) {
-          const dense_vector_view<index_type,index_type>
+        for (size_type j(0); j < num_cols(); ++j) {
+          const dense_vector_view<size_type,size_type>
             col_j_indices(row_indices(j));
-          const dense_vector_view<value_type,index_type>
+          const dense_vector_view<value_type,size_type>
             col_j_values(values(j));
           if (j == 0)
             out << "[";
           else
             out << " ";
           out << "(*," << j << "): ";
-          for (index_type i(0); i < col_j_indices.size(); ++i) {
+          for (size_type i(0); i < col_j_indices.size(); ++i) {
             out << col_j_indices[i] << "(" << col_j_values[i] << ")";
             if (i+1 != col_j_indices.size())
               out << ", ";
@@ -432,21 +447,26 @@ namespace sill {
      * @param new_row_indices   WARNING: These MUST be sorted in increasing
      *                          order (for each column).
      */
-    void reset_nocopy(index_type m, index_type n,
-                      vector<index_type>& new_col_offsets,
-                      vector<index_type>& new_row_indices,
+    void reset_nocopy(size_type m, size_type n,
+                      vector<size_type>& new_col_offsets,
+                      vector<size_type>& new_row_indices,
                       vector<value_type>& new_values) {
+      assert(new_col_offsets.size() == n + 1);
+      assert(new_row_indices.size() == new_values.size());
+      if (new_row_indices.size() != 0)
+        assert(new_row_indices[new_row_indices.size()-1] < m);
+      // TO DO: More validity checks.
       m_ = m;
       n_ = n;
-      col_offsets_.reset_nocopy(new_col_offsets);
-      row_indices_.reset_nocopy(new_row_indices);
-      values_.reset_nocopy(new_values);
+      col_offsets_.swap(new_col_offsets);
+      row_indices_.swap(new_row_indices);
+      values_.swap(new_values);
     }
 
     //! Number of bytes to represent this matrix.
-    static index_type bytes_required(index_type n_non_zeros) {
+    static size_type bytes_required(size_type n_non_zeros) {
       return sizeof(csc_matrix)
-        + n_non_zeros * (2 * sizeof(index_type) + sizeof(value_type));
+        + n_non_zeros * (2 * sizeof(size_type) + sizeof(value_type));
     }
 
     // Protected data and methods
@@ -459,10 +479,10 @@ namespace sill {
     //! Column offsets (length n+1)
     //!  col_offsets_[i] = offset in row_indices_ and values_ for column i
     //!  col_offsets_[n] = number of non-zeros
-    vector<index_type> col_offsets_;
+    vector<size_type> col_offsets_;
 
     //! Row indices (length k)
-    vector<index_type> row_indices_;
+    vector<size_type> row_indices_;
 
     //! Values (length k)
     vector<value_type> values_;

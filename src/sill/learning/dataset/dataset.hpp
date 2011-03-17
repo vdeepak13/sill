@@ -177,7 +177,7 @@ namespace sill {
             r.vec_ptr->operator=(*(rec_it.r.vec_ptr));
           } else {
             r.vec_own = true;
-            r.vec_ptr = new vec(*(rec_it.r.vec_ptr));
+            r.vec_ptr = new vector_type(*(rec_it.r.vec_ptr));
           }
         } else {
           if (r.vec_own) {

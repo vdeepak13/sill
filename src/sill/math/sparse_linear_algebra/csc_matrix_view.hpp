@@ -16,20 +16,20 @@ namespace sill {
    * See csc_matrix for info on the storage format.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam Index    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., size_t).
    */
-  template <typename T, typename Index>
+  template <typename T, typename SizeType>
   class csc_matrix_view
-    : public matrix_base<T,Index> {
+    : public matrix_base<T,SizeType> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef matrix_base<T,Index> base;
+    typedef matrix_base<T,SizeType> base;
 
     typedef typename base::value_type           value_type;
-    typedef typename base::index_type           index_type;
+    typedef typename base::size_type           size_type;
     typedef typename base::const_iterator       const_iterator;
     typedef typename base::iterator             iterator;
     typedef typename base::const_index_iterator const_index_iterator;
@@ -60,10 +60,13 @@ namespace sill {
     //==========================================================================
 
     using base::num_rows;
+    using base::size1;
     using base::num_cols;
+    using base::size2;
+    using base::size;
 
     //! Number of non-zero elements.
-    index_type num_non_zeros() const {
+    size_type num_non_zeros() const {
       return k_;
     }
 
@@ -71,22 +74,22 @@ namespace sill {
     //==========================================================================
 
     //! Return a const view of column j of the matrix.
-    sparse_vector_view<value_type,index_type> column(index_type j) const {
+    sparse_vector_view<value_type,size_type> column(size_type j) const {
       if (j < num_cols()) {
-        index_type co_j = col_offsets_[j];
-        index_type co_jp1 = col_offsets_[j+1];
-        return sparse_vector_view<value_type,index_type>
+        size_type co_j = col_offsets_[j];
+        size_type co_jp1 = col_offsets_[j+1];
+        return sparse_vector_view<value_type,size_type>
           (num_rows(), co_jp1 - co_j, row_indices_ + co_j, values_ + co_j);
       } else {
-        return sparse_vector_view<value_type,index_type>();
+        return sparse_vector_view<value_type,size_type>();
       }
     }
 
     //! Look for element A(i,j).  Return <found, pointer to value>.
-    std::pair<bool, const value_type*> find(index_type i, index_type j) const {
+    std::pair<bool, const value_type*> find(size_type i, size_type j) const {
       if (i < num_rows() && j < num_cols()) {
-        const index_type* row_it = row_indices_ + col_offsets_[j];
-        const index_type* row_end = row_indices_ + col_offsets_[j+1];
+        const size_type* row_it = row_indices_ + col_offsets_[j];
+        const size_type* row_end = row_indices_ + col_offsets_[j+1];
         while (row_it < row_end) {
           if (*row_it == i)
             return std::make_pair(true, values_[row_it - row_indices_]);
@@ -101,19 +104,19 @@ namespace sill {
 
     //! Returns the offset for column i.
     //! NOTE: This does not do bound checking.
-    const index_type& col_offset(index_type i) const {
+    const size_type& col_offset(size_type i) const {
       return col_offsets_[i];
     }
 
     //! Returns the row index for non-zero element i.
     //! NOTE: This does not do bound checking.
-    index_type row_index(index_type i) const {
+    size_type row_index(size_type i) const {
       return row_indices_[i];
     }
 
     //! Returns the value for non-zero element i.
     //! NOTE: This does not do bound checking.
-    value_type value(index_type i) const {
+    value_type value(size_type i) const {
       return values_[i];
     }
 
@@ -145,15 +148,15 @@ namespace sill {
     using base::n_;
 
     //! Number of non-zeros.
-    index_type k_;
+    size_type k_;
 
     //! Pointer to column offsets (length n+1).
     //!  col_offsets_[i] = offset in row_indices_ and values_ for column i
     //!  col_offsets_[n] = number of non-zeros
-    const index_type* col_offsets_;
+    const size_type* col_offsets_;
 
     //! Pointer to row indices (length k).
-    const index_type* row_indices_;
+    const size_type* row_indices_;
 
     //! Pointer to values (length k).
     const value_type* values_;

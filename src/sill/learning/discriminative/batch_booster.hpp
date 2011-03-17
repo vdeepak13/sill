@@ -391,13 +391,13 @@ namespace sill {
         edge = base_hypotheses.back()->train_accuracy() - .5;
       }
       // Deal with edge = -.5, 0, .5
-      if (abs(edge) <= params.convergence_zero) {
+      if (fabs(edge) <= params.convergence_zero) {
         if (BATCH_BOOSTER_DEBUG)
           std::cerr << "batch_booster exited early because a base hypothesis"
                     << " had an edge of 0." << std::endl;
         base_hypotheses.pop_back();
         return false;
-      } else if (abs(edge + .5) <= params.convergence_zero) {
+      } else if (fabs(edge + .5) <= params.convergence_zero) {
         if (BATCH_BOOSTER_DEBUG)
           std::cerr << "batch_booster exited early because a base hypothesis"
                     << " had an edge of -.5." << std::endl;
@@ -407,7 +407,7 @@ namespace sill {
           alphas.push_back(- discriminative::BIG_DOUBLE);
         end_step();
         return false;
-      } else if (abs(edge - .5) <= params.convergence_zero) {
+      } else if (fabs(edge - .5) <= params.convergence_zero) {
         if (BATCH_BOOSTER_DEBUG)
           std::cerr << "batch_booster exited early because a base hypothesis"
                     << " had an edge of .5." << std::endl;

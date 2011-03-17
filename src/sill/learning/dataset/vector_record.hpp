@@ -98,7 +98,7 @@ namespace sill {
     //! Constructor for a vector_record which uses data from its creator
     vector_record
     (copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
-     vec* vec_ptr)
+     vector_type* vec_ptr)
       : vector_numbering_ptr(vector_numbering_ptr),
         vec_own(false), vec_ptr(vec_ptr) {
     }
@@ -166,7 +166,7 @@ namespace sill {
     sill::vector_assignment vector_assignment() const {
       sill::vector_assignment a;
       foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
-        vector_type v(p.first->size());
+        vec v(p.first->size(), 0);
         for(size_t j = 0; j < p.first->size(); ++j)
           v[j] = vec_ptr->operator[](j+p.second);
         a[p.first] = v;

@@ -18,6 +18,15 @@
 
 #include <sill/macros_def.hpp>
 
+/**
+ * \file stl_util.hpp  Utilities for STL classes
+ *
+ * File contents:
+ *  - Functions on sets
+ *  - Functions on maps
+ *  - Functions on vectors
+ */
+
 namespace sill {
 
   // Functions on sets
@@ -338,6 +347,32 @@ namespace sill {
 
   // Functions on vectors
   //============================================================================
+
+  //! Concatenates two std::vectors.
+  //! \relates std::vector
+  template <typename T>
+  std::vector<T> concat(const std::vector<T>& vec1,
+                        const std::vector<T>& vec2) {
+    std::vector<T> vec;
+    vec.reserve(vec1.size() + vec2.size());
+    vec.insert(vec.end(), vec1.begin(), vec1.end());
+    vec.insert(vec.end(), vec2.begin(), vec2.end());
+    return vec;
+  }
+
+  //! Concatenates three std::vectors.
+  //! \relates std::vector
+  template <typename T>
+  std::vector<T> concat(const std::vector<T>& vec1,
+                        const std::vector<T>& vec2,
+                        const std::vector<T>& vec3) {
+    std::vector<T> vec;
+    vec.reserve(vec1.size() + vec2.size() + vec3.size());
+    vec.insert(vec.end(), vec1.begin(), vec1.end());
+    vec.insert(vec.end(), vec2.begin(), vec2.end());
+    vec.insert(vec.end(), vec3.begin(), vec3.end());
+    return vec;
+  }
 
   //! Returns a subvector of v specified by the complement of the given indices.
   //! @param indices_sorted  Specifies if the given indices are sorted in

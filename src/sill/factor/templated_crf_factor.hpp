@@ -150,7 +150,8 @@ namespace sill {
       : base(other), factor_ptr_(other.factor_ptr_),
         base_record(other.base_record),
         base_input_record(other.base_input_record),
-        vmap_base2this(other.vmap_base2this), tmp_factor(other.tmp_factor),
+        vmap_base2this(other.vmap_base2this),
+        vmap_this2base(other.vmap_this2base),  tmp_factor(other.tmp_factor),
         fixed_records_(other.fixed_records_) { }
 
     /**
@@ -164,6 +165,7 @@ namespace sill {
       base_record = other.base_record;
       base_input_record = other.base_input_record;
       vmap_base2this = other.vmap_base2this;
+      vmap_this2base = other.vmap_this2base;
       tmp_factor = other.tmp_factor;
       fixed_records_ = other.fixed_records_;
       return *this;
@@ -202,7 +204,6 @@ namespace sill {
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
     double v(const assignment_type& a) const {
-//      fill_record_with_assignment(base_record, a, vmap_base2this);
       base_record.copy_assignment_mapped(a, vmap_base2this);
       return factor_ptr_->v(base_record);
     }
@@ -210,7 +211,6 @@ namespace sill {
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
     double v(const record_type& r) const {
-//      fill_record_with_record(base_record, r, vmap_base2this);
       base_record.copy_record_mapped(r, vmap_base2this);
       return factor_ptr_->v(base_record);
     }
@@ -218,7 +218,6 @@ namespace sill {
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
     double logv(const assignment_type& a) const {
-//      fill_record_with_assignment(base_record, a, vmap_base2this);
       base_record.copy_assignment_mapped(a, vmap_base2this);
       return factor_ptr_->logv(base_record);
     }
@@ -226,7 +225,6 @@ namespace sill {
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
     double logv(const record_type& r) const {
-//      fill_record_with_record(base_record, r, vmap_base2this);
       base_record.copy_record_mapped(r, vmap_base2this);
       return factor_ptr_->logv(base_record);
     }
@@ -242,7 +240,6 @@ namespace sill {
      *          in real space
      */
     const output_factor_type& condition(const input_assignment_type& a) const {
-//      fill_record_with_assignment(base_input_record, a, vmap_base2this);
       base_input_record.copy_assignment_mapped(a, vmap_base2this);
       tmp_factor = factor_ptr_->condition(base_input_record);
       tmp_factor.subst_args(vmap_base2this);
@@ -259,7 +256,6 @@ namespace sill {
      *          in real space
      */
     const output_factor_type& condition(const input_record_type& r) const {
-//      fill_record_with_record(base_input_record, r, vmap_base2this);
       base_input_record.copy_record_mapped(r, vmap_base2this);
       tmp_factor = factor_ptr_->condition(base_input_record);
       tmp_factor.subst_args(vmap_base2this);
@@ -315,7 +311,9 @@ namespace sill {
      * with different variable orderings!
      */
     void fix_records(const record_type& r) {
-      assert(false); // TO DO
+      base_record.copy_record_mapped(r, vmap_base2this);
+      factor_ptr_->fix_records(base_record);
+      fixed_records_ = true;
     }
 
     /**
@@ -323,6 +321,7 @@ namespace sill {
      * any records.
      */
     void unfix_records() {
+      factor_ptr_->unfix_records();
       fixed_records_ = false;
     }
 
@@ -348,7 +347,6 @@ namespace sill {
     //! @param w      Weight by which to multiply the added values.
     void add_gradient(optimization_vector& grad, const record_type& r,
                       double w) const {
-//      fill_record_with_record(base_record, r, vmap_base2this);
       base_record.copy_record_mapped(r, vmap_base2this);
       factor_ptr_->add_gradient(grad, base_record, w);
     }
@@ -369,9 +367,10 @@ namespace sill {
                                const input_record_type& r,
                                const output_factor_type& fy,
                                double w = 1) const {
-//      fill_record_with_record(base_input_record, r, vmap_base2this);
       base_input_record.copy_record_mapped(r, vmap_base2this);
-      factor_ptr_->add_expected_gradient(grad, base_input_record, fy, w);
+      tmp_factor = fy;
+      tmp_factor.subst_args(vmap_this2base);
+      factor_ptr_->add_expected_gradient(grad, base_input_record, tmp_factor,w);
     }
 
     /**
@@ -382,9 +381,10 @@ namespace sill {
     void
     add_combined_gradient(optimization_vector& grad, const record_type& r,
                           const output_factor_type& fy, double w = 1.) const {
-//      fill_record_with_record(base_record, r, vmap_base2this);
       base_record.copy_record_mapped(r, vmap_base2this);
-      factor_ptr_->add_combined_gradient(grad, base_record, fy, w);
+      tmp_factor = fy;
+      tmp_factor.subst_args(vmap_this2base);
+      factor_ptr_->add_combined_gradient(grad, base_record, tmp_factor, w);
     }
 
     /**
@@ -397,7 +397,6 @@ namespace sill {
     void
     add_hessian_diag(optimization_vector& hessian, const record_type& r,
                      double w) const {
-//      fill_record_with_record(base_record, r, vmap_base2this);
       base_record.copy_record_mapped(r, vmap_base2this);
       factor_ptr_->add_hessian_diag(hessian, base_record, w);
     }
@@ -417,9 +416,11 @@ namespace sill {
     add_expected_hessian_diag(optimization_vector& hessian,
                               const input_record_type& r,
                               const output_factor_type& fy, double w) const {
-//      fill_record_with_record(base_input_record, r, vmap_base2this);
       base_input_record.copy_record_mapped(r, vmap_base2this);
-      factor_ptr_->add_expected_hessian_diag(hessian, base_input_record, fy, w);
+      tmp_factor = fy;
+      tmp_factor.subst_args(vmap_this2base);
+      factor_ptr_->add_expected_hessian_diag(hessian, base_input_record,
+                                             tmp_factor, w);
     }
 
     /**
@@ -437,10 +438,11 @@ namespace sill {
     add_expected_squared_gradient
     (optimization_vector& sqrgrad, const input_record_type& r,
      const output_factor_type& fy, double w) const {
-//      fill_record_with_record(base_input_record, r, vmap_base2this);
       base_input_record.copy_record_mapped(r, vmap_base2this);
+      tmp_factor = fy;
+      tmp_factor.subst_args(vmap_this2base);
       factor_ptr_->add_expected_squared_gradient(sqrgrad, base_input_record,
-                                                 fy, w);
+                                                 tmp_factor, w);
     }
 
     /**
@@ -488,6 +490,9 @@ namespace sill {
     //! Mapping: Vars in the base factor --> Vars in this factor instance
     typename variable_type_group<variable_type>::var_map_type vmap_base2this;
 
+    //! Mapping: Vars in this factor instance --> Vars in the base factor
+    typename variable_type_group<variable_type>::var_map_type vmap_this2base;
+
     //! Temp used to hold factors returned by the base,
     //! but with variables mapped to this instance's variables.
     mutable output_factor_type tmp_factor;
@@ -508,11 +513,13 @@ namespace sill {
       foreach(output_variable_type* v, factor_ptr_->output_arguments()) {
         base_vars.push_back(v);
         vmap_base2this[v] = v;
+        vmap_this2base[v] = v;
       }
       foreach(input_variable_type* v, factor_ptr_->input_arguments()) {
         base_vars.push_back(v);
         base_input_vars.push_back(v);
         vmap_base2this[v] = v;
+        vmap_this2base[v] = v;
       }
       base_record = record_type(base_vars);
       base_input_record = input_record_type(base_input_vars);
@@ -534,6 +541,7 @@ namespace sill {
         Ydomain_.insert(my_v);
         base_vars.push_back(v);
         vmap_base2this[v] = my_v;
+        vmap_this2base[my_v] = v;
       }
       foreach(input_variable_type* v, factor_ptr_->input_arguments()) {
         input_variable_type* my_v = safe_get(Xvarmap, v);
@@ -541,6 +549,7 @@ namespace sill {
         base_vars.push_back(v);
         base_input_vars.push_back(v);
         vmap_base2this[v] = my_v;
+        vmap_this2base[my_v] = v;
       }
       base_record = record_type(base_vars);
       base_input_record = input_record_type(base_input_vars);

@@ -22,8 +22,7 @@ namespace sill {
   template <typename T>
   bool is_finite(T x) {
     if (std::numeric_limits<T>::has_infinity) {
-      using std::abs;
-      return abs(x) != std::numeric_limits<T>::infinity();
+      return std::abs(x) != std::numeric_limits<T>::infinity();
     } else
       return true;
   }

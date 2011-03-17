@@ -53,7 +53,7 @@ namespace sill {
       throw std::invalid_argument
         (std::string("gaussian_crf_factor constructor:") +
          " ov dimensions do not match each other.");
-    if ((ov.A.size1() != Y_.size()) || (ov.C.size2() != X_.size()))
+    if (ov.A.size1() != vector_size(Y_) || ov.C.size2() != vector_size(X_))
       throw std::invalid_argument
         ("gaussian_crf_factor constructor: ov dimensions do not match Y,X.");
   }
@@ -342,8 +342,8 @@ namespace sill {
   const canonical_gaussian&
   gaussian_crf_factor::condition(const vector_assignment& a) const {
     if (relabeled) {
-      vec C_row_x(X_in_head_.size(), 0);
-      vec C_col_x(X_in_tail_.size(), 0);
+      vec C_row_x(vector_size(X_in_head_), 0);
+      vec C_col_x(vector_size(X_in_tail_), 0);
       vector_assignment2vector(a, X_in_head_, C_row_x);
       vector_assignment2vector(a, X_in_tail_, C_col_x);
       return condition(C_row_x, C_col_x);
@@ -362,8 +362,8 @@ namespace sill {
       conditioned_f = gcf.get_gaussian<canonical_gaussian>();
       return conditioned_f;
       /*
-      vec C_row_x(X_in_head_.size(), 0);
-      vec C_col_x(X_in_tail_.size(), 0);
+      vec C_row_x(vector_size(X_in_head_), 0);
+      vec C_col_x(vector_size(X_in_tail_), 0);
       get_x_values(r, C_row_x, C_col_x);
       return condition(C_row_x, C_col_x);
       */
@@ -425,8 +425,8 @@ namespace sill {
     // TO DO: Do this more efficiently.
     moment_gaussian mg(this->get_gaussian<moment_gaussian>());
     vector_assignment a;
-    if (x_in_head.size() != X_in_head_.size() ||
-        x_in_tail.size() != X_in_tail_.size()) {
+    if (x_in_head.size() != vector_size(X_in_head_) ||
+        x_in_tail.size() != vector_size(X_in_tail_)) {
       throw std::invalid_argument
         (std::string("gaussian_crf_factor::condition(x_in_head,x_in_tail)") +
          " given arguments not matching factor variables.");
@@ -1140,18 +1140,18 @@ namespace sill {
         }
         vec eta(YXsize);
         eta.set_subvector(irange(0,ov.A.size1()), btA);
-        eta.set_subvector(irange(ov.A.size1(), YX.size()),
+        eta.set_subvector(irange(ov.A.size1(), YXsize),
                           AtA_inv_AtC.transpose() * btA);
-        mat lambda(YX.size(), YX.size());
+        mat lambda(YXsize, YXsize);
         lambda.set_submatrix
           (irange(0,ov.A.size1()), irange(0,ov.A.size1()), AtA);
         lambda.set_submatrix
-          (irange(0,ov.A.size1()), irange(ov.A.size1(), YX.size()), - AtC);
+          (irange(0,ov.A.size1()), irange(ov.A.size1(), YXsize), - AtC);
         lambda.set_submatrix
-          (irange(ov.A.size1(), YX.size()), irange(0,ov.A.size1()),
+          (irange(ov.A.size1(), YXsize), irange(0,ov.A.size1()),
            - AtC.transpose());
         lambda.set_submatrix
-          (irange(ov.A.size1(), YX.size()), irange(ov.A.size1(), YX.size()),
+          (irange(ov.A.size1(), YXsize), irange(ov.A.size1(), YXsize),
            AtC.transpose() * AtA_inv_AtC);
         return canonical_gaussian(YX, lambda, eta);
       } else {

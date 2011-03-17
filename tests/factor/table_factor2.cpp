@@ -64,18 +64,18 @@ int main() {
        << "========================================================\n\n";
   cout << "Factor f1:\n" << f1 << endl;
   table_factor new_f1a;
-  f1.restrict(new_f1a, fa);
+  f1.restrict(fa, new_f1a);
   cout << "f1 restricted by assignment " << fa << ":\n"
        << new_f1a << endl;
   table_factor new_f1b;
-  f1.restrict(new_f1b, fr);
+  f1.restrict(fr, new_f1b);
   assert(new_f1a == new_f1b);
 
-  f1.restrict(new_f1a, fa, make_domain(vars3[1]));
+  f1.restrict(fa, make_domain(vars3[1]), new_f1a);
   cout << "f1 restricted by assignment " << fa << " limited to variables "
        << make_domain(vars3[1]) << ":\n"
        << new_f1a << endl;
-  f1.restrict(new_f1b, fr, make_domain(vars3[1]));
+  f1.restrict(fr, make_domain(vars3[1]), new_f1b);
   assert(new_f1a == new_f1b);
 
   return 0;

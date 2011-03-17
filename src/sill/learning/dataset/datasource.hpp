@@ -94,13 +94,17 @@ namespace sill {
                                           finite_assignment& fa) const;
 
     //! Converts the given vector record data into a vector assignment.
-    template <typename VecType>
-    void convert_vector_record2assignment(const VecType& vecdata,
+    void convert_vector_record2assignment(const vec& vecdata,
+                                          vector_assignment& va) const;
+
+    //! Converts the given vector record data into a vector assignment.
+    template <typename T, typename Index>
+    void convert_vector_record2assignment(const sparse_vector<T,Index>& vecdata,
                                           vector_assignment& va) const {
       assert(vecdata.size() == dvector);
       va.clear();
       foreach(const vector_var_index_pair& p, *vector_numbering_ptr_) {
-        VecType tmpvec(p.first->size());
+        vec tmpvec(p.first->size());
         for(size_t j = 0; j < p.first->size(); j++)
           tmpvec[j] = vecdata[j+p.second];
         va[p.first] = tmpvec;

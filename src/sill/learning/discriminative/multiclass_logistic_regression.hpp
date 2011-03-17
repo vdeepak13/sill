@@ -1772,7 +1772,7 @@ namespace sill {
         v(k) += w_fin_(k, finite_offset[j] + val);
       }
       for (size_t j(0); j < vector_seq.size(); ++j) {
-        const vector_type& vecdata = safe_get(va, vector_seq[j]);
+        const vec& vecdata = safe_get(va, vector_seq[j]);
         for (size_t j2(0); j2 < vector_seq[j]->size(); ++j2) {
           size_t ind(vector_offset[j] + j2);
           v(k) += w_vec_(k,ind) * vecdata[j2];
@@ -1829,7 +1829,7 @@ namespace sill {
       }
     }
     if (vecdata.size() != 0)
-      gradient.v += outer_product(v, vecdata); // TO DO: REPLACE THIS BY WRITING A RANK-1 MATRIX CLASS.
+      gradient.v += outer_product(v, vecdata);
     gradient.b += v;
   } // add_raw_gradient()
 
@@ -1935,7 +1935,7 @@ namespace sill {
     typename dataset<la_type>::record_iterator it_end(ds_ptr->end());
     size_t i(0); // index into ds
     dense_vector_type v;
-    dense_vector_type vecdata;
+    vector_type vecdata;
     for (typename dataset<la_type>::record_iterator it(ds_ptr->begin());
          it != it_end; ++it) {
       my_probabilities(*it, v, x.f, x.v, x.b);
@@ -1946,7 +1946,7 @@ namespace sill {
 	size_t val(findata[finite_indices[j]]);
 	hd.f.add_column(finite_offset[j] + val, v);
       }
-      elem_mult_out((*it).vector(), (*it).vector(), vecdata);
+      elem_mult_out((*it).vector(), (*it).vector(), vecdata); // COULD BE FASTER FOR SPARSE DATA
       hd.v += outer_product(v, vecdata);
       hd.b += v;
       ++i;

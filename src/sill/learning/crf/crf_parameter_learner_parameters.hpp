@@ -60,7 +60,7 @@ namespace sill {
 
     /**
      * Number of initial iterations of parameter learning to run.
-     *  (default = 0)
+     *  (default = 10000)
      */
     size_t init_iterations;
 
