@@ -6,7 +6,7 @@
 
 #include <sill/factor/any_factor.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 #include <sill/inference/junction_tree_inference.hpp>
 #include <sill/stl_io.hpp>
 

@@ -1,5 +1,5 @@
 
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 
 #include <sill/macros_def.hpp>
 

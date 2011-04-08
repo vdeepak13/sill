@@ -6,9 +6,9 @@
  */
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random_mixture_crf_factor_functor.hpp>
-#include <sill/factor/random_gaussian_crf_factor_functor.hpp>
-#include <sill/factor/random_gaussian_functor.hpp>
+#include <sill/factor/random/random_mixture_crf_factor_functor.hpp>
+#include <sill/factor/random/random_gaussian_crf_factor_functor.hpp>
+#include <sill/factor/random/random_gaussian_functor.hpp>
 
 #include <sill/macros_def.hpp>
 

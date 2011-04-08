@@ -24,7 +24,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/gaussian_factors.hpp>
 #include <sill/factor/mixture.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 
 #include <sill/math/bindings/lapack.hpp>
 #include <sill/range/numeric.hpp>

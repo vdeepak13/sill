@@ -12,7 +12,7 @@
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>

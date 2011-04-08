@@ -13,7 +13,7 @@
 #include <sill/datastructure/sparse_table.hpp>
 #include <sill/map.hpp>
 #include <sill/copy_ptr.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 
 #include <sill/macros_def.hpp>
 

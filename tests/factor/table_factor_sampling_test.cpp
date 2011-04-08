@@ -3,7 +3,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 
 #include <sill/macros_def.hpp>
 

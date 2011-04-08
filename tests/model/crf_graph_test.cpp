@@ -10,7 +10,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 #include <sill/model/crf_graph.hpp>
 #include <sill/serialization/serialize.hpp>
 

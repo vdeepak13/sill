@@ -5,9 +5,9 @@
 
 #include <sill/range/concepts.hpp>
 #include <sill/factor/gaussian_crf_factor.hpp>
-#include <sill/factor/random.hpp>
-#include <sill/factor/random_crf_factor_functor.hpp>
-#include <sill/factor/random_factor_functor.hpp>
+#include <sill/factor/random/random.hpp>
+#include <sill/factor/random/random_crf_factor_functor.hpp>
+#include <sill/factor/random/random_factor_functor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/table_crf_factor.hpp>
 #include <sill/math/permutations.hpp>

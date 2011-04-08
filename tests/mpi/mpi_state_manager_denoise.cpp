@@ -31,7 +31,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
 
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 #include <sill/parallel/pthread_tools.hpp>
 #include <sill/parallel/timer.hpp>
 

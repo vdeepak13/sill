@@ -6,7 +6,7 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 #include <sill/learning/crf/crf_parameter_learner.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>

@@ -2,8 +2,7 @@
 #define SILL_RANDOM_MIXTURE_CRF_FACTOR_FUNCTOR_HPP
 
 #include <sill/factor/mixture_crf_factor.hpp>
-#include <sill/factor/random_crf_factor_functor.hpp>
-//#include <sill/factor/random_factor_functor.hpp>
+#include <sill/factor/random/random_crf_factor_functor.hpp>
 
 namespace sill {
 

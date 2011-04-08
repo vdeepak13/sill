@@ -2,7 +2,7 @@
 #define SILL_RANDOM_MIXTURE_FUNCTOR_HPP
 
 #include <sill/factor/mixture.hpp>
-#include <sill/factor/random_factor_functor.hpp>
+#include <sill/factor/random/random_factor_functor.hpp>
 
 #include <sill/macros_def.hpp>
 

@@ -4,7 +4,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/dataset/record_conversions.hpp>
 

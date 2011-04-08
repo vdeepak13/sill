@@ -8,7 +8,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 
 #include <sill/mpi/mpi_wrapper.hpp>
 #include <sill/mpi/mpilogger.hpp>

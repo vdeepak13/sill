@@ -9,7 +9,7 @@
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 #include <sill/inference/parallel/basic_state_manager.hpp>
 #include <sill/parallel/pthread_tools.hpp>
 

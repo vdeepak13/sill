@@ -5,8 +5,8 @@
  */
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random_canonical_gaussian_functor.hpp>
-#include <sill/factor/random_crf_factor_functor.hpp>
+#include <sill/factor/random/random_canonical_gaussian_functor.hpp>
+#include <sill/factor/random/random_crf_factor_functor.hpp>
 
 #include <sill/macros_def.hpp>
 

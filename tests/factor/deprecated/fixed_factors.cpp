@@ -5,7 +5,7 @@
 #include <vector>
 
 #include <sill/factor/fixed_factors.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>

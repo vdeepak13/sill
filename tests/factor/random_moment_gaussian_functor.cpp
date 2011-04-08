@@ -5,7 +5,7 @@
  */
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random_gaussian_functor.hpp>
+#include <sill/factor/random/random_gaussian_functor.hpp>
 
 #include <sill/macros_def.hpp>
 

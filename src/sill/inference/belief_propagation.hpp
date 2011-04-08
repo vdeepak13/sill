@@ -14,7 +14,7 @@
 
 #include <sill/global.hpp>
 #include <sill/factor/norms.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 
 #include <sill/datastructure/mutable_queue.hpp>
 

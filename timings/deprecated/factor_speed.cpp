@@ -8,7 +8,7 @@
 
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/fixed_factors.hpp>
-#include <sill/factor/random.hpp>
+#include <sill/factor/random/random.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
 
