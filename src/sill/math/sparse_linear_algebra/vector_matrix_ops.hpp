@@ -3,6 +3,7 @@
 #define _SILL_VECTOR_MATRIX_OPS_HPP_
 
 #include <sill/math/matrix.hpp>
+#include <sill/math/sparse_linear_algebra/blas.hpp>
 #include <sill/math/sparse_linear_algebra/coo_matrix.hpp>
 #include <sill/math/sparse_linear_algebra/csc_matrix.hpp>
 #include <sill/math/sparse_linear_algebra/rank_one_matrix.hpp>
@@ -257,32 +258,63 @@ namespace sill {
 
   namespace impl {
 
+    /**
+     * Internal dense matrix x sparse vector.
+     * If A has size [m, n] and x has size n and k non-zeros,
+     * this does m * k multiplications.
+     *
+     * This version computes one element of y at a time.
+     */
     template <typename InVecType, typename T, typename SizeType>
     inline vector<T>
-    mult_densemat_sparsevec_(const matrix<T>& m, const InVecType& v) {
-      assert(m.size2() == v.size());
-      vector<T> y(m.size1(),0);
-      const T* m_it = m.begin();
+    mult_densemat_sparsevec_(const matrix<T>& A, const InVecType& x) {
+      assert(A.size2() == x.size());
+      vector<T> y(A.size1(),0);
+      const T* A_it = A.begin();
       for (SizeType i = 0; i < y.size(); ++i) {
-        y[i] = dot(dense_vector_view<T,SizeType>(m.size2(), m_it, m.size1()), v);
-        ++m_it;
+        y[i] = dot(dense_vector_view<T,SizeType>(A.size2(), A_it, A.size1()),
+                   x);
+        ++A_it;
       }
       return y;
     }
 
+    /*
+    // Specialization
+    // TO DO: Use this when y is reasonably long and x is reasonably sparse.
+    template <>
+    inline vector<double>
+    mult_densemat_sparsevec_<sparse_vector<double,size_t>,double,size_t>
+    (const matrix<double>& A, const sparse_vector<double,size_t>& x) {
+      assert(A.size2() == x.size());
+      vector<double> y(A.size1(),0);
+      int n = A.size1();
+      int inc = 1;
+      for (size_t k = 0; k < x.num_non_zeros(); ++k) {
+        double alpha = x.value(k);
+        blas::daxpy_(&n, &alpha, A.begin() + A.size1() * x.index(k), &inc,
+                     y.begin(), &inc);
+      }
+      return y;
+    }
+    */
+
   } // namespace impl
 
   template <typename T, typename SizeType>
-  vector<T> operator*(const matrix<T>& m, const sparse_vector<T,SizeType>& v) {
+  vector<T> operator*(const matrix<T>& A, const sparse_vector<T,SizeType>& x) {
     return
-      impl::mult_densemat_sparsevec_<sparse_vector<T,SizeType>, T, SizeType>(m, v);
+      impl::mult_densemat_sparsevec_<sparse_vector<T,SizeType>,T,SizeType>
+      (A, x);
   }
 
   //! Dense matrix  x  sparse vector --> dense vector
   template <typename T, typename SizeType>
-  vector<T> operator*(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v){
+  vector<T>
+  operator*(const matrix<T>& A, const sparse_vector_view<T,SizeType>& x) {
     return
-      impl::mult_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>(m,v);
+      impl::mult_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>
+      (A,x);
   }
 
   //============================================================================

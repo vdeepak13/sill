@@ -82,4 +82,20 @@ namespace sill {
     return params;
   }
 
+  oarchive&
+  operator<<(oarchive& a,
+             real_optimizer_builder::real_optimizer_type val) {
+    a << (size_t)(val);
+    return a;
+  }
+
+  iarchive&
+  operator>>(iarchive& a,
+             real_optimizer_builder::real_optimizer_type& val) {
+    size_t tmp;
+    a >> tmp;
+    val = (real_optimizer_builder::real_optimizer_type)(tmp);
+    return a;
+  }
+
 }; // namespace sill

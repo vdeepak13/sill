@@ -493,7 +493,7 @@ namespace sill {
     return true;
   }
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

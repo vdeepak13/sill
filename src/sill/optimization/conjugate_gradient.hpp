@@ -223,7 +223,7 @@ namespace sill {
 
   }; // class conjugate_gradient
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

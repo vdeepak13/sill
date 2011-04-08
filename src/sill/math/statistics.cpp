@@ -93,6 +93,18 @@ namespace sill {
 
   } // namespace statistics
 
+  oarchive& operator<<(oarchive& a, statistics::generalized_mean_enum gm) {
+    a << (size_t)(gm);
+    return a;
+  }
+
+  iarchive& operator>>(iarchive& a, statistics::generalized_mean_enum& gm) {
+    size_t tmp;
+    a >> tmp;
+    gm = (statistics::generalized_mean_enum)(tmp);
+    return a;
+  }
+
   // Order statistics
   //============================================================================
 
@@ -105,6 +117,6 @@ namespace sill {
     return ind;
   }
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>

@@ -736,7 +736,7 @@ namespace sill {
 
   };  // class haar
 
-} // end of namespace: prl
+} // namespace sill
 
 #undef DEBUG_HAAR
 

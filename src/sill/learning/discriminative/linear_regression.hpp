@@ -709,7 +709,7 @@ namespace sill {
         train_obj(std::numeric_limits<double>::max()) {
       vector_domain tmpdom(Yvec.begin(), Yvec.end());
       tmpdom.insert(Xvec.begin(), Xvec.end());
-      assert(includes(ds.vector_variables(), tmpdom));
+      assert(ds.has_variables(tmpdom));
       assert(tmpdom.size() == Yvec.size() + Xvec.size()); // make sure disjoint
       init(ds, true);
     }
@@ -739,7 +739,7 @@ namespace sill {
         train_obj(std::numeric_limits<double>::max()) {
       vector_domain tmpdom(Yvec.begin(), Yvec.end());
       tmpdom.insert(Xvec.begin(), Xvec.end());
-      assert(includes(ds.vector_variables(), tmpdom));
+      assert(ds.has_variables(tmpdom));
       assert(tmpdom.size() == Yvec.size() + Xvec.size());
       init(ds, false);
     }
@@ -1213,7 +1213,7 @@ namespace sill {
   std::vector<std::pair<vector_variable*, double> >
   linear_regression::get_dependencies<vector_variable>(size_t K) const;
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

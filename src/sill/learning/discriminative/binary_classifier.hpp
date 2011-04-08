@@ -135,7 +135,7 @@ namespace sill {
 
   }; // class binary_classifier
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

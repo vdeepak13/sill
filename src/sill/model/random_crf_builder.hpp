@@ -22,6 +22,9 @@ namespace sill {
    *        Parse the command line using the modified options description.
    *        Use this struct's create_model() method to create the synthetic
    *        model specified by the options.
+   *
+   * @todo Change "factor_type" so that it includes gaussian, and then
+   *       eliminate "variable_type."
    */
   struct random_crf_builder {
 

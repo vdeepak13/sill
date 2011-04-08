@@ -30,6 +30,6 @@ namespace sill {
 
   };
 
-} // end of namespace: prl
+} // namespace sill
 
 #endif // #ifndef SILL_VOID_PRECONDITIONER_HPP

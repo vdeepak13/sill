@@ -9,6 +9,7 @@
 #include <sill/optimization/real_optimizer.hpp>
 #include <sill/optimization/single_opt_step.hpp>
 #include <sill/optimization/wolfe_step_functor.hpp>
+#include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -78,7 +79,33 @@ namespace sill {
 
     bool valid(bool print_warnings = true) const;
 
+    void save(oarchive& ar) const;
+
+    void load(iarchive& ar);
+
+    //! @param line_prefix  Prefix for each line. (default = "")
+    void print(std::ostream& out, const std::string& line_prefix = "") const;
+
   }; // struct gradient_method_parameters
+
+  oarchive&
+  operator<<(oarchive& a,
+             gradient_method_parameters::real_opt_step_type val);
+
+  iarchive&
+  operator>>(iarchive& a,
+             gradient_method_parameters::real_opt_step_type& val);
+
+  oarchive&
+  operator<<(oarchive& a,
+             gradient_method_parameters::ls_stopping_type val);
+
+  iarchive&
+  operator>>(iarchive& a,
+             gradient_method_parameters::ls_stopping_type& val);
+
+  std::ostream&
+  operator<<(std::ostream& out, const gradient_method_parameters& gm_params);
 
   /**
    * Interface for gradient-based optimization algorithms.
@@ -206,6 +233,8 @@ namespace sill {
     }
 
     void init() {
+      if (params.debug > 1)
+        params.ls_params.debug = params.debug - 1;
       switch (params.step_type) {
       case parameters::SINGLE_OPT_STEP:
         step_ptr = new single_opt_step(params.single_opt_step_params);
@@ -401,6 +430,8 @@ namespace sill {
       if (params.debug > 0) {
         double stepnorm(direction_.L2norm() * eta);
         std::cerr << " End of gradient_method::run_line_search():\n"
+                  << "  line_search computed objective "
+                  << step_ptr->calls_to_objective() << " times\n"
                   << "  step L2 norm = " << stepnorm
                   << ", new x L2 norm = " << x_.L2norm() << "\n"
                   << "  iteration = " << iteration_ << ", eta = " << eta
@@ -445,7 +476,7 @@ namespace sill {
 
   }; // class gradient_method
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

@@ -32,6 +32,6 @@ namespace sill {
 
   } // namespace error_measures
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>

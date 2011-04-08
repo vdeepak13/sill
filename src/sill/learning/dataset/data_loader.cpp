@@ -115,9 +115,11 @@ namespace sill {
   template <>
   void save_variables<variable>
   (std::ostream& out, const domain& vars, const datasource& ds) {
+    std::map<variable*, size_t> var_order_map(ds.variable_order_map());
     out << "fv[";
     foreach(variable* v, vars)
-      out << ds.var_order_index(v) << " ";
+      out << var_order_map[v] << " ";
+//      out << ds.var_order_index(v) << " ";
     out << "]";
   }
 

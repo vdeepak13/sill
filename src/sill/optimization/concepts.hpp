@@ -313,7 +313,7 @@ namespace sill {
 
   //! @} group optimization_concepts
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

@@ -98,7 +98,7 @@ namespace sill {
 
   }; // class decomposable_score
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

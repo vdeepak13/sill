@@ -1,10 +1,14 @@
 #ifndef SILL_SERIALIZE_VECTOR_HPP
 #define SILL_SERIALIZE_VECTOR_HPP
+
+#include <vector>
+
 #include <sill/serialization/iarchive.hpp>
 #include <sill/serialization/oarchive.hpp>
 #include <sill/serialization/iterator.hpp>
-#include <vector>
+
 namespace sill {
+
   /**
     Serializes a vector
     Returns true on success, false on failure  */
@@ -23,6 +27,7 @@ namespace sill {
     deserialize_iterator<T>(a, std::inserter(vec, vec.end()));
     return a;
   }
+
 } // namespace sill
 
 #endif //PRL_SERIALIZE_VECTOR_HPP

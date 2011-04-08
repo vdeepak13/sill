@@ -89,6 +89,10 @@ namespace sill {
 
   } // namespace statistics
 
+  oarchive& operator<<(oarchive& a, statistics::generalized_mean_enum gm);
+
+  iarchive& operator>>(iarchive& a, statistics::generalized_mean_enum& gm);
+
   //! Return the generalized mean of type GM of the given values.
   template <typename T>
   T generalized_mean(const vector<T>& v,
@@ -413,7 +417,7 @@ namespace sill {
   //! in lexigraphical order (increasing).
   std::vector<size_t> sorted_indices(const std::vector<vec>& v);
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

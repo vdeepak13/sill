@@ -36,7 +36,7 @@ namespace sill {
     //==========================================================================
 
     bool syn_oracle_majority::next() {
-      for (size_t j = 0; j < finite_vars.size()-1; ++j)
+      for (size_t j = 0; j < num_finite()-1; ++j)
         current_rec.fin_ptr->operator[](j) = (bernoulli_dist(rng) == true ?1:0);
       size_t sum = 0;
       foreach(size_t j, voting)
@@ -46,7 +46,7 @@ namespace sill {
       else
         current_rec.fin_ptr->back() = 0;
       if (params.feature_noise > 0)
-        for (size_t j = 0; j < finite_vars.size()-1; ++j)
+        for (size_t j = 0; j < num_finite()-1; ++j)
           if (uniform_prob(rng) < params.feature_noise)
             current_rec.fin_ptr->operator[](j) =
               1 - current_rec.fin_ptr->operator[](j);

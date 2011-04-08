@@ -7,8 +7,19 @@
 
 using namespace sill;
 
+//! Timing: dense matrix += outer_product(dense vector, sparse vector)
+void time_dm_pe_outer_product_dv_sv(int argc);
+
+//! Timing: dense vector += dense matrix * sparse vector
+void time_dv_pe_dm_times_sv();
+
 int main(int argc, char** argv) {
 
+  //  time_dv_pe_dm_times_sv();
+
+}
+
+void time_dm_pe_outer_product_dv_sv(int argc) {
   // Timing: dense matrix += outer_product(dense vector, sparse vector)
   size_t m = 100;
   size_t n = 10000000;
@@ -38,7 +49,12 @@ int main(int argc, char** argv) {
             << " secs" << std::endl;
   if (argc > 1000)
     std::cout << dm;
+}
 
+void time_dv_pe_dm_times_sv() {
+  // Timing: dense vector += dense matrix * sparse vector
+  size_t m = 10;
+  assert(false); // TO DO
 }
 
 #include <sill/macros_undef.hpp>

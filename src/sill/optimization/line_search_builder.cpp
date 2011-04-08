@@ -44,4 +44,4 @@ namespace sill {
 
   } // add_options
 
-} // end of namespace: prl
+} // namespace sill

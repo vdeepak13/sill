@@ -44,6 +44,14 @@ namespace sill {
     void add_options(boost::program_options::options_description& desc,
                      const std::string& desc_prefix = "");
 
+    /**
+     * Return the CV options specified in this builder.
+     * This version:
+     *  - sets N automatically to minvals.size() and
+     *  - checks to make sure N == maxvals.size() too.
+     */
+    crossval_parameters get_parameters();
+
     //! Return the CV options specified in this builder.
     //! @param N   Dimensionality of parameter vector.
     crossval_parameters get_parameters(size_t N);

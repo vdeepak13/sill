@@ -10,8 +10,10 @@
 
 #include <boost/type_traits/is_same.hpp>
 
+#include <sill/math/constants.hpp>
 #include <sill/optimization/real_opt_step.hpp>
 #include <sill/optimization/real_opt_step_functor.hpp>
+#include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -54,35 +56,17 @@ namespace sill {
      */
     size_t debug;
 
-    line_search_parameters()
-      : convergence_zero(.000001), ls_eta_zero_multiplier(.0000001),
-        ls_step_magnitude(1), ls_init_eta(1), ls_eta_mult(2),
-        debug(0) {
-    }
+    line_search_parameters();
 
     virtual ~line_search_parameters() { }
 
-    bool valid() const {
-      if (convergence_zero < 0)
-        return false;
-      if (ls_eta_zero_multiplier < 0)
-        return false;
-      if (ls_step_magnitude <= 0)
-        return false;
-      if (ls_init_eta <= 0)
-        return false;
-      if (ls_eta_mult <= 1)
-        return false;
-      return true;
-    }
+    bool valid() const;
 
-    void print(std::ostream& out) const {
-      out << "convergence_zero=" << convergence_zero << "\n"
-          << "ls_eta_zero_multiplier=" << ls_eta_zero_multiplier << "\n"
-          << "ls_step_magnitude=" << ls_step_magnitude << "\n"
-          << "ls_init_eta=" << ls_init_eta << "\n"
-          << "ls_eta_mult=" << ls_eta_mult << "\n";
-    }
+    void print(std::ostream& out, const std::string& line_prefix = "") const;
+
+    void save(oarchive& ar) const;
+
+    void load(iarchive& ar);
 
   }; // struct line_search_parameters
 
@@ -124,6 +108,11 @@ namespace sill {
     size_t searching_steps_;
 
     size_t calls_to_objective_;
+
+    //! Returns true if val1 is within convergence_zero of val2.
+    bool approx_eq(double val1, double val2) const {
+      return (fabs(val1 - val2) <= params.convergence_zero);
+    }
 
     //! Helper used by run_line_search().
     //! Sets obj to objective(eta); returns true if line search can stop early.
@@ -207,7 +196,7 @@ namespace sill {
 
       /* This uses bracketing variables and corresponding objective values:
           [ front_eta < mid_eta < back_eta ]
-           (front_obj) (middle_obj)  (mid_obj)
+           (front_obj) (mid_obj) (back_obj)
        */
 
       // Find bounds [front_eta, back_eta]
@@ -217,6 +206,13 @@ namespace sill {
         if (params.debug > 0)
           std::cerr << "line_search converged at eta = 0."
                     << "  Why did you call line_search?"
+                    << std::endl;
+        return;
+      }
+      if (front_obj == inf()) {
+        if (params.debug > 0)
+          std::cerr << "WARNING: line_search failed since initial objective = "
+                    << front_obj << " (for eta = " << front_eta << ")"
                     << std::endl;
         return;
       }
@@ -250,11 +246,11 @@ namespace sill {
       if (ls_helper(mid_obj, mid_eta, obj_functor))
         return;
 
-      // Do a binary search
-      while ((fabs(back_obj - front_obj) > params.convergence_zero) ||
-             (fabs(back_obj - mid_obj) > params.convergence_zero) ||
-             (fabs(mid_obj - front_obj) > params.convergence_zero)) {
-        if ((back_eta == mid_eta) || (front_eta == mid_eta)) {
+      // Do a binary search within the bounds.
+      while (!approx_eq(back_obj, front_obj) ||
+             !approx_eq(back_obj, mid_obj) ||
+             !approx_eq(mid_obj, front_obj)) {
+        if (approx_eq(back_eta, mid_eta) || approx_eq(front_eta, mid_eta)) {
           if (params.debug > 0)
             std::cerr << "line_search: step sizes eta converged, but the"
                       << " objective did not yet converge.  You may have"
@@ -310,6 +306,7 @@ namespace sill {
       if (params.debug > 0)
         std::cerr << "  Chose: eta = " << mid_eta << ", objective = " << mid_obj
                   << std::endl;
+
     } // step()
 
     //! Step size chosen.
@@ -354,7 +351,7 @@ namespace sill {
 
   }; // class line_search
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

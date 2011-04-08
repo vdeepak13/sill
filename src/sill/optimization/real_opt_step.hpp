@@ -49,7 +49,7 @@ namespace sill {
 
   };  // class real_opt_step
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

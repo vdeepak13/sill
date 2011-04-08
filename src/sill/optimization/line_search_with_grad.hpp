@@ -208,7 +208,7 @@ namespace sill {
 
   }; // class line_search_with_grad
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

@@ -4,6 +4,7 @@
 
 #include <sill/optimization/real_opt_step.hpp>
 #include <sill/optimization/void_step_functor.hpp>
+#include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -44,7 +45,21 @@ namespace sill {
       return true;
     }
 
+    void save(oarchive& ar) const;
+
+    void load(iarchive& ar);
+
+    void print(std::ostream& out, const std::string& line_prefix = "") const;
+
   }; // struct single_opt_step_parameters
+
+  oarchive&
+  operator<<(oarchive& a,
+             single_opt_step_parameters::eta_choice_enum eta_choice);
+
+  iarchive&
+  operator>>(iarchive& a,
+             single_opt_step_parameters::eta_choice_enum& eta_choice);
 
   /**
    * Chooses a step size eta for real-valued optimization not based on the
@@ -106,7 +121,7 @@ namespace sill {
 
   };  // class single_opt_step
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

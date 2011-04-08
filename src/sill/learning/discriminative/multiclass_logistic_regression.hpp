@@ -14,6 +14,7 @@
 #include <sill/math/linear_algebra.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/optimization/real_optimizer_builder.hpp>
+#include <sill/serialization/serialize.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>
@@ -132,79 +133,25 @@ namespace sill {
     }
     */
 
-    multiclass_logistic_regression_parameters()
-      : regularization(2), lambda(.00001), init_iterations(1000),
-        perturb(0), resolve_numerical_problems(false),
-        random_seed(time(NULL)), debug(0),
-        opt_method(real_optimizer_builder::CONJUGATE_GRADIENT),
-        cg_update_method(0), lbfgs_M(10) { }
-    //    method(2), eta(.1), mu(choose_mu()), convergence_zero(.000001),
+    multiclass_logistic_regression_parameters();
 
-    bool valid() const {
-      if (regularization > 2)
-        return false;
-      if (lambda < 0)
-        return false;
-      if (perturb < 0)
-        return false;
-      if (!gm_params.valid())
-        return false;
-      if (cg_update_method > 0)
-        return false;
-      if (lbfgs_M == 0)
-        return false;
-      //      if (method > 3)        return false;
-      //      if (eta <= 0 || eta > 1)        return false;
-      //      if (mu <= 0 || mu > 1)        return false;
-      //      if (convergence_zero < 0)        return false;
-      return true;
-    }
+    bool valid() const;
 
-    void save(std::ofstream& out) const {
-      out << regularization << " " << lambda << " " << init_iterations << " "
-//        << method << " " << eta << " " << mu << " " << convergence_zero << " "
-          << perturb << " " << (resolve_numerical_problems ? 1 : 0) << " "
-          << random_seed << " " << debug << "\n";
-    }
+    void save(std::ofstream& out) const;
 
-    void load(std::ifstream& in) {
-      std::string line;
-      getline(in, line);
-      std::istringstream is(line);
-      if (!(is >> regularization))
-        assert(false);
-      if (!(is >> lambda))
-        assert(false);
-      if (!(is >> init_iterations))
-        assert(false);
-      if (!(is >> perturb))
-        assert(false);
-      /*
-      if (!(is >> method))
-        assert(false);
-      if (!(is >> eta))
-        assert(false);
-      if (!(is >> mu))
-        assert(false);
-      if (!(is >> convergence_zero))
-        assert(false);
-      */
-      size_t tmpsize;
-      if (!(is >> tmpsize))
-        assert(false);
-      if (tmpsize == 0)
-        resolve_numerical_problems = false;
-      else if (tmpsize == 1)
-        resolve_numerical_problems = true;
-      else
-        assert(false);
-      if (!(is >> random_seed))
-        assert(false);
-      if (!(is >> debug))
-        assert(false);
-    }
+    void load(std::ifstream& in);
+
+    void save(oarchive& ar) const;
+
+    void load(iarchive& ar);
+
+    void print(std::ostream& out, const std::string& line_prefix = "") const;
 
   }; // struct multiclass_logistic_regression_parameters
+
+  std::ostream&
+  operator<<(std::ostream& out,
+             const multiclass_logistic_regression_parameters& mlr_params);
 
   /**
    * Class for learning a multiclass logistic regression model.
@@ -523,7 +470,7 @@ namespace sill {
 
       //! Computes the value of the objective at x.
       double objective(const opt_variables& x) const {
-        double ll(0);
+        double neg_ll(0);
         size_t i(0);
         ds_it.reset();
         while (ds_it != ds_end) {
@@ -531,29 +478,29 @@ namespace sill {
           mlr.my_probabilities(*ds_it, v, x.f, x.v, x.b);
           const std::vector<size_t>& findata = (*ds_it).finite();
           size_t label_(findata[mlr.label_index_]);
-          ll -= mlr.ds_ptr->weight(i) * std::log(v[label_]);
+          neg_ll -= mlr.ds_ptr->weight(i) * std::log(v[label_]);
           ++i;
           ++ds_it;
         }
-        ll /= mlr.total_train_weight;
+        neg_ll /= mlr.total_train_weight;
 
         switch(mlr.params.regularization) {
         case 0:
           break;
         case 1:
-          ll += mlr.params.lambda * x.L1norm();
+          neg_ll += mlr.params.lambda * x.L1norm();
           break;
         case 2:
           {
             double tmpval(x.L2norm());
-            ll += mlr.params.lambda * .5 * tmpval * tmpval;
+            neg_ll += mlr.params.lambda * .5 * tmpval * tmpval;
           }
           break;
         default:
           assert(false);
         }
 
-        return ll;
+        return neg_ll;
       }
 
     }; // class objective_functor
@@ -646,7 +593,6 @@ namespace sill {
 
     //! Dataset (for batch learning)
     const dataset<la_type>* ds_ptr;
-//    const dataset<la_type>& ds;
 
     //! Oracle (for online/stochastic learning)
     oracle<la_type>* o_ptr;
@@ -717,8 +663,8 @@ namespace sill {
     //! Current training accuracy
     double train_acc;
 
-    //! Current training log likelihood
-    double train_log_like;
+    //! Current training objective
+    double train_obj;
 
     //! Temp vector for making predictions (to avoid reallocation).
     mutable dense_vector_type tmpvec;
@@ -728,6 +674,9 @@ namespace sill {
 
     // Protected methods
     //==========================================================================
+
+    //! Initializes datasource according to the optimization method.
+    void init_datasource(size_t n = 0);
 
     //! Initializes stuff using preset ds, o.
     void init(bool init_weights = true);
@@ -886,9 +835,9 @@ namespace sill {
      multiclass_logistic_regression_parameters params
      = multiclass_logistic_regression_parameters())
       : base(stats.get_dataset()), params(params),
-        my_ds_ptr(NULL),
-        my_ds_o_ptr(new ds_oracle<la_type>(stats.get_dataset())),
-        ds_ptr(&(stats.get_dataset())), o_ptr(my_ds_o_ptr) {
+        my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(&(stats.get_dataset())),
+        o_ptr(NULL) {
+      init_datasource();
       init();
       build();
     }
@@ -904,16 +853,9 @@ namespace sill {
      multiclass_logistic_regression_parameters params
      = multiclass_logistic_regression_parameters())
       : base(o), params(params),
-        my_ds_ptr(new vector_dataset<la_type>(o.datasource_info())),
-        my_ds_o_ptr(NULL), ds_ptr(my_ds_ptr), o_ptr(&o) {
+        my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(NULL), o_ptr(&o) {
+      init_datasource(n);
       init();
-      if (!real_optimizer_builder::is_stochastic(params.opt_method)) {
-        for (size_t i = 0; i < n; ++i)
-          if (o_ptr->next())
-            my_ds_ptr->insert(o_ptr->current());
-          else
-            break;
-      }
       build();
     }
 
@@ -927,8 +869,8 @@ namespace sill {
      multiclass_logistic_regression_parameters params
      = multiclass_logistic_regression_parameters())
       : base(ds), params(params),
-        my_ds_ptr(NULL), my_ds_o_ptr(new ds_oracle<la_type>(ds)),
-        ds_ptr(&ds), o_ptr(my_ds_o_ptr) {
+        my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(&ds), o_ptr(NULL) {
+      init_datasource();
       init();
       build();
     }
@@ -945,9 +887,9 @@ namespace sill {
      multiclass_logistic_regression_parameters params
      = multiclass_logistic_regression_parameters())
       : base(ds), params(params),
-        my_ds_ptr(NULL), my_ds_o_ptr(new ds_oracle<la_type>(ds)),
-        ds_ptr(&ds), o_ptr(my_ds_o_ptr),
+        my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(&ds), o_ptr(NULL),
         weights_(init_mlr.weights_) {
+      init_datasource();
       init(false);
       // Check base:
       assert(label_ == init_mlr.label_);
@@ -1099,6 +1041,10 @@ namespace sill {
 
     // Learning and mutating operations
     //==========================================================================
+
+    //! Current training objective
+    //! This is currently not set for optimization via stochastic gradient.
+    double train_objective() const { return train_obj; }
 
     //! Reset the random seed in this algorithm's parameters and in its
     //! random number generator.
@@ -1326,47 +1272,48 @@ namespace sill {
     typedef typename la_type::value_type value_type;
     typedef vector<value_type>           dense_vector_type;
 
+    // Public data
+    // =========================================================================
+
+    //! If true, print out info whenever CV is run.
+    //!  (default = false)
+    bool verbose_cv;
+
+    //! Output stream to write to when verbose CV is called.
+    //! If NULL, use std::cout (default).
+    std::ostream* out_ptr;
+
     // Constructors and destructors
     // =========================================================================
 
     mlr_validation_functor()
-      : mlr_ptr(NULL), do_cv(false) { }
+      : verbose_cv(false), out_ptr(NULL), mlr_ptr(NULL), do_cv(false) { }
 
     //! Constructor for testing with the given parameters.
     explicit mlr_validation_functor
     (const multiclass_logistic_regression_parameters& params)
-      : params(params), mlr_ptr(NULL), do_cv(false) { }
+      : verbose_cv(false), out_ptr(NULL), params(params), mlr_ptr(NULL),
+        do_cv(false) { }
 
     //! Constructor for testing via CV, where each round chooses lambda via
     //! a second level of CV.
     mlr_validation_functor
     (const multiclass_logistic_regression_parameters& params,
      const crossval_parameters& cv_params)
-      : params(params), mlr_ptr(NULL), do_cv(true), cv_params(cv_params) { }
-
-    /*
-    //! Constructor which warm starts immediately.
-    mlr_validation_functor
-    (const multiclass_logistic_regression_parameters& params,
-     const multiclass_logistic_regression& mlr)
-      : params(params), mlr_ptr(new multiclass_logistic_regression(mlr)) {
-      use_weights = true;
-    }
-    */
-
-    ~mlr_validation_functor() {
-      if (mlr_ptr)
-        delete(mlr_ptr);
-    }
+      : verbose_cv(false), out_ptr(NULL), params(params), mlr_ptr(NULL),
+        do_cv(true), cv_params(cv_params) { }
 
     mlr_validation_functor(const mlr_validation_functor& other)
-      : params(other.params), mlr_ptr(NULL), do_cv(other.do_cv),
-        cv_params(other.cv_params) {
+      : verbose_cv(other.verbose_cv), out_ptr(other.out_ptr),
+        params(other.params), mlr_ptr(NULL),
+        do_cv(other.do_cv), cv_params(other.cv_params) {
       if (other.mlr_ptr)
         mlr_ptr = new multiclass_logistic_regression<la_type>(*(other.mlr_ptr));
     }
 
     mlr_validation_functor& operator=(const mlr_validation_functor& other) {
+      verbose_cv = other.verbose_cv;
+      out_ptr = other.out_ptr;
       params = other.params;
       mlr_ptr = NULL;
       if (other.mlr_ptr)
@@ -1376,8 +1323,15 @@ namespace sill {
       return *this;
     }
 
+    ~mlr_validation_functor() {
+      if (mlr_ptr)
+        delete(mlr_ptr);
+    }
+
     //! Like a constructor.
     void reset(const multiclass_logistic_regression_parameters& params) {
+      verbose_cv = false;
+      out_ptr = NULL;
       this->params = params;
       if (mlr_ptr)
         delete(mlr_ptr);
@@ -1388,6 +1342,8 @@ namespace sill {
     //! Like a constructor.
     void reset(const multiclass_logistic_regression_parameters& params,
                const crossval_parameters& cv_params) {
+      verbose_cv = false;
+      out_ptr = NULL;
       this->params = params;
       if (mlr_ptr)
         delete(mlr_ptr);
@@ -1417,19 +1373,41 @@ namespace sill {
       if (do_cv) {
         boost::mt11213b rng(random_seed);
         boost::uniform_int<int> unif_int(0,std::numeric_limits<int>::max());
-        params.lambda =
-          multiclass_logistic_regression<la_type>::choose_lambda
-          (cv_params, ds, params, unif_int(rng));
+
+        mlr_validation_functor<la_type> mlr_val_func(params);
+        validation_framework<la_type>
+          val_frame(ds, cv_params, mlr_val_func, unif_int(rng));
+        if (verbose_cv) {
+          if (out_ptr)
+            val_frame.print(*out_ptr, 1);
+          else
+            val_frame.print(std::cout, 1);
+        }
+        assert(val_frame.best_lambdas().size() == 1);
+        params.lambda = val_frame.best_lambdas()[0];
+
+        if (mlr_val_func.mlr_ptr) {
+          if (mlr_ptr)
+            delete(mlr_ptr);
+          mlr_ptr = mlr_val_func.mlr_ptr;
+          mlr_val_func.mlr_ptr = NULL;
+        }
         random_seed = unif_int(rng);
       }
       params.random_seed = random_seed;
       if (mlr_ptr) {
         mlr_ptr =
           new multiclass_logistic_regression<la_type>(ds, *mlr_ptr, params);
+        if (mlr_ptr->train_objective() == inf()) {
+          // Try without the warm start.
+          delete(mlr_ptr);
+          mlr_ptr = NULL;
+          mlr_ptr = new multiclass_logistic_regression<la_type>(ds, params);
+        }
       } else {
         mlr_ptr = new multiclass_logistic_regression<la_type>(ds, params);
       }
-    }
+    } // train_model(ds, random_seed)
 
     void train_model(const dataset<la_type>& ds,
                      const dense_vector_type& validation_params,
@@ -1492,6 +1470,31 @@ namespace sill {
   //==========================================================================
 
   template <typename LA>
+  void multiclass_logistic_regression<LA>::init_datasource(size_t n) {
+    if (real_optimizer_builder::is_stochastic(params.opt_method)) {
+      if (!o_ptr) {
+        if (my_ds_ptr) {
+          my_ds_o_ptr = new ds_oracle<la_type>(*my_ds_ptr);
+          o_ptr = my_ds_o_ptr;
+        }
+      }
+    } else {
+      if (!ds_ptr) {
+        if (o_ptr) {
+          my_ds_ptr = new vector_dataset<la_type>(o_ptr->datasource_info(), n);
+          for (size_t i = 0; i < n; ++i) {
+            if (o_ptr->next())
+              my_ds_ptr->insert(o_ptr->current());
+            else
+              break;
+          }
+          ds_ptr = my_ds_ptr;
+        }
+      }
+    }
+  }
+
+  template <typename LA>
   void multiclass_logistic_regression<LA>::init(bool init_weights) {
     fixed_record = false;
     if (ds_ptr) {
@@ -1510,11 +1513,12 @@ namespace sill {
     grad_functor_ptr = NULL;
     prec_functor_ptr = NULL;
     gradient_method_ptr = NULL;
+    stochastic_gradient_ptr = NULL;
     //      gradient_ptr = NULL;
     iteration_ = 0;
     total_train_weight = 0;
     train_acc = 0;
-    train_log_like = -std::numeric_limits<double>::max();
+    train_obj = std::numeric_limits<double>::max();
     if (label_) {
       nclasses_ = label_->size();
       tmpvec.resize(label_->size());
@@ -1545,7 +1549,7 @@ namespace sill {
     switch (params.opt_method) {
     case real_optimizer_builder::GRADIENT_DESCENT:
       {
-        gradient_descent_parameters ga_params;
+        gradient_descent_parameters ga_params(params.gm_params);
         gradient_method_ptr =
           new gradient_descent_type(*obj_functor_ptr, *grad_functor_ptr,
                                     weights_, ga_params);
@@ -1553,7 +1557,8 @@ namespace sill {
       break;
     case real_optimizer_builder::CONJUGATE_GRADIENT:
       {
-        conjugate_gradient_parameters cg_params;
+        conjugate_gradient_parameters cg_params(params.gm_params);
+        cg_params.update_method = params.cg_update_method;
         gradient_method_ptr =
           new conjugate_gradient_type(*obj_functor_ptr, *grad_functor_ptr,
                                       weights_, cg_params);
@@ -1561,7 +1566,8 @@ namespace sill {
       break;
     case real_optimizer_builder::CONJUGATE_GRADIENT_DIAG_PREC:
       {
-        conjugate_gradient_parameters cg_params;
+        conjugate_gradient_parameters cg_params(params.gm_params);
+        cg_params.update_method = params.cg_update_method;
         gradient_method_ptr =
           new prec_conjugate_gradient_type(*obj_functor_ptr, *grad_functor_ptr,
 					   *prec_functor_ptr, weights_,
@@ -1570,7 +1576,8 @@ namespace sill {
       break;
     case real_optimizer_builder::LBFGS:
       {
-        lbfgs_parameters lbfgs_params;
+        lbfgs_parameters lbfgs_params(params.gm_params);
+        lbfgs_params.M = params.lbfgs_M;
         gradient_method_ptr =
           new lbfgs_type(*obj_functor_ptr, *grad_functor_ptr,
                          weights_, lbfgs_params);
@@ -1734,7 +1741,7 @@ namespace sill {
            " resolve_numerical_problems.");
       v /= sum(v);
     }
-  }
+  } // finish_probabilities
 
   template <typename LA>
   void
@@ -1813,7 +1820,6 @@ namespace sill {
     dense_vector_type v;
     my_probabilities(example, v, x.f, x.v, x.b);
     const std::vector<size_t>& findata = example.finite();
-    const vector_type& vecdata = example.vector();
     size_t label_val(findata[label_index_]);
     size_t pred_(max_index(v, rng));
     if (label_val == pred_)
@@ -1828,8 +1834,8 @@ namespace sill {
         gradient.f(k, val) += v(k);
       }
     }
-    if (vecdata.size() != 0)
-      gradient.v += outer_product(v, vecdata);
+    if (example.vector().size() != 0)
+      gradient.v += outer_product(v, example.vector());
     gradient.b += v;
   } // add_raw_gradient()
 
@@ -2054,12 +2060,12 @@ namespace sill {
     total_train_weight = other.total_train_weight;
     nclasses_ = other.nclasses_;
     train_acc = other.train_acc;
-    train_log_like = other.train_log_like;
+    train_obj = other.train_obj;
     tmpvec = other.tmpvec;
     log_max_double = other.log_max_double;
 
     return *this;
-  }
+  } // operator=
 
   // Getters and helpers
   //==========================================================================
@@ -2308,28 +2314,33 @@ namespace sill {
   template <typename LA>
   bool multiclass_logistic_regression<LA>::step() {
     if (gradient_method_ptr) {
-      double prev_train_log_like(train_log_like);
+      double prev_train_obj(train_obj);
       if (!gradient_method_ptr->step())
         return false;
-      train_log_like = - gradient_method_ptr->objective();
-      if (train_log_like < prev_train_log_like) {
+      train_obj = gradient_method_ptr->objective();
+      if (train_obj == inf()) {
+        if (params.debug > 0)
+          std::cerr << "multiclass_logistic_regression::step() failed since"
+                    << " objective = inf." << std::endl;
+        return false;
+      }
+      if (train_obj > prev_train_obj) {
         if (params.debug > 0)
           std::cerr << "multiclass_logistic_regression took a step which "
-                    << "lowered the regularized log likelihood from "
-                    << prev_train_log_like << " to " << train_log_like
-                    << std::endl;
+                    << "increased the objective from " << prev_train_obj
+                    << " to " << train_obj << std::endl;
       }
       if (params.debug > 1) {
-        std::cerr << "change in regularized log likelihood = "
-                  << (train_log_like - prev_train_log_like) << std::endl;
+        std::cerr << "change in objective = "
+                  << (train_obj - prev_train_obj) << std::endl;
       }
       // Check for convergence
-      if (fabs(train_log_like - prev_train_log_like)
+      if (fabs(train_obj - prev_train_obj)
           < params.gm_params.convergence_zero) {
         if (params.debug > 1)
           std::cerr << "multiclass_logistic_regression converged:"
-                    << " regularized training log likelihood changed from "
-                    << prev_train_log_like << " to " << train_log_like
+                    << " objective changed from "
+                    << prev_train_obj << " to " << train_obj
                     << "; exiting early (iteration " << iteration() << ")."
                     << std::endl;
         return false;
@@ -2355,7 +2366,7 @@ namespace sill {
     // TO DO: SAVE POINTERS TO STUFF, ETC.
     base::save(out, save_part, save_name);
     params.save(out);
-    out << train_acc << " " << train_log_like
+    out << train_acc << " " << train_obj
         << " " << iteration_ << " " << total_train_weight << "\n";
     for (size_t i = 0; i < weights_.f.size1(); ++i)
       out << weights_.f.row(i) << " ";
@@ -2402,7 +2413,7 @@ namespace sill {
     std::istringstream is(line);
     if (!(is >> train_acc))
       assert(false);
-    if (!(is >> train_log_like))
+    if (!(is >> train_obj))
       assert(false);
     if (!(is >> iteration_))
       assert(false);
@@ -2463,7 +2474,7 @@ namespace sill {
     return val_frame.best_lambdas()[0];
   }
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

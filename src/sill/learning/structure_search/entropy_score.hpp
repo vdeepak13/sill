@@ -143,7 +143,7 @@ namespace sill {
 
   }; // class entropy_score
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

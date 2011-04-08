@@ -506,6 +506,6 @@ namespace prl {
 
   }; // class structure_search
 
-} // end of namespace: prl
+} // namespace sill
 
 #endif // #ifndef PRL_STRUCTURE_SEARCH_HPP

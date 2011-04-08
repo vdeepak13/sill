@@ -32,4 +32,4 @@ namespace sill {
     return sos_params;
   }
 
-}; // end of namespace: prl
+}; // namespace sill

@@ -254,7 +254,7 @@ namespace sill {
 
   }; // struct wolfe_step_functor
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

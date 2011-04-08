@@ -322,7 +322,7 @@ namespace sill {
 
   }; // class multiclass2multilabel
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

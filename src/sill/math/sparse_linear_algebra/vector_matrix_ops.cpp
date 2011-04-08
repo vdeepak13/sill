@@ -4,6 +4,35 @@
 
 namespace sill {
 
+  //============================================================================
+  // Matrix-Vector operations: implementations
+  //============================================================================
+  /*
+  namespace impl {
+
+    template <>
+    vector<double>
+    mult_densemat_sparsevec_<sparse_vector<double,size_t>,double,size_t>
+    (const matrix<double>& A, const sparse_vector<double,size_t>& x) {
+      assert(A.size2() == x.size());
+      vector<double> y(A.size1(),0);
+      int n = A.size1();
+      int inc = 1;
+      for (size_t k = 0; k < x.num_non_zeros(); ++k) {
+        double alpha = x.value(k);
+        blas::daxpy_(&n, &alpha, A.begin() + A.size1() * x.index(k), &inc,
+                     y.begin(), &inc);
+      }
+      return y;
+    }
+
+  } // namespace impl
+  */
+
+  //============================================================================
+  // Matrix-Matrix operations: implementations
+  //============================================================================
+
   template <>
   matrix<double>&
   operator+=<double,size_t>

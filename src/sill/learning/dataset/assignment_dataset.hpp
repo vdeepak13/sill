@@ -97,8 +97,8 @@ namespace sill {
     using base::num_vector;
     using base::variable_type_order;
     using base::var_order;
-    using base::var_order_index;
-    using base::variable_index;
+    //    using base::var_order_index;
+    //    using base::variable_index;
     using base::record_index;
     using base::vector_indices;
     using base::finite_numbering;
@@ -192,19 +192,19 @@ namespace sill {
   protected:
 
     // From datasource
-    using base::finite_vars;
+    //    using base::finite_vars;
     using base::finite_seq;
     using base::finite_numbering_ptr_;
     using base::dfinite;
     using base::finite_class_vars;
-    using base::vector_vars;
+    //    using base::vector_vars;
     using base::vector_seq;
     using base::vector_numbering_ptr_;
     using base::dvector;
     using base::vector_class_vars;
     using base::var_type_order;
-    using base::var_order_map;
-    using base::vector_var_order_map;
+    //    using base::var_order_map;
+    //    using base::vector_var_order_map;
 
     // From dataset
     using base::nrecords;
@@ -384,7 +384,7 @@ namespace sill {
   void assignment_dataset<LA>::normalize(const vec& means, const vec& std_devs,
                                      const vector_var_vector& vars) {
     foreach(vector_variable* v, vars)
-      assert(vector_vars.count(v) != 0);
+      assert(this->has_variable(v));
     ivec vars_inds(vector_indices(vars));
     assert(means.size() == vars_inds.size());
     assert(std_devs.size() == vars_inds.size());
@@ -404,7 +404,7 @@ namespace sill {
   template <typename LA>
   void assignment_dataset<LA>::normalize2(const vector_var_vector& vars) {
     foreach(vector_variable* v, vars)
-      assert(vector_vars.count(v) != 0);
+      assert(this->has_variable(v));
     ivec vars_inds(vector_indices(vars));
     for (size_t i(0); i < nrecords; ++i) {
       double normalizer(0);

@@ -216,6 +216,17 @@ namespace sill {
           }
         }
         if (level >= 2) {
+          out << "Summary for all lambdas:\n"
+              << "lambda\t"
+              << statistics::generalized_mean_string(run_combo_type) << "\t"
+              << statistics::generalized_deviation_string(run_combo_type)
+              << "\n";
+          for (size_t i = 0; i < lambdas_.size(); ++i) {
+            out << lambdas_[i] << "\t" << single_results_[i] << "\t"
+                << generalized_deviation(results_[i], run_combo_type) << "\n";
+          }
+        }
+        if (level >= 3) {
           assert(false); // NOT YET IMPLEMENTED
         }
       } else {
@@ -442,16 +453,20 @@ namespace sill {
   template <typename LA>
   validation_framework<LA>::
   validation_framework(const dataset<la_type>& ds,
-                       const crossval_parameters& cv_params,
+                       const crossval_parameters& cv_params_,
                        model_validation_functor<la_type>& mv_func,
                        unsigned random_seed)
-    : build_type_(CHOOSE_PARAM_CV), run_combo_type(cv_params.run_combo_type),
+    : build_type_(CHOOSE_PARAM_CV), run_combo_type(cv_params_.run_combo_type),
       rng(random_seed), unif_int(0, std::numeric_limits<int>::max()) {
+
+    crossval_parameters cv_params(cv_params_);
 
     if (!cv_params.valid()) {
       throw std::invalid_argument
         ("validation_framework constructed with invalid cv_params.");
     }
+    if (cv_params.nfolds > ds.size())
+      cv_params.nfolds = ds.size();
 
     // These hold values for each round of zooming:
     std::vector<vec> lambdas_zoom =

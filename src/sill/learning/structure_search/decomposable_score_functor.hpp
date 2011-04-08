@@ -25,7 +25,7 @@ namespace sill {
     virtual void deleted_separator(const F& f) = 0;
   }; // class decomposable_score_functor
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

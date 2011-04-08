@@ -23,6 +23,6 @@ namespace sill {
 
   };
 
-} // end of namespace: prl
+} // namespace sill
 
 #endif // #ifndef SILL_VOID_LINE_SEARCH_GRADIENT_HPP

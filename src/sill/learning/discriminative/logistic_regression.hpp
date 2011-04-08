@@ -516,7 +516,7 @@ namespace sill {
     return out;
   }
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

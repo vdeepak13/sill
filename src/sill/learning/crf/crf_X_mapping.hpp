@@ -276,7 +276,7 @@ namespace sill {
 
   }; // class crf_X_mapping
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

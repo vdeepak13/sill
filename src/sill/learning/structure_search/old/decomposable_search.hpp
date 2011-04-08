@@ -194,7 +194,7 @@ namespace sill {
 
   }; // class decomposable_search
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

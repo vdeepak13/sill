@@ -152,12 +152,13 @@ namespace sill {
     //==========================================================================
 
     // From datasource
+    using base::has_variable;
     using base::num_finite;
     using base::num_vector;
     using base::variable_type_order;
     using base::var_order;
-    using base::var_order_index;
-    using base::variable_index;
+    //    using base::var_order_index;
+    //    using base::variable_index;
     using base::record_index;
     using base::vector_indices;
     using base::finite_numbering;
@@ -433,19 +434,19 @@ namespace sill {
   protected:
 
     // From datasource
-    using base::finite_vars;
+    //    using base::finite_vars;
     using base::finite_seq;
     using base::finite_numbering_ptr_;
     using base::dfinite;
     using base::finite_class_vars;
-    using base::vector_vars;
+    //    using base::vector_vars;
     using base::vector_seq;
     using base::vector_numbering_ptr_;
     using base::dvector;
     using base::vector_class_vars;
     using base::var_type_order;
-    using base::var_order_map;
-    using base::vector_var_order_map;
+    //    using base::var_order_map;
+    //    using base::vector_var_order_map;
 
     // From dataset
     using base::nrecords;
@@ -1102,7 +1103,7 @@ namespace sill {
       }
     }
     // Update datasource info
-    finite_vars = finite_domain(vv_finite_vars.begin(), vv_finite_vars.end());
+//    finite_vars = finite_domain(vv_finite_vars.begin(), vv_finite_vars.end());
     finite_seq = vv_finite_vars;
     finite_numbering_ptr_->clear();
     dfinite = 0;
@@ -1111,7 +1112,7 @@ namespace sill {
       dfinite += vv_finite_vars[j]->size();
     }
     finite_class_vars = new_finite_class_vars;
-    vector_vars = vector_domain(vv_vector_vars.begin(), vv_vector_vars.end());
+//    vector_vars = vector_domain(vv_vector_vars.begin(), vv_vector_vars.end());
     vector_seq = vv_vector_vars;
     vector_numbering_ptr_->clear();
     dvector = 0;
@@ -1157,7 +1158,7 @@ namespace sill {
     }
     assert(binary != NULL && binary->size() == 2);
     assert(original != NULL && coloring.size() == original->size());
-    assert(finite_vars.count(original));
+    assert(has_variable(original));
     for (size_t j = 0; j < coloring.size(); ++j)
       assert(coloring[j] == 0 || coloring[j] == 1);
 
@@ -1165,7 +1166,7 @@ namespace sill {
     binary_var = binary;
     binary_coloring = coloring;
     binarized_var_index = ds.record_index(original);
-    finite_vars.erase(original);
+//    finite_vars.erase(original);
     for (size_t j = 0; j < finite_seq.size(); j++)
       if (finite_seq[j] == original) {
         finite_seq[j] = binary;
@@ -1204,7 +1205,7 @@ namespace sill {
       assert(false);
       return;
     }
-    assert(new_var != NULL && !(finite_vars.count(new_var)));
+    assert(new_var && !has_variable(new_var));
     assert(original_vars.size() > 0);
     size_t new_size(1);
     std::set<finite_variable*> tmp_fin_class_vars(finite_class_vars.begin(),
@@ -1212,7 +1213,7 @@ namespace sill {
     bool is_class = tmp_fin_class_vars.count(original_vars[0]);
     for (size_t j(0); j < original_vars.size(); ++j) {
       assert(original_vars[j] != NULL &&
-             finite_vars.count(original_vars[j]) &&
+             has_variable(original_vars[j]) &&
              original_vars[j] != binarized_var);
       new_size *= original_vars[j]->size();
       if (is_class) {
@@ -1238,14 +1239,14 @@ namespace sill {
     // Construct the new finite variable ordering, putting the new variable
     //  at the end of the ordering.
     m_new_var = new_var;
-    m_new_var_index = finite_vars.size() - original_vars.size();
+    m_new_var_index = num_finite() - original_vars.size();
     m_orig_vars_sorted = original_vars;
     m_orig_vars_indices.clear();
     m_orig2new_indices.clear();
-    m_orig2new_indices.resize(finite_vars.size(), 0);
-    m_new2orig_indices.resize(finite_vars.size() - original_vars.size() + 1);
+    m_orig2new_indices.resize(num_finite(), 0);
+    m_new2orig_indices.resize(num_finite() - original_vars.size() + 1);
     m_multipliers_sorted.resize(original_vars.size());
-    tmp_findata.resize(finite_vars.size());
+    tmp_findata.resize(num_finite());
     for (size_t j(0); j < original_vars.size(); ++j) {
       m_orig2new_indices[ds.record_index(original_vars[j])]
         = std::numeric_limits<size_t>::max();
@@ -1256,7 +1257,7 @@ namespace sill {
       m_orig_vars_indices.push_back(ds.record_index(original_vars[j]));
     }
     size_t j2(0); // index in new findata corresponding to j
-    for (size_t j(0); j < finite_vars.size(); ++j) {
+    for (size_t j(0); j < num_finite(); ++j) {
       if (m_orig2new_indices[j] != std::numeric_limits<size_t>::max()) {
         m_orig2new_indices[j] = j2;
         m_new2orig_indices[j2] = j;
@@ -1270,10 +1271,10 @@ namespace sill {
       binarized_var_index = m_orig2new_indices[binarized_var_index];
     // Fix datasource finite variable and variable ordering info.
     for (size_t j(0); j < original_vars.size(); ++j) {
-      finite_vars.erase(original_vars[j]);
+//      finite_vars.erase(original_vars[j]);
       dfinite -= original_vars[j]->size();
     }
-    finite_vars.insert(new_var);
+//    finite_vars.insert(new_var);
     dfinite += new_var->size();
     if (is_class) {
       finite_class_vars.clear();
@@ -1332,7 +1333,7 @@ namespace sill {
     size_t i(0);
     for (finite_assignment::const_iterator it(fa.begin());
          it != fa.end(); ++it) {
-      offsets[i] = this->variable_index(it->first);
+      offsets[i] = this->record_index(it->first);
       vals[i] = it->second;
       ++i;
     }

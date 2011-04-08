@@ -42,6 +42,6 @@ namespace sill {
 
   }; // class gradient_method_builder
 
-} // end of namespace: prl
+} // namespace sill
 
 #endif // #ifndef SILL_GRADIENT_METHOD_BUILDER_HPP

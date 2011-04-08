@@ -57,7 +57,7 @@ namespace sill {
     return ds_ptr;
   }
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

@@ -87,9 +87,10 @@ namespace sill {
     table_factor tmp_f;
     foreach(const finite_record& r, ds.records()) {
       f.f.restrict(r, Y_part, tmp_f);
-      tmp_f /= ds.size();
+//      tmp_f /= ds.size(); // Removed
       new_f += tmp_f;
     }
+    new_f /= ds.size(); // Added
     f.f = new_f;
     foreach(finite_variable* v, Y_part)
       Ydomain_.erase(v);
@@ -143,7 +144,8 @@ namespace sill {
     return *this;
   }
 
-  double table_crf_factor::log_expected_value(const dataset<la_type>& ds) const {
+  double
+  table_crf_factor::log_expected_value(const dataset<la_type>& ds) const {
     double val(0);
     output_factor_type tmp_fctr;
     double total_ds_weight(0);

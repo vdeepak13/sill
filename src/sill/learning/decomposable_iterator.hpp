@@ -1530,6 +1530,6 @@ namespace sill {
 
   }; // class decomposable_iterator<F>
 
-} // end of namespace: prl
+} // namespace sill
 
 #endif // #ifndef SILL_DECOMPOSABLE_ITERATOR_HPP

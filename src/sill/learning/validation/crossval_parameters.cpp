@@ -42,6 +42,15 @@ namespace sill {
     return true;
   }
 
+  void crossval_parameters::save(oarchive& ar) const {
+    ar << dim << nfolds << minvals << maxvals << nvals << zoom << log_scale
+       << run_combo_type;
+  }
+
+  void crossval_parameters::load(iarchive& ar) {
+    ar >> dim >> nfolds >> minvals >> maxvals >> nvals >> zoom >> log_scale
+       >> run_combo_type;
+  }
 
 } // namespace sill
 

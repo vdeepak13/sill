@@ -29,7 +29,6 @@ int main(int argc, char* argv[]) {
   cout << "Oracle using first 3 records:\n";
   for (size_t i = 0; i < 3; ++i) {
     o.next();
-    const record<>& r = o.current();
     cout << o.current().assignment() << endl;
   }
 }

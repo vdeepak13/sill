@@ -138,7 +138,8 @@ namespace sill {
       : vars(params.vars()), smoothing(params.smoothing()),
         max_clique_size(params.max_clique_size()), stats(stats) {
       if (vars.size() == 0)
-        vars = stats.get_dataset().finite_variables();
+        vars.insert(stats.get_dataset().finite_variables().first,
+                    stats.get_dataset().finite_variables().second);
       clique_it = subset_iterator<domain_type>(vars, max_clique_size);
     }
 
@@ -194,6 +195,6 @@ namespace sill {
 
   }; // class star_decomposable_iterator<F>
 
-} // end of namespace: prl
+} // namespace sill
 
 #endif // #ifndef SILL_DECOMPOSABLE_ITERATORS_HPP

@@ -39,6 +39,12 @@ namespace sill {
 
   } // add_options
 
+  crossval_parameters crossval_builder::get_parameters() {
+    size_t N = minvals.size();
+    assert(maxvals.size() == N);
+    return get_parameters(N);
+  } // get_parameters
+
   crossval_parameters crossval_builder::get_parameters(size_t N) {
     crossval_parameters params(N);
     params.nfolds = nfolds;

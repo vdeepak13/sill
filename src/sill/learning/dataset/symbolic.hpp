@@ -267,6 +267,7 @@ namespace sill {
     template <typename LA>
     void save_dataset(const dataset<LA>& ds, const std::string& filepath,
                       const parameters& params_) {
+      std::map<variable*, size_t> var_order_map(ds.variable_order_map());
       parameters params(params_);
       //      params.data_filename = filepath + ".data";
       const finite_var_vector& finite_seq = ds.finite_list();
@@ -275,9 +276,11 @@ namespace sill {
         data_dir_file(split_directory_file(filepath));
       std::vector<size_t> class_var_vec;
       foreach(finite_variable* v, ds.finite_class_variables())
-        class_var_vec.push_back(ds.var_order_index(v));
+        class_var_vec.push_back(var_order_map[v]);
+//        class_var_vec.push_back(ds.var_order_index(v));
       foreach(vector_variable* v, ds.vector_class_variables())
-        class_var_vec.push_back(ds.var_order_index(v));
+        class_var_vec.push_back(var_order_map[v]);
+//        class_var_vec.push_back(ds.var_order_index(v));
       std::sort(class_var_vec.begin(), class_var_vec.end());
       if (ds.is_weighted())
         assert(false); // TO BE IMPLEMENTED

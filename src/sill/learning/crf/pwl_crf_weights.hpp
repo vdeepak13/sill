@@ -722,7 +722,7 @@ namespace sill {
 
   }; // class pwl_crf_weights
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

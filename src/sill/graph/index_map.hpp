@@ -12,6 +12,7 @@ namespace sill {
   //! Returns an object that maps the elements of a range (v_0, ..., v_n-1) to 
   //! values 0, ..., n-1.
   //! \relates map
+  //! @todo Move this to stl_util.hpp
   template <typename R>
   std::map<typename R::value_type, std::size_t>
   make_index_map(const R& values) {

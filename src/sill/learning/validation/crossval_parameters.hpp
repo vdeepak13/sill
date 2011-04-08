@@ -3,6 +3,7 @@
 #define SILL_CROSSVAL_PARAMETERS_HPP
 
 #include <sill/math/statistics.hpp>
+#include <sill/serialization/serialize.hpp>
 
 namespace sill {
 
@@ -52,10 +53,14 @@ namespace sill {
 
     //! Constructor.
     //! @param dim  Length of the parameter vector.
-    crossval_parameters(size_t dim);
+    explicit crossval_parameters(size_t dim);
 
     //! Return true iff the parameters are valid.
     bool valid() const;
+
+    void save(oarchive& ar) const;
+
+    void load(iarchive& ar);
 
   }; // struct crossval_parameters
 

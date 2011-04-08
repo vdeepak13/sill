@@ -7,6 +7,7 @@
 #include <sill/optimization/gradient_method_builder.hpp>
 #include <sill/optimization/lbfgs.hpp>
 #include <sill/optimization/stochastic_gradient.hpp>
+#include <sill/serialization/serialize.hpp>
 
 namespace sill {
 
@@ -100,6 +101,14 @@ namespace sill {
 
   }; // class real_optimizer_builder
 
-} // end of namespace: prl
+  oarchive&
+  operator<<(oarchive& a,
+             real_optimizer_builder::real_optimizer_type val);
+
+  iarchive&
+  operator>>(iarchive& a,
+             real_optimizer_builder::real_optimizer_type& val);
+
+} // namespace sill
 
 #endif // #ifndef SILL_REAL_OPTIMIZER_BUILDER_HPP

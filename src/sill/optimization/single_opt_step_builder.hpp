@@ -35,6 +35,6 @@ namespace sill {
 
   }; // class single_opt_step_builder
 
-}; // end of namespace: prl
+}; // namespace sill
 
 #endif // #ifndef SILL_SINGLE_OPT_STEP_BUILDER_HPP

@@ -808,14 +808,17 @@ namespace sill {
                    bool save_x = true) const {
       std::ofstream fout(filename.c_str());
       assert(fout.good());
+      std::map<variable*, size_t> var_order_map(ds.variable_order_map());
       foreach(const vertex& v, factor_vertices()) {
         foreach(output_variable_type* y, output_arguments(v)) {
-          fout << ds.var_order_index(y) << "\t";
+          fout << var_order_map[y] << "\t";
+//          fout << ds.var_order_index(y) << "\t";
         }
         if (save_x) {
           fout << ";\t";
           foreach(input_variable_type* x, input_arguments(v)) {
-            fout << ds.var_order_index(x) << "\t";
+            fout << var_order_map[x] << "\t";
+//            fout << ds.var_order_index(x) << "\t";
           }
         }
         fout << "\n";

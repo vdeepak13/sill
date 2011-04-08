@@ -35,6 +35,6 @@ namespace sill {
 
   }; // class line_search_builder
 
-} // end of namespace: prl
+} // namespace sill
 
 #endif // #ifndef SILL_OPTIMIZATION_LINE_SEARCH_BUILDER_HPP

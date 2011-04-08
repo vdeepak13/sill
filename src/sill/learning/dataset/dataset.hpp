@@ -785,19 +785,19 @@ namespace sill {
     friend class assignment_iterator;
 
     // From datasource
-    using base::finite_vars;
+    //    using base::finite_vars;
     using base::finite_seq;
     using base::finite_numbering_ptr_;
     using base::dfinite;
     using base::finite_class_vars;
-    using base::vector_vars;
+    //    using base::vector_vars;
     using base::vector_seq;
     using base::vector_numbering_ptr_;
     using base::dvector;
     using base::vector_class_vars;
     using base::var_type_order;
-    using base::var_order_map;
-    using base::vector_var_order_map;
+    //    using base::var_order_map;
+    //    using base::vector_var_order_map;
 
     //! Number of data points in this dataset.
     size_t nrecords;
@@ -945,9 +945,11 @@ namespace sill {
   }
 
   template <typename LA>
-  void dataset<LA>::get_value_matrix(matrix_type& X, const vector_var_vector& vars,
-                                 bool add_ones) const {
-    assert(includes(vector_vars, vector_domain(vars.begin(), vars.end())));
+  void
+  dataset<LA>::get_value_matrix(matrix_type& X, const vector_var_vector& vars,
+                                bool add_ones) const {
+    foreach(vector_variable* v, vars)
+      assert(this->has_variable(v));
     size_t vars_size(vector_size(vars));
     if (add_ones) {
       if (X.size1() != nrecords || X.size2() != vars_size + 1)
@@ -973,7 +975,7 @@ namespace sill {
   void dataset<LA>::mean(vec& mu, const vector_var_vector& X) const {
     size_t Xsize(0);
     foreach(vector_variable* v, X) {
-      if (vector_vars.count(v) == 0)
+      if (!has_variable(v))
         throw std::invalid_argument
           ("dataset::covariance() given variable not in dataset");
       Xsize += v->size();
@@ -1007,7 +1009,7 @@ namespace sill {
                                 const vector_var_vector& X) const {
     size_t Xsize(0);
     foreach(vector_variable* v, X) {
-      if (vector_vars.count(v) == 0)
+      if (!has_variable(v))
         throw std::invalid_argument
           ("dataset::covariance() given variable not in dataset");
       Xsize += v->size();
@@ -1206,7 +1208,7 @@ namespace sill {
   template <typename LA>
   std::pair<vec, vec> dataset<LA>::normalize(const vector_var_vector& vars) {
     foreach(vector_variable* v, vars)
-      assert(vector_vars.count(v) != 0);
+      assert(this->has_variable(v));
     vec means(vector_size(vars), 0);
     vec std_devs(vector_size(vars), 0);
     value_type total_ds_weight(0);

@@ -12,6 +12,104 @@
 
 namespace sill {
 
+  // multiclass_logistic_regression_parameters
+  //==========================================================================
+
+  multiclass_logistic_regression_parameters::
+  multiclass_logistic_regression_parameters()
+    : regularization(2), lambda(.00001), init_iterations(1000),
+      perturb(0), resolve_numerical_problems(false),
+      random_seed(time(NULL)), debug(0),
+      opt_method(real_optimizer_builder::CONJUGATE_GRADIENT),
+      cg_update_method(0), lbfgs_M(10) { }
+
+  bool
+  multiclass_logistic_regression_parameters::valid() const {
+    if (regularization > 2)
+      return false;
+    if (lambda < 0)
+      return false;
+    if (perturb < 0)
+      return false;
+    if (!gm_params.valid())
+      return false;
+    if (cg_update_method > 0)
+      return false;
+    if (lbfgs_M == 0)
+      return false;
+    return true;
+  }
+
+  void multiclass_logistic_regression_parameters::
+  save(std::ofstream& out) const {
+    out << regularization << " " << lambda << " " << init_iterations << " "
+        << perturb << " " << (resolve_numerical_problems ? 1 : 0) << " "
+        << random_seed << " " << debug << "\n";
+  }
+
+  void multiclass_logistic_regression_parameters::load(std::ifstream& in) {
+    std::string line;
+    getline(in, line);
+    std::istringstream is(line);
+    if (!(is >> regularization))
+      assert(false);
+    if (!(is >> lambda))
+      assert(false);
+    if (!(is >> init_iterations))
+      assert(false);
+    if (!(is >> perturb))
+      assert(false);
+    size_t tmpsize;
+    if (!(is >> tmpsize))
+      assert(false);
+    if (tmpsize == 0)
+      resolve_numerical_problems = false;
+    else if (tmpsize == 1)
+      resolve_numerical_problems = true;
+    else
+      assert(false);
+    if (!(is >> random_seed))
+      assert(false);
+    if (!(is >> debug))
+      assert(false);
+  }
+
+  void multiclass_logistic_regression_parameters::save(oarchive& ar) const {
+    ar << regularization << lambda << init_iterations << perturb
+       << resolve_numerical_problems << random_seed << debug
+       << opt_method << gm_params << cg_update_method << lbfgs_M;
+  }
+
+  void multiclass_logistic_regression_parameters::load(iarchive& ar) {
+    ar >> regularization >> lambda >> init_iterations >> perturb
+       >> resolve_numerical_problems >> random_seed >> debug
+       >> opt_method >> gm_params >> cg_update_method >> lbfgs_M;
+  }
+
+  void multiclass_logistic_regression_parameters::
+  print(std::ostream& out, const std::string& line_prefix) const {
+    out << line_prefix << "regularization: " << regularization << "\n"
+        << line_prefix << "lambda: " << lambda << "\n"
+        << line_prefix << "init_iterations: " << init_iterations << "\n"
+        << line_prefix << "perturb: " << perturb << "\n"
+        << line_prefix << "resolve_numerical_problems: "
+        << resolve_numerical_problems << "\n"
+        << line_prefix << "random_seed: " << random_seed << "\n"
+        << line_prefix << "debug: " << debug << "\n"
+        << line_prefix << "opt_method: " << opt_method << "\n"
+        << line_prefix << "gm_params:\n";
+    gm_params.print(out, line_prefix + "  ");
+    out << line_prefix << "cg_update_method: " << cg_update_method << "\n"
+        << line_prefix << "lbfgs_M: " << lbfgs_M << "\n";
+  }
+
+  std::ostream&
+  operator<<(std::ostream& out,
+             const multiclass_logistic_regression_parameters& mlr_params) {
+    mlr_params.print(out);
+    return out;
+  }
+
   // multiclass_logistic_regression_builder
   //==========================================================================
 

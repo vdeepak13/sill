@@ -266,7 +266,7 @@ namespace sill {
 
   }; // class dmove_push_back_subtree
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

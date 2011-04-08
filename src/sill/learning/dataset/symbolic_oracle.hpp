@@ -152,8 +152,8 @@ namespace sill {
     using base::num_vector;
     using base::variable_type_order;
     using base::var_order;
-    using base::var_order_index;
-    using base::variable_index;
+    //    using base::var_order_index;
+    //    using base::variable_index;
     using base::record_index;
     using base::vector_indices;
     using base::finite_numbering;
@@ -209,19 +209,19 @@ namespace sill {
   protected:
 
     // From datasource
-    using base::finite_vars;
+    //    using base::finite_vars;
     using base::finite_seq;
     using base::finite_numbering_ptr_;
     using base::dfinite;
     using base::finite_class_vars;
-    using base::vector_vars;
+    //    using base::vector_vars;
     using base::vector_seq;
     using base::vector_numbering_ptr_;
     using base::dvector;
     using base::vector_class_vars;
     using base::var_type_order;
-    using base::var_order_map;
-    using base::vector_var_order_map;
+    //    using base::var_order_map;
+    //    using base::vector_var_order_map;
 
     parameters params;
 

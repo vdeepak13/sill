@@ -512,6 +512,6 @@ namespace sill {
 
   }; // class structure_search
 
-} // end of namespace: prl
+} // namespace sill
 
 #endif // #ifndef SILL_STRUCTURE_SEARCH_HPP

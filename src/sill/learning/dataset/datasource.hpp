@@ -7,6 +7,7 @@
 #include <sill/base/assignment.hpp>
 #include <sill/base/variable_type_group.hpp>
 #include <sill/copy_ptr.hpp>
+#include <sill/iterator/map_key_iterator.hpp>
 #include <sill/learning/dataset/datasource_info_type.hpp>
 #include <sill/learning/dataset/record_conversions.hpp>
 
@@ -15,11 +16,230 @@
 namespace sill {
 
   /**
-   * Datasource.
+   * Datasource.  Base class for datasets and data oracles.
+   *
    * \author Joseph Bradley
    * \ingroup learning_dataset
    */
   class datasource {
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef map_key_iterator<std::map<finite_variable*, size_t> >
+    finite_var_iterator;
+
+    typedef map_key_iterator<std::map<vector_variable*, size_t> >
+    vector_var_iterator;
+
+    // Constructors
+    //==========================================================================
+
+    //! Empty datasource
+    datasource();
+
+    //! Constructs the datasource with the given sequence of variables.
+    //! @param finite_vars     finite variables in data
+    //! @param vector_vars     vector variables in data
+    //! @param var_type_order  Order of variable types in datasource's
+    //!                        natural order
+    datasource(const finite_var_vector& finite_vars,
+               const vector_var_vector& vector_vars,
+               const std::vector<variable::variable_typenames>& var_type_order);
+
+    //! Constructs the datasource with the given sequence of variables.
+    //! @param finite_vars     finite variables in data
+    //! @param vector_vars     vector variables in data
+    //! @param var_type_order  Order of variable types in datasource's
+    //!                        natural order
+    datasource(const forward_range<finite_variable*>& finite_vars,
+               const forward_range<vector_variable*>& vector_vars,
+               const std::vector<variable::variable_typenames>& var_type_order);
+
+    //! Constructs the datasource with the given sequence of variables.
+    //! @param var_info    info from calling datasource_info()
+    explicit datasource(const datasource_info_type& info);
+
+    virtual ~datasource() { }
+
+    //! Resets this datasource (like a constructor).
+    //! @param var_info    info from calling datasource_info()
+    void reset(const datasource_info_type& info);
+
+    void save(oarchive& a) const;
+
+    void load(iarchive& a);
+
+    // Variables
+    //==========================================================================
+
+    //! Returns the variable set of this dataset
+    domain variables() const;
+
+    //! Returns the finite variables of this dataset
+    std::pair<finite_var_iterator,finite_var_iterator>
+    finite_variables() const;
+//    const finite_domain& finite_variables() const;
+
+    //! Returns the vector variables of this datatset
+    std::pair<vector_var_iterator,vector_var_iterator>
+    vector_variables() const;
+//    const vector_domain& vector_variables() const;
+
+    //! Constructs and returns the list of variables for this dataset.
+    var_vector variable_list() const;
+
+    //! Returns the finite variables in the natural order
+    const finite_var_vector& finite_list() const;
+
+    //! Returns the vector variables in the natural order
+    const vector_var_vector& vector_list() const;
+
+    //! Constructs and returns a list of variables of the specified type,
+    //! in the natural order.
+    template <typename VarType>
+    typename variable_type_group<VarType>::var_vector_type
+    variable_sequence() const;
+
+    //! Returns the finite class variables (if any)
+    const finite_var_vector& finite_class_variables() const;
+
+    //! Returns the vector class variables (if any)
+    const vector_var_vector& vector_class_variables() const;
+
+    //! Indicates if this datasource has the given variable.
+    bool has_variable(finite_variable* v) const;
+
+    //! Indicates if this datasource has the given variable.
+    bool has_variable(vector_variable* v) const;
+
+    //! Indicates if this datasource has the given variable.
+    bool has_variable(variable* v) const;
+
+    //! Indicates if this datasource has the given variables.
+    bool has_variables(const finite_domain& vars) const;
+
+    //! Indicates if this datasource has the given variables.
+    bool has_variables(const vector_domain& vars) const;
+
+    //! Indicates if this datasource has the given variables.
+    bool has_variables(const domain& vars) const;
+
+    // Dimensionality of variables
+    //==========================================================================
+
+    //! Returns the total number of variables
+    size_t num_variables() const;
+
+    //! Returns the number of finite variables
+    size_t num_finite() const;
+
+    //! Returns the number of vector variables
+    size_t num_vector() const;
+
+    //! Returns the total dimensionality of finite variables,
+    //! i.e., the sum of their sizes
+    size_t finite_dim() const;
+
+    //! Returns the total dimensionality of vector variables,
+    //! i.e., the sum of their sizes
+    size_t vector_dim() const;
+
+    // Indexing of variables
+    //==========================================================================
+
+    //! Order of variable types in dataset's natural order
+    const std::vector<variable::variable_typenames>&
+    variable_type_order() const;
+
+    //! The variables in this dataset, in the order used in the dataset file
+    //!  (or other source).
+    var_vector var_order() const;
+
+    //! Returns the index of the given variable in the order returned by
+    //! var_order().
+//    size_t var_order_index(variable* v) const;
+
+    //! Computes a mapping from variables to their indices in dataset's
+    //! natural order.
+    //! NOTE: This constructs the index!
+    std::map<variable*, size_t> variable_order_map() const;
+
+    /*
+    //! Returns the index of a finite variable in the order of finite_list().
+    size_t variable_index(finite_variable* v) const;
+
+    //! Returns the index of a vector variable in the order of vector_list().
+    size_t variable_index(vector_variable* v) const;
+    */
+
+    //! Returns the index of the given finite variable in records.
+    //! (This is the same as in the natural order.)
+    size_t record_index(finite_variable* v) const;
+
+    //! Returns the first index of the given vector variable in records.
+    //! (This is the same as the natural order except that vector variables
+    //!  with length > 1 take up multiple indices.)
+    size_t record_index(vector_variable* v) const;
+
+    //! Returns the indices (in records) of the given vector variables.
+    //! @todo Check to make sure this works with variables of length > 1.
+    ivec vector_indices(const vector_domain& vars) const;
+
+    //! Returns the indices (in records) of the given vector variables.
+    //! @todo Check to make sure this works with variables of length > 1.
+    ivec vector_indices(const vector_var_vector& vars) const;
+
+    //! Mapping from finite variables to indices in finite component of record.
+    const std::map<finite_variable*, size_t>& finite_numbering() const;
+
+    //! Mapping from finite variables to indices in finite component of record.
+    copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr() const;
+
+    //! Mapping from vector variables to indices in vector component of record.
+    const std::map<vector_variable*, size_t>& vector_numbering() const;
+
+    //! Mapping from vector variables to indices in vector component of record.
+    copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr() const;
+
+    // General info and helpers
+    //==========================================================================
+
+    //! Returns all variable type and order information.
+    datasource_info_type datasource_info() const;
+
+    //! Compare this datasource with another to see if they contain comparable
+    //! data.  Return true if yes, else false.
+    bool comparable(const datasource& ds) const;
+
+    //! Print info about datasource to STDERR for debugging.
+    void print_datasource_info() const;
+
+    // Setters
+    //==========================================================================
+
+    //! Sets the finite class variables to a single variable
+    //! If no arguments, then set to none.
+    void set_finite_class_variable(finite_variable* class_var = NULL);
+    
+    //! Sets the finite class variables
+    //! @todo This should check to make sure the variables are unique.
+    void set_finite_class_variables(const finite_var_vector& class_vars);
+
+    //! Sets the finite class variables
+    void set_finite_class_variables(const finite_domain& class_vars);
+
+    //! Sets the vector class variables to a single variable
+    //! If no arguments, then set to none.
+    void set_vector_class_variable(vector_variable* class_var = NULL);
+
+    //! Sets the vector class variables
+    //! @todo This should check to make sure the variables are unique.
+    void set_vector_class_variables(const vector_var_vector& class_vars);
+
+    //! Sets the vector class variables
+    void set_vector_class_variables(const vector_domain& class_vars);
 
     // Protected data members
     //==========================================================================
@@ -33,7 +253,7 @@ namespace sill {
     typedef std::pair<vector_variable*, size_t> vector_var_index_pair;
 
     //! The finite variables in this dataset
-    finite_domain finite_vars;
+//    finite_domain finite_vars;
 
     //! The finite variables in this dataset,
     //!  in the order used in the dataset file (or other source).
@@ -54,7 +274,7 @@ namespace sill {
     finite_var_vector finite_class_vars;
 
     //! The vector variables in this dataset
-    vector_domain vector_vars;
+//    vector_domain vector_vars;
 
     //! The vector variables in this dataset,
     //!  in the order used in the dataset file (or other source).
@@ -78,10 +298,10 @@ namespace sill {
     std::vector<variable::variable_typenames> var_type_order;
 
     //! Mapping from variables to their indices in dataset's natural order.
-    std::map<variable*, size_t> var_order_map;
+//    std::map<variable*, size_t> var_order_map;
 
     //! Mapping from vector variables to their indices in vector_seq.
-    std::map<vector_variable*, size_t> vector_var_order_map;
+//    std::map<vector_variable*, size_t> vector_var_order_map;
 
     // Protected helper functions
     //==========================================================================
@@ -129,235 +349,6 @@ namespace sill {
     //! Add a vector variable to this datasource.
     //! This adds the variable to the end of the variable ordering.
     void add_vector_variable(vector_variable* v, bool make_class = false);
-
-    // Constructors
-    //==========================================================================
-  public:
-
-    //! Empty datasource
-    datasource();
-
-    //! Constructs the datasource with the given sequence of variables.
-    //! @param finite_vars     finite variables in data
-    //! @param vector_vars     vector variables in data
-    //! @param var_type_order  Order of variable types in datasource's
-    //!                        natural order
-    datasource(const finite_var_vector& finite_vars,
-               const vector_var_vector& vector_vars,
-               const std::vector<variable::variable_typenames>& var_type_order);
-
-    //! Constructs the datasource with the given sequence of variables.
-    //! @param finite_vars     finite variables in data
-    //! @param vector_vars     vector variables in data
-    //! @param var_type_order  Order of variable types in datasource's
-    //!                        natural order
-    datasource(const forward_range<finite_variable*>& finite_vars,
-               const forward_range<vector_variable*>& vector_vars,
-               const std::vector<variable::variable_typenames>& var_type_order);
-
-    //! Constructs the datasource with the given sequence of variables.
-    //! @param var_info    info from calling datasource_info()
-    explicit datasource(const datasource_info_type& info) {
-      reset(info);
-    }
-
-    virtual ~datasource() { }
-
-    //! Resets this datasource with the given variable info.
-    //! @param var_info    info from calling datasource_info()
-    void reset(const datasource_info_type& info);
-
-    void save(oarchive& a) const;
-
-    void load(iarchive& a);
-
-    // Variables
-    //==========================================================================
-
-    //! Returns the variable set of this dataset
-    domain variables() const {
-      domain d1(finite_vars.begin(), finite_vars.end());
-      domain d2(vector_vars.begin(), vector_vars.end());
-      return set_union(d1, d2);
-    }
-
-    //! Returns the finite variables of this dataset
-    const finite_domain& finite_variables() const {
-      return finite_vars;
-    }
-
-    //! Returns the vector variables of this datatset
-    const vector_domain& vector_variables() const {
-      return vector_vars;
-    }
-
-    //! Constructs and returns the list of variables for this dataset.
-    var_vector variable_list() const;
-
-    //! Returns the finite variables in the natural order
-    const finite_var_vector& finite_list() const {
-      return finite_seq;
-    }
-
-    //! Returns the vector variables in the natural order
-    const vector_var_vector& vector_list() const {
-      return vector_seq;
-    }
-
-    //! Constructs and returns a list of variables of the specified type,
-    //! in the natural order.
-    template <typename VarType>
-    typename variable_type_group<VarType>::var_vector_type
-    variable_sequence() const;
-
-    //! Returns the finite class variables (if any)
-    const finite_var_vector& finite_class_variables() const {
-      return finite_class_vars;
-    }
-
-    //! Returns the vector class variables (if any)
-    const vector_var_vector& vector_class_variables() const {
-      return vector_class_vars;
-    }
-
-    // Dimensionality of variables
-    //==========================================================================
-
-    //! Returns the total number of variables
-    size_t num_variables() const {
-      return vector_vars.size() + finite_vars.size();
-    }
-
-    //! Returns the number of finite variables
-    size_t num_finite() const {
-      return finite_vars.size();
-    }
-
-    //! Returns the number of vector variables
-    size_t num_vector() const {
-      return vector_vars.size();
-    }
-
-    //! Returns the total dimensionality of finite variables,
-    //! i.e., the sum of their sizes
-    size_t finite_dim() const {
-      return dfinite;
-    }
-
-    //! Returns the total dimensionality of vector variables,
-    //! i.e., the sum of their sizes
-    size_t vector_dim() const {
-      return dvector;
-    }
-
-    // Indexing of variables
-    //==========================================================================
-
-    //! Order of variable types in dataset's natural order
-    const std::vector<variable::variable_typenames>&
-    variable_type_order() const {
-      return var_type_order;
-    }
-
-    //! The variables in this dataset, in the order used in the dataset file
-    //!  (or other source).
-    var_vector var_order() const;
-
-    //! Returns the index of the given variable in the order returned by
-    //! var_order().
-    size_t var_order_index(variable* v) const;
-
-    //! Returns the index of a finite variable in the order of finite_list().
-    size_t variable_index(finite_variable* v) const {
-      return record_index(v);
-    }
-
-    //! Returns the index of a vector variable in the order of vector_list().
-    size_t variable_index(vector_variable* v) const {
-      return safe_get(vector_var_order_map, v);
-    }
-
-    //! Returns the index of the given finite variable in records.
-    //! (This is the same as in the natural order.)
-    size_t record_index(finite_variable* v) const {
-      return safe_get(*finite_numbering_ptr_, v);
-    }
-
-    //! Returns the first index of the given vector variable in records.
-    //! (This is the same as the natural order except that vector variables
-    //!  with length > 1 take up multiple indices.)
-    size_t record_index(vector_variable* v) const {
-      return safe_get(*vector_numbering_ptr_, v);
-    }
-
-    //! Returns the indices (in records) of the given vector variables.
-    //! @todo Check to make sure this works with variables of length > 1.
-    ivec vector_indices(const vector_domain& vars) const;
-
-    //! Returns the indices (in records) of the given vector variables.
-    //! @todo Check to make sure this works with variables of length > 1.
-    ivec vector_indices(const vector_var_vector& vars) const;
-
-    //! Mapping from finite variables to indices in finite component of record.
-    const std::map<finite_variable*, size_t>& finite_numbering() const {
-      return *finite_numbering_ptr_;
-    }
-
-    //! Mapping from finite variables to indices in finite component of record.
-    copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr() const {
-      return finite_numbering_ptr_;
-    }
-
-    //! Mapping from vector variables to indices in vector component of record.
-    const std::map<vector_variable*, size_t>& vector_numbering() const {
-      return *vector_numbering_ptr_;
-    }
-
-    //! Mapping from vector variables to indices in vector component of record.
-    copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr() const {
-      return vector_numbering_ptr_;
-    }
-
-    // General info and helpers
-    //==========================================================================
-
-    //! Returns all variable type and order information.
-    datasource_info_type datasource_info() const {
-      return datasource_info_type(finite_seq, vector_seq, var_type_order,
-                                  finite_class_vars, vector_class_vars);
-    }
-
-    //! Compare this datasource with another to see if they contain comparable
-    //! data.  Return true if yes, else false.
-    bool comparable(const datasource& ds) const;
-
-    //! Print info about datasource to STDERR for debugging.
-    void print_datasource_info() const;
-
-    // Setters
-    //==========================================================================
-
-    //! Sets the finite class variables to a single variable
-    //! If no arguments, then set to none.
-    void set_finite_class_variable(finite_variable* class_var = NULL);
-    
-    //! Sets the finite class variables
-    //! @todo This should check to make sure the variables are unique.
-    void set_finite_class_variables(const finite_var_vector& class_vars);
-
-    //! Sets the finite class variables
-    void set_finite_class_variables(const finite_domain& class_vars);
-
-    //! Sets the vector class variables to a single variable
-    //! If no arguments, then set to none.
-    void set_vector_class_variable(vector_variable* class_var = NULL);
-
-    //! Sets the vector class variables
-    //! @todo This should check to make sure the variables are unique.
-    void set_vector_class_variables(const vector_var_vector& class_vars);
-
-    //! Sets the vector class variables
-    void set_vector_class_variables(const vector_domain& class_vars);
 
   }; // class datasource
 

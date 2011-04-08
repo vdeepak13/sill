@@ -158,6 +158,7 @@ namespace sill {
     void load(iarchive & ar) {
       base::load(ar);
       ar >> f >> log_space_ >> conditioned_f;
+      restrict_map = table_factor::shape_type(f.f.arguments().size(), 0);
     }
 
     // Public methods: Probabilistic queries

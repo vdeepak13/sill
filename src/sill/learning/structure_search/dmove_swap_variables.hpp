@@ -226,7 +226,7 @@ namespace sill {
 
   }; // class dmove_swap_variables
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

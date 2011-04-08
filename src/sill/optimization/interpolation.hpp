@@ -36,7 +36,7 @@ namespace sill {
 
   //! @} group optimization
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

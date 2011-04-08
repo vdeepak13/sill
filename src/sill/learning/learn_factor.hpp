@@ -98,7 +98,7 @@ namespace sill {
   table_factor
   learn_factor<table_factor>::learn_marginal
   (const finite_domain& X, const dataset<LA>& ds, double smoothing) {
-    assert(includes(ds.finite_variables(), X));
+    assert(ds.has_variables(X));
     assert(smoothing >= 0);
     assert(ds.size() > 0);
 
@@ -130,10 +130,10 @@ namespace sill {
   learn_factor<table_factor>::learn_conditional
   (const finite_domain& A, const finite_domain& B, const finite_assignment& c,
    const dataset<LA>& ds, double smoothing) {
-    assert(includes(ds.finite_variables(), A));
-    assert(includes(ds.finite_variables(), B));
+    assert(ds.has_variables(A));
+    assert(ds.has_variables(B));
     finite_domain Cvars(keys(c));
-    assert(includes(ds.finite_variables(), Cvars));
+    assert(ds.has_variables(Cvars));
     finite_domain ABvars(set_union(A,B));
     assert(ABvars.size() == A.size() + B.size());
     assert(set_disjoint(ABvars, Cvars));
@@ -190,7 +190,7 @@ namespace sill {
   (const vector_domain& Xdom, const dataset<LA>& ds, double reg_cov) {
     assert(ds.size() > 0);
     assert(reg_cov >= 0.);
-    assert(includes(ds.vector_variables(), Xdom));
+    assert(ds.has_variables(Xdom));
     vector_var_vector X(Xdom.begin(), Xdom.end());
     vec mu;
     ds.mean(mu, X);
@@ -218,7 +218,7 @@ namespace sill {
   (const vector_domain& Xdom, const dataset<LA>& ds, double reg_cov) {
     assert(ds.size() > 0);
     assert(reg_cov >= 0.);
-    assert(includes(ds.vector_variables(), Xdom));
+    assert(ds.has_variables(Xdom));
     vector_var_vector X(Xdom.begin(), Xdom.end());
     vec mu;
     mat cov;

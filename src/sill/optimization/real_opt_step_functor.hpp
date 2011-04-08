@@ -2,6 +2,7 @@
 #ifndef SILL_REAL_OPT_STEP_FUNCTOR_HPP
 #define SILL_REAL_OPT_STEP_FUNCTOR_HPP
 
+#include <cassert>
 #include <limits>
 
 //#include <sill/optimization/concepts.hpp>
@@ -51,7 +52,7 @@ namespace sill {
 
   };  // class real_opt_step_functor
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

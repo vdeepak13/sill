@@ -311,15 +311,16 @@ namespace sill {
             Objective::unnormalized(total_weights[0], total_weights[1]);
         predictA = Objective::confidence(total_weights[0],total_weights[1]);
         predictB = Objective::confidence(total_weights[0],total_weights[1]);
-        if (ds.vector_variables().size() > 0) {
+        if (ds.num_vector() > 0) {
           split_var_type = variable::VECTOR_VARIABLE;
-          vector_split_var = *(ds.vector_variables().begin());
+          vector_split_var = *(ds.vector_variables().first);
           split_var_index = ds.record_index(vector_split_var);
           split_vector_index = 0;
           split_vector = 0;
-        } else if (ds.finite_variables().size() > 1) {
+        } else if (ds.num_finite() > 1) {
           split_var_type = variable::FINITE_VARIABLE;
-          finite_domain temp = ds.finite_variables();
+          finite_domain temp(ds.finite_variables().first,
+                             ds.finite_variables().second);
           temp.erase(label_);
           finite_split_var = *(temp.begin());
           split_var_index = ds.record_index(finite_split_var);
@@ -565,7 +566,7 @@ namespace sill {
 
   }; // class stump
 
-} // end of namespace: prl
+} // namespace sill
 
 #undef DEBUG_STUMP
 

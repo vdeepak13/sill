@@ -103,7 +103,7 @@ namespace sill {
 
   }; // class classifier
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

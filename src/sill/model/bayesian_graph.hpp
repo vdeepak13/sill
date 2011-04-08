@@ -59,6 +59,13 @@ namespace sill {
       }
     }
 
+    //! Constructs a Bayes net graph with the given set of nodes and no edges.
+    bayesian_graph(const forward_range<Node>& nodes) { 
+      foreach(Node v, nodes) {
+	add_vertex(v);
+      }
+    }
+
     //! Creates a Bayes net graph with the given structure.
     //! The graph must be directed
     bayesian_graph(const bayesian_graph<Node>& g) {

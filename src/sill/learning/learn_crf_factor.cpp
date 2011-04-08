@@ -141,9 +141,9 @@ namespace sill {
   (const dataset<table_crf_factor::la_type>& ds,
    const finite_domain& Y_, copy_ptr<finite_domain> X_ptr_,
    const table_crf_factor::parameters& params, unsigned random_seed) {
-    assert(includes(ds.finite_variables(), Y_));
+    assert(ds.has_variables(Y_));
     assert(X_ptr_);
-    assert(includes(ds.finite_variables(), *X_ptr_));
+    assert(ds.has_variables(*X_ptr_));
     assert(params.valid());
     return new table_crf_factor
       (learn_factor<table_factor>::learn_marginal(set_union(Y_, *X_ptr_), ds,
@@ -159,10 +159,12 @@ namespace sill {
   (const dataset<log_reg_crf_factor::la_type>& ds,
    const finite_domain& Y_, copy_ptr<domain> X_ptr_,
    const log_reg_crf_factor::parameters& params, unsigned random_seed) {
-    if (!includes(ds.finite_variables(), Y_)) {
+    if (!ds.has_variables(Y_)) {
       std::cerr << "learn_crf_factor given Y_ = " << Y_
                 << ", but the dataset only contains finite variables: "
-                << ds.finite_variables() << std::endl;
+                << finite_domain(ds.finite_variables().first,
+                                 ds.finite_variables().second)
+                << std::endl;
       assert(false);
     }
     assert(X_ptr_);

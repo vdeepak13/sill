@@ -82,7 +82,7 @@ namespace sill {
 
   }; // class real_optimizer
 
-} // end of namespace: prl
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 
