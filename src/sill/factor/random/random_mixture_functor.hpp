@@ -34,7 +34,7 @@ namespace sill {
     //==========================================================================
 
     //! Constructor.
-    random_mixture_functor(random_factor_functor<F>& subfactor_functor)
+    explicit random_mixture_functor(random_factor_functor<F>& subfactor_functor)
       : k(3), subfactor_functor(subfactor_functor) { }
 
     using base::generate_marginal;

@@ -11,6 +11,7 @@ set(PRL_FACTOR_SOURCES
   random/random
   random/random_gaussian_crf_factor_functor
   random/random_gaussian_functor
+  random/random_table_factor_functor
   table_crf_factor
   table_factor
   PARENT_SCOPE)

@@ -39,6 +39,7 @@ namespace sill {
     assert(factor_periods.size() == 3);
 
     boost::mt11213b rng(random_seed);
+
     Xmodel.clear();
     YgivenXmodel.clear();
     std::map<finite_variable*, copy_ptr<finite_domain> > Y2X_map;

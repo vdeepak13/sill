@@ -22,11 +22,11 @@ namespace sill {
     //==========================================================================
 
     //! Constructor.
-    random_gaussian_crf_factor_functor
+    explicit random_gaussian_crf_factor_functor
     (random_factor_functor<moment_gaussian>& mg_factor_func);
 
     //! Constructor.
-    random_gaussian_crf_factor_functor
+    explicit random_gaussian_crf_factor_functor
     (random_factor_functor<canonical_gaussian>& cg_factor_func);
 
     using base::generate_marginal;

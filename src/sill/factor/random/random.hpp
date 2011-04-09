@@ -130,6 +130,34 @@ namespace sill {
     return f;
   }
 
+  /**
+   * Creates a factor over the given variables which is diagonal;
+   * i.e., it has 0 everywhere except for when Yi == Yj, in which case
+   * it has 's'.
+   * 's' is set to be exp(base + Uniform[lower_bound, upper_bound])
+   * for each element of the diagonal.
+   */
+  template <typename Engine>
+  table_factor
+  make_random_associative_factor(const finite_domain& Y, double base,
+                                 double lower_bound, double upper_bound,
+                                 Engine& rng) {
+    assert(Y.size() == 2);
+    finite_variable* Yi = *(Y.begin());
+    finite_variable* Yj = *(++(Y.begin()));
+    assert(Yi->size() == Yj->size());
+    assert(lower_bound <= upper_bound);
+    table_factor f(Y, 1.);
+    finite_assignment fa;
+    boost::uniform_real<double> unif_real(lower_bound, upper_bound);
+    for (size_t k(0); k < Yi->size(); ++k) {
+      fa[Yi] = k;
+      fa[Yj] = k;
+      f(fa) = std::exp(base + unif_real(rng));
+    }
+    return f;
+  }
+
   // Marginal (non-conditional) factors for vector variables
   //============================================================================
 
@@ -243,10 +271,10 @@ namespace sill {
       f.update(exponent<double>());
       return f;
     } else if (factor_choice == "associative")
-      return table_factor(make_associative_factor(y1,y2, std::exp(strength)));
+      return make_associative_factor(y1, y2, std::exp(strength));
     else if (factor_choice == "random_assoc")
-      return table_factor(make_random_associative_factor
-                          (y1, y2, strength_base, strength, rng));
+      return
+        make_random_associative_factor(y1, y2, strength_base, strength, rng);
     else
       throw std::invalid_argument("bad factor_choice: " + factor_choice);
   }

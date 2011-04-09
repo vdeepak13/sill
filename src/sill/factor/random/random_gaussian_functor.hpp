@@ -61,7 +61,7 @@ namespace sill {
     //==========================================================================
 
     //! Constructor.
-    random_gaussian_functor(unsigned random_seed)
+    explicit random_gaussian_functor(unsigned random_seed)
       : b(1), variance(1), correlation(.3), c(1), c_shift(0),
         rng(random_seed) { }
 

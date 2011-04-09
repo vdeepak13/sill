@@ -44,6 +44,8 @@ namespace sill {
     // Public methods
     //==========================================================================
 
+    virtual ~random_crf_factor_functor() { }
+
     /**
      * Generate a marginal factor P(Y) using the stored parameters.
      */

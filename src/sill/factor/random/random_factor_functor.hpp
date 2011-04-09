@@ -27,28 +27,22 @@ namespace sill {
     //! Domain type used in the factors.
     typedef typename F::domain_type domain_type;
 
-    /**
-     * Generate a marginal factor P(X) using the stored parameters.
-     */
+    virtual ~random_factor_functor() { }
+
+    //! Generate a marginal factor P(X) using the stored parameters.
     virtual
     F generate_marginal(const domain_type& X) = 0;
 
-    /**
-     * Generate a marginal factor P(X) using the stored parameters.
-     */
+    //! Generate a marginal factor P(X) using the stored parameters.
     F generate_marginal(variable_type* X) {
       return generate_marginal(make_domain(X));
     }
 
-    /**
-     * Generate a conditional factor P(Y|X) using the stored parameters.
-     */
+    //! Generate a conditional factor P(Y|X) using the stored parameters.
     virtual
     F generate_conditional(const domain_type& Y, const domain_type& X) = 0;
 
-    /**
-     * Generate a conditional factor P(Y|X) using the stored parameters.
-     */
+    //! Generate a conditional factor P(Y|X) using the stored parameters.
     F generate_conditional(variable_type* Y, variable_type* X) {
       return generate_conditional(make_domain(Y), make_domain(X));
     }

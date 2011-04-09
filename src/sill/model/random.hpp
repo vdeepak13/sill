@@ -191,10 +191,9 @@ namespace sill {
    * @param n                  number of Y variables (and X variables)
    * @param tractable          If true, P(Y,X) will be tractable.
    * @param add_cross_factors  If true, add factors (Y_i, X_{i+1}), etc.
-   * @param rand_factor_func
-   *         Functor for generating random marginal factors.
-   * @param rand_crf_factor_func
-   *         Functor for generating random conditional factors.
+   * @param YY_factor_func     Functor for generating random Y-Y factors.
+   * @param YX_factor_func     Functor for generating random Y-X factors.
+   * @param XX_factor_func     Functor for generating random X-X factors.
    * @param Xmodel        (Return value) Decomposable model for P(X)
    * @param YgivenXmodel  (Return value) CRF model for P(Y|X)
    *
@@ -209,9 +208,10 @@ namespace sill {
   create_random_crf
   (const std::string& model_choice, size_t n,
    bool tractable, bool add_cross_factors,
+   random_crf_factor_functor<CRFfactor>& YY_factor_func,
+   random_crf_factor_functor<CRFfactor>& YX_factor_func,
    random_factor_functor<typename CRFfactor::output_factor_type>&
-   rand_factor_func,
-   random_crf_factor_functor<CRFfactor>& rand_crf_factor_func,
+   XX_factor_func,
    universe& u, unsigned random_seed,
    decomposable<typename CRFfactor::output_factor_type>& Xmodel,
    crf_model<CRFfactor>& YgivenXmodel) {
@@ -240,9 +240,9 @@ namespace sill {
     output_var_vector_type Yvars;
     for (size_t i(0); i < n; ++i) {
       Xvars.push_back
-        (rand_crf_factor_func.generate_input_variable(u, "X" + to_string(i)));
+        (YX_factor_func.generate_input_variable(u, "X" + to_string(i)));
       Yvars.push_back
-        (rand_crf_factor_func.generate_output_variable(u, "Y" + to_string(i)));
+        (YX_factor_func.generate_output_variable(u, "Y" + to_string(i)));
     }
 
     if (n == 1) {
@@ -250,8 +250,8 @@ namespace sill {
         copy_ptr<input_domain_type>
         (new input_domain_type(make_domain(Xvars[0])));
       YgivenXmodel.add_factor
-        (rand_crf_factor_func.generate_conditional(Yvars[0], Xvars[0]));
-      Xmodel *= rand_factor_func.generate_marginal(Xvars[0]);
+        (YX_factor_func.generate_conditional(Yvars[0], Xvars[0]));
+      Xmodel *= XX_factor_func.generate_marginal(Xvars[0]);
       return boost::make_tuple(Yvars, Xvars, Y2X_map);
     }
 
@@ -262,23 +262,23 @@ namespace sill {
           (new input_domain_type(make_domain(Xvars[i])));
       // Add initial vertex pair Y0--X0.
       YgivenXmodel.add_factor
-        (rand_crf_factor_func.generate_conditional(Yvars[0], Xvars[0]));
+        (YX_factor_func.generate_conditional(Yvars[0], Xvars[0]));
       // Add the rest.
       for (size_t i = 1; i < n; ++i) {
         // Choose which existing vertex j to attach to.
         size_t j((model_choice == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         Xmodel *=
-          rand_factor_func.generate_marginal(make_domain(Xvars[i],Xvars[j]));
+          XX_factor_func.generate_marginal(make_domain(Xvars[i],Xvars[j]));
         YgivenXmodel.add_factor
-          (rand_crf_factor_func.generate_conditional(Yvars[i], Xvars[i]));
-        YgivenXmodel.add_factor(rand_crf_factor_func.generate_marginal
+          (YX_factor_func.generate_conditional(Yvars[i], Xvars[i]));
+        YgivenXmodel.add_factor(YY_factor_func.generate_marginal
                                 (make_domain(Yvars[i], Yvars[j])));
         if (add_cross_factors) {
           YgivenXmodel.add_factor
-            (rand_crf_factor_func.generate_conditional(Yvars[j], Xvars[i]));
+            (YX_factor_func.generate_conditional(Yvars[j], Xvars[i]));
           YgivenXmodel.add_factor
-            (rand_crf_factor_func.generate_conditional(Yvars[i], Xvars[j]));
+            (YX_factor_func.generate_conditional(Yvars[i], Xvars[j]));
         }
       }
     } else { // intractable
@@ -289,7 +289,7 @@ namespace sill {
         size_t j((model_choice == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         Xmodel *=
-          rand_factor_func.generate_marginal(make_domain(Xvars[i], Xvars[j]));
+          XX_factor_func.generate_marginal(make_domain(Xvars[i], Xvars[j]));
       }
       std::vector<size_t> xind(randperm(n, rng)); // Y_i matches to X_{xind[i]}
       for (size_t i(0); i < n; ++i)
@@ -299,22 +299,20 @@ namespace sill {
 
       // Second, create P(Y|X).
       YgivenXmodel.add_factor
-        (rand_crf_factor_func.generate_conditional(Yvars[0], Xvars[xind[0]]));
+        (YX_factor_func.generate_conditional(Yvars[0], Xvars[xind[0]]));
       for (size_t i(1); i < n; ++i) {
         // Choose which existing Y_j to attach to.
         size_t j((model_choice == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         YgivenXmodel.add_factor
-          (rand_crf_factor_func.generate_conditional(Yvars[i], Xvars[xind[i]]));
-        YgivenXmodel.add_factor(rand_crf_factor_func.generate_marginal
+          (YX_factor_func.generate_conditional(Yvars[i], Xvars[xind[i]]));
+        YgivenXmodel.add_factor(YY_factor_func.generate_marginal
                                 (make_domain(Yvars[i], Yvars[j])));
         if (add_cross_factors) {
           YgivenXmodel.add_factor
-            (rand_crf_factor_func.generate_conditional(Yvars[j],
-                                                       Xvars[xind[i]]));
+            (YX_factor_func.generate_conditional(Yvars[j], Xvars[xind[i]]));
           YgivenXmodel.add_factor
-            (rand_crf_factor_func.generate_conditional(Yvars[i],
-                                                       Xvars[xind[j]]));
+            (YX_factor_func.generate_conditional(Yvars[i], Xvars[xind[j]]));
         }
       }
     }
