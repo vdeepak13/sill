@@ -1,9 +1,9 @@
-#ifndef SILL_RANDOM_GAUSSIAN_CRF_FACTOR_FUNCTOR_HPP
-#define SILL_RANDOM_GAUSSIAN_CRF_FACTOR_FUNCTOR_HPP
+#ifndef SILL_RANDOM_TABLE_CRF_FACTOR_FUNCTOR_HPP
+#define SILL_RANDOM_TABLE_CRF_FACTOR_FUNCTOR_HPP
 
-#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/table_crf_factor.hpp>
 #include <sill/factor/random/random_crf_factor_functor_i.hpp>
-#include <sill/factor/random/random_factor_functor_i.hpp>
+#include <sill/factor/random/random_table_factor_functor.hpp>
 
 namespace sill {
 
@@ -11,23 +11,39 @@ namespace sill {
   //! @{
 
   /**
-   * Functor for generating random gaussian_crf_factor factors.
+   * Functor for generating random table_crf_factor factors.
    */
-  struct random_gaussian_crf_factor_functor
-    : random_crf_factor_functor_i<gaussian_crf_factor> {
+  struct random_table_crf_factor_functor
+    : random_crf_factor_functor_i<table_crf_factor> {
 
-    typedef random_crf_factor_functor_i<gaussian_crf_factor> base;
+    // Public types
+    //==========================================================================
+
+    typedef random_crf_factor_functor_i<table_crf_factor> base;
+
+    //! Parameters
+    struct parameters {
+
+      random_table_factor_functor table_factor_func;
+
+      //! Assert validity.
+      void check() const {
+        table_factor_func.params.check();
+      }
+
+    }; // struct parameters
+
+    // Public data
+    //==========================================================================
+
+    parameters params;
 
     // Public methods
     //==========================================================================
 
     //! Constructor.
-    explicit random_gaussian_crf_factor_functor
-    (random_factor_functor_i<moment_gaussian>& mg_factor_func);
-
-    //! Constructor.
-    explicit random_gaussian_crf_factor_functor
-    (random_factor_functor_i<canonical_gaussian>& cg_factor_func);
+    explicit
+    random_table_crf_factor_functor(unsigned random_seed = time(NULL));
 
     using base::generate_marginal;
     using base::generate_conditional;
@@ -57,20 +73,13 @@ namespace sill {
     input_variable_type*
     generate_input_variable(universe& u, const std::string& name = "") const;
 
-    // Private data and methods
-    //==========================================================================
-  private:
+    //! Set random seed.
+    void seed(unsigned random_seed = time(NULL));
 
-    random_factor_functor_i<moment_gaussian>* mg_factor_func_ptr;
-
-    random_factor_functor_i<canonical_gaussian>* cg_factor_func_ptr;
-
-    random_gaussian_crf_factor_functor();
-
-  }; // struct random_gaussian_crf_factor_functor
+  }; // struct random_table_crf_factor_functor
 
   //! @} group factor_random
 
 } // namespace sill
 
-#endif // SILL_RANDOM_GAUSSIAN_CRF_FACTOR_FUNCTOR_HPP
+#endif // SILL_RANDOM_TABLE_CRF_FACTOR_FUNCTOR_HPP

@@ -65,11 +65,12 @@ namespace sill {
   //! Specialization: table_crf_factor
   template <>
   table_crf_factor*
-  learn_crf_factor<table_crf_factor>(const dataset<table_crf_factor::la_type>& ds,
-                                     const finite_domain& Y_,
-                                     copy_ptr<finite_domain> X_ptr_,
-                                     const table_crf_factor::parameters& params,
-                                     unsigned random_seed);
+  learn_crf_factor<table_crf_factor>
+  (const dataset<table_crf_factor::la_type>& ds,
+   const finite_domain& Y_,
+   copy_ptr<finite_domain> X_ptr_,
+   const table_crf_factor::parameters& params,
+   unsigned random_seed);
 
   //! Specialization: log_reg_crf_factor
   template <>

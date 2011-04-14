@@ -4,11 +4,11 @@
 namespace sill {
 
   random_gaussian_crf_factor_functor::random_gaussian_crf_factor_functor
-  (random_factor_functor<moment_gaussian>& mg_factor_func)
+  (random_factor_functor_i<moment_gaussian>& mg_factor_func)
     : mg_factor_func_ptr(&mg_factor_func), cg_factor_func_ptr(NULL) { }
 
   random_gaussian_crf_factor_functor::random_gaussian_crf_factor_functor
-  (random_factor_functor<canonical_gaussian>& cg_factor_func)
+  (random_factor_functor_i<canonical_gaussian>& cg_factor_func)
     : mg_factor_func_ptr(NULL), cg_factor_func_ptr(&cg_factor_func) { }
 
   gaussian_crf_factor
@@ -27,7 +27,7 @@ namespace sill {
       throw std::runtime_error
         (std::string("random_gaussian_crf_factor_functor::generate_marginal") +
          " (default version) called, but the functor was not constructed" +
-         " with a random_factor_functor.");
+         " with a random_factor_functor_i.");
     }
   }
 
@@ -45,7 +45,7 @@ namespace sill {
       throw std::runtime_error
         (std::string("random_gaussian_crf_factor_functor::generate_conditional")
          + " (default version) called, but the functor was not constructed" +
-         " with a random_factor_functor.");
+         " with a random_factor_functor_i.");
     }
   }
 

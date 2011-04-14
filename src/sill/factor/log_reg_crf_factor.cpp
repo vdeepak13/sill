@@ -8,6 +8,24 @@ namespace sill {
   // Public methods: Constructors, getters, helpers
   // =========================================================================
 
+  log_reg_crf_factor::
+  log_reg_crf_factor(const output_domain_type& Y_,
+                     const input_domain_type& X_)
+    : base(Y_, copy_ptr<domain>(new domain(X_.begin(), X_.end()))),
+      conditioned_f(Y_, 0.) {
+    assert(false); // I NEED TO INITIALIZE mlr_ptr.
+  }
+
+  log_reg_crf_factor::
+  log_reg_crf_factor(boost::shared_ptr<multiclass2multilabel> mlr_ptr,
+                     double smoothing, const finite_domain& Y_,
+                     copy_ptr<domain> X_ptr_)
+    : base(Y_, X_ptr_), mlr_ptr(mlr_ptr), smoothing(smoothing), 
+      conditioned_f(Y_, 0.) {
+    assert(mlr_ptr.get() != NULL);
+    mlr_ptr->prepare_record_for_base(tmp_record);
+  }
+
   void log_reg_crf_factor::print(std::ostream& out) const {
     base::print(out);
     if (mlr_ptr)

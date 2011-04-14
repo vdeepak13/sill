@@ -1,8 +1,8 @@
-#ifndef SILL_RANDOM_GAUSSIAN_FUNCTOR_HPP
-#define SILL_RANDOM_GAUSSIAN_FUNCTOR_HPP
+#ifndef SILL_RANDOM_GAUSSIAN_FACTOR_FUNCTOR_HPP
+#define SILL_RANDOM_GAUSSIAN_FACTOR_FUNCTOR_HPP
 
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/factor/random/random_factor_functor.hpp>
+#include <sill/factor/random/random_factor_functor_i.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -18,52 +18,72 @@ namespace sill {
    * @tparam F   Gaussian factor type.
    */
   template <typename F>
-  struct random_gaussian_functor
-    : random_factor_functor<F> {
+  struct random_gaussian_factor_functor
+    : random_factor_functor_i<F> {
 
-    typedef random_factor_functor<F> base;
+    typedef random_factor_functor_i<F> base;
 
     typedef typename base::variable_type variable_type;
     typedef typename base::domain_type   domain_type;
 
-    // Parameters for head variables, i.e., for Y in P(Y) or P(Y|X).
+    //! Parameters
+    struct parameters {
+
+      // Parameters for head variables, i.e., for Y in P(Y) or P(Y|X).
+      //========================================================================
+
+      //! Each element of the mean is chosen from Uniform[-b, b].  (b >= 0)
+      //!  (default = 1)
+      double b;
+
+      //! Set variances of each variable to this value.  (variance > 0)
+      //!  (default = 1)
+      double variance;
+
+      //! Set covariance of each pair of variables according to this correlation
+      //! coefficient.  (fabs(correlation) <= 1)
+      //!  (default = .3)
+      double correlation;
+
+      // Parameters for tail variables, i.e., for X in P(Y|X).
+      //========================================================================
+
+      //! Each element of the coefficient matrix C is chosen
+      //! from c_shift + Uniform[-c, c],
+      //! where C shifts the mean when conditioning on X=x.  (c >= 0)
+      //!  (default = 1)
+      double c;
+
+      //! Each element of the coefficient matrix C is chosen
+      //! from c_shift + Uniform[-c, c],
+      //! where C shifts the mean when conditioning on X=x.
+      //!  (default = 0)
+      double c_shift;
+
+      parameters()
+        : b(1), variance(1), correlation(.3), c(1), c_shift(0) { }
+
+      //! Assert validity.
+      void check() const {
+        assert(b >= 0);
+        assert(variance > 0);
+        assert(fabs(correlation) <= 1);
+        assert(c >= 0);
+      }
+
+    }; // struct parameters
+
+    // Public data
     //==========================================================================
 
-    //! Each element of the mean is chosen from Uniform[-b, b].
-    //!  (default = 1)
-    double b;
-
-    //! Set variances of each variable to this value.
-    //!  (default = 1)
-    double variance;
-
-    //! Set covariance of each pair of variables according to this correlation
-    //! coefficient.
-    //!  (default = .3)
-    double correlation;
-
-    // Parameters for tail variables, i.e., for X in P(Y|X).
-    //==========================================================================
-
-    //! Each element of the coefficient matrix C is chosen
-    //! from c_shift + Uniform[-c, c],
-    //! where C shifts the mean when conditioning on X=x.
-    //!  (default = 1)
-    double c;
-
-    //! Each element of the coefficient matrix C is chosen
-    //! from c_shift + Uniform[-c, c],
-    //! where C shifts the mean when conditioning on X=x.
-    //!  (default = 0)
-    double c_shift;
+    parameters params;
 
     // Public methods
     //==========================================================================
 
     //! Constructor.
-    explicit random_gaussian_functor(unsigned random_seed)
-      : b(1), variance(1), correlation(.3), c(1), c_shift(0),
-        rng(random_seed) { }
+    explicit random_gaussian_factor_functor(unsigned random_seed)
+      : rng(random_seed) { }
 
     using base::generate_marginal;
     using base::generate_conditional;
@@ -89,17 +109,23 @@ namespace sill {
       return u.new_vector_variable(name, 1);
     }
 
+    //! Set random seed.
+    void seed(unsigned random_seed = time(NULL)) {
+      rng.seed(random_seed);
+    }
+
     // Private data and methods
     //==========================================================================
   private:
 
     boost::mt11213b rng;
 
-    random_gaussian_functor();
+    random_gaussian_factor_functor();
 
-    random_gaussian_functor(const random_gaussian_functor& other);
+    random_gaussian_factor_functor(const random_gaussian_factor_functor& other);
 
     moment_gaussian generate_marginal_mg(const domain_type& X_) {
+      params.check();
       vector_var_vector X(X_.begin(), X_.end());
       size_t Xsize = vector_size(X);
       vec mu;
@@ -110,6 +136,7 @@ namespace sill {
 
     moment_gaussian
     generate_conditional_mg(const domain_type& Y_, const domain_type& X_) {
+      params.check();
       vector_var_vector Y(Y_.begin(), Y_.end());
       size_t Ysize = vector_size(Y);
       vec mu;
@@ -124,17 +151,13 @@ namespace sill {
 
     void
     choose_mu_sigma(size_t Xsize, vec& mu, mat& sigma) {
-      if ((b < 0) || (variance <= 0) || (fabs(correlation) > 1)) {
-        throw std::invalid_argument
-          (std::string("random_moment_gaussian_functor") +
-           " has invalid parameters.");
-      }
-      boost::uniform_real<double> unif_real(-b, b);
+      boost::uniform_real<double> unif_real(-params.b, params.b);
       mu.resize(Xsize);
       foreach(double& val, mu)
         val = unif_real(rng);
-      double covariance = correlation * variance * variance;
-      if (covariance == variance) {
+      double covariance =
+        params.correlation * params.variance * params.variance;
+      if (covariance == params.variance) {
         throw std::invalid_argument
           (std::string("random_moment_gaussian_functor") +
            " has variance and correlation s.t. the covariance equals" +
@@ -143,9 +166,9 @@ namespace sill {
       sigma.resize(Xsize, Xsize);
       sigma = covariance;
       for (size_t i = 0; i < Xsize; ++i)
-        sigma(i,i) = variance;
+        sigma(i,i) = params.variance;
       if (Xsize > 2) {
-        if (covariance < 0 || covariance < variance) {
+        if (covariance < 0 || covariance < params.variance) {
           mat tmpmat;
           bool result = chol(sigma, tmpmat);
           if (!result) {
@@ -159,28 +182,23 @@ namespace sill {
 
     void
     choose_coeff(size_t Ysize, size_t Xsize, mat& coeff) {
-      if (c < 0) {
-        throw std::invalid_argument
-          (std::string("random_moment_gaussian_functor") +
-           " has invalid parameters.");
-      }
-      boost::uniform_real<double> unif_real(-c, c);
+      boost::uniform_real<double> unif_real(-params.c, params.c);
       coeff.resize(Ysize, Xsize);
       foreach(double& val, coeff)
-        val = c_shift + unif_real(rng);
+        val = params.c_shift + unif_real(rng);
     } // choose_coeff
 
-  }; // struct random_gaussian_functor
+  }; // struct random_gaussian_factor_functor
 
   //! Specialization for moment_gaussian
   template <>
   moment_gaussian
-  random_gaussian_functor<moment_gaussian>::
+  random_gaussian_factor_functor<moment_gaussian>::
   generate_marginal(const domain_type& X);
 
   template <>
   moment_gaussian
-  random_gaussian_functor<moment_gaussian>::
+  random_gaussian_factor_functor<moment_gaussian>::
   generate_conditional(const domain_type& Y, const domain_type& X);
 
   //! @} group factor_random
@@ -189,4 +207,4 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
-#endif // SILL_RANDOM_GAUSSIAN_FUNCTOR_HPP
+#endif // SILL_RANDOM_GAUSSIAN_FACTOR_FUNCTOR_HPP

@@ -2,7 +2,7 @@
 #define SILL_RANDOM_MIXTURE_CRF_FACTOR_FUNCTOR_HPP
 
 #include <sill/factor/mixture_crf_factor.hpp>
-#include <sill/factor/random/random_crf_factor_functor.hpp>
+#include <sill/factor/random/random_crf_factor_functor_i.hpp>
 
 namespace sill {
 
@@ -16,9 +16,9 @@ namespace sill {
    */
   template <typename F>
   struct random_mixture_crf_factor_functor
-    : random_crf_factor_functor<mixture_crf_factor<F> > {
+    : random_crf_factor_functor_i<mixture_crf_factor<F> > {
 
-    typedef random_crf_factor_functor<mixture_crf_factor<F> > base;
+    typedef random_crf_factor_functor_i<mixture_crf_factor<F> > base;
 
     typedef typename base::crf_factor_type        crf_factor_type;
     typedef F                                     subfactor_type;
@@ -44,7 +44,7 @@ namespace sill {
 
     //! Constructor.
     random_mixture_crf_factor_functor
-    (size_t k, random_crf_factor_functor<subfactor_type>& subfactor_func)
+    (size_t k, random_crf_factor_functor_i<subfactor_type>& subfactor_func)
       : k(k), subfactor_func(subfactor_func) {
     }
 
@@ -94,7 +94,7 @@ namespace sill {
     //==========================================================================
   private:
 
-    random_crf_factor_functor<subfactor_type>& subfactor_func;
+    random_crf_factor_functor_i<subfactor_type>& subfactor_func;
 
     random_mixture_crf_factor_functor();
 

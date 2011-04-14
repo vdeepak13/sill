@@ -51,65 +51,6 @@ namespace sill {
 
     typedef record<LA> record_type;
 
-    // Protected data members
-    //==========================================================================
-  protected:
-
-    //! The associated dataset.
-    const dataset<LA>& ds;
-
-    // Protected data members: order statistics
-    //==========================================================================
-
-    /**
-     * For each vector variable (indexed as in the dataset's record's
-     * vector() function), a vector of record indices in order
-     * of increasing variable value:
-     * order_stats_[i][j] is the index of the record with the j^th smallest
-     * value for variable i
-     */
-    std::vector<std::vector<size_t> > order_stats_;
-
-    //! Functor for computing order statistics
-    struct order_stats_functor {
-
-    private:
-      const dataset<LA>& ds;
-      size_t v;
-
-    public:
-      //! @param v  index for vector variable
-      order_stats_functor(const dataset<LA>& ds, size_t v) : ds(ds), v(v) { }
-
-      //! @return true iff record i comes before record j w.r.t. vector value v
-      bool operator()(size_t i, size_t j) {
-        // TODO: Write a function in dataset to return a view of
-        //       a single column, and then use it here.
-        // Actually, come back and do this later; do it inefficiently for now.
-        // (Test how much of a difference it makes if it's done more efficiently
-        // later.)
-        return (ds.vector(i,v) < ds.vector(j,v));
-      }
-
-    };
-
-    // Protected data members: mutual information
-    //==========================================================================
-
-    /**
-     * Mutual information between all pairs of variables.
-     * mutual_info_[i][j] = mutual information between variables i and j,
-     *   in the natural order
-     * \todo Generalize this to work for vector variables as well.
-     */
-    std::vector<std::vector<double> > mutual_info_;
-
-    // Protected data members: marginals
-    //==========================================================================
-
-    //! Map: domain --> marginal over that domain
-    mutable std::map<finite_domain,table_factor> marginal_map;
-
     // Constructors, getters, mutating operations
     //==========================================================================
   public:
@@ -233,6 +174,65 @@ namespace sill {
     //! Return a vector of the maximum values of all vector variables in 'vars'.
     static vec
     vector_var_max(const dataset<LA>& data, const vector_var_vector& vars);
+
+    // Protected data members
+    //==========================================================================
+  protected:
+
+    //! The associated dataset.
+    const dataset<LA>& ds;
+
+    // Protected data members: order statistics
+    //==========================================================================
+
+    /**
+     * For each vector variable (indexed as in the dataset's record's
+     * vector() function), a vector of record indices in order
+     * of increasing variable value:
+     * order_stats_[i][j] is the index of the record with the j^th smallest
+     * value for variable i
+     */
+    std::vector<std::vector<size_t> > order_stats_;
+
+    //! Functor for computing order statistics
+    struct order_stats_functor {
+
+    private:
+      const dataset<LA>& ds;
+      size_t v;
+
+    public:
+      //! @param v  index for vector variable
+      order_stats_functor(const dataset<LA>& ds, size_t v) : ds(ds), v(v) { }
+
+      //! @return true iff record i comes before record j w.r.t. vector value v
+      bool operator()(size_t i, size_t j) {
+        // TODO: Write a function in dataset to return a view of
+        //       a single column, and then use it here.
+        // Actually, come back and do this later; do it inefficiently for now.
+        // (Test how much of a difference it makes if it's done more efficiently
+        // later.)
+        return (ds.vector(i,v) < ds.vector(j,v));
+      }
+
+    };
+
+    // Protected data members: mutual information
+    //==========================================================================
+
+    /**
+     * Mutual information between all pairs of variables.
+     * mutual_info_[i][j] = mutual information between variables i and j,
+     *   in the natural order
+     * \todo Generalize this to work for vector variables as well.
+     */
+    std::vector<std::vector<double> > mutual_info_;
+
+    // Protected data members: marginals
+    //==========================================================================
+
+    //! Map: domain --> marginal over that domain
+    mutable std::map<finite_domain,table_factor> marginal_map;
 
   };  // class dataset_statistics
 

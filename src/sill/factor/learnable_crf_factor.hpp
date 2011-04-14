@@ -34,6 +34,22 @@ namespace sill {
 
   }; // struct crf_regularization_type
 
+  template <size_t NLambdas>
+  std::ostream&
+  operator<<(std::ostream& out, const crf_regularization_type<NLambdas>& reg) {
+    switch (reg.regularization) {
+    case 0:
+      out << "No regularization";
+      break;
+    case 2:
+      out << "L2 reg " << reg.lambdas;
+      break;
+    default:
+      assert(false);
+    }
+    return out;
+  }
+
   /**
    * A virtual base class for a CRF factor/potential which supports learning.
    *

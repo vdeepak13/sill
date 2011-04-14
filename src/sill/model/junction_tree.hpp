@@ -33,6 +33,10 @@
 
 namespace sill {
 
+  // Forward declaration
+  template <typename F> class shafer_shenoy;
+
+
   namespace impl {
     /**
      * The information stored with each vertex of the junction tree.

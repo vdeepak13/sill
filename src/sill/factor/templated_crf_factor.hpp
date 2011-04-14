@@ -145,6 +145,8 @@ namespace sill {
      * Copy constructor.
      * WARNING: The new copy uses the same shared base factor;
      *          it does NOT do a deep copy.
+     * @todo Decide if this should or should not use the same shared base
+     *       factor.  Where is this used?
      */
     templated_crf_factor(const templated_crf_factor& other)
       : base(other), factor_ptr_(other.factor_ptr_),
@@ -158,6 +160,8 @@ namespace sill {
      * Assignment operator.
      * WARNING: The new copy uses the same shared base factor as 'other';
      *          it does NOT do a deep copy.
+     * @todo Decide if this should or should not use the same shared base
+     *       factor.  Where is this used?
      */
     templated_crf_factor& operator=(const templated_crf_factor& other) {
       base::operator=(other);

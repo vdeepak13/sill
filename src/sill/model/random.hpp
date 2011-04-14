@@ -6,8 +6,8 @@
 #include <sill/range/concepts.hpp>
 #include <sill/factor/gaussian_crf_factor.hpp>
 #include <sill/factor/random/random.hpp>
-#include <sill/factor/random/random_crf_factor_functor.hpp>
-#include <sill/factor/random/random_factor_functor.hpp>
+#include <sill/factor/random/random_crf_factor_functor_i.hpp>
+#include <sill/factor/random/random_factor_functor_i.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/table_crf_factor.hpp>
 #include <sill/math/permutations.hpp>
@@ -208,9 +208,9 @@ namespace sill {
   create_random_crf
   (const std::string& model_choice, size_t n,
    bool tractable, bool add_cross_factors,
-   random_crf_factor_functor<CRFfactor>& YY_factor_func,
-   random_crf_factor_functor<CRFfactor>& YX_factor_func,
-   random_factor_functor<typename CRFfactor::output_factor_type>&
+   random_crf_factor_functor_i<CRFfactor>& YY_factor_func,
+   random_crf_factor_functor_i<CRFfactor>& YX_factor_func,
+   random_factor_functor_i<typename CRFfactor::output_factor_type>&
    XX_factor_func,
    universe& u, unsigned random_seed,
    decomposable<typename CRFfactor::output_factor_type>& Xmodel,
@@ -348,7 +348,7 @@ namespace sill {
   create_random_bayesian_network_crf
   (const std::string& model_choice, size_t n,
    bool tractable, bool add_cross_factors,
-   random_factor_functor<F>& rand_factor_func,
+   random_factor_functor_i<F>& rand_factor_func,
    universe& u, unsigned random_seed,
    bayesian_network<F>& model) {
 

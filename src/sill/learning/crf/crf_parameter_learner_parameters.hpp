@@ -7,15 +7,7 @@ namespace sill {
 
   /**
    * Parameters for crf_parameter_learner.
-   *
-   * This allows easy parsing of command-line options via Boost Program Options.
-   *
-   * Usage: Create your own Options Description desc.
-   *        Call this struct's add_options() method with desc to add synthetic
-   *        model options to desc.
-   *        Parse the command line using the modified options description.
-   *        Pass this struct (which now holds the parsed options) to
-   *        crf_parameter_learner.
+   * @see crf_parameter_learner
    */
   struct crf_parameter_learner_parameters {
 
@@ -53,6 +45,11 @@ namespace sill {
      *       length 1, then the 1 value is copied for all k lambdas.
      *       Otherwise, if the length of lambdas does not fit the factor type,
      *       an error is thrown.
+     *
+     * Templated factors: When using a crf_model with templated_crf_factor,
+     * regularization penalties are added once per factor instance. This means
+     * that templated factors which appear many times in a model are penalized
+     * more than templated factors which appear infrequently.
      *
      * (default = 0)
      */

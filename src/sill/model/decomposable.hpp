@@ -13,6 +13,7 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/operations.hpp>
+#include <sill/factor/table_factor.hpp>
 #include <sill/graph/tree_traversal.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
 #include <sill/learning/error_measures.hpp>
@@ -26,6 +27,9 @@
 namespace sill {
 
   // #define SILL_VERBOSE // for debugging
+
+  // Forward declaration
+  class table_factor;
 
   /**
    * A decomposable representation of a probability distribution.
@@ -135,6 +139,10 @@ namespace sill {
       jt.initialize(make_transformed(factors, arguments_functor<F>()),
                     boost::begin(factors));
 
+      // Depending on the factor type, pre-normalize clique marginals
+      // to avoid numerical issues.
+      possibly_prenormalize();
+
       // Compute the separator marginals
       foreach(edge e, edges()) {
         vertex s = e.source(), t = e.target();
@@ -147,7 +155,6 @@ namespace sill {
       // Compute the arguments
       args.clear();
       foreach(vertex v, vertices()) {
-//        args = set_union(args, clique(v));
         args.insert(clique(v).begin(), clique(v).end());
       }
 
@@ -180,6 +187,11 @@ namespace sill {
         assert(argsi == jt.clique(v));
         i++;
       }
+
+      // Depending on the factor type, pre-normalize clique marginals
+      // to avoid numerical issues.
+      possibly_prenormalize();
+
       foreach(edge e, jt.edges())
         jt[e] = jt[e.source()].marginal(jt.separator(e));
 
@@ -1215,6 +1227,9 @@ namespace sill {
           vertex v = find_clique_cover(factor.arguments());
           assert(v != vertex());
           jt[v] *= factor;
+          /*
+           // It is sometimes OK for gaussians to be unnormalizable
+           // before calibration.
           if (!jt[v].is_normalizable()) {
             std::cerr << "Cannot normalize clique potential after absorbing "
                       << "factor.  Original potential:" << std::endl
@@ -1225,8 +1240,13 @@ namespace sill {
                       << jt[v] << std::endl;
             throw normalization_error("decomposable::operator*= ran into factor which could not be normalized.");
           }
+          */
         }
       }
+
+      // Depending on the factor type, pre-normalize clique marginals
+      // to avoid numerical issues.
+      possibly_prenormalize();
 
       // Recalibrate and renormalize the model.
       calibrate();
@@ -1275,9 +1295,9 @@ namespace sill {
      *
      * @param factors            A readable forward range of objects of type F
      * @param factor_vertex_map  A vector corresponding to the given factor
-     *                           range, with each entry being a vertex in this
-     *                           model whose clique covers the corresponding
-     *                           factor's arguments.
+     *                            range, with each entry being a vertex in this
+     *                            model whose clique covers the corresponding
+     *                            factor's arguments.
      */
     template <typename Range>
     void replace_factors(const Range& factors,
@@ -1297,14 +1317,22 @@ namespace sill {
           assert(j < factor_vertex_map.size());
           const vertex& v = factor_vertex_map[j];
           jt[v] *= factor;
+          /*
+           // It is sometimes OK for gaussians to be unnormalizable
+           // before calibration.
           if (!jt[v].is_normalizable()) {
             std::cerr << "Cannot normalize this factor:\n"
                       << factor << std::endl;
             throw normalization_error("decomposable::replace_factors ran into factor which could not be normalized.");
           }
+          */
         }
         ++j;
       }
+
+      // Depending on the factor type, pre-normalize clique marginals
+      // to avoid numerical issues.
+      possibly_prenormalize();
 
       // Recalibrate and renormalize the model.
       calibrate();
@@ -1498,6 +1526,7 @@ namespace sill {
      *
      * \todo should also apply to separator marginals???
      * \todo do we ever need this???
+     * \todo Should this also normalize the model?
      */
     template <typename Functor>
     void apply(Functor f) {
@@ -1572,6 +1601,13 @@ namespace sill {
      *     - Get marginal over [e] of [v].
      *  - During the pre-order traversal,
      */
+
+    //! Depending on the factor type, pre-normalize clique marginals
+    //! to avoid numerical issues.
+    void possibly_prenormalize() {
+      // Do nothing for general factor types.
+      // (Do not assume they will be normalizable before calibration.)
+    }
 
     // Protected member class definitions
     //==========================================================================
@@ -1855,6 +1891,10 @@ namespace sill {
     return out;
   }
 
+  // Specialization for table_factor.
+  template <>
+  void decomposable<table_factor>::possibly_prenormalize();
+
 } // namespace sill
 
 namespace boost {
@@ -1862,7 +1902,7 @@ namespace boost {
   //! A traits class that lets decomposable_model work in BGL algorithms
   template <typename F>
   struct graph_traits< sill::decomposable<F> >
-    : public graph_traits<sill::junction_tree<typename F::variable_type*, F, F> >
+    : public graph_traits<sill::junction_tree<typename F::variable_type*,F,F> >
   { };
 
 } // namespace boost

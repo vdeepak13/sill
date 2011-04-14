@@ -224,10 +224,7 @@ namespace sill {
         } else {
           // v and maybe some parents remain.
           F tmpf(factor(v).restrict(a));
-
-          assert(false);
-          tmpf.normalize(); // RIGHT HERE NOW: REMOVE THIS ONCE I'M DONE WITH regen_synthetic_mog_crf_truth.
-
+          // BUG: See bug comment above in the comments for this method!
           tmp_bn.add_factor(v, tmpf);
         }
       }

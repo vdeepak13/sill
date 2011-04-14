@@ -30,8 +30,6 @@ namespace sill {
    *
    * @tparam LA  Linear algebra type specifier
    *             (default = dense_linear_algebra<>)
-   *
-   * TO DO: ADD TIMING
    */
   template <typename LA = dense_linear_algebra<> >
   class validation_framework {

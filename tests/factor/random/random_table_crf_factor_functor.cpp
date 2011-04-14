@@ -1,11 +1,11 @@
 
 /**
- * \file random_table_factor_functor.cpp
- *       Test of random_table_factor_functor.
+ * \file random_table_crf_factor_functor.cpp
+ *       Test of random_table_crf_factor_functor.
  */
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random/random_table_factor_functor_builder.hpp>
+#include <sill/factor/random/random_table_crf_factor_functor_builder.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
      "Random seed (default = time)")
     ("help", "Print this help message.");
 
-  random_table_factor_functor_builder rtff_builder;
-  rtff_builder.add_options(desc);
+  random_table_crf_factor_functor_builder rtcff_builder;
+  rtcff_builder.add_options(desc);
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -39,19 +39,20 @@ int main(int argc, char** argv) {
   finite_variable* Y = u.new_finite_variable(2);
   finite_variable* X = u.new_finite_variable(2);
 
-  random_table_factor_functor rtff(random_seed);
-  rtff.params = rtff_builder.get_parameters();
+  random_table_crf_factor_functor rtcff;
+  rtcff.params = rtcff_builder.get_parameters();
+  rtcff.seed(random_seed);
 
-  std::cout << "Test: random_table_factor_functor\n"
+  std::cout << "Test: random_table_crf_factor_functor\n"
             << "---------------------------------------------" << std::endl;
-  table_factor P_Y(rtff.generate_marginal(Y));
-  std::cout << "Generated table_factor P(Y):\n"
+  table_crf_factor P_Y(rtcff.generate_marginal(Y));
+  std::cout << "Generated table_crf_factor P(Y):\n"
             << P_Y << std::endl;
-  table_factor P_YX(rtff.generate_marginal(make_domain(Y,X)));
-  std::cout << "Generated table_factor P(Y,X):\n"
+  table_crf_factor P_YX(rtcff.generate_marginal(make_domain(Y,X)));
+  std::cout << "Generated table_crf_factor P(Y,X):\n"
             << P_YX << std::endl;
-  table_factor P_Y_given_X(rtff.generate_conditional(Y, X));
-  std::cout << "Generated table_factor P(Y|X):\n"
+  table_crf_factor P_Y_given_X(rtcff.generate_conditional(Y, X));
+  std::cout << "Generated table_crf_factor P(Y|X):\n"
             << P_Y_given_X << std::endl;
 
 } // main

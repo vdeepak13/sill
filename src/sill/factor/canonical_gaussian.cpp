@@ -413,7 +413,11 @@ namespace sill {
   }
 
   bool canonical_gaussian::is_normalizable() const {
-    return true;
+    if (lambda.size() == 0)
+      return true;
+    mat lambda_inv;
+    bool result = inv(lambda, lambda_inv);
+    return result;
   }
 
   double canonical_gaussian::norm_constant() const {

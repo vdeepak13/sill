@@ -1,5 +1,5 @@
-#ifndef SILL_RANDOM_CRF_FACTOR_FUNCTOR_HPP
-#define SILL_RANDOM_CRF_FACTOR_FUNCTOR_HPP
+#ifndef SILL_RANDOM_CRF_FACTOR_FUNCTOR_I_HPP
+#define SILL_RANDOM_CRF_FACTOR_FUNCTOR_I_HPP
 
 #include <sill/base/universe.hpp>
 
@@ -18,7 +18,7 @@ namespace sill {
    * @see create_random_crf
    */
   template <typename CRFfactor>
-  struct random_crf_factor_functor {
+  struct random_crf_factor_functor_i {
 
     //! Factor type
     typedef CRFfactor crf_factor_type;
@@ -44,7 +44,7 @@ namespace sill {
     // Public methods
     //==========================================================================
 
-    virtual ~random_crf_factor_functor() { }
+    virtual ~random_crf_factor_functor_i() { }
 
     /**
      * Generate a marginal factor P(Y) using the stored parameters.
@@ -89,7 +89,7 @@ namespace sill {
     input_variable_type*
     generate_input_variable(universe& u, const std::string& name = "") const =0;
 
-  }; // struct random_crf_factor_functor
+  }; // struct random_crf_factor_functor_i
 
   //! @} group factor_random
 
@@ -97,4 +97,4 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
-#endif // SILL_RANDOM_CRF_FACTOR_FUNCTOR_HPP
+#endif // SILL_RANDOM_CRF_FACTOR_FUNCTOR_I_HPP

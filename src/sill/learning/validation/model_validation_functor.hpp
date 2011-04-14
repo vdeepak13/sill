@@ -71,6 +71,9 @@ namespace sill {
      * @param warm_start_recommended
      *          If true, then the validation_framework recommends that training
      *          be initialized using the most recently trained model.
+     *          NOTE: If true, then the previously trained model was trained
+     *                using the same dataset (when this method is called by
+     *                param_list_validation_functor::test).
      * @param random_seed
      *
      * @return  Result/score.

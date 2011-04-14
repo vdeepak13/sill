@@ -1,7 +1,6 @@
 #ifndef SILL_CRF_PARAMETER_LEARNER_HPP
 #define SILL_CRF_PARAMETER_LEARNER_HPP
 
-#include <boost/program_options.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/timer.hpp>
 
@@ -32,8 +31,8 @@ namespace sill {
    * This is a class which represents algorithms for learning a crf_model
    * from data.  This treats models as a collection of factors with these
    * requirements:
-   *  - Instantiating the factors should produce a LOW TREE-WIDTH decomposable
-   *    model.
+   *  - Instantiating the factors with fixed x (input) values should produce
+   *    a LOW TREE-WIDTH decomposable model.
    *  - The first derivative (and ideally higher-order derivatives) of a
    *    factor can be computed.
    * See the LearnableCRFfactor concept for details about the requirements.
@@ -41,7 +40,8 @@ namespace sill {
    * @tparam F  factor/potential type which implements the LearnableCRFfactor
    *            concept
    *
-   * @see crf_model
+   * @see crf_model, crf_parameter_learner_parameters,
+   *      crf_parameter_learner_builder
    * \ingroup learning_param
    */
   template <typename F>
@@ -979,116 +979,6 @@ namespace sill {
                   << " objective = " << obj << std::endl;
     } // my_everything()
 
-    //! Helper functor for choose_lambda().
-    //! @see crossval_zoom
-    struct choose_lambda_helper {
-
-      const crf_model_type& model;
-
-      bool keep_weights;
-
-      const dataset<la_type>& ds;
-
-      size_t score_type;
-
-      const parameters& params_;
-
-      choose_lambda_helper
-      (const crf_model_type& model, bool keep_weights,
-       const dataset<la_type>& ds, size_t score_type, const parameters& params_)
-        : model(model), keep_weights(keep_weights), ds(ds),
-          score_type(score_type), params_(params_) { }
-
-      //! Run CV on the given lambdas.
-      vec operator()(vec& means, vec& stderrs, const std::vector<vec>& lambdas,
-                     size_t n_folds, unsigned random_seed) const {
-        assert(lambdas.size() > 0);
-        assert(n_folds > 0 && n_folds <= ds.size());
-        for (size_t j(0); j < lambdas.size(); ++j)
-          assert(lambdas[j].size() == crf_factor_reg_type::nlambdas);
-        means.resize(lambdas.size());
-        means.zeros_memset();
-        stderrs.resize(lambdas.size());
-        stderrs.zeros_memset();
-        boost::mt11213b rng(random_seed);
-        dataset_view<la_type> permuted_view(ds);
-        permuted_view.set_record_indices(randperm(ds.size(), rng));
-        parameters fold_params(params_);
-        dataset_view<la_type> fold_train(permuted_view);
-        dataset_view<la_type> fold_test(permuted_view);
-        fold_train.save_record_view();
-        fold_test.save_record_view();
-        for (size_t fold(0); fold < n_folds; ++fold) {
-          if (fold != 0) {
-            fold_train.restore_record_view();
-            fold_test.restore_record_view();
-          }
-          fold_train.set_cross_validation_fold(fold, n_folds, false);
-          fold_test.set_cross_validation_fold(fold, n_folds, true);
-          // Make a hard copy of the training set for efficiency.
-          vector_assignment_dataset<la_type>
-            tmp_train_ds(fold_train.datasource_info(), fold_train.size());
-          foreach(const record_type& r, fold_train.records())
-            tmp_train_ds.insert(r);
-          for (size_t k(0); k < lambdas.size(); ++k) {
-            fold_params.lambdas = lambdas[k];
-            fold_params.random_seed =
-              boost::uniform_int<int>(0, std::numeric_limits<int>::max())(rng);
-            try {
-              boost::timer tmptimer;
-              crf_parameter_learner cpl(model, tmp_train_ds, keep_weights,
-                                        fold_params);
-              if (params_.debug > 0)
-                std::cerr << "Doing CV (fold " << fold
-                          <<"): CRF parameter learning time: "
-                          << tmptimer.elapsed() << " seconds." << std::endl;
-              double tmpval(fold_test.expected_value
-                            (cross_val_functor
-                             (cpl.current_model(), score_type)).first);
-              if (is_finite(means[k])) {
-                means[k] += tmpval;
-                stderrs[k] += tmpval * tmpval;
-              }
-            } catch(normalization_error exc) {
-              // Assume that the regularization is too weak.
-              means[k] = std::numeric_limits<double>::infinity();
-              stderrs[k] = std::numeric_limits<double>::infinity();
-            }
-          }
-        }
-        for (size_t k(0); k < lambdas.size(); ++k) {
-          if (is_finite(means[k])) {
-            means[k] /= n_folds;
-            stderrs[k] /= n_folds;
-            stderrs[k] = sqrt((stderrs[k] - means[k] * means[k]) / n_folds);
-          }
-        }
-        size_t min_i(min_index(means, rng));
-        if (!is_finite(means[min_i])) {
-          std::cerr << "lambdas:\n";
-          foreach(const vec& lambda, lambdas)
-            std::cerr << "\t " << lambda << "\n";
-          std::cerr << "\n"
-                    << "means: " << means << "\n"
-                    << "stderrs: " << stderrs << "\n"
-                    << std::endl;
-          throw std::runtime_error
-            (std::string("crf_parameter_learner::choose_lambda_cv()") +
-             " ran into numerical problems for all possible lambda settings.");
-        }
-        if (params_.debug > 0) {
-          std::cerr << "crf_parameter_learner::choose_lambda_cv()\n"
-            //                << "   lambdas: " << lambdas << "\n"
-                    << "   scores:  " << means << "\n"
-                    << "   stderrs: " << stderrs << "\n"
-                    << "  Chosen parameters: " << lambdas[min_i]
-                    << std::endl;
-        }
-        return lambdas[min_i];
-      } // operator()
-
-    }; // struct choose_lambda_helper
-
     // Constructors and destructors
     // =========================================================================
   public:
@@ -1266,80 +1156,6 @@ namespace sill {
     const parameters& get_params() const {
       return params;
     }
-
-    /**
-     * Choose regularization parameters via n-fold cross validation.
-     *
-     * @param reg_params  (Return value.) regularization settings tried
-     * @param means       (Return value.) means[i] = avg score for reg_params[i]
-     * @param stderrs     (Return value.) corresponding std errors of scores
-     * @param cv_params   Parameters specifying how to do cross validation.
-     * @param model       CRF model on which to do parameter learning.
-     * @param keep_weights  If true, keep weights in model; if false, set to 0.
-     * @param ds          Training data.
-     * @param params      Parameters for this class.
-     * @param score_type  0: log likelihood, 1: per-label accuracy,
-     *                    2: all-or-nothing label accuracy,
-     *                    3: mean squared error
-     * @param random_seed This uses this random seed, not the one in the
-     *                    algorithm parameters.
-     *
-     * @return  chosen regularization parameters
-     */
-    static
-    vec choose_lambda
-    (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
-     const crossval_parameters& cv_params,
-     const crf_model_type& model, bool keep_weights, const dataset<la_type>& ds,
-     const parameters& params, size_t score_type, unsigned random_seed) {
-      assert(score_type < 4);
-      choose_lambda_helper clh(model, keep_weights, ds, score_type, params);
-      std::vector<vec> lambdas;
-      vec best_lambda =
-        crossval_zoom<choose_lambda_helper>
-        (lambdas, means, stderrs, cv_params, clh, random_seed);
-      reg_params.clear();
-      crf_factor_reg_type reg;
-      reg.regularization = params.regularization;
-      foreach(const vec& v, lambdas) {
-        reg.lambdas = v;
-        reg_params.push_back(reg);
-      }
-      assert(best_lambda.size() == crf_factor_reg_type::nlambdas);
-      return best_lambda;
-    }
-
-    /**
-     * Choose regularization parameters via n-fold cross validation.
-     *
-     * @param reg_params  (Return value.) regularization settings tried
-     * @param means       (Return value.) means[i] = avg score for reg_params[i]
-     * @param stderrs     (Return value.) corresponding std errors of scores
-     * @param cv_params   Parameters specifying how to do cross validation.
-     * @param structure   CRF structure.
-     * @param ds          Training data.
-     * @param params      Parameters for this class.
-     * @param score_type  0: log likelihood, 1: per-label accuracy,
-     *                    2: all-or-nothing label accuracy,
-     *                    3: mean squared error
-     * @param random_seed This uses this random seed, not the one in the
-     *                    algorithm parameters.
-     *
-     * @return  chosen regularization parameters
-     */
-    static
-    vec choose_lambda
-    (std::vector<crf_factor_reg_type>& reg_params, vec& means, vec& stderrs,
-     const crossval_parameters& cv_params,
-     const typename crf_model_type::crf_graph_type& structure,
-     const dataset<la_type>& ds, const parameters& params, size_t score_type,
-     unsigned random_seed) {
-      crf_model_type model(structure);
-      return choose_lambda(reg_params, means, stderrs,
-                           cv_params, model, false, ds,
-                           params, score_type, random_seed);
-    }
-
 
     /**
      * Choose regularization parameters via n-fold cross validation.

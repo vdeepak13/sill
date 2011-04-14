@@ -183,7 +183,8 @@ namespace sill {
      * Constructor.  Takes a linear_regression and constructs the corresponding
      * gaussian_crf_factor.
      */
-    gaussian_crf_factor(const linear_regression& lr, const dataset<la_type>& ds);
+    gaussian_crf_factor(const linear_regression& lr,
+                        const dataset<la_type>& ds);
 
     /**
      * Constructor.  Takes a moment_gaussian and constructs the corresponding

@@ -131,12 +131,9 @@ int main(int argc, char** argv) {
   cpl_params.gm_params.convergence_zero = .00001;
   cpl_params.opt_method = real_optimizer_builder::CONJUGATE_GRADIENT;
   cpl_params.debug = 0;
-  std::vector<gaussian_crf_factor::regularization_type> cpl_reg_params;
-  vec cpl_means, cpl_stderrs;
   cpl_params.lambdas =
     crf_parameter_learner<gaussian_crf_factor>::choose_lambda
-    (cpl_reg_params, cpl_means, cpl_stderrs, cv_params,
-     tmp_true_model, false, ds, cpl_params, 0, unif_int(rng));
+    (cv_params, tmp_true_model, false, ds, cpl_params, 0, unif_int(rng));
   crf_parameter_learner<gaussian_crf_factor>
     cpl(tmp_true_model, ds, false, cpl_params);
 

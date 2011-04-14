@@ -1,12 +1,15 @@
 #ifndef SILL_CRF_PARAMETER_LEARNER_BUILDER_HPP
 #define SILL_CRF_PARAMETER_LEARNER_BUILDER_HPP
 
+#include <boost/program_options.hpp>
+
 #include <sill/learning/crf/crf_parameter_learner.hpp>
 
 namespace sill {
 
   /**
    * Class for parsing command-line options to create a crf_parameter_learner.
+   * @see crf_parameter_learner
    */
   class crf_parameter_learner_builder {
 

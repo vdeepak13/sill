@@ -247,15 +247,9 @@ namespace sill {
   // Public methods: Getters
   // =========================================================================
 
-  const vector_var_vector& gaussian_crf_factor::head() const {
-    // RIGHT HERE NOW: CHECK EVERYWHERE THIS IS CALLED TO HANDLE 'relabeled'.
-    return head_;
-  }
+  const vector_var_vector& gaussian_crf_factor::head() const { return head_; }
 
-  const vector_var_vector& gaussian_crf_factor::tail() const {
-    // RIGHT HERE NOW: CHECK EVERYWHERE THIS IS CALLED TO HANDLE 'relabeled'.
-    return tail_;
-  }
+  const vector_var_vector& gaussian_crf_factor::tail() const { return tail_; }
 
   void gaussian_crf_factor::
   print(std::ostream& out, bool print_Y, bool print_X, bool print_vals) const {
@@ -433,8 +427,7 @@ namespace sill {
     }
     add_vector2vector_assignment(X_in_head_, x_in_head, a);
     add_vector2vector_assignment(X_in_tail_, x_in_tail, a);
-    mg = mg.restrict(a); // RIGHT HERE NOW: I THINK THERE IS A BUG HERE
-    conditioned_f = mg;
+    conditioned_f = mg.restrict(a);
     return conditioned_f;
   } // condition(x_in_head, x_in_tail)
 

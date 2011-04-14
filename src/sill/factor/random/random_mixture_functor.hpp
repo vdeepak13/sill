@@ -2,7 +2,7 @@
 #define SILL_RANDOM_MIXTURE_FUNCTOR_HPP
 
 #include <sill/factor/mixture.hpp>
-#include <sill/factor/random/random_factor_functor.hpp>
+#include <sill/factor/random/random_factor_functor_i.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -16,9 +16,9 @@ namespace sill {
    */
   template <typename F>
   struct random_mixture_functor
-    : random_factor_functor<mixture<F> > {
+    : random_factor_functor_i<mixture<F> > {
 
-    typedef random_factor_functor<mixture<F> > base;
+    typedef random_factor_functor_i<mixture<F> > base;
 
     typedef typename base::variable_type variable_type;
     typedef typename base::domain_type   domain_type;
@@ -34,7 +34,7 @@ namespace sill {
     //==========================================================================
 
     //! Constructor.
-    explicit random_mixture_functor(random_factor_functor<F>& subfactor_functor)
+    explicit random_mixture_functor(random_factor_functor_i<F>& subfactor_functor)
       : k(3), subfactor_functor(subfactor_functor) { }
 
     using base::generate_marginal;
@@ -68,11 +68,16 @@ namespace sill {
       return subfactor_functor.generate_variable(u, name);
     }
 
+    //! Set random seed.
+    void seed(unsigned random_seed = time(NULL)) {
+      subfactor_functor.seed(random_seed);
+    }
+
     // Private data and methods
     //==========================================================================
   private:
 
-    random_factor_functor<F>& subfactor_functor;
+    random_factor_functor_i<F>& subfactor_functor;
 
     random_mixture_functor();
 

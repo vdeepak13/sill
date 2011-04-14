@@ -1082,38 +1082,22 @@ namespace sill {
   private:
 
     //! Functor used to make a transformed range for conditioning factors.
-    struct factor_conditioner_r
+    //! @tparam SampleType  input record or assignment type
+    template <typename SampleType>
+    struct factor_conditioner
       : public std::unary_function<const crf_factor&,const output_factor_type&>{
-      const input_record_type* r_ptr;
+      const SampleType* r_ptr;
       mutable const output_factor_type* tmpf_ptr;
-      factor_conditioner_r()
+      factor_conditioner()
         : r_ptr(NULL), tmpf_ptr(NULL) { }
-      explicit factor_conditioner_r(const input_record_type& r)
+      explicit factor_conditioner(const SampleType& r)
         : r_ptr(&r), tmpf_ptr(NULL) { }
       const output_factor_type& operator()(const crf_factor& f) const {
         assert(r_ptr);
-//        std::cerr << "FACTOR_CONDITIONER_R\n" << "f:\n" << f << std::flush; // DEBUGGING
         tmpf_ptr = &(f.condition(*r_ptr));
-//        std::cerr << "*tmpf_ptr:\n" << (*tmpf_ptr) << "\n" << std::endl; // DEBUGGING
         return (*tmpf_ptr);
       }
-    }; // struct factor_conditioner_r
-
-    //! Functor used to make a transformed range for conditioning factors.
-    struct factor_conditioner_a
-      : public std::unary_function<const crf_factor&,const output_factor_type&>{
-      const assignment_type* a_ptr;
-      mutable const output_factor_type* tmpf_ptr;
-      factor_conditioner_a()
-        : a_ptr(NULL), tmpf_ptr(NULL) { }
-      explicit factor_conditioner_a(const assignment_type& a)
-        : a_ptr(&a), tmpf_ptr(NULL) { }
-      const output_factor_type& operator()(const crf_factor& f) const {
-        assert(a_ptr);
-        tmpf_ptr = &(f.condition(*a_ptr));
-        return (*tmpf_ptr);
-      }
-    }; // struct factor_conditioner_a
+    }; // struct factor_conditioner
 
     // Private data
     // =========================================================================
@@ -1152,39 +1136,9 @@ namespace sill {
     using crf_graph_type::simplify_unary_helper;
 
     //! Sets the conditioned_model to be valid for the given datapoint.
-    void condition_model(const assignment_type& a) const {
-      if (debug) {
-        // Check to make sure each factor is normalizable.
-        foreach(const crf_factor& f, factors()) {
-          const output_factor_type& tmpf = f.condition(a);
-          if (!tmpf.is_normalizable()) {
-            std::cerr << "crf_model::condition_model() tried to condition"
-                      << " a CRF factor and got an unnormalizable result.\n"
-                      << "CRF factor:\n"
-                      << f << "\n"
-                      << "resulting factor:\n"
-                      << tmpf << std::endl;
-            throw normalization_error
-              (std::string("crf_model::condition_model() ran into") +
-               " a factor which could not be normalized after conditioning.");
-          }
-        }
-      }
-      if (conditioned_model_valid) {
-        conditioned_model.replace_factors
-          (make_transformed(factors(), factor_conditioner_a(a)),
-           conditioned_model_vertex_map_);
-      } else {
-        conditioned_model.clear();
-        conditioned_model *=
-          make_transformed(factors(), factor_conditioner_a(a));
-        conditioned_model_valid = true;
-        set_conditioned_model_vertex_mapping(conditioned_model_vertex_map_);
-      }
-    }
-
-    //! Sets the conditioned_model to be valid for the given datapoint.
-    void condition_model(const input_record_type& r) const {
+    //! @tparam SampleType  input record or assignment type
+    template <typename SampleType>
+    void condition_model(const SampleType& r) const {
       if (debug) {
         // Check to make sure each factor is normalizable.
         foreach(const crf_factor& f, factors()) {
@@ -1204,12 +1158,12 @@ namespace sill {
       }
       if (conditioned_model_valid) {
         conditioned_model.replace_factors
-          (make_transformed(factors(), factor_conditioner_r(r)),
+          (make_transformed(factors(), factor_conditioner<SampleType>(r)),
            conditioned_model_vertex_map_);
       } else {
         conditioned_model.clear();
         conditioned_model *=
-          make_transformed(factors(), factor_conditioner_r(r));
+          make_transformed(factors(), factor_conditioner<SampleType>(r));
         conditioned_model_valid = true;
         set_conditioned_model_vertex_mapping(conditioned_model_vertex_map_);
       }

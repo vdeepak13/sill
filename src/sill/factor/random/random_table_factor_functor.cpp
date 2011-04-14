@@ -8,35 +8,34 @@ namespace sill {
 
   random_table_factor_functor::
   random_table_factor_functor(unsigned random_seed)
-    : factor_choice(RANDOM_RANGE),
-      lower_bound(-1), upper_bound(1), base_val(0),
-      arity(2), rng(random_seed) { }
+    : rng(random_seed) { }
 
   table_factor
   random_table_factor_functor::generate_marginal(const domain_type& X) {
-    switch (factor_choice) {
-    case RANDOM_RANGE:
-      assert(lower_bound <= upper_bound);
+    switch (params.factor_choice) {
+    case parameters::RANDOM_RANGE:
+      assert(params.lower_bound <= params.upper_bound);
       {
         table_factor f(random_range_discrete_factor<table_factor>
-                       (X, rng, lower_bound, upper_bound));
+                       (X, rng, params.lower_bound, params.upper_bound));
         f.update(exponent<double>());
         return f;
       }
-    case ASSOCIATIVE:
+    case parameters::ASSOCIATIVE:
       assert(X.size() == 2);
       {
         finite_variable* v1 = *(X.begin());
         finite_variable* v2 = *(++(X.begin()));
-        table_factor f(make_associative_factor(v1, v2, base_val));
+        table_factor f(make_associative_factor(v1, v2, params.base_val));
         f.update(exponent<double>());
         return f;
       }
-    case RANDOM_ASSOCIATIVE:
+    case parameters::RANDOM_ASSOCIATIVE:
       assert(X.size() == 2);
       {
-        return make_random_associative_factor(X, base_val, lower_bound,
-                                              upper_bound, rng);
+        return
+          make_random_associative_factor(X, params.base_val, params.lower_bound,
+                                         params.upper_bound, rng);
       }
     default:
       assert(false);
@@ -54,8 +53,13 @@ namespace sill {
   finite_variable*
   random_table_factor_functor::
   generate_variable(universe& u, const std::string& name) const {
-    assert(arity != 0);
-    return u.new_finite_variable(name, arity);
+    assert(params.arity != 0);
+    return u.new_finite_variable(name, params.arity);
+  }
+
+  void
+  random_table_factor_functor::seed(unsigned random_seed) {
+    rng.seed(random_seed);
   }
 
 } // namespace sill

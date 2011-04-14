@@ -1,7 +1,10 @@
 #ifndef SILL_RANDOM_ALTERNATING_FACTOR_FUNCTOR_HPP
 #define SILL_RANDOM_ALTERNATING_FACTOR_FUNCTOR_HPP
 
-#include <sill/factor/random/random_factor_functor.hpp>
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int.hpp>
+
+#include <sill/factor/random/random_factor_functor_i.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -11,63 +14,82 @@ namespace sill {
   //! @{
 
   /**
-   * Wrapper for other random_factor_functor types which
-   * permits variety via alternation between multiple random_factor_functor
+   * Wrapper for other random_factor_functor_i types which
+   * permits variety via alternation between multiple random_factor_functor_i
    * instances.
    *
-   * This takes two random_factor_functors.
+   * This takes two random_factor_functor_i.
    * It generally generates factors using the first functor.
    * Every alternation_period times this functor generates a factor,
    * it generates one of those factors using the second functor.
    *
-   * @tparam RFF  base random_factor_functor type
+   * @tparam RFF  base random_factor_functor_i type
    */
   template <typename RFF>
   struct random_alternating_factor_functor
-    : random_factor_functor<typename RFF::factor_type> {
+    : random_factor_functor_i<typename RFF::factor_type> {
+
+    // Public types
+    //==========================================================================
 
     typedef typename RFF::factor_type factor_type;
 
-    typedef random_factor_functor<factor_type> base;
+    typedef random_factor_functor_i<factor_type> base;
 
     typedef typename factor_type::variable_type variable_type;
     typedef typename factor_type::domain_type   domain_type;
 
-    // Parameters
+    //! Parameters
+    struct parameters {
+
+      //! First (default) random factor functor.
+      //! This functor is also used for the generate_variable method.
+      RFF default_rff;
+
+      //! Second (alternate) random factor functor.
+      RFF alternate_rff;
+
+      //! Alternation period (> 0)
+      //! If 1, then only alternate_rff is used.
+      //!  (default = 2)
+      size_t alternation_period;
+
+      parameters()
+        : alternation_period(2) { }
+
+      //! Assert validity.
+      void check() const {
+        assert(alternation_period != 0);
+      }
+
+    }; // struct parameters
+
+    // Public data
     //==========================================================================
 
-    //! First (default) random factor functor.
-    //! This functor is also used for the generate_variable method.
-    RFF default_rff;
-
-    //! Second (alternate) random factor functor.
-    RFF alternate_rff;
-
-    //! Alternation period (> 0)
-    //! If 1, then only alternate_rff is used.
-    //!  (default = 2)
-    size_t alternation_period;
+    parameters params;
 
     // Public methods
     //==========================================================================
 
     //! Constructor.
-    random_alternating_factor_functor(RFF default_rff,
-                                      RFF alternate_rff)
-      : default_rff(default_rff), alternate_rff(alternate_rff),
-        alternation_period(2), cnt(0) { }
+    explicit
+    random_alternating_factor_functor(unsigned random_seed = time(NULL))
+      : cnt(0) {
+      seed(random_seed);
+    }
 
     using base::generate_marginal;
     using base::generate_conditional;
 
     //! Generate a marginal factor P(X) using the stored parameters.
     factor_type generate_marginal(const domain_type& X) {
-      assert(alternation_period != 0);
+      assert(params.alternation_period != 0);
       ++cnt;
-      if (cnt % alternation_period == 0) {
-        return alternate_rff.generate_marginal(X);
+      if (cnt % params.alternation_period == 0) {
+        return params.alternate_rff.generate_marginal(X);
       } else {
-        return default_rff.generate_marginal(X);
+        return params.default_rff.generate_marginal(X);
       }
     }
 
@@ -75,12 +97,12 @@ namespace sill {
     //! This uses generate_marginal and then conditions on X.
     factor_type
     generate_conditional(const domain_type& Y, const domain_type& X) {
-      assert(alternation_period != 0);
+      assert(params.alternation_period != 0);
       ++cnt;
-      if (cnt % alternation_period == 0) {
-        return alternate_rff.generate_conditional(Y,X);
+      if (cnt % params.alternation_period == 0) {
+        return params.alternate_rff.generate_conditional(Y,X);
       } else {
-        return default_rff.generate_conditional(Y,X);
+        return params.default_rff.generate_conditional(Y,X);
       }
     }
 
@@ -88,7 +110,15 @@ namespace sill {
     //! using the given name.
     variable_type*
     generate_variable(universe& u, const std::string& name = "") const {
-      return default_rff.generate_variable(u, name);
+      return params.default_rff.generate_variable(u, name);
+    }
+
+    //! Set random seed.
+    void seed(unsigned random_seed = time(NULL)) {
+      boost::mt11213b rng;
+      boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
+      params.default_rff.seed(unif_int(rng));
+      params.alternate_rff.seed(unif_int(rng));
     }
 
     // Private data and methods
@@ -98,11 +128,6 @@ namespace sill {
     //! Counter of how many factors have been generated
     //! (for use with alternation_period).
     size_t cnt;
-
-    random_alternating_factor_functor();
-
-    random_alternating_factor_functor
-    (const random_alternating_factor_functor& other);
 
   }; // struct random_alternating_factor_functor
 

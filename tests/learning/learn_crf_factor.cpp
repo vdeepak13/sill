@@ -208,34 +208,20 @@ test_crf_parameter_learner
   cpl_params.opt_method =
     (real_optimizer_builder::real_optimizer_type)cpl_method;
   cpl_params.debug = 0;
-  std::vector<typename F::regularization_type> cpl_reg_params;
-  vec cpl_means, cpl_stderrs;
   boost::timer timer;
   if (do_cv) {
+    // TO DO: Print lambdas, scores from CV.
     cpl_params.lambdas =
       crf_parameter_learner<F>::choose_lambda
-      (cpl_reg_params, cpl_means, cpl_stderrs, cv_params,
+      (cv_params,
        tmp_true_model, false, train_ds, cpl_params, 0, unif_int(rng));
+    cout << "CRF parameter learner chose lambda = "
+         << cpl_params.lambdas << "\n";
   } else {
     cpl_params.lambdas = .01;
   }
   crf_parameter_learner<F> cpl(tmp_true_model, train_ds, false, cpl_params);
   cpl_time = timer.elapsed();
-
-  if (do_cv) {
-    cout << "CV results for CRF parameter learner:\n"
-         << "lambdas: ";
-    for (size_t j(0); j < cpl_reg_params.size(); ++j)
-      cout << cpl_reg_params[j].lambdas << " ";
-    cout << "\n"
-         << "means:   " << cpl_means << "\n"
-         << "stderrs: " << cpl_stderrs << "\n" << endl;
-
-    size_t max_i = max_index(cpl_means);
-    cout << "CRF parameter learner chose lambda = "
-         << cpl_reg_params[max_i].lambdas
-         << ", with score = " << cpl_means[max_i] << "\n";
-  }
 
   cout << "Learned via CRF parameter learner:\n" << cpl.current_model() << "\n"
        << endl;

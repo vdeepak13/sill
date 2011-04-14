@@ -5,7 +5,7 @@
  */
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random/random_gaussian_functor.hpp>
+#include <sill/factor/random/random_gaussian_factor_functor_builder.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -13,15 +13,34 @@ using namespace sill;
 
 int main(int argc, char** argv) {
 
-  unsigned random_seed = time(NULL);
+  unsigned random_seed;
 
-  boost::mt11213b rng(random_seed);
-  boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
+  namespace po = boost::program_options;
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("random_seed",
+     po::value<unsigned int>(&random_seed)->default_value(time(NULL)),
+     "Random seed (default = time)")
+    ("help", "Print this help message.");
+
+  random_gaussian_factor_functor_builder<moment_gaussian> rgff_builder;
+  rgff_builder.add_options(desc);
+
+  po::variables_map vm;
+  po::store(po::parse_command_line(argc, argv, desc), vm);
+  po::notify(vm);
+
+  if (vm.count("help")) {
+    std::cerr << desc << std::endl;
+    return 1;
+  }
+
   universe u;
   vector_variable* Y = u.new_vector_variable(1);
   vector_variable* X = u.new_vector_variable(1);
 
-  random_gaussian_functor<moment_gaussian> rmgf(unif_int(rng));
+  random_gaussian_factor_functor<moment_gaussian> rmgf(random_seed);
+  rmgf.params = rgff_builder.get_parameters();
 
   std::cout << "Test: random_moment_gaussian_functor\n"
             << "---------------------------------------------" << std::endl;

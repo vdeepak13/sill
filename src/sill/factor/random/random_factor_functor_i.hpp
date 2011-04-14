@@ -1,5 +1,5 @@
-#ifndef SILL_RANDOM_FACTOR_FUNCTOR_HPP
-#define SILL_RANDOM_FACTOR_FUNCTOR_HPP
+#ifndef SILL_RANDOM_FACTOR_FUNCTOR_I_HPP
+#define SILL_RANDOM_FACTOR_FUNCTOR_I_HPP
 
 #include <sill/macros_def.hpp>
 
@@ -16,7 +16,7 @@ namespace sill {
    * @see create_random_crf
    */
   template <typename F>
-  struct random_factor_functor {
+  struct random_factor_functor_i {
 
     //! Factor type
     typedef F factor_type;
@@ -27,7 +27,7 @@ namespace sill {
     //! Domain type used in the factors.
     typedef typename F::domain_type domain_type;
 
-    virtual ~random_factor_functor() { }
+    virtual ~random_factor_functor_i() { }
 
     //! Generate a marginal factor P(X) using the stored parameters.
     virtual
@@ -53,7 +53,11 @@ namespace sill {
     variable_type*
     generate_variable(universe& u, const std::string& name = "") const = 0;
 
-  }; // struct random_factor_functor
+    //! Set random seed.
+    virtual
+    void seed(unsigned random_seed = time(NULL)) = 0;
+
+  }; // struct random_factor_functor_i
 
   //! @} group factor_random
 
@@ -61,4 +65,4 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
-#endif // SILL_RANDOM_FACTOR_FUNCTOR_HPP
+#endif // SILL_RANDOM_FACTOR_FUNCTOR_I_HPP

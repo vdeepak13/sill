@@ -118,6 +118,14 @@ namespace sill {
       : base() { }
 
     /**
+     * Constructor which initializes the weights to 0.
+     * @param Y    Y variables
+     * @param X    X variables
+     */
+    log_reg_crf_factor(const output_domain_type& Y_,
+                       const input_domain_type& X_);
+
+    /**
      * Constructor.
      * @param mlr_ptr      Pointer to a multiclass2multilabel instance
      *                     which uses a multiclass_logistic_regression
@@ -127,12 +135,7 @@ namespace sill {
      */
     log_reg_crf_factor(boost::shared_ptr<multiclass2multilabel> mlr_ptr,
                        double smoothing, const finite_domain& Y_,
-                       copy_ptr<domain> X_ptr_)
-      : base(Y_, X_ptr_), mlr_ptr(mlr_ptr), smoothing(smoothing), 
-        conditioned_f(Y_, 0.) {
-      assert(mlr_ptr.get() != NULL);
-      mlr_ptr->prepare_record_for_base(tmp_record);
-    }
+                       copy_ptr<domain> X_ptr_);
 
     void print(std::ostream& out) const;
 
