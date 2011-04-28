@@ -513,7 +513,7 @@ namespace sill {
 
     }; // struct opt_variables
 
-    // Constructors and destructors
+    // Constructors, destructors, and assignment operators
     // =========================================================================
   public:
 
@@ -533,7 +533,7 @@ namespace sill {
      * Creates a CRF model with the given structure, with default-initialized
      * factors.
      */
-    crf_model(const crf_graph_type& structure) {
+    explicit crf_model(const crf_graph_type& structure) {
       std::vector<crf_factor> fctrs;
       foreach(const vertex& v, structure.factor_vertices()) {
         fctrs.push_back(crf_factor(structure.output_arguments(v),
@@ -544,68 +544,45 @@ namespace sill {
     }
 
     //! Copy constructor.
-    crf_model(const crf_model& crf)
-      : crf_graph_type(crf), factors_(crf.factors_),
-        conditioned_model_valid(crf.conditioned_model_valid) {
-      if (debug)
-        std::cerr << "WARNING: crf_model.debug is set to TRUE"
-                  << " (which reduces efficiency significantly)." << std::endl;
-      weights_.own_data = false;
-      foreach(crf_factor& f, factors_) {
-        if (!f.fixed_value())
-          weights_.factor_weights_.push_back(&(f.weights()));
-      }
-      if (crf.conditioned_model_valid) {
-        conditioned_model = crf.conditioned_model;
-        conditioned_model_vertex_map_ = crf.conditioned_model_vertex_map_;
+    crf_model(const crf_model& other)
+      : crf_graph_type(other), factors_(other.factors_),
+        factor_v2i(other.factor_v2i) {
+      init();
+      conditioned_model_valid = other.conditioned_model_valid;
+      if (other.conditioned_model_valid) {
+        conditioned_model = other.conditioned_model;
+        conditioned_model_vertex_map_ = other.conditioned_model_vertex_map_;
       }
     }
+
+    //! Assignment operator.
+    crf_model& operator=(const crf_model& other) {
+      crf_graph_type::operator=(other);
+      factors_ = other.factors_;
+      factor_v2i = other.factor_v2i;
+      init();
+      conditioned_model_valid = other.conditioned_model_valid;
+      if (other.conditioned_model_valid) {
+        conditioned_model = other.conditioned_model;
+        conditioned_model_vertex_map_ = other.conditioned_model_vertex_map_;
+      }
+      return *this;
+    }
+
+    // Serialization
+    // =========================================================================
 
     //! Serialize members
     void save(oarchive & ar) const {
       crf_graph_type::save(ar);
-      ar << factors_;
-      // Save mapping for reconstructing graph data:
-      //  vertex --> index in factors_
-      std::map<vertex, size_t> v2f;
-      {
-        std::map<const crf_factor*, size_t> fptr2index;
-        size_t i = 0;
-        foreach(const crf_factor& f, factors_) {
-          fptr2index[&f] = i;
-          ++i;
-        }
-        foreach(const vertex& v, this->factor_vertices()) {
-          v2f[v] =
-            safe_get(fptr2index, (const crf_factor*)(this->operator[](v)));
-        }
-      }
-      ar << v2f;
+      ar << factors_ << factor_v2i;
     } // save
 
     //! Deserialize members
     void load(iarchive & ar) {
       crf_graph_type::load(ar);
-      ar >> factors_;
-      weights_.own_data = false;
-      weights_.factor_weights_.clear();
-      foreach(crf_factor& f, factors_) {
-        if (!f.fixed_value())
-          weights_.factor_weights_.push_back(&(f.weights()));
-      }
-      conditioned_model_valid = false;
-      // Reconstruct graph data.
-      std::map<vertex, size_t> v2f; //  vertex --> index in factors_
-      ar >> v2f;
-      std::vector<crf_factor*> fptrs(factors_.size(), NULL);
-      size_t i = 0;
-      foreach(crf_factor& f, factors_) {
-        fptrs[i] = &f;
-        ++i;
-      }
-      foreach(const vertex& v, this->factor_vertices()) {
-        this->operator[](v) = fptrs[safe_get(v2f, v)];
-      }
+      ar >> factors_ >> factor_v2i;
+      init();
     } // load
 
     // Getters and helpers
@@ -617,61 +594,49 @@ namespace sill {
     using crf_graph_type::output_arguments;
     using crf_graph_type::input_arguments;
 
-    //! Assignment operator.
-    crf_model& operator=(const crf_model& crf) {
-      crf_graph_type::operator=(crf);
-      factors_ = crf.factors_;
-      weights_.clear();
-      foreach(crf_factor& f, factors_) {
-        if (!f.fixed_value())
-          weights_.factor_weights_.push_back(&(f.weights()));
-      }
-      if (crf.conditioned_model_valid) {
-        conditioned_model = crf.conditioned_model;
-        conditioned_model_vertex_map_ = crf.conditioned_model_vertex_map_;
-      }
-      conditioned_model_valid = crf.conditioned_model_valid;
-      return *this;
-    }
-
     //! Returns the factors in this model.
-    const std::list<crf_factor>& factors() const {
-      return factors_;
+    const std::list<crf_factor>& factors() const { return factors_; }
+
+    //! Returns the factor at the given vertex.
+    //! This asserts false if the vertex does not contain a factor.
+    const crf_factor& factor(const vertex& u) const {
+      assert(is_factor_vertex(u));
+      return *(this->operator[](u));
     }
 
     /**
      * Returns a mutable reference to the CRF factor weights.
      * (For optimization routines.)
      */
-    opt_variables& weights() {
-      return weights_;
-    }
+    opt_variables& weights() { return weights_; }
 
     /**
      * Returns a constant reference to the CRF factor weights.
      * (For optimization routines.)
      */
-    const opt_variables& weights() const {
-      return weights_;
+    const opt_variables& weights() const { return weights_; }
+
+    //! Given a factor vertex, returns the index in weights for that factor.
+    size_t factor_vertex2index(const vertex& u) const {
+      return safe_get(factor_v2i, u);
     }
 
     //! Sets all weights to be in log space (or not, if not possible).
     //! @param log_space If true, set to log space; if false, set to real space.
     //! @return  true if successful, or false if not
     bool set_log_space(bool log_space) {
-      bool worked(true);
       if (log_space) {
         foreach(crf_factor& f, factors_) {
           if (!(f.convert_to_log_space()))
-            worked = false;
+            return false;
         }
       } else {
         foreach(crf_factor& f, factors_) {
           if (!(f.convert_to_real_space()))
-            worked = false;
+            return false;
         }
       }
-      return worked;
+      return true;
     }
 
     /**
@@ -924,6 +889,26 @@ namespace sill {
       return conditioned_model.sample(rng);
     }
 
+    //! Computes the pseudolikelihood of this model for the given record.
+    double pseudolikelihood(const record_type& r) const {
+      double pl = 0;
+      foreach(output_variable_type* y, output_arguments()) {
+        typename crf_factor::output_factor_type y_f(make_domain(y), 1);
+        typename crf_factor::output_factor_type tmpf;
+        foreach(const typename crf_graph_type::vertex& neighbor_v,
+                neighbors(y)){
+          const typename crf_factor::output_factor_type& neighbor_f =
+            this->operator[](neighbor_v)->condition(r);
+          neighbor_f.restrict
+            (r, set_difference(neighbor_f.arguments(), make_domain(y)), tmpf);
+          y_f *= tmpf;
+        }
+        y_f.normalize();
+        pl += y_f.logv(r);
+      }
+      return pl;
+    }
+
     // Mutating methods
     // =========================================================================
 
@@ -942,9 +927,12 @@ namespace sill {
       factors_.push_back(factor);
       if (!factor.fixed_value())
         weights_.factor_weights_.push_back(&(factors_.back().weights()));
-      return this->crf_graph_type::add_factor(factor.output_arguments(),
-                                              factor.input_arguments_ptr(),
-                                              &(factors_.back()));
+      vertex v =
+        this->crf_graph_type::add_factor(factor.output_arguments(),
+                                         factor.input_arguments_ptr(),
+                                         &(factors_.back()));
+      factor_v2i[v] = factors_.size() - 1;
+      return v;
     }
 
     /**
@@ -958,9 +946,11 @@ namespace sill {
         factors_.push_back(f);
         if (!f.fixed_value())
           weights_.factor_weights_.push_back(&(factors_.back().weights()));
-        crf_graph_type::add_factor_no_check(f.output_arguments(),
-                                            f.input_arguments_ptr(),
-                                            &(factors_.back()));
+        vertex v =
+          crf_graph_type::add_factor_no_check(f.output_arguments(),
+                                              f.input_arguments_ptr(),
+                                              &(factors_.back()));
+        factor_v2i[v] = factors_.size() - 1;
       }
       // Check to make sure Y,X stay separate.
       if (!set_disjoint(Y_, X_)) {
@@ -973,61 +963,68 @@ namespace sill {
     //! Clears all factors and variables from this model.
     void clear() {
       factors_.clear();
+      factor_v2i.clear();
       weights_.clear();
       this->crf_graph_type::clear();
       conditioned_model_valid = false;
     }
 
     /**
-     * Remove unary factors from this factor graph whose domains are included
-     * in the given set of variables.
-     * If a variable in vars is only involved in unary factors, this removes
-     * the variable from the graphical model, changing the domain.
-     * @return  number of factors removed
+     * Removes factors whose arguments are included in other factors.
      */
-    size_t remove_unary_factors(const output_domain_type& vars) {
-      size_t nremoved(0);
+    void simplify() {
+      std::vector<vertex> removed_vertices(crf_graph_type::simplify());
+      if (removed_vertices.size() != 0) {
+        std::vector<crf_factor> new_factors;
+        foreach(const vertex& v, removed_vertices)
+          new_factors.push_back(*(this->operator[](v)));
+        clear();
+        add_factors(new_factors);
+      }
+    }
+
+    /**
+     * Simplifies the model by removing unary factors (over a single Y argument)
+     * if another factor contains that Y argument (as well as the X arguments).
+     * This only removes unary factors whose argument is in vars.
+     * @todo Make this more efficient.
+     */
+    void simplify_unary(const output_domain_type& vars) {
+      std::set<vertex> removed_vertices;
       foreach(output_variable_type* y, vars) {
-        vertex v(variable2vertex(y));
-        output_domain_type ydom(make_domain<output_variable_type>(y));
-        foreach(const vertex& u, neighbors(v)) {
-          if (ydom == output_arguments(u)) {
-            remove_vertex(u);
-            ++nremoved;
+        foreach(const vertex& u, neighbors(y)) {
+          if (output_arguments(u).size() == 1 &&
+              output_arguments(u).count(y)) {
+            // Check for a covering factor.
+            foreach(const vertex& v, neighbors2(u)) {
+              if (removed_vertices.count(v))
+                continue;
+              if (output_arguments(v).count(y) &&
+                  includes(input_arguments(v), input_arguments(u))) {
+                removed_vertices.insert(u);
+                break;
+              }
+            }
           }
         }
       }
-      return nremoved;
-    }
-
-    //! Simplifies the model by removing unary factors (over a single Y)
-    //! if another factor contains that Y variable.
-    //! @todo Replace this with simplify() from factor_graph_model.
-    //! @todo This should also check to see if there are 2 unary factors
-    //!       for a variable.
-    void simplify_unary() {
-      std::list<crf_factor*> rf_tmp(crf_graph_type::simplify_unary_helper());
-      std::set<const crf_factor*> removed_factors(rf_tmp.begin(), rf_tmp.end());
-      std::list<crf_factor> new_factors_;
-      foreach(const crf_factor& f, factors_) {
-        if (removed_factors.count(&f) == 0) {
-          new_factors_.push_back(f);
-        }
+      if (removed_vertices.size() != 0) {
+        std::vector<crf_factor> new_factors;
+        foreach(const vertex& v, removed_vertices)
+          new_factors.push_back(*(this->operator[](v)));
+        clear();
+        add_factors(new_factors);
       }
-      factors_ = new_factors_;
-      weights_.clear();
-      foreach(crf_factor& f, factors_) {
-        if (!f.fixed_value())
-          weights_.factor_weights_.push_back(&(f.weights()));
-      }
-    }
+    } // simplify_unary
 
     /**
      * Relabels outputs Y, inputs X so that:
      *  - inputs may become outputs (if variable_type = output_variable_type)
      *  - outputs may become inputs (if variable_type = input_variable_type).
-     * The entire argument set must remain the same, i.e.,
-     * union(Y,X) must equal union(new_Y, new_X).
+     * The entire argument set remains the same.
+     *
+     * Note: new_Y and new_X must be disjoint,
+     *       and their union must be a superset of the union of the old Y,X.
      */
     void relabel_outputs_inputs(const output_domain_type& new_Y,
                                 const input_domain_type& new_X) {
@@ -1037,13 +1034,12 @@ namespace sill {
       }
       std::list<crf_factor> new_factors(factors_);
       foreach(crf_factor& f, new_factors) {
-        domain_type f_args(f.arguments());
-        f.relabel_outputs_inputs(set_intersect(new_Y, f_args),
-                                 set_intersect(new_X, f_args));
+        f.relabel_outputs_inputs(new_Y, new_X);
       }
       this->clear();
       this->add_factors(new_factors);
-    }
+      conditioned_model_valid = false;
+    } // relabel_outputs_inputs
 
     //! Prints the arguments and factors of the model.
     template <typename OutputStream>
@@ -1066,9 +1062,7 @@ namespace sill {
      *          This should only be used for, e.g., calling
      *          (factor).fixed_value().
      */
-    std::list<crf_factor>& factors() {
-      return factors_;
-    }
+    std::list<crf_factor>& factors() { return factors_; }
 
     // Protected data
     // =========================================================================
@@ -1108,6 +1102,9 @@ namespace sill {
     //! OptimizationVector which contains pointers to the factors' weights.
     opt_variables weights_;
 
+    //! Map: factor vertex in crf_graph --> index in weights_ for that factor
+    std::map<vertex, size_t> factor_v2i;
+
     /**
      * This makes multiple calls which compute P(Y | X = x) more efficient.
      * It allows this CRF to make use of the same underlying decomposable
@@ -1133,7 +1130,44 @@ namespace sill {
     // =========================================================================
 
     // Import method from base class.
-    using crf_graph_type::simplify_unary_helper;
+//    using crf_graph_type::simplify;
+
+    //! Helper method for copy constructor, assignment operator,
+    //! and deserialization.
+    void init() {
+      if (debug)
+        std::cerr << "WARNING: crf_model.debug is set to TRUE"
+                  << " (which reduces efficiency significantly)." << std::endl;
+      weights_.clear();
+      weights_.own_data = false;
+
+      // factor_i2v is for setting factor pointers in crf_graph.
+      std::vector<vertex> factor_i2v(factor_v2i.size(),
+                                     crf_graph_type::null_vertex());
+      typedef typename std::map<vertex, size_t>::value_type v_size_pair;
+      foreach(const v_size_pair& v_i, factor_v2i) {
+        assert(v_i.second < factor_i2v.size());
+        if (factor_i2v[v_i.second] != crf_graph_type::null_vertex()) { // DEBUGGING
+          std::cerr << "v_i: " << v_i << "\n"
+                    << "factor_i2v[v_i.second]: " << factor_i2v[v_i.second]
+                    << "\n"
+                    << std::endl;
+        }
+        assert(v_i.first != crf_graph_type::null_vertex()); // DEBUGGING
+        factor_i2v[v_i.second] = v_i.first;
+      }
+
+      size_t j = 0;
+      foreach(crf_factor& f, factors_) {
+        if (!f.fixed_value())
+          weights_.factor_weights_.push_back(&(f.weights()));
+        assert(factor_i2v[j] != crf_graph_type::null_vertex());
+        crf_graph_type::operator[](factor_i2v[j]) = &f;
+        ++j;
+      }
+
+      conditioned_model_valid = false;
+    } // init
 
     //! Sets the conditioned_model to be valid for the given datapoint.
     //! @tparam SampleType  input record or assignment type
@@ -1167,7 +1201,7 @@ namespace sill {
         conditioned_model_valid = true;
         set_conditioned_model_vertex_mapping(conditioned_model_vertex_map_);
       }
-    }
+    } // condition_model
 
     //! See conditioned_model_vertex_mapping().
     void set_conditioned_model_vertex_mapping

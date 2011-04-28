@@ -7,18 +7,9 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/learning/crf/crf_parameter_learner_parameters.hpp>
 #include <sill/learning/crf/crf_validation_functor.hpp>
-#include <sill/learning/crossval_methods.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/vector_assignment_dataset.hpp>
 #include <sill/learning/validation/validation_framework.hpp>
-#include <sill/math/permutations.hpp>
-#include <sill/math/is_finite.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/model/crf_model.hpp>
-#include <sill/optimization/conjugate_gradient.hpp>
-#include <sill/optimization/gradient_descent.hpp>
-#include <sill/optimization/lbfgs.hpp>
-#include <sill/optimization/stochastic_gradient.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -26,6 +17,7 @@ namespace sill {
 
   // Forward declarations
   template <typename F> class crf_validation_functor;
+
 
   /**
    * This is a class which represents algorithms for learning a crf_model
@@ -36,6 +28,10 @@ namespace sill {
    *  - The first derivative (and ideally higher-order derivatives) of a
    *    factor can be computed.
    * See the LearnableCRFfactor concept for details about the requirements.
+   *
+   * This currently supports learning via these objectives:
+   *  - maximum likelihood (MLE)
+   *  - maximum pseudolikelihood (MPLE)
    * 
    * @tparam F  factor/potential type which implements the LearnableCRFfactor
    *            concept
@@ -63,6 +59,9 @@ namespace sill {
     //! The CRF model type.
     typedef crf_model<crf_factor> crf_model_type;
 
+    //! The CRF graph type.
+    typedef typename crf_model<crf_factor>::crf_graph_type crf_graph_type;
+
     //! CRF factor weights for optimization.
     typedef typename crf_model_type::opt_variables opt_variables;
 
@@ -72,9 +71,13 @@ namespace sill {
     //! Learning options.
     typedef crf_parameter_learner_parameters parameters;
 
+    typedef typename crf_model_type::output_variable_type output_variable_type;
+    typedef typename crf_factor::output_factor_type output_factor_type;
+
+    /*
     //! Functor used for cross validation to choose lambda;
     //! computes the score for a single record.
-    //! This score is meant to be minimized.
+    //! This score is meant to be MINIMIZED.
     struct cross_val_functor {
 
       const crf_model_type& crf_;
@@ -86,14 +89,13 @@ namespace sill {
 
       double operator()(const record_type& r) const {
         switch(score_type) {
-        case 0: // log likelihood
+        case 0:
           return - crf_.log_likelihood(r);
-        case 1: // per-label accuracy
+        case 1:
           return - crf_.per_label_accuracy(r);
-        case 2: // all-or-nothing label accuracy
+        case 2:
           return - crf_.accuracy(r);
-        case 3: // mean squared error
-                // (\propto per-label accuracy for finite data)
+        case 3:
           return crf_.mean_squared_error(r);
         default:
           assert(false);
@@ -102,6 +104,217 @@ namespace sill {
       }
 
     }; // struct cross_val_functor
+    */
+
+    // Constructors and destructors
+    // =========================================================================
+
+    //! Initializes a CRF model learner using the given graph structure.
+    crf_parameter_learner(const crf_graph_type& graph,
+                          const dataset<la_type>& ds,
+                          const parameters& params = parameters())
+      : params(params), no_shared_computation(params.no_shared_computation),
+        ds(ds), crf_(graph), crf_tmp_weights(crf_.weights()) {
+      init(true);
+      init_finish();
+    }
+
+    /**
+     * Initializes a CRF model learner using the given model.
+     * @param init_weights  If true, the model weights are re-initialized.
+     */
+    crf_parameter_learner(const crf_model_type& model, bool init_weights,
+                          const dataset<la_type>& ds,
+                          const parameters& params = parameters())
+      : params(params), no_shared_computation(params.no_shared_computation),
+        ds(ds), crf_(model), crf_tmp_weights(crf_.weights()) {
+      init(init_weights);
+      init_finish();
+    }
+
+    ~crf_parameter_learner() {
+      clear_pointers();
+    }
+
+    // Learning methods
+    // =========================================================================
+
+    //! Return the current model.
+    const crf_model_type& current_model() const { return crf_; }
+
+    /**
+     * Do one step of parameter learning.
+     * @return  false if the step was unsuccessful (e.g., if the parameters
+     *          have converged)
+     */
+    bool step() {
+      if (gradient_method_ptr) {
+        double prev_train_obj(train_obj);
+        if (!gradient_method_ptr->step())
+          return false;
+        train_obj = gradient_method_ptr->objective();
+        if (params.debug > 1) {
+          if (train_obj > prev_train_obj)
+            std::cerr << "crf_parameter_learner took a step which "
+                      << "increased the objective from " << prev_train_obj
+                      << " to " << train_obj << std::endl;
+          std::cerr << "change in objective = "
+                    << (train_obj - prev_train_obj) << std::endl;
+        }
+        // Check for convergence
+        if (fabs(train_obj - prev_train_obj)
+            < params.gm_params.convergence_zero) {
+          if (params.debug > 1)
+            std::cerr << "crf_parameter_learner converged:"
+                      << " training objective changed from "
+                      << prev_train_obj << " to " << train_obj
+                      << "; exiting on iteration " << iteration() << "."
+                      << std::endl;
+          return false;
+        }
+      } else if (stochastic_gradient_ptr) {
+        if (!stochastic_gradient_ptr->step())
+          return false;
+      } else {
+        assert(false);
+      }
+      ++iteration_;
+      return true;
+    } // end of step()
+
+    //! Returns the parameters (which may be modified by cross-validation
+    //! for parameter tuning).
+    const parameters& get_params() const { return params; }
+
+    /**
+     * Choose regularization parameters via n-fold cross validation.
+     *
+     * @param cv_params   Parameters specifying how to do cross validation.
+     * @param model       CRF model on which to do parameter learning.
+     * @param keep_weights  If true, keep weights in model; if false, set to 0.
+     * @param ds          Training data.
+     * @param params      Parameters for this class.
+     * @param score_type  0: log likelihood, 1: per-label accuracy,
+     *                    2: all-or-nothing label accuracy,
+     *                    3: mean squared error
+     * @param random_seed This uses this random seed, not the one in the
+     *                    algorithm parameters.
+     *
+     * @return  chosen regularization parameters
+     */
+    static
+    vec
+    choose_lambda(const crossval_parameters& cv_params,
+                  const crf_model_type& model, bool keep_weights, // TO DO: CHANGE TO init_weights
+                  const dataset<la_type>& ds, const parameters& params,
+                  size_t score_type, unsigned random_seed) {
+      assert(score_type == 0); // others not yet implemented
+      crf_validation_functor<F> crf_val_func(model, keep_weights, params);
+      validation_framework<la_type>
+        val_frame(ds, cv_params, crf_val_func, random_seed);
+      return val_frame.best_lambdas();
+    }
+
+    /**
+     * Choose regularization parameters via n-fold cross validation.
+     *
+     * @param cv_params   Parameters specifying how to do cross validation.
+     * @param structure   CRF structure.
+     * @param ds          Training data.
+     * @param params      Parameters for this class.
+     * @param score_type  0: log likelihood, 1: per-label accuracy,
+     *                    2: all-or-nothing label accuracy,
+     *                    3: mean squared error
+     * @param random_seed This uses this random seed, not the one in the
+     *                    algorithm parameters.
+     *
+     * @return  chosen regularization parameters
+     *
+     * WARNING: This version does not work with templated factors.
+     *          Use the above choose_lambda instead.
+     */
+    static
+    vec
+    choose_lambda(const crossval_parameters& cv_params,
+                  const crf_graph_type& structure,
+                  const dataset<la_type>& ds, const parameters& params,
+                  size_t score_type, unsigned random_seed) {
+      assert(score_type == 0); // others not yet implemented
+      crf_validation_functor<F> crf_val_func(structure, params);
+      validation_framework<la_type>
+        val_frame(ds, cv_params, crf_val_func, random_seed);
+      return val_frame.best_lambdas();
+    }
+
+    // Counters and optimization info
+    // =========================================================================
+
+    //! Iteration number (i.e., how many iterations have been completed).
+    //! This is also the number of times the gradient (and preconditioner)
+    //! have been computed.
+    size_t iteration() const {
+      return iteration_;
+    }
+
+    //! Number of calls made to my_objective().
+    size_t my_objective_count() const {
+      return my_objective_count_;
+    }
+
+    //! Return the average number of objective function calls per iteration,
+    //! or -1 if no iterations have completed, if the underlying optimization
+    //! routine supports this.  If not, returns -2.
+    double objective_calls_per_iteration() const {
+      if (!gradient_method_ptr)
+        return -2;
+      return gradient_method_ptr->objective_calls_per_iteration();
+    }
+
+    //! Number of calls made to my_gradient().
+    size_t my_gradient_count() const {
+      return my_gradient_count_;
+    }
+
+    //! Number of calls made to my_stochastic_gradient().
+    size_t my_stochastic_gradient_count() const {
+      return my_stochastic_gradient_count_;
+    }
+
+    //! Number of calls made to my_hessian_diag().
+    size_t my_hessian_diag_count() const {
+      return my_hessian_diag_count_;
+    }
+
+    //! Number of calls made to my_everything() without computing the diagonal
+    //! of the Hessian.
+    size_t my_everything_no_hd_count() const {
+      return my_everything_no_hd_count_;
+    }
+
+    //! Number of calls made to my_everything() with computing the diagonal
+    //! of the Hessian.
+    size_t my_everything_with_hd_count() const {
+      return my_everything_with_hd_count_;
+    }
+
+    //! Print debugging info about calls to objective, gradient, etc.,
+    //! as well as objective info (if available).
+    void print_stats(std::ostream& out) const {
+      if (gradient_method_ptr)
+        out << " Initial objective: " << init_train_obj << "\n"
+            << " Current objective: " << gradient_method_ptr->objective()
+            << "\n";
+      out << " Method calls:\n"
+          << "\tmy_objective:             " << my_objective_count() << "\n"
+          << "\tmy_gradient:              " << my_gradient_count() << "\n"
+          << "\tmy_stochastic_gradient:   " << my_stochastic_gradient_count()
+          << "\n"
+          << "\tmy_hessian_diag:          " << my_hessian_diag_count() << "\n"
+          << "\tmy_everything without hd: " << my_everything_no_hd_count()
+          << "\n"
+          << "\tmy_everything with hd:    " << my_everything_with_hd_count()
+          << "\n";
+    }
 
     // Private types
     // =========================================================================
@@ -234,7 +447,7 @@ namespace sill {
       }
 
       //! Computes the gradient of the function at x.
-      //! @param grad  Data type in which to store the gradient.
+      //! @param grad  Location to store the gradient.
       void gradient(opt_variables& grad, const opt_variables& x) const {
         try {
           if (!no_shared_computation) {
@@ -335,36 +548,25 @@ namespace sill {
 
     }; // stochastic_everything_functor
 
-    //! Types for optimization methods
+    //! Type for optimization methods
     typedef
     gradient_method<opt_variables,everything_functor,everything_functor>
     gradient_method_type;
 
-    typedef
-    gradient_descent<opt_variables,everything_functor,everything_functor>
-    gradient_descent_type;
-
-    typedef
-    conjugate_gradient<opt_variables,everything_functor,everything_functor>
-    conjugate_gradient_type;
-
-    typedef conjugate_gradient<opt_variables,everything_functor,
-                               everything_functor,everything_functor>
-    prec_conjugate_gradient_type;
-
-    typedef lbfgs<opt_variables,everything_functor,everything_functor>
-    lbfgs_type;
-
+    //! Type for optimization methods
     typedef stochastic_gradient<opt_variables,stochastic_everything_functor>
     stochastic_gradient_type;
 
     // Private data members
     // =========================================================================
 
-    parameters params;
+    crf_parameter_learner_parameters params;
 
     //! Copied from parameters (and checked).
     typename crf_factor::regularization_type regularization;
+
+    //! Copied from parameters
+    bool no_shared_computation;
 
     //! Training dataset
     const dataset<la_type>& ds;
@@ -380,22 +582,22 @@ namespace sill {
     //! optimization.
     mutable crf_model_type crf_;
 
-    //! Mapping returned by crf_.conditioned_model_vertex_mapping().
-    std::vector
-    <typename decomposable<typename crf_factor::output_factor_type>::vertex>
-    conditioned_model_vertex_map_;
-
     //! Temp storage for copies of the CRF factor weights.
     mutable opt_variables crf_tmp_weights;
-
-    //! Count of iterations of parameter learning.
-    size_t iteration_;
 
     //! Uniform distribution over [0, dataset size)
     mutable boost::uniform_int<int> unif_int;
 
     //! Random number generator.
     mutable boost::mt11213b rng;
+
+    //! Mapping returned by crf_.conditioned_model_vertex_mapping().
+    //! This is only used if the objective is log likelihood.
+    std::vector<typename decomposable<output_factor_type>::vertex>
+    conditioned_model_vertex_map_;
+
+    // Optimization pointers
+    //--------------------------------------------------------------------------
 
     //! For batch optimization methods
     everything_functor* everything_functor_ptr;
@@ -408,6 +610,12 @@ namespace sill {
 
     //! For stochastic optimization methods
     stochastic_gradient_type* stochastic_gradient_ptr;
+
+    // Optimization counters
+    //--------------------------------------------------------------------------
+
+    //! Count of iterations of parameter learning.
+    size_t iteration_;
 
     //! Total weight of training data
     double total_train_weight;
@@ -441,12 +649,37 @@ namespace sill {
     // Private methods
     // =========================================================================
 
-    //! Initialize learner.
-    void init() {
+    /**
+     * Initialization.
+     * @param init_weights  If true, this sets the initial weights at 0
+     *                      (possibly perturbed according to the parameters).
+     */
+    void init(bool init_weights) {
       assert(ds.size() > 0);
-      assert(params.valid());
+      params.check();
+      ds_it = ds.begin();
+      ds_end = ds.end();
+      unif_int = boost::uniform_int<int>(0, ds.size() - 1);
+      rng.seed(params.random_seed);
+      everything_functor_ptr = NULL;
+      stochastic_everything_functor_ptr = NULL;
+      gradient_method_ptr = NULL;
+      stochastic_gradient_ptr = NULL;
+      iteration_ = 0;
+      total_train_weight = 0;
+      init_train_obj = std::numeric_limits<double>::max();
+      train_obj = std::numeric_limits<double>::max();
+      my_objective_count_ = 0;
+      my_gradient_count_ = 0;
+      my_stochastic_gradient_count_ = 0;
+      my_hessian_diag_count_ = 0;
+      my_everything_no_hd_count_ = 0;
+      my_everything_with_hd_count_ = 0;
+
       regularization.regularization = params.regularization;
-      if (crf_factor_reg_type::nlambdas != params.lambdas.size()) {
+      if (crf_factor_reg_type::nlambdas == params.lambdas.size()) {
+        regularization.lambdas = params.lambdas;
+      } else {
         if (params.lambdas.size() == 1) {
           regularization.lambdas = params.lambdas[0];
         } else {
@@ -457,15 +690,27 @@ namespace sill {
              + " but needed lambdas of length "
              + to_string(regularization.lambdas.size()));
         }
-      } else {
-        regularization.lambdas = params.lambdas;
       }
-      rng.seed(params.random_seed);
-      unif_int = boost::uniform_int<int>(0, ds.size() - 1);
       for (size_t i(0); i < ds.size(); ++i)
         total_train_weight += ds.weight(i);
       assert(total_train_weight > 0);
-    }
+
+      if (!crf_.set_log_space(true))
+        assert(false);
+
+      if (init_weights) {
+        if (params.perturb > 0) {
+          assert(false); // NOT YET IMPLEMENTED
+          // NOTE: I need to add a values() function to
+          //       the OptimizationVector concept to do this.
+        } else {
+          crf_.weights().zeros();
+        }
+      }
+
+      ds_it.reset();
+      crf_.fix_records(*ds_it);
+    } // init
 
     /**
      * Initialize the everything functor pointers and the optimization
@@ -480,7 +725,7 @@ namespace sill {
       case real_optimizer_builder::CONJUGATE_GRADIENT_DIAG_PREC:
       case real_optimizer_builder::LBFGS:
         everything_functor_ptr =
-          new everything_functor(*this, params.no_shared_computation);
+          new everything_functor(*this, no_shared_computation);
         break;
       case real_optimizer_builder::STOCHASTIC_GRADIENT:
         stochastic_everything_functor_ptr =
@@ -494,6 +739,10 @@ namespace sill {
       case real_optimizer_builder::GRADIENT_DESCENT:
         {
           gradient_descent_parameters ga_params(params.gm_params);
+          typedef
+            gradient_descent
+            <opt_variables,everything_functor,everything_functor>
+            gradient_descent_type;
           gradient_method_ptr =
             new gradient_descent_type
             (*everything_functor_ptr, *everything_functor_ptr, crf_.weights(),
@@ -503,6 +752,10 @@ namespace sill {
       case real_optimizer_builder::CONJUGATE_GRADIENT:
         {
           conjugate_gradient_parameters cg_params(params.gm_params);
+          typedef
+            conjugate_gradient
+            <opt_variables,everything_functor,everything_functor>
+            conjugate_gradient_type;
           gradient_method_ptr =
             new conjugate_gradient_type
             (*everything_functor_ptr, *everything_functor_ptr, crf_.weights(),
@@ -512,6 +765,10 @@ namespace sill {
       case real_optimizer_builder::CONJUGATE_GRADIENT_DIAG_PREC:
         {
           conjugate_gradient_parameters cg_params(params.gm_params);
+          typedef conjugate_gradient
+            <opt_variables,everything_functor,everything_functor,
+            everything_functor>
+            prec_conjugate_gradient_type;
           gradient_method_ptr =
             new prec_conjugate_gradient_type
             (*everything_functor_ptr, *everything_functor_ptr,
@@ -521,6 +778,8 @@ namespace sill {
       case real_optimizer_builder::LBFGS:
         {
           lbfgs_parameters lbfgs_params(params.gm_params);
+          typedef lbfgs<opt_variables,everything_functor,everything_functor>
+            lbfgs_type;
           gradient_method_ptr =
             new lbfgs_type
             (*everything_functor_ptr, *everything_functor_ptr, crf_.weights(),
@@ -559,47 +818,27 @@ namespace sill {
       stochastic_gradient_ptr = NULL;
     }
 
-    /**
-     * Finish the initialization.
-     * @param init_weights  If true, this sets the initial weights at 0,
-     *                      perturbed according to the parameters.
-     */
-    void init_finish(bool init_weights) {
-      if (!crf_.set_log_space(true))
-        assert(false);
+    //! Finish the initialization, and run learning.
+    void init_finish() {
 
-      if (init_weights) {
-        if (params.perturb > 0) {
-          throw std::invalid_argument
-            (std::string("crf_parameter_learner") +
-             " told to init weights, but random initialization has not yet" +
-             " been implemented.");
-          // NOTE: I need to add a values() function to the OptimizationVector concept to do this.
-          /*
-          boost::uniform_real<double> uniform(- params.perturb, params.perturb);
-          foreach(const crf_graph<>::vertex& v, crf_.factor_vertices()) {
-            double w(uniform(rng));
-            crf_[v].weight(w);
-          }
-          */
-        } else {
-          crf_.weights().zeros();
+      switch (params.learning_objective) {
+      case parameters::MLE:
+        ds_it.reset();
+        try {
+          crf_.condition(*ds_it);
+        } catch (normalization_error exc) {
+          throw normalization_error
+            (std::string("crf_parameter_learner::init_finish() could") +
+             " not normalize the CRF given the initial parameter settings" +
+             " (Message from normalization attempt: " + exc.what() + ")");
         }
+        conditioned_model_vertex_map_ = crf_.conditioned_model_vertex_mapping();
+        break;
+      case parameters::MPLE:
+        break;
+      default:
+        assert(false);
       }
-
-      ds_it.reset();
-      crf_.fix_records(*ds_it);
-
-      ds_it.reset();
-      try {
-        crf_.condition(*ds_it);
-      } catch (normalization_error exc) {
-        throw normalization_error
-          (std::string("crf_parameter_learner::init_finish()") +
-           " could not normalize the CRF given the initial parameter settings" +
-           " (Message from normalization attempt: " + exc.what() + ")");
-      }
-      conditioned_model_vertex_map_ = crf_.conditioned_model_vertex_mapping();
 
       init_pointers();
 
@@ -615,179 +854,235 @@ namespace sill {
       for (size_t i(0); i < params.init_iterations; ++i) {
         if (!step()) {
           if (params.debug > 0) {
-            std::cerr << "crf_parameter_learner::init_finish() terminating"
-                      << " after step() returned false on iteration "
-                      << iteration_ << ";\n";
-            print_stats(std::cerr);
-            std::cerr << std::endl;
+            std::cerr << "crf_parameter_learner::build_core() terminating"
+                      << " after step() returned false." << std::endl;
           }
-          if (!params.keep_fixed_records)
-            crf_.unfix_records();
-          return;
+          break;
         }
         if (params.init_time_limit != 0 &&
             timer.elapsed() >= params.init_time_limit) {
           if (params.debug > 0) {
-            std::cerr << "crf_parameter_learner::init_finish() terminating"
-                      << " after exceeding init_time_limit on "
-                      << iteration_ << ";\n";
-            print_stats(std::cerr);
-            std::cerr << std::endl;
+            std::cerr << "crf_parameter_learner::build_core() terminating"
+                      << " after exceeding init_time_limit." << std::endl;
           }
-          if (!params.keep_fixed_records)
-            crf_.unfix_records();
-          return;
+          break;
         }
       }
       if (params.debug > 0) {
-        std::cerr << "crf_parameter_learner::init_finish() terminating"
-                  << " after init_iterations;\n";
+        std::cerr << "crf_parameter_learner::build_core() terminated"
+                  << " after " << iteration_ << " iterations.\n";
         print_stats(std::cerr);
         std::cerr << std::endl;
       }
       if (!params.keep_fixed_records)
         crf_.unfix_records();
-    } // init_finish()
+    } // init_finish
 
-    //! Computes the regularized log likelihood (i.e., optimization objective)
-    //! of the training data using CRF factor weights x.
+    //! Computes the optimization objective of the training data
+    //! using CRF factor weights x.
     double my_objective(const opt_variables& x) const {
       ++my_objective_count_;
-      double ll(0);
-      size_t i(0);
-      ds_it.reset();
+      double obj = 0;
       crf_tmp_weights = crf_.weights();
       crf_.weights() = x;
-      while (ds_it != ds_end) {
-        ll -= ds.weight(i) * crf_.log_likelihood(*ds_it);
-        ++i;
-        ++ds_it;
+
+      ds_it.reset();
+      switch (params.learning_objective) {
+      case parameters::MLE:
+        while (ds_it != ds_end) {
+          obj -= ds_it.weight() * crf_.log_likelihood(*ds_it);
+          ++ds_it;
+        }
+        break;
+      case parameters::MPLE:
+        while (ds_it != ds_end) {
+          double pl = 0;
+          foreach(output_variable_type* y, crf_.output_arguments()) {
+            output_factor_type P_Yi_given_MB(make_domain(y), 1);
+            get_node_conditional(y, *ds_it, P_Yi_given_MB);
+            pl += P_Yi_given_MB.logv(*ds_it);
+          }
+          obj -= ds_it.weight() * pl;
+          ++ds_it;
+        }
+        break;
+      default:
+        assert(false);
+        return std::numeric_limits<double>::max();
       }
+
       foreach(const crf_factor& f, crf_.factors()) {
-        ll -= f.regularization_penalty(regularization);
+        obj -= f.regularization_penalty(regularization);
       }
-      ll /= total_train_weight;
+      obj /= total_train_weight;
+
       crf_.weights() = crf_tmp_weights;
       if (params.debug > 2)
         std::cerr << "crf_parameter_learner::my_objective() called;"
-                  << " objective = " << ll << std::endl;
-      return ll;
-    } // my_objective()
+                  << " objective = " << obj << std::endl;
+      return obj;
+    } // my_objective
+
+    /**
+     * Computes P(Yi | Markov Blanket of Yi) (for pseudolikelihood), where the
+     * Markov Blanket variables are instantiated using the given record.
+     * @param P_Yi_given_MB  (Return value) This must be pre-allocated,
+     *                       with constant value.
+     */
+    void get_node_conditional(output_variable_type* Yi, const record_type& r,
+                              output_factor_type& P_Yi_given_MB) const {
+      output_factor_type tmpf;
+      foreach(const typename crf_graph_type::vertex& neighbor_v,
+              crf_.neighbors(Yi)){
+        const output_factor_type& neighbor_f = crf_[neighbor_v]->condition(r);
+        neighbor_f.restrict
+          (r, set_difference(neighbor_f.arguments(), make_domain(Yi)), tmpf);
+        // TO DO: SAVE LIST OF THE ABOVE SET DIFFS TO AVOID RECOMPUTATION
+        P_Yi_given_MB *= tmpf;
+      }
+      P_Yi_given_MB.normalize();
+    }
 
     //! Computes the gradient of the objective at x.
     //! @param gradient  Place in which to store the gradient.
     void my_gradient(opt_variables& gradient, const opt_variables& x) const {
+
       ++my_gradient_count_;
       assert(gradient.size() == crf_.weights().size());
-
       if (params.debug > 2)
         std::cerr << "crf_parameter_learner::my_gradient() called."
                   << std::endl;
 
       gradient = 0;
-
-      size_t i(0);
-      ds_it.reset();
       crf_tmp_weights = crf_.weights();
       crf_.weights() = x;
-      while (ds_it != ds_end) {
-        const decomposable<typename crf_factor::output_factor_type>& Ymodel =
-          crf_.condition(*ds_it);
-        size_t j(0);
-        foreach(const crf_factor& f, crf_.factors()) {
-          if (f.fixed_value())
-            continue;
-          const typename crf_factor::output_factor_type& tmp_marginal
-            = Ymodel.marginal(conditioned_model_vertex_map_[j]);
-          if (tmp_marginal.arguments().size() == f.output_arguments().size()) {
-            f.add_combined_gradient(gradient.factor_weight(j), *ds_it,
-                                    tmp_marginal, - ds.weight(i));
-          } else {
-            typename crf_factor::output_factor_type
-              f_marginal(tmp_marginal.marginal(f.output_arguments()));
-            f.add_combined_gradient(gradient.factor_weight(j), *ds_it,
-                                    f_marginal, - ds.weight(i));
-          }
-          ++j;
+
+      ds_it.reset();
+      switch (params.learning_objective) {
+      case parameters::MLE:
+        while (ds_it != ds_end) {
+          my_mle_gradient_r_(gradient, *ds_it, ds_it.weight());
+          ++ds_it;
         }
-        ++i;
-        ++ds_it;
+        break;
+      case parameters::MPLE:
+        while (ds_it != ds_end) {
+          my_mple_gradient_r_(gradient, *ds_it, ds_it.weight());
+          ++ds_it;
+        }
+        break;
+      default:
+        assert(false);
       }
 
+      my_regularization_gradient_(gradient, 1);
+      gradient /= total_train_weight;
+
+      crf_.weights() = crf_tmp_weights;
+    } // my_gradient
+
+    //! Computes the gradient of the loss part of the objective
+    //! for the given (weighted) record.
+    //! (MLE)
+    void my_mle_gradient_r_(opt_variables& gradient,
+                            const record_type& r, double w) const {
+      const decomposable<output_factor_type>& Ymodel = crf_.condition(r);
       size_t j(0);
       foreach(const crf_factor& f, crf_.factors()) {
         if (f.fixed_value())
           continue;
-        f.add_regularization_gradient(gradient.factor_weight(j),
-                                      regularization, -1);
+        const output_factor_type& tmp_marginal
+          = Ymodel.marginal(conditioned_model_vertex_map_[j]);
+        if (tmp_marginal.arguments().size() == f.output_arguments().size()) {
+          f.add_combined_gradient(gradient.factor_weight(j), r,
+                                  tmp_marginal, - w);
+        } else {
+          output_factor_type
+            f_marginal(tmp_marginal.marginal(f.output_arguments()));
+          f.add_combined_gradient(gradient.factor_weight(j), r,
+                                  f_marginal, - w);
+        }
         ++j;
       }
-      gradient /= total_train_weight;
+    } // my_mle_gradient_r_
 
-      crf_.weights() = crf_tmp_weights;
-    } // my_gradient()
+    //! Computes the gradient of the loss part of the objective
+    //! for the given (weighted) record.
+    //! (MPLE)
+    void my_mple_gradient_r_(opt_variables& gradient,
+                             const record_type& r, double w) const {
+      foreach(output_variable_type* Yi, crf_.output_arguments()) {
+        output_factor_type P_Yi_given_MB(make_domain(Yi), 1);
+        get_node_conditional(Yi, r, P_Yi_given_MB);
+        foreach(const typename crf_graph_type::vertex& neighbor_v,
+                crf_.neighbors(Yi)) {
+          const crf_factor& f = *(crf_[neighbor_v]);
+          if (f.fixed_value())
+            continue;
+          f.add_combined_gradient
+            (gradient.factor_weight(crf_.factor_vertex2index(neighbor_v)),
+             r, P_Yi_given_MB, - w);
+        }
+      }
+    } // my_mple_gradient_r_
+
+    //! Computes the gradient of the regularization part of the objective.
+    //! @param gradient  Vector to which to add the regularization gradient.
+    //! @param w         Weight by which to multiply regularization gradient.
+    void my_regularization_gradient_(opt_variables& gradient, double w) const {
+      size_t j = 0;
+      foreach(const crf_factor& f, crf_.factors()) {
+        if (f.fixed_value())
+          continue;
+        f.add_regularization_gradient(gradient.factor_weight(j),
+                                      regularization, -w);
+        ++j;
+      }
+    } // my_regularization_gradient_
 
     /**
      * Computes the gradient of the objective at x by sampling a single record.
      * @param gradient  Place in which to store the gradient.
      * @return  Objective for the chosen datapoint.
-     * @todo Add better support for weighted datasets (using a tree_sampler).
+     * @todo Add support for weighted datasets (using a tree_sampler).
      */
     double my_stochastic_gradient(opt_variables& gradient,
                                   const opt_variables& x) const {
       ++my_stochastic_gradient_count_;
       assert(gradient.size() == crf_.weights().size());
-
       if (params.debug > 2)
         std::cerr << "crf_parameter_learner::my_stochastic_gradient() called."
                   << std::endl;
 
       gradient = 0;
-
-      size_t i(unif_int(rng));
-      ds_it.reset(i);
-      const record_type& r = *ds_it;
+      ds_it.reset(unif_int(rng));
       crf_tmp_weights = crf_.weights();
       crf_.weights() = x;
-      const decomposable<typename crf_factor::output_factor_type>& Ymodel =
-        crf_.condition(r);
-      size_t j(0);
-      foreach(const crf_factor& f, crf_.factors()) {
-        if (f.fixed_value())
-          continue;
-        const typename crf_factor::output_factor_type& tmp_marginal
-          = Ymodel.marginal(conditioned_model_vertex_map_[j]);
-        if (tmp_marginal.arguments().size() == f.output_arguments().size()) {
-          f.add_combined_gradient(gradient.factor_weight(j), r, tmp_marginal,
-                                  -1);
-        } else {
-          typename crf_factor::output_factor_type
-            f_marginal(tmp_marginal.marginal(f.output_arguments()));
-          f.add_combined_gradient(gradient.factor_weight(j), r, f_marginal,
-                                  -1);
-        }
-        ++j;
-      }
-      double neg_ll(- crf_.log_likelihood(r));
 
-      j = 0;
-      foreach(const crf_factor& f, crf_.factors()) {
-        if (f.fixed_value())
-          continue;
-        f.add_regularization_gradient(gradient.factor_weight(j),
-                                      regularization, -1);
-        neg_ll -= f.regularization_penalty(regularization);
-        ++j;
+      switch (params.learning_objective) {
+      case parameters::MLE:
+        my_mle_gradient_r_(gradient, *ds_it, 1);
+        break;
+      case parameters::MPLE:
+        my_mple_gradient_r_(gradient, *ds_it, 1);
+        break;
+      default:
+        assert(false);
       }
+
+      my_regularization_gradient_(gradient, 1);
+
+      //   double neg_ll(- crf_.log_likelihood(r)); + regularization penalty
 
       crf_.weights() = crf_tmp_weights;
-      return neg_ll;
-    } // my_stochastic_gradient()
+
+//      return neg_ll;
+      return 0; // TO DO: FIX THIS!
+    } // my_stochastic_gradient
 
     //! Computes the diagonal of a Hessian of the function at x.
     //! @param hd  Place in which to store the diagonal.
-    void
-    my_hessian_diag(opt_variables& hd, const opt_variables& x) const {
+    void my_hessian_diag(opt_variables& hd, const opt_variables& x) const {
       ++my_hessian_diag_count_;
       assert(hd.size() == crf_.weights().size());
 
@@ -797,68 +1092,91 @@ namespace sill {
 
       hd = 0;
 
-      size_t i(0);
       ds_it.reset();
       crf_tmp_weights = crf_.weights();
       crf_.weights() = x;
-      while (ds_it != ds_end) {
-        const decomposable<typename crf_factor::output_factor_type>&
-          Ymodel = crf_.condition(ds_it->assignment());
-        size_t j(0);
-        foreach(const crf_factor& f, crf_.factors()) {
-          if (f.fixed_value())
-            continue;
-          f.add_hessian_diag(hd.factor_weight(j), *ds_it, - ds.weight(i));
-          const typename crf_factor::output_factor_type& tmp_marginal
-            = Ymodel.marginal(conditioned_model_vertex_map_[j]);
-          typename crf_factor::optimization_vector
-            tmpoptvec(hd.factor_weight(j).size(), 0.);
-          if (tmp_marginal.arguments().size() == f.output_arguments().size()) {
-            f.add_expected_hessian_diag(hd.factor_weight(j), *ds_it,
-                                        tmp_marginal, ds.weight(i));
-            f.add_expected_squared_gradient(hd.factor_weight(j), *ds_it,
-                                            tmp_marginal, ds.weight(i));
-            f.add_expected_gradient(tmpoptvec, *ds_it, tmp_marginal);
-            /*
-            f.add_expected_gradient(tmpoptvec, *ds_it, tmp_marginal,
-                                    ds.weight(i));
-            */
-          } else {
-            typename crf_factor::output_factor_type
-              f_marginal(tmp_marginal.marginal(f.output_arguments()));
-            f.add_expected_hessian_diag(hd.factor_weight(j), *ds_it, f_marginal,
-                                        ds.weight(i));
-            f.add_expected_squared_gradient(hd.factor_weight(j), *ds_it,
-                                            f_marginal, ds.weight(i));
-            f.add_expected_gradient(tmpoptvec, *ds_it, f_marginal);
-            /*
-            f.add_expected_gradient(tmpoptvec, *ds_it, f_marginal,
-                                    ds.weight(i));
-            */
-          }
-          tmpoptvec.elem_mult(tmpoptvec);
-//          hd.factor_weight(j) -= tmpoptvec;
-          hd.factor_weight(j) -= (ds.weight(i) == 1 ?
-                                  tmpoptvec :
-                                  tmpoptvec * ds.weight(i));
-          ++j;
+
+      switch (params.learning_objective) {
+      case parameters::MLE:
+        while (ds_it != ds_end) {
+          my_mle_hessian_diag_r_(hd, *ds_it, ds_it.weight());
+          ++ds_it;
         }
-        ++i;
-        ++ds_it;
+        break;
+      case parameters::MPLE:
+        while (ds_it != ds_end) {
+          my_mple_hessian_diag_r_(hd, *ds_it, ds_it.weight());
+          ++ds_it;
+        }
+        break;
+      default:
+        assert(false);
       }
 
+      my_regularization_hessian_diag_(hd, 1);
+      hd /= total_train_weight;
+
+      crf_.weights() = crf_tmp_weights;
+    } // my_hessian_diag
+
+    //! Single-record Hessian diagonal of loss part of objective: log likelihood
+    void
+    my_mle_hessian_diag_r_(opt_variables& hd,
+                           const record_type& r, double w) const {
+      const decomposable<output_factor_type>& Ymodel = crf_.condition(r);
+      size_t j(0);
+      foreach(const crf_factor& f, crf_.factors()) {
+        if (f.fixed_value())
+          continue;
+        f.add_hessian_diag(hd.factor_weight(j), r, - w);
+        const output_factor_type& tmp_marginal
+          = Ymodel.marginal(conditioned_model_vertex_map_[j]);
+        typename crf_factor::optimization_vector
+          tmpoptvec(hd.factor_weight(j).size(), 0.);
+        if (tmp_marginal.arguments().size() == f.output_arguments().size()) {
+          f.add_expected_hessian_diag(hd.factor_weight(j), r, tmp_marginal, w);
+          f.add_expected_squared_gradient(hd.factor_weight(j), r,
+                                          tmp_marginal, w);
+          f.add_expected_gradient(tmpoptvec, r, tmp_marginal);
+          // f.add_expected_gradient(tmpoptvec, r, tmp_marginal, w);
+        } else {
+          output_factor_type
+            f_marginal(tmp_marginal.marginal(f.output_arguments()));
+          f.add_expected_hessian_diag(hd.factor_weight(j), r, f_marginal, w);
+          f.add_expected_squared_gradient(hd.factor_weight(j), r,
+                                          f_marginal, w);
+          f.add_expected_gradient(tmpoptvec, r, f_marginal);
+          // f.add_expected_gradient(tmpoptvec, r, f_marginal, w);
+        }
+        tmpoptvec.elem_mult(tmpoptvec);
+        //          hd.factor_weight(j) -= tmpoptvec;
+        hd.factor_weight(j) -= (w == 1 ? tmpoptvec : tmpoptvec * w);
+        ++j;
+      }
+    } // my_mle_hessian_diag_r_
+
+    //! Single-record Hessian diagonal of loss part of objective:
+    //!  pseudolikelihood
+    void
+    my_mple_hessian_diag_r_(opt_variables& hd,
+                            const record_type& r, double w) const {
+      assert(false); // TO DO
+    } // my_mple_hessian_diag_r_
+
+    //! Computes the diagonal of the Hessian of the regularization part of the
+    //! objective.
+    //! @param hd  Vector to which to add the regularization Hessian diagonal.
+    //! @param w   Weight by which to multiply regularization Hessian diagonal.
+    void my_regularization_hessian_diag_(opt_variables& hd, double w) const {
       size_t j(0);
       foreach(const crf_factor& f, crf_.factors()) {
         if (f.fixed_value())
           continue;
         f.add_regularization_hessian_diag(hd.factor_weight(j),
-                                          regularization, -1);
+                                          regularization, -w);
         ++j;
       }
-      hd /= total_train_weight;
-
-      crf_.weights() = crf_tmp_weights;
-    } // my_hessian_diag()
+    } // my_regularization_hessian_diag_
 
     /**
      * Computes the objective, gradient and (if needed) the diagonal of the
@@ -888,86 +1206,30 @@ namespace sill {
       if (codes == 0)
         hd = 0;
 
-      size_t i(0);
-      ds_it.reset();
       crf_tmp_weights = crf_.weights();
       crf_.weights() = x;
-      while (ds_it != ds_end) {
-        const record_type& rec = *ds_it;
-        const decomposable<typename crf_factor::output_factor_type>&
-          Ymodel = crf_.condition(rec);
-        obj -= ds.weight(i) * Ymodel.log_likelihood(rec);
-        size_t j(0);
-        foreach(const crf_factor& f, crf_.factors()) {
-          if (f.fixed_value())
-            continue;
-          const typename crf_factor::output_factor_type& tmp_j_marginal =
-            Ymodel.marginal(conditioned_model_vertex_map_[j]);
-          typename crf_factor::output_factor_type* tmp_marginal_ptr = NULL;
-          if (tmp_j_marginal.size() != f.output_arguments().size()) {
-            tmp_marginal_ptr = new typename crf_factor::output_factor_type
-              (tmp_j_marginal.marginal(f.output_arguments()));
-          }
-          const typename crf_factor::output_factor_type& tmp_marginal =
-            (tmp_j_marginal.size() == f.output_arguments().size() ?
-             tmp_j_marginal : *tmp_marginal_ptr);
 
-          if (codes == 1) {
-            f.add_combined_gradient(gradient.factor_weight(j), *ds_it,
-                                    tmp_marginal, - ds.weight(i));
-          } else if (codes == 0) {
-            f.add_gradient(gradient.factor_weight(j), *ds_it,
-                           - ds.weight(i));
-            f.add_hessian_diag(hd.factor_weight(j), *ds_it, -ds.weight(i));
-            f.add_expected_hessian_diag(hd.factor_weight(j), *ds_it,
-                                        tmp_marginal, ds.weight(i));
-            f.add_expected_squared_gradient(hd.factor_weight(j), *ds_it,
-                                            tmp_marginal,
-                                            ds.weight(i));
-            typename crf_factor::optimization_vector
-              tmpoptvec(hd.factor_weight(j).size(), 0.);
-            /*
-            f.add_expected_gradient(tmpoptvec, *ds_it, tmp_marginal,
-                                    ds.weight(i));
-            gradient.factor_weight(j) += tmpoptvec;
-            tmpoptvec.elem_mult(tmpoptvec);
-            hd.factor_weight(j) -= tmpoptvec;
-            */
-            f.add_expected_gradient(tmpoptvec, *ds_it, tmp_marginal);
-            gradient.factor_weight(j) += (ds.weight(i) == 1 ?
-                                          tmpoptvec :
-                                          tmpoptvec * ds.weight(i));
-            tmpoptvec.elem_mult(tmpoptvec);
-            hd.factor_weight(j) -= (ds.weight(i) == 1 ?
-                                    tmpoptvec :
-                                    tmpoptvec * ds.weight(i));
-          } else {
-            assert(false);
-          }
-          if (tmp_marginal_ptr) {
-            delete(tmp_marginal_ptr);
-            tmp_marginal_ptr = NULL;
-          }
-          ++j;
+      ds_it.reset();
+      switch (params.learning_objective) {
+      case parameters::MLE:
+        while (ds_it != ds_end) {
+          my_mle_everything_r_(obj, gradient, hd, codes,
+                               *ds_it, ds_it.weight());
+          ++ds_it;
         }
-        ++i;
-        ++ds_it;
+        break;
+      case parameters::MPLE:
+        while (ds_it != ds_end) {
+          my_mple_everything_r_(obj, gradient, hd, codes,
+                                *ds_it, ds_it.weight());
+          ++ds_it;
+        }
+        break;
+      default:
+        assert(false);
       }
 
-      size_t j(0);
-      foreach(const crf_factor& f, crf_.factors()) {
-        obj -= f.regularization_penalty(regularization);
-        if (!f.fixed_value()) {
-          f.add_regularization_gradient(gradient.factor_weight(j),
-                                        regularization, -1);
-          if (codes == 0) {
-            f.add_regularization_hessian_diag(hd.factor_weight(j),
-                                              regularization, -1);
-          }
-          ++j;
-        }
-      }
-
+      my_regularization_everything_(obj, gradient, hd, codes, 1);
       obj /= total_train_weight;
       gradient /= total_train_weight;
       if (codes == 0)
@@ -977,245 +1239,101 @@ namespace sill {
       if (params.debug > 2)
         std::cerr << "crf_parameter_learner::my_everything() computed"
                   << " objective = " << obj << std::endl;
-    } // my_everything()
+    } // my_everything
 
-    // Constructors and destructors
-    // =========================================================================
-  public:
-
-    /*
-     * Initializes a CRF model learner using the given graph structure.
-     */
-    crf_parameter_learner(const typename crf_model_type::crf_graph_type& graph,
-                          const dataset<la_type>& ds,
-                          const parameters& params = parameters())
-      : params(params),
-        ds(ds), ds_it(ds.begin()), ds_end(ds.end()),
-        crf_(graph), crf_tmp_weights(crf_.weights()),
-        iteration_(0),
-        everything_functor_ptr(NULL), stochastic_everything_functor_ptr(NULL),
-        gradient_method_ptr(NULL), stochastic_gradient_ptr(NULL),
-        total_train_weight(0),
-        init_train_obj(std::numeric_limits<double>::max()),
-        train_obj(std::numeric_limits<double>::max()),
-        my_objective_count_(0), my_gradient_count_(0),
-        my_stochastic_gradient_count_(0),
-        my_hessian_diag_count_(0), my_everything_no_hd_count_(0),
-        my_everything_with_hd_count_(0) {
-      init();
-      init_finish(true);
-    }
-
-    /**
-     * Initializes a CRF model learner using the given model,
-     * which specifies features.
-     * @param keep_weights  If false, the model weights are re-initialized.
-     */
-    crf_parameter_learner(const crf_model_type& model,
-                          const dataset<la_type>& ds,
-                          bool keep_weights,
-                          const parameters& params = parameters())
-      : params(params),
-        ds(ds), ds_it(ds.begin()), ds_end(ds.end()),
-        crf_(model), crf_tmp_weights(crf_.weights()),
-        iteration_(0), everything_functor_ptr(NULL),
-        stochastic_everything_functor_ptr(NULL),
-        gradient_method_ptr(NULL), stochastic_gradient_ptr(NULL),
-        total_train_weight(0),
-        init_train_obj(std::numeric_limits<double>::max()),
-        train_obj(std::numeric_limits<double>::max()),
-        my_objective_count_(0), my_gradient_count_(0),
-        my_stochastic_gradient_count_(0),
-        my_hessian_diag_count_(0), my_everything_no_hd_count_(0),
-        my_everything_with_hd_count_(0) {
-      init();
-      if (keep_weights)
-        init_finish(false);
-      else
-        init_finish(true);
-    }
-
-    ~crf_parameter_learner() {
-      clear_pointers();
-    }
-
-    //! Return the current model.
-    const crf_model_type& current_model() const {
-      return crf_;
-    }
-
-    /**
-     * Do one step of parameter learning.
-     * @return  false if the step was unsuccessful (e.g., if the parameters
-     *          have converged)
-     */
-    bool step() {
-      if (gradient_method_ptr) {
-        double prev_train_obj(train_obj);
-        if (!gradient_method_ptr->step())
-          return false;
-        train_obj = gradient_method_ptr->objective();
-        if (params.debug > 1) {
-          if (train_obj > prev_train_obj)
-            std::cerr << "crf_parameter_learner took a step which "
-                      << "increased the objective from " << prev_train_obj
-                      << " to " << train_obj << std::endl;
-          std::cerr << "change in objective = "
-                    << (train_obj - prev_train_obj) << std::endl;
+    //! Single-record everything for loss part of objective: log likelihood
+    void
+    my_mle_everything_r_(double& obj, opt_variables& gradient,
+                         opt_variables& hd, size_t codes,
+                         const record_type& r, double w) const {
+      const decomposable<output_factor_type>& Ymodel = crf_.condition(r);
+      obj -= w * Ymodel.log_likelihood(r);
+      size_t j(0);
+      foreach(const crf_factor& f, crf_.factors()) {
+        if (f.fixed_value())
+          continue;
+        const output_factor_type& tmp_j_marginal =
+          Ymodel.marginal(conditioned_model_vertex_map_[j]);
+        output_factor_type* tmp_marginal_ptr = NULL;
+        if (tmp_j_marginal.arguments().size() != f.output_arguments().size()) {
+          tmp_marginal_ptr = new output_factor_type
+            (tmp_j_marginal.marginal(f.output_arguments()));
         }
-        // Check for convergence
-        if (fabs(train_obj - prev_train_obj)
-            < params.gm_params.convergence_zero) {
-          if (params.debug > 1)
-            std::cerr << "crf_parameter_learner converged:"
-                      << " training objective changed from "
-                      << prev_train_obj << " to " << train_obj
-                      << "; exiting on iteration " << iteration() << "."
-                      << std::endl;
-          return false;
+        const output_factor_type& tmp_marginal =
+          (tmp_j_marginal.arguments().size() == f.output_arguments().size()
+           ? tmp_j_marginal : *tmp_marginal_ptr);
+
+        if (codes == 1) {
+          f.add_combined_gradient(gradient.factor_weight(j), r,
+                                  tmp_marginal, -w);
+        } else if (codes == 0) {
+          f.add_gradient(gradient.factor_weight(j), r, -w);
+          f.add_hessian_diag(hd.factor_weight(j), r, -w);
+          f.add_expected_hessian_diag(hd.factor_weight(j), r,
+                                      tmp_marginal, w);
+          f.add_expected_squared_gradient(hd.factor_weight(j), r,
+                                          tmp_marginal, w);
+          typename crf_factor::optimization_vector
+            tmpoptvec(hd.factor_weight(j).size(), 0.);
+          f.add_expected_gradient(tmpoptvec, r, tmp_marginal);
+          gradient.factor_weight(j) += (w == 1 ? tmpoptvec : tmpoptvec * w);
+          tmpoptvec.elem_mult(tmpoptvec);
+          hd.factor_weight(j) -= (w == 1 ? tmpoptvec : tmpoptvec * w);
+        } else {
+          assert(false);
         }
-      } else if (stochastic_gradient_ptr) {
-        if (!stochastic_gradient_ptr->step())
-          return false;
-      } else {
-        assert(false);
+        if (tmp_marginal_ptr) {
+          delete(tmp_marginal_ptr);
+          tmp_marginal_ptr = NULL;
+        }
+        ++j;
       }
-      ++iteration_;
-      return true;
-    } // end of step()
+    } // my_mle_everything_r_
 
-    //! Iteration number (i.e., how many iterations have been completed).
-    //! This is also the number of times the gradient (and preconditioner)
-    //! have been computed.
-    size_t iteration() const {
-      return iteration_;
-    }
+    //! Single-record everything for loss part of objective: pseudolikelihood
+    void
+    my_mple_everything_r_(double& obj, opt_variables& gradient,
+                          opt_variables& hd, size_t codes,
+                          const record_type& r, double w) const {
+      assert(codes == 1); // TO DO
 
-    //! Return the average number of objective function calls per iteration,
-    //! or -1 if no iterations have completed, if the underlying optimization
-    //! routine supports this.  If not, returns -2.
-    double objective_calls_per_iteration() const {
-      if (!gradient_method_ptr)
-        return -2;
-      return gradient_method_ptr->objective_calls_per_iteration();
-    }
+      double pl = 0;
+      foreach(output_variable_type* Yi, crf_.output_arguments()) {
+        output_factor_type P_Yi_given_MB(make_domain(Yi), 1);
+        get_node_conditional(Yi, r, P_Yi_given_MB);
+        pl += P_Yi_given_MB.logv(r);
+        foreach(const typename crf_graph_type::vertex& neighbor_v,
+                crf_.neighbors(Yi)) {
+          const crf_factor& f = *(crf_[neighbor_v]);
+          if (f.fixed_value())
+            continue;
+          f.add_combined_gradient
+            (gradient.factor_weight(crf_.factor_vertex2index(neighbor_v)),
+             r, P_Yi_given_MB, - w);
+        }
+      }
+      obj -= w * pl;
+    } // my_mple_everything_r_
 
-    //! Number of calls made to my_objective().
-    size_t my_objective_count() const {
-      return my_objective_count_;
-    }
-
-    //! Number of calls made to my_gradient().
-    size_t my_gradient_count() const {
-      return my_gradient_count_;
-    }
-
-    //! Number of calls made to my_stochastic_gradient().
-    size_t my_stochastic_gradient_count() const {
-      return my_stochastic_gradient_count_;
-    }
-
-    //! Number of calls made to my_hessian_diag().
-    size_t my_hessian_diag_count() const {
-      return my_hessian_diag_count_;
-    }
-
-    //! Number of calls made to my_everything() without computing the diagonal
-    //! of the Hessian.
-    size_t my_everything_no_hd_count() const {
-      return my_everything_no_hd_count_;
-    }
-
-    //! Number of calls made to my_everything() with computing the diagonal
-    //! of the Hessian.
-    size_t my_everything_with_hd_count() const {
-      return my_everything_with_hd_count_;
-    }
-
-    //! Print debugging info about calls to objective, gradient, etc.,
-    //! as well as objective info (if available).
-    void print_stats(std::ostream& out) const {
-      if (gradient_method_ptr)
-        out << " Initial objective: " << init_train_obj << "\n"
-            << " Current objective: " << gradient_method_ptr->objective()
-            << "\n";
-      out << " Method calls:\n"
-          << "\tmy_objective:             " << my_objective_count() << "\n"
-          << "\tmy_gradient:              " << my_gradient_count() << "\n"
-          << "\tmy_stochastic_gradient:   " << my_stochastic_gradient_count()
-          << "\n"
-          << "\tmy_hessian_diag:          " << my_hessian_diag_count() << "\n"
-          << "\tmy_everything without hd: " << my_everything_no_hd_count()
-          << "\n"
-          << "\tmy_everything with hd:    " << my_everything_with_hd_count()
-          << "\n";
-    }
-
-    //! Returns the parameters (which may be modified by cross-validation
-    //! for parameter tuning).
-    const parameters& get_params() const {
-      return params;
-    }
-
-    /**
-     * Choose regularization parameters via n-fold cross validation.
-     *
-     * @param cv_params   Parameters specifying how to do cross validation.
-     * @param model       CRF model on which to do parameter learning.
-     * @param keep_weights  If true, keep weights in model; if false, set to 0.
-     * @param ds          Training data.
-     * @param params      Parameters for this class.
-     * @param score_type  0: log likelihood, 1: per-label accuracy,
-     *                    2: all-or-nothing label accuracy,
-     *                    3: mean squared error
-     * @param random_seed This uses this random seed, not the one in the
-     *                    algorithm parameters.
-     *
-     * @return  chosen regularization parameters
-     */
-    static
-    vec
-    choose_lambda(const crossval_parameters& cv_params,
-                  const crf_model_type& model, bool keep_weights,
-                  const dataset<la_type>& ds, const parameters& params,
-                  size_t score_type, unsigned random_seed) {
-      assert(score_type == 0); // others not yet implemented
-      crf_validation_functor<F> crf_val_func(model, params, keep_weights);
-      validation_framework<la_type>
-        val_frame(ds, cv_params, crf_val_func, random_seed);
-      return val_frame.best_lambdas();
-    }
-
-    /**
-     * Choose regularization parameters via n-fold cross validation.
-     *
-     * @param cv_params   Parameters specifying how to do cross validation.
-     * @param structure   CRF structure.
-     * @param ds          Training data.
-     * @param params      Parameters for this class.
-     * @param score_type  0: log likelihood, 1: per-label accuracy,
-     *                    2: all-or-nothing label accuracy,
-     *                    3: mean squared error
-     * @param random_seed This uses this random seed, not the one in the
-     *                    algorithm parameters.
-     *
-     * @return  chosen regularization parameters
-     *
-     * WARNING: This version does not work with templated factors.
-     *          Use the above choose_lambda instead.
-     */
-    static
-    vec
-    choose_lambda(const crossval_parameters& cv_params,
-                  const typename crf_model_type::crf_graph_type& structure,
-                  const dataset<la_type>& ds, const parameters& params,
-                  size_t score_type, unsigned random_seed) {
-      assert(score_type == 0); // others not yet implemented
-      crf_validation_functor<F> crf_val_func(structure, params);
-      validation_framework<la_type>
-        val_frame(ds, cv_params, crf_val_func, random_seed);
-      return val_frame.best_lambdas();
-    }
+    //! Computes everything for the regularization part of the objective.
+    void
+    my_regularization_everything_(double& obj, opt_variables& gradient,
+                                  opt_variables& hd, size_t codes,
+                                  double w) const {
+      size_t j(0);
+      foreach(const crf_factor& f, crf_.factors()) {
+        obj -= w * f.regularization_penalty(regularization);
+        if (!f.fixed_value()) {
+          f.add_regularization_gradient(gradient.factor_weight(j),
+                                        regularization, -w);
+          if (codes == 0) {
+            f.add_regularization_hessian_diag(hd.factor_weight(j),
+                                              regularization, -w);
+          }
+          ++j;
+        }
+      }
+    } // my_regularization_everything_
 
   }; // crf_parameter_learner
 

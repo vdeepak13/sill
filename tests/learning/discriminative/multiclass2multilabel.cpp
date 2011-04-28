@@ -51,7 +51,6 @@ int main(int argc, char* argv[]) {
   }
   vector_dataset<>& ds_train = *ds_train_ptr;
   vector_dataset<>& ds_test = *ds_test_ptr;
-  finite_variable* class_var = ds_train.finite_class_variables().front();
 
   size_t new_class_vars_size(1);
   foreach(finite_variable* v, new_class_vars)

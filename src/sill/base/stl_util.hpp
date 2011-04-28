@@ -181,8 +181,8 @@ namespace sill {
   /**
    * Transform each key in the map using the key_map
    * transformation. The resulting map will have the form
-   output[i] = remap[map[i]]
-  */
+   * output[i] = remap[map[i]]
+   */
   template <typename Key, typename OldT, typename NewT>
   std::map<Key, NewT>
   remap(const std::map<Key, OldT>& map,
@@ -204,6 +204,22 @@ namespace sill {
     typedef std::pair<Key, T> pair_type;
     foreach(pair_type& pair, map) {
       pair.second = safe_get(val_map, pair.second);
+    }
+  }
+
+  /**
+   * Inserts the elements in map 'from' into map 'to',
+   * overwriting any existing elements with the same keys.
+   * Note: std::map::insert does not behave this way for some reason.
+   */
+  template <typename Key, typename T>
+  void map_insert(const std::map<Key, T>& from,
+                  std::map<Key, T>& to) {
+    typename std::map<Key,T>::const_iterator from_it(from.begin());
+    typename std::map<Key,T>::const_iterator from_end(from.end());
+    while (from_it != from_end) {
+      to[from_it->first] = from_it->second;
+      ++from_it;
     }
   }
 

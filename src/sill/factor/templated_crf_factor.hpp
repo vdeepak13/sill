@@ -208,28 +208,28 @@ namespace sill {
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
     double v(const assignment_type& a) const {
-      base_record.copy_assignment_mapped(a, vmap_base2this);
+      base_record.copy_from_assignment_mapped(a, vmap_base2this);
       return factor_ptr_->v(base_record);
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
     double v(const record_type& r) const {
-      base_record.copy_record_mapped(r, vmap_base2this);
+      base_record.copy_from_record_mapped(r, vmap_base2this);
       return factor_ptr_->v(base_record);
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
     double logv(const assignment_type& a) const {
-      base_record.copy_assignment_mapped(a, vmap_base2this);
+      base_record.copy_from_assignment_mapped(a, vmap_base2this);
       return factor_ptr_->logv(base_record);
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
     double logv(const record_type& r) const {
-      base_record.copy_record_mapped(r, vmap_base2this);
+      base_record.copy_from_record_mapped(r, vmap_base2this);
       return factor_ptr_->logv(base_record);
     }
 
@@ -244,7 +244,7 @@ namespace sill {
      *          in real space
      */
     const output_factor_type& condition(const input_assignment_type& a) const {
-      base_input_record.copy_assignment_mapped(a, vmap_base2this);
+      base_input_record.copy_from_assignment_mapped(a, vmap_base2this);
       tmp_factor = factor_ptr_->condition(base_input_record);
       tmp_factor.subst_args(vmap_base2this);
       return tmp_factor;
@@ -260,7 +260,7 @@ namespace sill {
      *          in real space
      */
     const output_factor_type& condition(const input_record_type& r) const {
-      base_input_record.copy_record_mapped(r, vmap_base2this);
+      base_input_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = factor_ptr_->condition(base_input_record);
       tmp_factor.subst_args(vmap_base2this);
       return tmp_factor;
@@ -315,7 +315,7 @@ namespace sill {
      * with different variable orderings!
      */
     void fix_records(const record_type& r) {
-      base_record.copy_record_mapped(r, vmap_base2this);
+      base_record.copy_from_record_mapped(r, vmap_base2this);
       factor_ptr_->fix_records(base_record);
       fixed_records_ = true;
     }
@@ -351,7 +351,7 @@ namespace sill {
     //! @param w      Weight by which to multiply the added values.
     void add_gradient(optimization_vector& grad, const record_type& r,
                       double w) const {
-      base_record.copy_record_mapped(r, vmap_base2this);
+      base_record.copy_from_record_mapped(r, vmap_base2this);
       factor_ptr_->add_gradient(grad, base_record, w);
     }
 
@@ -371,7 +371,7 @@ namespace sill {
                                const input_record_type& r,
                                const output_factor_type& fy,
                                double w = 1) const {
-      base_input_record.copy_record_mapped(r, vmap_base2this);
+      base_input_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = fy;
       tmp_factor.subst_args(vmap_this2base);
       factor_ptr_->add_expected_gradient(grad, base_input_record, tmp_factor,w);
@@ -385,7 +385,7 @@ namespace sill {
     void
     add_combined_gradient(optimization_vector& grad, const record_type& r,
                           const output_factor_type& fy, double w = 1.) const {
-      base_record.copy_record_mapped(r, vmap_base2this);
+      base_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = fy;
       tmp_factor.subst_args(vmap_this2base);
       factor_ptr_->add_combined_gradient(grad, base_record, tmp_factor, w);
@@ -401,7 +401,7 @@ namespace sill {
     void
     add_hessian_diag(optimization_vector& hessian, const record_type& r,
                      double w) const {
-      base_record.copy_record_mapped(r, vmap_base2this);
+      base_record.copy_from_record_mapped(r, vmap_base2this);
       factor_ptr_->add_hessian_diag(hessian, base_record, w);
     }
 
@@ -420,7 +420,7 @@ namespace sill {
     add_expected_hessian_diag(optimization_vector& hessian,
                               const input_record_type& r,
                               const output_factor_type& fy, double w) const {
-      base_input_record.copy_record_mapped(r, vmap_base2this);
+      base_input_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = fy;
       tmp_factor.subst_args(vmap_this2base);
       factor_ptr_->add_expected_hessian_diag(hessian, base_input_record,
@@ -442,7 +442,7 @@ namespace sill {
     add_expected_squared_gradient
     (optimization_vector& sqrgrad, const input_record_type& r,
      const output_factor_type& fy, double w) const {
-      base_input_record.copy_record_mapped(r, vmap_base2this);
+      base_input_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = fy;
       tmp_factor.subst_args(vmap_this2base);
       factor_ptr_->add_expected_squared_gradient(sqrgrad, base_input_record,

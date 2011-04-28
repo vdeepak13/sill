@@ -333,25 +333,26 @@ namespace sill {
     // Public: Learning methods from learnable_crf_factor interface
     // =========================================================================
 
-    //! Adds the gradient of the log of this factor w.r.t. the weights,
-    //! evaluated at the given datapoint with the current weights.
-    //! @param grad   Pre-allocated vector to which to add the gradient.
-    //! @param r      Datapoint.
-    //! @param w      Weight by which to multiply the added values.
+    /**
+     * Adds the gradient of the log of this factor w.r.t. the weights,
+     * evaluated at the given datapoint with the current weights.
+     * @param grad   Pre-allocated vector to which to add the gradient.
+     * @param r      Datapoint.
+     * @param w      Weight by which to multiply the added values.
+     */
     void add_gradient(table_factor_opt_vector& grad, const finite_record& r,
                       double w) const;
 
     /**
      * Adds the expectation of the gradient of the log of this factor
      * w.r.t. the weights, evaluated with the current weights and at the
-     * given datapoint for the X values.  The expectation is over the Y
-     * values and w.r.t. the given factor's distribution.
+     * given datapoint for the X values.
+     * The expectation can be over all or part of the Y variables.
+     *
      * @param grad   Pre-allocated vector to which to add the gradient.
      * @param r      Datapoint.
-     * @param fy     Distribution over (at least) the Y variables in this
-     *               factor.
+     * @param fy     Distribution over (all or part) of the Y arguments.
      * @param w      Weight by which to multiply the added values.
-     * @tparam YFactor  Factor type for a distribution over Y variables.
      */
     void add_expected_gradient(table_factor_opt_vector& grad,
                                const finite_record& r,

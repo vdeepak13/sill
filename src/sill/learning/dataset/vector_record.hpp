@@ -198,7 +198,8 @@ namespace sill {
     //! the given assignment.
     //! @param X  All of these variables must be in this record.
     void
-    add_assignment(const vector_domain& X, sill::vector_assignment& a) const {
+    add_to_assignment(const vector_domain& X,
+                      sill::vector_assignment& a) const {
       foreach(vector_variable* v, X) {
         size_t v_index(safe_get(*vector_numbering_ptr, v));
         vector_type val(v->size());
@@ -434,6 +435,25 @@ namespace sill {
     }
 
     /**
+     * For each variable appearing in BOTH the given assignment and this record,
+     * set this record's value to match the assignment's value.
+     * This does not change this record's domain.
+     */
+    void copy_from_assignment(const sill::vector_assignment& a) {
+      for (std::map<vector_variable*, size_t>::const_iterator it =
+             vector_numbering_ptr->begin();
+           it != vector_numbering_ptr->end();
+           ++it) {
+        typename sill::vector_assignment::const_iterator a_it =
+          a.find(it->first);
+        if (a_it != a.end())
+          vec_ptr->set_subvector
+            (irange(it->second, it->second + it->first->size()),
+             a_it->second);
+      }
+    }
+
+    /**
      * For each variable in this record,
      * set the value according to the assignment,
      * with record variables mapped to assignment variables according to vmap.
@@ -442,8 +462,8 @@ namespace sill {
      *               modulo the variable mapping.
      * @param vmap  Variable mapping: Variables in record --> Variables in a.
      */
-    void copy_assignment_mapped(const sill::vector_assignment& a,
-                                const vector_var_map& vmap) {
+    void copy_from_assignment_mapped(const sill::vector_assignment& a,
+                                     const vector_var_map& vmap) {
       for (std::map<vector_variable*, size_t>::const_iterator it =
              vector_numbering_ptr->begin();
            it != vector_numbering_ptr->end();
@@ -463,8 +483,8 @@ namespace sill {
      *               modulo the variable mapping.
      * @param vmap  Variable mapping: Vars in this record --> Vars in other.
      */
-    void copy_record_mapped(const vector_record& r,
-                            const vector_var_map& vmap) {
+    void copy_from_record_mapped(const vector_record& r,
+                                 const vector_var_map& vmap) {
       for (std::map<vector_variable*, size_t>::const_iterator it =
              vector_numbering_ptr->begin();
            it != vector_numbering_ptr->end();

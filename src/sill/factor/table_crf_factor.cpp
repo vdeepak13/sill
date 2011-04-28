@@ -12,15 +12,20 @@ namespace sill {
   void
   table_crf_factor::relabel_outputs_inputs(const output_domain_type& new_Y,
                                            const input_domain_type& new_X) {
-    if (!valid_output_input_relabeling(output_arguments(), input_arguments(),
-                                       new_Y,new_X)) {
+    domain_type old_args(output_arguments());
+    old_args.insert(input_arguments().begin(), input_arguments().end());
+    Ydomain_ = set_intersect(old_args,new_Y);
+    Xdomain_ptr_->operator=(set_intersect(old_args,new_X));
+    if (!set_disjoint(output_arguments(), input_arguments())) {
       throw std::invalid_argument
-        (std::string("table_crf_factor::relabel_outputs_inputs") +
-         " given new_Y,new_X whose union did not equal the union of the" +
-         " old Y,X.");
+        (std::string("table_crf_factor::relabel_outputs_inputs given") +
+         " new_Y,new_X which were not disjoint.");
     }
-    Ydomain_ = new_Y;
-    Xdomain_ptr_->operator=(new_X);
+    if (output_arguments().size()+input_arguments().size() != old_args.size()){
+      throw std::invalid_argument
+        (std::string("table_crf_factor::relabel_outputs_inputs given") +
+         " new_Y,new_X whose union did not include the union of the old Y,X.");
+    }
     optimize_variable_order();
   }
 
@@ -239,22 +244,25 @@ namespace sill {
   void table_crf_factor::add_expected_gradient
   (table_factor_opt_vector& grad, const finite_record& r,
    const table_factor& fy, double w) const {
-    assert(set_equal(Ydomain_, fy.arguments()));
+
+    assert(includes(Ydomain_, fy.arguments()));
+
     finite_assignment fa(r.assignment(input_arguments()));
+    if (Ydomain_.size() != fy.arguments().size()) {
+      foreach(finite_variable* v, Ydomain_) {
+        if (fy.arguments().count(v) == 0)
+          fa[v] = r.finite(v);
+      }
+    }
+
     if (log_space_) {
-      foreach(const finite_assignment& fa2, assignments(Ydomain_)) {
-        finite_assignment::const_iterator fa2_end(fa2.end());
-        for (finite_assignment::const_iterator fa2_it(fa2.begin());
-             fa2_it != fa2_end; ++fa2_it)
-          fa[fa2_it->first] = fa2_it->second;
+      foreach(const finite_assignment& fa2, assignments(fy.arguments())) {
+        map_insert(fa2, fa);
         grad.f(fa) += w * fy(fa2);
       }
     } else {
-      foreach(const finite_assignment& fa2, assignments(Ydomain_)) {
-        finite_assignment::const_iterator fa2_end(fa2.end());
-        for (finite_assignment::const_iterator fa2_it(fa2.begin());
-             fa2_it != fa2_end; ++fa2_it)
-          fa[fa2_it->first] = fa2_it->second;
+      foreach(const finite_assignment& fa2, assignments(fy.arguments())) {
+        map_insert(fa2, fa);
         double val(f.f(r));
         if (val != 0)
           grad.f(fa) += w * fy(fa2) / val;
@@ -262,7 +270,7 @@ namespace sill {
           grad.f(fa) += w * std::numeric_limits<double>::infinity();
       }
     }
-  }
+  } // add_expected_gradient
 
   void
   table_crf_factor::add_combined_gradient

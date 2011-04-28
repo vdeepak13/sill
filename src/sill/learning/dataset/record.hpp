@@ -173,22 +173,24 @@ namespace sill {
     //! the given assignment.
     //! @param X  All of these variables must be in this record.
     void
-    add_assignment(const domain& X, sill::assignment& a) const;
+    add_to_assignment(const domain& X, sill::assignment& a) const;
 
     //! For the given variables X, add their values in this record to
     //! the given assignment.
     //! @param X  All of these variables must be in this record.
     void
-    add_assignment(const finite_domain& X, sill::finite_assignment& a) const {
-      finite_record::add_assignment(X, a);
+    add_to_assignment(const finite_domain& X,
+                      sill::finite_assignment& a) const {
+      finite_record::add_to_assignment(X, a);
     }
 
     //! For the given variables X, add their values in this record to
     //! the given assignment.
     //! @param X  All of these variables must be in this record.
     void
-    add_assignment(const vector_domain& X, sill::vector_assignment& a) const {
-      vector_record<la_type>::add_assignment(X, a);
+    add_to_assignment(const vector_domain& X,
+                      sill::vector_assignment& a) const {
+      vector_record<la_type>::add_to_assignment(X, a);
     }
 
     //! Write the record to the given output stream.
@@ -296,6 +298,16 @@ namespace sill {
     }
 
     /**
+     * For each variable appearing in BOTH the given assignment and this record,
+     * set this record's value to match the assignment's value.
+     * This does not change this record's domain.
+     */
+    void copy_from_assignment(const sill::assignment& a) {
+      finite_record::copy_from_assignment(a.finite());
+      vector_record<la_type>::copy_from_assignment(a.vector());
+    }
+
+    /**
      * For each variable in this record,
      * set the value according to the assignment,
      * with record variables mapped to assignment variables according to vmap.
@@ -304,8 +316,8 @@ namespace sill {
      *               modulo the variable mapping.
      * @param vmap  Variable mapping: Variables in record --> Variables in a.
      */
-    void copy_assignment_mapped(const sill::assignment& a,
-                                const var_map& vmap) {
+    void copy_from_assignment_mapped(const sill::assignment& a,
+                                     const var_map& vmap) {
       for (std::map<finite_variable*, size_t>::const_iterator it =
              finite_numbering_ptr->begin();
            it != finite_numbering_ptr->end();
@@ -334,8 +346,8 @@ namespace sill {
      *               modulo the variable mapping.
      * @param vmap  Variable mapping: Vars in this record --> Vars in other.
      */
-    void copy_record_mapped(const record& r,
-                            const var_map& vmap) {
+    void copy_from_record_mapped(const record& r,
+                                 const var_map& vmap) {
       for (std::map<finite_variable*, size_t>::const_iterator it =
              finite_numbering_ptr->begin();
            it != finite_numbering_ptr->end();
@@ -406,7 +418,7 @@ namespace sill {
 
   template <typename LA>
   void
-  record<LA>::add_assignment(const domain& X, sill::assignment& a) const {
+  record<LA>::add_to_assignment(const domain& X, sill::assignment& a) const {
     foreach(variable* v, X) {
       switch(v->get_variable_type()) {
       case variable::FINITE_VARIABLE:

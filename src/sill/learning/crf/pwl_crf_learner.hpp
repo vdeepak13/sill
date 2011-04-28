@@ -421,7 +421,7 @@ namespace sill {
         cf_ptr(safe_get(weight_functor_.edge_part_map(), top_factor.first));
       model_.add_factor(*cf_ptr);
       total_score_ += top_factor.second;
-      model_.remove_unary_factors(top_factor.first);
+      model_.simplify_unary(top_factor.first);
       return top_factor.first;
     }
 

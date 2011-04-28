@@ -67,9 +67,9 @@ int main(int argc, char* argv[]) {
   params.objective = 2;
   params.regularization = 2;
   params.lambda = .1;
-  params.opt_method = 0;
+  params.opt_method = 1;//0;
   params.init_iterations = 100;
-  params.debug = 1;
+  params.debug = 6;
   vec lambdas = "0. .2 .4 .6 .8 1.";
   bool do_lambda_cv = true;
 

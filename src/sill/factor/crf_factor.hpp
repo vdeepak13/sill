@@ -309,15 +309,17 @@ namespace sill {
     // Public methods: Other
     // =========================================================================
 
-    //! Check validity of shuffling of output, input variables.
-    //! @return True iff union(old_Y,old_X) = union(new_Y,new_X).
+    /**
+     * Check the validity of a shuffling of the output, input variables.
+     * To be valid, new_Y and new_X must be disjoint,
+     * and their union must be a superset of the union of old_Y and old_X.
+     * @return True iff valid.
+     */
     static bool
     valid_output_input_relabeling(const output_domain_type& old_Y,
                                   const input_domain_type& old_X,
                                   const output_domain_type& new_Y,
                                   const input_domain_type& new_X) {
-      if (new_Y.size() + new_X.size() != old_Y.size() + old_X.size())
-        return false;
       domain_type args(old_Y);
       args.insert(old_X.begin(), old_X.end());
       foreach(output_variable_type* v, new_Y)

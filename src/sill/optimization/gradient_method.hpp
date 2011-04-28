@@ -304,45 +304,80 @@ namespace sill {
     /**
      * Perform one line search, and update x_ unless at the optimum.
      * This assumes direction_ has already been computed.
+     * This version assumes gradient = -direction_.
+     * @return  False if at optimum.
+     */
+    bool run_line_search() {
+      if (params.debug > 0)
+        rls_debug_begin_();
+
+      // Check step magnitude
+      double step_magnitude(direction_.L2norm());
+      if (!rls_valid_step_magnitude_(step_magnitude))
+        return false;
+
+      // Reset step functor, and run line search.
+      assert(step_ptr);
+      switch (params.step_type) {
+      case parameters::SINGLE_OPT_STEP:
+//          step_ptr->get_params().step_magnitude = step_magnitude; // TO DO
+        step_ptr->step(*void_step_functor_ptr);
+        break;
+      case parameters::LINE_SEARCH:
+        assert(basic_step_type_ptr);
+        basic_step_type_ptr->reset(obj_functor, x_, direction_);
+//          step_ptr->get_params().step_magnitude = step_magnitude; // TO DO
+        step_ptr->step(*basic_step_type_ptr);
+        break;
+      case parameters::LINE_SEARCH_WITH_GRAD:
+        assert(wolfe_step_type_ptr);
+        {
+          double direction_dot_grad(-step_magnitude * step_magnitude);
+          wolfe_step_type_ptr->reset(x_, direction_, obj_functor, grad_functor,
+                                     objective_,
+                                     direction_dot_grad, step_magnitude);
+        }
+//          step_ptr->get_params().step_magnitude = step_magnitude; // TO DO
+        step_ptr->step(*wolfe_step_type_ptr);
+        break;
+      default:
+        assert(false);
+      }
+
+      total_obj_calls_ += step_ptr->calls_to_objective();
+      double eta(step_ptr->eta());
+      x_ += direction_ * eta;
+      double new_objective(step_ptr->valid_objective() ?
+                           step_ptr->objective() :
+                           obj_functor.objective(x_));
+
+      if (iteration_ != 0) {
+        objective_change_ = new_objective - objective_;
+        if (!rls_check_objective_change_())
+          return false;
+      }
+      objective_ = new_objective;
+      if (params.debug > 0)
+        rls_debug_end_(eta);
+
+      ++iteration_;
+      return true;
+    } // run_line_search
+
+    /**
+     * Perform one line search, and update x_ unless at the optimum.
+     * This assumes direction_ has already been computed.
      * @param  grad   Gradient at x_ (used for approximate line searches).
      * @return  False if at optimum.
      */
     bool run_line_search(const OptVector& grad) {
-      if (params.debug > 0) {
-        std::cerr << "gradient_method::run_line_search(): begin" << std::endl;
-        if (params.debug > 2) {
-          /*
-            std::cerr << "gradient_method is about to run line search:\n"
-                    << "\t from x = " << x_ << "\n"
-                    << "\t in direction = " << direction_ << "\n";
-          */
-          // TO DO: FINISH PRINTING ALL OF THIS INFO.
-        }
-      }
+      if (params.debug > 0)
+        rls_debug_begin_();
 
       // Check step magnitude
       double step_magnitude(direction_.L2norm());
-      if (!is_finite(step_magnitude)) {
-        if (params.debug > 0)
-          std::cerr << "gradient_method::run_line_search() failed since"
-                    << " gradient was infinite." << std::endl;
+      if (!rls_valid_step_magnitude_(step_magnitude))
         return false;
-      }
-      if (step_magnitude <= 0) { // do <= for numerical reasons
-        if (params.debug > 0)
-          std::cerr << "gradient_method::run_line_search() exited since"
-                    << " gradient was 0."
-                    << std::endl;
-        return false;
-      }
-
-      /*
-      if (params.debug > 0) {
-        double gradnorm(grad.L2norm());
-        std::cerr << "  Computed direction; gradient L2 norm = " << gradnorm
-		  << std::endl;
-      }
-      */
 
       // Reset step functor, and run line search.
       assert(step_ptr);
@@ -387,60 +422,86 @@ namespace sill {
                            step_ptr->objective() :
                            obj_functor.objective(x_));
 
-      /*
-      if (step_magnitude * eta < convergence_zero) {
-        if (step_magnitude * eta < -convergence_zero) {
-          if (params.debug > 0)
-            std::cerr << "gradient_method::run_line_search() did a line search"
-                      << " and found the function being optimized is not"
-                      << " convex (or you are having numerical issues)."
-                      << " Set the debugging level higher to print out tons of"
-                      << " info to demonstrate the non-convexity." << std::endl;
-        }
-        if (params.debug > 0)
-          std::cerr << "gradient_method::run_line_search() exited step with"
-                    << " eta = " << eta
-                    << " < convergence_zero = " << convergence_zero << "\n"
-                    << "  step direction L2 norm = " << direction_.L2norm()
-                    << std::endl;
-        return false;
-      }
-      */
       if (iteration_ != 0) {
         objective_change_ = new_objective - objective_;
-        if (objective_change_ > - convergence_zero) {
-          if (params.debug > 0) {
-            if (objective_change_ > convergence_zero)
-              std::cerr <<"gradient_method::run_line_search() did a line search"
-                        << " and found the function being optimized is not"
-                        << " convex (or you are having numerical issues). "
-                        << "Set the debugging level higher to print out tons of"
-                        << " info to demonstrate the non-convexity."
-                        << std::endl;
-            std::cerr << "gradient_method::run_line_search() exited step with "
-                      << "objective_change_ = " << objective_change_
-                      << " < convergence_zero = " << convergence_zero << "\n"
-                      << "  step direction L2 norm = " << direction_.L2norm()
-                      << std::endl;
-          }
+        if (!rls_check_objective_change_())
           return false;
-        }
       }
       objective_ = new_objective;
-      if (params.debug > 0) {
-        double stepnorm(direction_.L2norm() * eta);
-        std::cerr << " End of gradient_method::run_line_search():\n"
-                  << "  line_search computed objective "
-                  << step_ptr->calls_to_objective() << " times\n"
-                  << "  step L2 norm = " << stepnorm
-                  << ", new x L2 norm = " << x_.L2norm() << "\n"
-                  << "  iteration = " << iteration_ << ", eta = " << eta
-                  << ", objective = " << objective_ << ", objective change = "
-                  << objective_change_ << std::endl;
-      }
+      if (params.debug > 0)
+        rls_debug_end_(eta);
+
       ++iteration_;
       return true;
     } // run_line_search()
+
+    //! Print debugging info at the beginning of run_line_search.
+    void rls_debug_begin_() const {
+      std::cerr << "gradient_method::run_line_search(): begin" << std::endl;
+      if (params.debug > 2) {
+        /*
+          std::cerr << "gradient_method is about to run line search:\n"
+          << "\t from x = " << x_ << "\n"
+          << "\t in direction = " << direction_ << "\n";
+        */
+        // TO DO: FINISH PRINTING ALL OF THIS INFO.
+      }
+    }
+
+    //! Check step magnitude in run_line_search.
+    //! @return false if magnitude is invalid
+    bool rls_valid_step_magnitude_(double step_magnitude) const {
+      if (!is_finite(step_magnitude)) {
+        if (params.debug > 0)
+          std::cerr << "gradient_method::run_line_search() failed since"
+                    << " gradient was infinite." << std::endl;
+        return false;
+      }
+      if (step_magnitude <= 0) { // do <= for numerical reasons
+        if (params.debug > 0)
+          std::cerr << "gradient_method::run_line_search() exited since"
+                    << " gradient was 0."
+                    << std::endl;
+        return false;
+      }
+      return true;
+    }
+
+    //! Check objective_change_ for convergence (and for non-convexity).
+    //! @return false if converged
+    bool rls_check_objective_change_() const {
+      if (objective_change_ > - convergence_zero) {
+        if (params.debug > 0) {
+          if (objective_change_ > convergence_zero)
+            std::cerr << "gradient_method::run_line_search() did a line search"
+                      << " and found the function being optimized is not"
+                      << " convex (or you are having numerical issues). "
+                      << "Set the debugging level higher to print out tons of"
+                      << " info to demonstrate the non-convexity."
+                      << std::endl;
+          std::cerr << "gradient_method::run_line_search() exited step with "
+                    << "objective_change_ = " << objective_change_
+                    << " < convergence_zero = " << convergence_zero << "\n"
+                    << "  step direction L2 norm = " << direction_.L2norm()
+                    << std::endl;
+        }
+        return false;
+      }
+      return true;
+    }
+
+    //! Print debugging info at the end of run_line_search.
+    void rls_debug_end_(double eta) const {
+      double stepnorm(direction_.L2norm() * eta);
+      std::cerr << " End of gradient_method::run_line_search():\n"
+                << "  line_search computed objective "
+                << step_ptr->calls_to_objective() << " times\n"
+                << "  step L2 norm = " << stepnorm
+                << ", new x L2 norm = " << x_.L2norm() << "\n"
+                << "  iteration = " << iteration_ << ", eta = " << eta
+                << ", objective = " << objective_ << ", objective change = "
+                << objective_change_ << std::endl;
+    }
 
     // Public methods
     //==========================================================================

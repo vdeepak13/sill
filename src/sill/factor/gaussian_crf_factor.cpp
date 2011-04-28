@@ -275,13 +275,7 @@ namespace sill {
   void
   gaussian_crf_factor::relabel_outputs_inputs(const output_domain_type& new_Y,
                                               const input_domain_type& new_X) {
-    if (!valid_output_input_relabeling(output_arguments(), input_arguments(),
-                                       new_Y, new_X)) {
-      throw std::invalid_argument
-        (std::string("gaussian_crf_factor::relabel_outputs_inputs") +
-         " given new_Y,new_X whose union did not equal the union of the" +
-         " old Y,X.");
-    }
+    output_domain_type new_Ydomain_;
     if (relabeled) {
       throw std::runtime_error
         (std::string("gaussian_crf_factor::relabel_outputs_inputs") +
@@ -289,15 +283,29 @@ namespace sill {
     } else {
       X_in_head_.clear();
       X_in_tail_.clear();
-      foreach(vector_variable* v, new_X) {
-        if (Ydomain_.count(v) != 0)
+      foreach(vector_variable* v, Ydomain_) {
+        if (new_Y.count(v))
+          new_Ydomain_.insert(v);
+        else if (new_X.count(v))
           X_in_head_.push_back(v);
-        else
+      }
+      foreach(vector_variable* v, *Xdomain_ptr_) {
+        if (new_Y.count(v))
+          new_Ydomain_.insert(v);
+        else if (new_X.count(v))
           X_in_tail_.push_back(v);
       }
     }
-    Ydomain_ = new_Y;
-    Xdomain_ptr_->operator=(new_X);
+    if (new_Ydomain_.size() + X_in_head_.size() + X_in_tail_.size()
+        != Ydomain_.size() + Xdomain_ptr_->size()) {
+      throw std::invalid_argument
+        (std::string("gaussian_crf_factor::relabel_outputs_inputs") +
+         " given new_Y,new_X whose union did not include the old Y,X.");
+    }
+    Ydomain_ = new_Ydomain_;
+    Xdomain_ptr_->clear();
+    Xdomain_ptr_->insert(X_in_head_.begin(), X_in_head_.end());
+    Xdomain_ptr_->insert(X_in_tail_.begin(), X_in_tail_.end());
     relabeled = true;
   } // relabel_outputs_inputs
 
@@ -457,7 +465,7 @@ namespace sill {
     mat lambda(cg.inf_matrix().size1(), cg.inf_matrix().size2(), 0);
     vec eta(cg.inf_vector().size(), 0);
     foreach(const vector_record_type& r, ds.records()) {
-      r.add_assignment(Y_part, va);
+      r.add_to_assignment(Y_part, va);
       canonical_gaussian tmpcg(cg.restrict(va));
       lambda += tmpcg.inf_matrix();
       eta += tmpcg.inf_vector();

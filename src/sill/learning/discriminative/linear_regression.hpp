@@ -424,11 +424,14 @@ namespace sill {
         case 2: // least-squares
           tmpmat = lr.Ydata();
           tmpmat -= lr.Xdata() * x.A.transpose();
-          for (size_t i(0); i < lr.data_weights.size(); ++i)
+          for (size_t i(0); i < tmpmat.size1(); ++i)
             tmpmat.subtract_row(i, x.b);
           elem_mult_inplace(tmpmat, tmpmat);
-          obj -= inner_prod(lr.data_weights,
-                            tmpmat * vec(lr.data_weights.size(), 1.));
+          if (lr.data_weights.size() == 0)
+            obj += sumsum(tmpmat);
+          else
+            obj += inner_prod(lr.data_weights,
+                              tmpmat * vec(lr.data_weights.size(), 1.));
           break;
         default:
           throw std::invalid_argument
@@ -439,14 +442,14 @@ namespace sill {
         case 0:
           break;
         case 1:
-          obj -= lr.params.lambda * x.A.L1norm();
+          obj += lr.params.lambda * x.A.L1norm();
           if (lr.params.regularize_mean)
-            obj -= lr.params.lambda * x.b.L1norm();
+            obj += lr.params.lambda * x.b.L1norm();
           break;
         case 2:
-          obj -= lr.params.lambda * .5 * x.A.inner_prod(x.A);
+          obj += lr.params.lambda * .5 * x.A.inner_prod(x.A);
           if (lr.params.regularize_mean)
-            obj -= lr.params.lambda * .5 * x.b.inner_prod(x.b);
+            obj += lr.params.lambda * .5 * x.b.inner_prod(x.b);
           break;
         default:
           assert(false);
@@ -482,12 +485,20 @@ namespace sill {
         case 2: // least-squares
           tmpmat = lr.Xdata() * x.A.transpose();
           tmpmat -= lr.Ydata();
-          for (size_t i(0); i < lr.data_weights.size(); ++i) {
-            tmpmat.add_row(i, x.b);
-            grad.A += (2. * lr.data_weights[i])
-              * outer_product(tmpmat.row(i), lr.Xdata().row(i));
+          if (lr.data_weights.size() == 0) {
+            for (size_t i(0); i < tmpmat.size1(); ++i) {
+              tmpmat.add_row(i, x.b);
+              grad.A += 2. * outer_product(tmpmat.row(i), lr.Xdata().row(i));
+            }
+            grad.b = sum(tmpmat, 1);
+          } else {
+            for (size_t i(0); i < tmpmat.size1(); ++i) {
+              tmpmat.add_row(i, x.b);
+              grad.A += (2. * lr.data_weights[i])
+                * outer_product(tmpmat.row(i), lr.Xdata().row(i));
+            }
+            grad.b = tmpmat.transpose() * lr.data_weights;
           }
-          grad.b = tmpmat.transpose() * lr.data_weights;
           grad.b *= -2.;
           break;
         default:

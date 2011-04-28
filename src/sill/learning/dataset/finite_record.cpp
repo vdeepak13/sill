@@ -46,7 +46,7 @@ namespace sill {
 
   void
   finite_record::
-  add_assignment(const finite_domain& X, sill::finite_assignment& a) const {
+  add_to_assignment(const finite_domain& X, sill::finite_assignment& a) const {
     foreach(finite_variable* v, X) {
       size_t v_index(safe_get(*finite_numbering_ptr, v));
       a[v] = fin_ptr->operator[](v_index);
@@ -134,6 +134,57 @@ namespace sill {
       fin_own = true;
       fin_ptr = new std::vector<size_t>(ds_info.finite_seq.size());
     }
+  }
+
+  void finite_record::set_finite_val(const std::vector<size_t>& val) {
+    assert(fin_own);
+    fin_ptr->operator=(val);
+  }
+
+  void finite_record::set_finite_ptr(std::vector<size_t>* val) {
+    assert(!fin_own);
+    fin_ptr = val;
+  }
+
+  void finite_record::copy_from_assignment(const sill::finite_assignment& a) {
+    for (std::map<finite_variable*, size_t>::const_iterator it =
+           finite_numbering_ptr->begin();
+         it != finite_numbering_ptr->end();
+         ++it) {
+      sill::finite_assignment::const_iterator a_it = a.find(it->first);
+      if (a_it != a.end())
+        this->finite(it->second) = a_it->second;
+    }
+  }
+
+  void finite_record::
+  copy_from_assignment_mapped(const sill::finite_assignment& a,
+                              const finite_var_map& vmap) {
+    for (std::map<finite_variable*, size_t>::const_iterator it =
+           finite_numbering_ptr->begin();
+         it != finite_numbering_ptr->end();
+         ++it) {
+      this->finite(it->second) = safe_get(a, safe_get(vmap, it->first));
+    }
+  }
+
+  void finite_record::copy_from_record_mapped(const finite_record& r,
+                                              const finite_var_map& vmap) {
+    for (std::map<finite_variable*, size_t>::const_iterator it =
+           finite_numbering_ptr->begin();
+         it != finite_numbering_ptr->end();
+         ++it) {
+      this->finite(it->second) = r.finite(safe_get(vmap,it->first));
+    }
+  }
+
+  // Free functions
+  //==========================================================================
+
+  std::ostream&
+  operator<<(std::ostream& out, const finite_record& r) {
+    r.write(out);
+    return out;
   }
 
 } // namespace sill

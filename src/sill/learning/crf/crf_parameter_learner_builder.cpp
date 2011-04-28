@@ -10,27 +10,30 @@ namespace sill {
     namespace po = boost::program_options;
 
     po::options_description
-      sub_desc1(desc_prefix + "CRF Parameter Learner Options: Learning");
+      sub_desc1(desc_prefix + "CRF Parameter Learner: Learning Options");
     sub_desc1.add_options()
       ("regularization",
        po::value<size_t>(&(cpl_params.regularization))->default_value(2),
        "Regularization: 0 (none), 2 (L2).")
       ("lambdas",
        po::value<vec>(&(cpl_params.lambdas))->default_value(vec(1,0)),
-       "Regularization parameters (whose meaning depends on the factor type.")
+       "Regularization parameters (whose meaning depends on the factor type).")
       ("init_iterations",
-       po::value<size_t>(&(cpl_params.init_iterations))->default_value(0),
+       po::value<size_t>(&(cpl_params.init_iterations))->default_value(10000),
        "Number of initial iterations of parameter learning to run.")
       ("init_time_limit",
        po::value<size_t>(&(cpl_params.init_time_limit))->default_value(0),
        "Time limit in seconds for initial iterations of parameter learning. If 0, there is no limit.")
+      ("learning_objective",
+       po::value<std::string>(&learning_objective_string)->default_value("MLE"),
+       "Learning objective (MLE = max likelihood; MPLE = max pseudolikelihood)")
       ("perturb",
        po::value<double>(&(cpl_params.perturb))->default_value(0),
        "Amount of perturbation (Uniform[-perturb,perturb]) to use in choosing initial weights for the features. (>= 0)");
     desc.add(sub_desc1);
 
     po::options_description
-      sub_desc2(std::string("CRF Parameter Learner Options: Other"));
+      sub_desc2(std::string("CRF Parameter Learner: Other Options"));
     sub_desc2.add_options()
       ("no_shared_computation",
        po::bool_switch(&(cpl_params.no_shared_computation)),
@@ -61,6 +64,7 @@ namespace sill {
 
   const crf_parameter_learner_parameters&
   crf_parameter_learner_builder::get_parameters() {
+    cpl_params.learning_objective = learning_objective();
     cpl_params.opt_method = real_opt_builder.method();
     cpl_params.gm_params = real_opt_builder.get_gd_parameters();
     cpl_params.gm_params.debug = (cpl_params.debug > 0 ?
@@ -70,6 +74,18 @@ namespace sill {
       real_opt_builder.get_cg_parameters().update_method;
     cpl_params.lbfgs_M = real_opt_builder.get_lbfgs_parameters().M;
     return cpl_params;
+  }
+
+  crf_parameter_learner_parameters::learning_objective_enum
+  crf_parameter_learner_builder::learning_objective() const {
+    if (learning_objective_string == "MLE") {
+      return crf_parameter_learner_parameters::MLE;
+    } else if (learning_objective_string == "MPLE") {
+      return crf_parameter_learner_parameters::MPLE;
+    } else {
+      assert(false);
+      return crf_parameter_learner_parameters::MLE;
+    }
   }
 
 }; // namespace sill

@@ -11,21 +11,6 @@ namespace sill {
    */
   struct crf_parameter_learner_parameters {
 
-    // Real optimization parameters
-    //==========================================================================
-
-    //! Optimization method.
-    real_optimizer_builder::real_optimizer_type opt_method;
-
-    //! Gradient method parameters.
-    gradient_method_parameters gm_params;
-
-    //! Conjugate gradient update method.
-    size_t cg_update_method;
-
-    //! L-BFGS M.
-    size_t lbfgs_M;
-
     // Learning parameters
     //==========================================================================
 
@@ -69,6 +54,17 @@ namespace sill {
     size_t init_time_limit;
 
     /**
+     * Objective types:
+     *  - MLE: maximum likelihood
+     *  - MPLE: maximum pseudolikelihood
+     */
+    enum learning_objective_enum { MLE, MPLE };
+
+    //! Learning objective.
+    //!  (default = MLE)
+    learning_objective_enum learning_objective;
+
+    /**
      * Amount of perturbation (Uniform[-perturb,perturb]) to use in choosing
      * initial weights for the features.  Should be >= 0.
      *  (default = 0)
@@ -83,11 +79,6 @@ namespace sill {
      *  (default = time)
      */
     unsigned random_seed;
-
-    //! If true, do not use the share_computation option in computing the
-    //! objective, gradient, etc.
-    //!  (default = false)
-    bool no_shared_computation;
 
     /**
      * If true, this turns on the fixed_records option for the learned model.
@@ -106,19 +97,35 @@ namespace sill {
      */
     size_t debug;
 
+    //! If true, do not use the share_computation option in computing the
+    //! objective, gradient, etc.
+    //!  (default = false)
+    bool no_shared_computation;
+
+    // Real optimization parameters
+    //==========================================================================
+
+    //! Optimization method.
+    real_optimizer_builder::real_optimizer_type opt_method;
+
+    //! Gradient method parameters.
+    gradient_method_parameters gm_params;
+
+    //! Conjugate gradient update method.
+    //!  (default = 0, i.e., beta = max{0, Polak-Ribiere})
+    size_t cg_update_method;
+
+    //! L-BFGS M.
+    //!  (default = 10)
+    size_t lbfgs_M;
+
     // Methods
     //==========================================================================
 
     crf_parameter_learner_parameters();
 
-    /**
-     * @param  print_warnings
-     *         If true, print warnings to STDERR about invalid options.
-     *          (default = true)
-     *
-     * @return true iff the parameters are valid
-     */
-    bool valid(bool print_warnings = true) const;
+    //! Check validity; assert false if invalid.
+    void check() const;
 
   }; // struct crf_parameter_learner_parameters
 

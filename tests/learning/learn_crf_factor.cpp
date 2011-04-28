@@ -220,7 +220,7 @@ test_crf_parameter_learner
   } else {
     cpl_params.lambdas = .01;
   }
-  crf_parameter_learner<F> cpl(tmp_true_model, train_ds, false, cpl_params);
+  crf_parameter_learner<F> cpl(tmp_true_model, true, train_ds, cpl_params);
   cpl_time = timer.elapsed();
 
   cout << "Learned via CRF parameter learner:\n" << cpl.current_model() << "\n"

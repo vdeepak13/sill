@@ -137,7 +137,7 @@ namespace sill {
     //! the given assignment.
     //! @param X  All of these variables must be in this record.
     void
-    add_assignment(const finite_domain& X, sill::finite_assignment& a) const;
+    add_to_assignment(const finite_domain& X, sill::finite_assignment& a) const;
 
     //! Returns the number of finite variables.
     size_t num_finite() const {
@@ -259,16 +259,17 @@ namespace sill {
     void reset(const datasource_info_type& ds_info);
 
     //! Set finite data to be this value (stored in the record itself).
-    void set_finite_val(const std::vector<size_t>& val) {
-      assert(fin_own);
-      fin_ptr->operator=(val);
-    }
+    void set_finite_val(const std::vector<size_t>& val);
 
     //! Set finite data to reference this value (stored outside of the record).
-    void set_finite_ptr(std::vector<size_t>* val) {
-      assert(!fin_own);
-      fin_ptr = val;
-    }
+    void set_finite_ptr(std::vector<size_t>* val);
+
+    /**
+     * For each variable appearing in BOTH the given assignment and this record,
+     * set this record's value to match the assignment's value.
+     * This does not change this record's domain.
+     */
+    void copy_from_assignment(const sill::finite_assignment& a);
 
     /**
      * For each variable in this record,
@@ -279,15 +280,8 @@ namespace sill {
      *               modulo the variable mapping.
      * @param vmap  Variable mapping: Variables in record --> Variables in a.
      */
-    void copy_assignment_mapped(const sill::finite_assignment& a,
-                                const finite_var_map& vmap) {
-      for (std::map<finite_variable*, size_t>::const_iterator it =
-             finite_numbering_ptr->begin();
-           it != finite_numbering_ptr->end();
-           ++it) {
-        this->finite(it->second) = safe_get(a, safe_get(vmap, it->first));
-      }
-    }
+    void copy_from_assignment_mapped(const sill::finite_assignment& a,
+                                     const finite_var_map& vmap);
 
     /**
      * For each variable in this record,
@@ -298,15 +292,8 @@ namespace sill {
      *               modulo the variable mapping.
      * @param vmap  Variable mapping: Vars in this record --> Vars in other.
      */
-    void copy_record_mapped(const finite_record& r,
-                            const finite_var_map& vmap) {
-      for (std::map<finite_variable*, size_t>::const_iterator it =
-             finite_numbering_ptr->begin();
-           it != finite_numbering_ptr->end();
-           ++it) {
-        this->finite(it->second) = r.finite(safe_get(vmap,it->first));
-      }
-    }
+    void copy_from_record_mapped(const finite_record& r,
+                                 const finite_var_map& vmap);
 
   }; // class finite_record
 
@@ -314,13 +301,8 @@ namespace sill {
   //==========================================================================
 
   // @todo Fix this! (See symbolic_oracle.cpp)
-  template <typename V, typename CharT, typename Traits>
-  std::basic_ostream<CharT, Traits>&
-  operator<<(std::basic_ostream<CharT, Traits>& out,
-             const finite_record& r) {
-    r.write(out);
-    return out;
-  }
+  std::ostream&
+  operator<<(std::ostream& out, const finite_record& r);
 
 } // namespace sill
 

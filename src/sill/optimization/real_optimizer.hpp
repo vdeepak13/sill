@@ -11,7 +11,7 @@ namespace sill {
   /**
    * Interface for real-valued optimization algorithms which are iterative.
    * These algorithms are for unconstrained nonlinear optimization,
-   * and they try to minimize the objective.
+   * and they try to MINIMIZE the objective.
    *
    * @tparam OptVector      Datatype which stores the optimization variables.
    *

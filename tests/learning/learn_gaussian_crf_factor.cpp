@@ -135,7 +135,7 @@ int main(int argc, char** argv) {
     crf_parameter_learner<gaussian_crf_factor>::choose_lambda
     (cv_params, tmp_true_model, false, ds, cpl_params, 0, unif_int(rng));
   crf_parameter_learner<gaussian_crf_factor>
-    cpl(tmp_true_model, ds, false, cpl_params);
+    cpl(tmp_true_model, true, ds, cpl_params);
 
   // Compare the results.
   double joint_ll(0);

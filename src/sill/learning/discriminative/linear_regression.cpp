@@ -160,6 +160,16 @@ namespace sill {
       }
     }
 
+    if (params.opt_method != 0) {
+      if (ds.is_weighted()) {
+        data_weights = ds.weights();
+        total_train_weight = sum(data_weights);
+      } else {
+        data_weights.resize(0);
+        total_train_weight = ds.size();
+      }
+    }
+
     // Initialize for whatever learning algorithm
     switch(params.opt_method) {
     case 0: // Matrix inversion
@@ -210,14 +220,6 @@ namespace sill {
     tmpx.resize(weights_.A.size2());
 
     if (params.opt_method != 0) {
-      if (ds.is_weighted()) {
-        data_weights = ds.weights();
-        total_train_weight = sum(data_weights);
-      } else {
-        data_weights.resize(ds.size());
-        data_weights.ones();
-        total_train_weight = ds.size();
-      }
       while (iteration_ < params.init_iterations)
         if (!step())
           break;

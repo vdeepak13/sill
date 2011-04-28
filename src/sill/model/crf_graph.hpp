@@ -359,7 +359,7 @@ namespace sill {
      * Creates a CRF graph with no factors and no variables.
      * Use the add_factor method to add factors and variables.
      */
-    crf_graph() : next_vertex(0) { }
+    crf_graph() : next_vertex(1) { }
 
     //! Serialize members
     void save(oarchive & ar) const {
@@ -573,6 +573,16 @@ namespace sill {
       return factor_vertices_.size();
     }
 
+    //! Returns true iff the vertex is a variable vertex.
+    bool is_variable_vertex(const vertex& v) const {
+      return (graph[v].v != NULL);
+    }
+
+    //! Returns true iff the vertex is a factor vertex.
+    bool is_factor_vertex(const vertex& v) const {
+      return (graph[v].Y != NULL);
+    }
+
     //! The number of arguments (variables) in this model.
     size_t num_arguments() const {
       return Y_.size() + X_.size();
@@ -693,28 +703,20 @@ namespace sill {
         else
           ++(X_counts_it->second);
       }
-      // Check to make sure Y,X stay separate.
+      // Check to make sure Y,X stay disjoint.
       if (!set_disjoint(Y_, *Xvars) || !set_disjoint(X_, Yvars)) {
         throw std::invalid_argument
           (std::string("crf_graph::add_factor() given overlapping Y,X domains:")
            + "\nY: " + to_string(Y_) + "\nX: " + to_string(X_) + "\n");
       }
       return vert;
-    }
+    } // add_factor
 
     //! Removes a factor vertex from the CRF graph, removing the factor
     //! arguments as well if no other factors use them.
     void remove_factor(const vertex& u) {
       assert(vertex_type(u) == 1);
-      foreach(input_variable_type* x, input_arguments(u)) {
-        size_t& cnt = X_counts[x];
-        if (cnt == 1) {
-          X_counts.erase(x);
-          X_.erase(x);
-        } else {
-          --cnt;
-        }
-      }
+      decrement_X_args(input_arguments(u));
       std::list<vertex> u_arg_vertices; 
       foreach(const vertex& v, neighbors(u))
         u_arg_vertices.push_back(v);
@@ -733,31 +735,51 @@ namespace sill {
           break;
         }
       }
-    }
+    } // remove_factor
 
     //! Clears all factors and variables from this graph.
     virtual void clear() {
       variable_index_.clear();
       factor_vertices_.clear();
       graph.clear();
-      next_vertex = 0;
+      next_vertex = 1;
       Y_.clear();
       X_.clear();
       X_counts.clear();
     }
 
-    //! Simplifies the model by removing unary factors (over a single Y)
-    //! if another factor contains that Y variable.
-    //! @todo Replace this with simplify() from factor_graph_model.
-    //! @todo This should also check to see if there are 2 unary factors
-    //!       for a variable.
-    virtual void simplify_unary() {
-      simplify_unary_helper();
-    }
+    //! Removes factors whose arguments are included in other factors.
+    //! @return  List of removed vertices.
+    std::vector<vertex> simplify() {
+      std::vector<vertex> removed_vertices;
+      typename std::list<vertex>::iterator
+        factor_vertex_it(factor_vertices_.begin());
+      typename std::list<vertex>::iterator
+        factor_vertex_end(factor_vertices_.end());
+      while (factor_vertex_it != factor_vertex_end) {
+        vertex u(*factor_vertex_it);
+        const output_domain_type& out_args = output_arguments(u);
+        const input_domain_type& in_args = input_arguments(u);
+        typename std::list<vertex>::iterator next_it(factor_vertex_it);
+        ++next_it;
+        foreach(const vertex& v, neighbors2(u)) {
+          if (includes(output_arguments(v), out_args) &&
+              includes(input_arguments(v), in_args)) {
+            // Remove u.
+            decrement_X_args(in_args);
+            removed_vertices.push_back(u);
+            graph.remove_vertex(u);
+            factor_vertices_.erase(factor_vertex_it);
+            break;
+          }
+        }
+        factor_vertex_it = next_it;
+      }
+      return removed_vertices;
+    } // simplify
 
     // Below are methods I could copy from factor_graph_model:
     //    void randomly_shuffle_neighbors(){
-    //    virtual void simplify() {
     //    virtual void simplify_stable() {
     //    void normalize() {
     //    virtual size_t work_per_update(const vertex_type& v) const {
@@ -938,6 +960,8 @@ namespace sill {
      * Add a factor to this factor graph. All the variables are added
      * to this graphical model, potentially changing the domain.
      * Note: This does not allow constant factors.
+     * This method (unlike add_factor) does not check to make sure Y,X
+     * remain disjoint.
      */
     vertex
     add_factor_no_check(const output_domain_type& Yvars,
@@ -979,7 +1003,8 @@ namespace sill {
     //! The underlying graph.
     graph_type graph;
 
-    //! The next vertex id
+    //! The next vertex id.
+    //! Indexing begins at 1.
     size_t next_vertex;
 
     //! Output variables Y
@@ -992,6 +1017,20 @@ namespace sill {
     //! This is needed to make remove_factor() efficient.
     std::map<input_variable_type*, size_t> X_counts;
 
+    //! Update X_, X_counts as needed when removed a factor with these X args.
+    void decrement_X_args(const input_domain_type& x_args) {
+      foreach(input_variable_type* var, x_args) {
+        size_t& cnt = X_counts[var];
+        if (cnt == 1) {
+          X_counts.erase(var);
+          X_.erase(var);
+        } else {
+          --cnt;
+        }
+      }
+    }
+
+    /*
     //! Removes unnecessary unary vertices.
     //! @return  VertexProperty values for removed vertices.
     std::list<VertexProperty> simplify_unary_helper() {
@@ -1024,6 +1063,7 @@ namespace sill {
       }
       return removed_properties;
     } // simplify_unary_helper
+    */
 
   }; // crf_graph
 

@@ -82,7 +82,7 @@ namespace sill {
       grad_functor.gradient(direction_, x_);
       direction_ *= -1;
       // Do a line search
-      return base::run_line_search(direction_);
+      return base::run_line_search();
     }
 
   }; // class gradient_descent
