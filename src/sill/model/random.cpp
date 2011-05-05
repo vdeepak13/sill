@@ -13,7 +13,7 @@ namespace sill {
   create_fancy_random_crf(decomposable<table_factor>& Xmodel,
                           crf_model<table_crf_factor>& YgivenXmodel,
                           size_t n, size_t arity, universe& u,
-                          const std::string& model_choice, bool tractable,
+                          const std::string& model_structure, bool tractable,
                           const std::string& factor_choice,
                           double YYstrengthD, double YXstrengthD,
                           double XXstrengthD, double strength_baseD,
@@ -33,7 +33,7 @@ namespace sill {
     assert(strength_baseD >= 0);
     assert(strength_baseS >= 0);
     assert(arity > 0);
-    assert((model_choice == "chain") || (model_choice == "tree"));
+    assert((model_structure == "chain") || (model_structure == "tree"));
     assert((factor_choice == "random") || (factor_choice == "associative")
            || (factor_choice == "random_assoc"));
     assert(factor_periods.size() == 3);
@@ -82,7 +82,7 @@ namespace sill {
       }
       for (size_t i(1); i < n; ++i) {
         // Choose which existing vertex j to attach to.
-        size_t j((model_choice == "chain") ?
+        size_t j((model_structure == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         if ((++nXXfactors) % (factor_periods[2]+1) == 0)
           f = create_random_crf_table_factor(factor_choice, Xvars[j], Xvars[i],
@@ -131,7 +131,7 @@ namespace sill {
       // Create the model P(X)
       for (size_t i(1); i < n; ++i) {
         // Choose which existing vertex j to attach to.
-        size_t j((model_choice == "chain") ?
+        size_t j((model_structure == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         if ((++nXXfactors) % (factor_periods[2]+1) == 0)
           f = create_random_crf_table_factor(factor_choice, Xvars[j], Xvars[i],
@@ -157,7 +157,7 @@ namespace sill {
         (table_crf_factor(f, make_domain<finite_variable>(Yvars[0]), false));
       for (size_t i(1); i < n; ++i) {
         // Choose which existing Y_j to attach to.
-        size_t j((model_choice == "chain") ?
+        size_t j((model_structure == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         if ((++nYXfactors) % (factor_periods[1]+1) == 0)
           f = create_random_crf_table_factor
@@ -210,14 +210,14 @@ namespace sill {
   create_random_crf(decomposable<table_factor>& Xmodel,
                     crf_model<table_crf_factor>& YgivenXmodel,
                     size_t n, size_t arity, universe& u,
-                    const std::string& model_choice,
+                    const std::string& model_structure,
                     const std::string& factor_choice,
                     double YYstrength, double YXstrength,
                     double XXstrength, bool add_cross_factors,
                     unsigned random_seed,
                     double strength_base) {
     return create_fancy_random_crf
-      (Xmodel, YgivenXmodel, n, arity, u, model_choice, true, factor_choice,
+      (Xmodel, YgivenXmodel, n, arity, u, model_structure, true, factor_choice,
        YYstrength, YXstrength, XXstrength, strength_base, 0, 0, 0, 0,
        ivec(3,std::numeric_limits<int>::max()-10),
        add_cross_factors, random_seed);
@@ -241,12 +241,12 @@ namespace sill {
   create_random_gaussian_crf(decomposable<canonical_gaussian>& Xmodel,
                              crf_model<gaussian_crf_factor>& YgivenXmodel,
                              size_t n, universe& u,
-                             const std::string& model_choice,
+                             const std::string& model_structure,
                              double b_max, double c_max, double variance,
                              double YYcorrelation, double YXcorrelation,
                              double XXcorrelation,
                              bool add_cross_factors, unsigned random_seed) {
-    assert((model_choice == "chain") || (model_choice == "tree"));
+    assert((model_structure == "chain") || (model_structure == "tree"));
 
     boost::mt11213b rng(random_seed);
     Xmodel.clear();
@@ -277,7 +277,7 @@ namespace sill {
     }
     for (size_t i(1); i < n; ++i) {
       // Choose which existing vertex j to attach to.
-      size_t j((model_choice == "chain") ?
+      size_t j((model_structure == "chain") ?
                i-1 : boost::uniform_int<int>(0,i-1)(rng));
       f = make_binary_marginal_gaussian
         (Xvars[j], Xvars[i], b_max, variance, XXcorrelation, rng);

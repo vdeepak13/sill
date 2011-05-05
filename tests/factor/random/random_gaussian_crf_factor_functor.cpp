@@ -1,11 +1,11 @@
 
 /**
- * \file random_moment_gaussian_functor.cpp
- *       Test of random_moment_gaussian_functor.
+ * \file random_gaussian_crf_factor_functor.cpp
+ *       Test of random_gaussian_crf_factor_functor.
  */
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random/random_moment_gaussian_functor_builder.hpp>
+#include <sill/factor/random/random_gaussian_crf_factor_functor_builder.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -23,8 +23,8 @@ int main(int argc, char** argv) {
      "Random seed (default = time)")
     ("help", "Print this help message.");
 
-  random_moment_gaussian_functor_builder rgff_builder;
-  rgff_builder.add_options(desc);
+  random_gaussian_crf_factor_functor_builder rgcff_builder;
+  rgcff_builder.add_options(desc);
 
   po::variables_map vm;
   po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -39,19 +39,20 @@ int main(int argc, char** argv) {
   vector_variable* Y = u.new_vector_variable(1);
   vector_variable* X = u.new_vector_variable(1);
 
-  random_moment_gaussian_functor rmgf(random_seed);
-  rmgf.params = rgff_builder.get_parameters();
+  random_gaussian_crf_factor_functor rgcff;
+  rgcff.params = rgcff_builder.get_parameters();
+  rgcff.seed(random_seed);
 
-  std::cout << "Test: random_moment_gaussian_functor\n"
+  std::cout << "Test: random_gaussian_crf_factor_functor\n"
             << "---------------------------------------------" << std::endl;
-  moment_gaussian P_Y(rmgf.generate_marginal(Y));
-  std::cout << "Generated moment_gaussian P(Y):\n"
+  gaussian_crf_factor P_Y(rgcff.generate_marginal(Y));
+  std::cout << "Generated gaussian_crf_factor P(Y):\n"
             << P_Y << std::endl;
-  moment_gaussian P_YX(rmgf.generate_marginal(make_domain(Y,X)));
-  std::cout << "Generated moment_gaussian P(Y,X):\n"
+  gaussian_crf_factor P_YX(rgcff.generate_marginal(make_domain(Y,X)));
+  std::cout << "Generated gaussian_crf_factor P(Y,X):\n"
             << P_YX << std::endl;
-  moment_gaussian P_Y_given_X(rmgf.generate_conditional(Y, X));
-  std::cout << "Generated moment_gaussian P(Y|X):\n"
+  gaussian_crf_factor P_Y_given_X(rgcff.generate_conditional(Y, X));
+  std::cout << "Generated gaussian_crf_factor P(Y|X):\n"
             << P_Y_given_X << std::endl;
 
 } // main

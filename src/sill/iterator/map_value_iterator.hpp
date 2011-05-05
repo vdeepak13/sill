@@ -31,7 +31,7 @@ namespace sill {
     map_value_iterator() : it() { }
 
     explicit map_value_iterator(typename Map::const_iterator it) : it(it) { }
-    
+
     reference operator*() const { 
       return it->second;
     }
@@ -40,7 +40,7 @@ namespace sill {
       ++it;
       return *this;
     }
-    
+
     map_value_iterator operator++(int) { 
       return map_value_iterator(it++); 
     }

@@ -37,7 +37,8 @@ namespace sill {
   }
 
 
-  //! Returns the number of terms for which both finite_assignments agree on
+  //! Returns the number of variable values for which both finite_assignments
+  //! agree.
   inline size_t assignment_agreement(const finite_assignment &fa1, 
                                      const finite_assignment &fa2) {
     finite_domain allvars = set_intersect(keys(fa1), keys(fa2));

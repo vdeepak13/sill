@@ -58,6 +58,7 @@ namespace sill {
 
     /**
      * Constructor: Choose parameters via K-fold cross validation.
+     *  (CHOOSE_PARAM_CV)
      *
      * @param ds             Dataset.
      * @param mv_func        Model validation functor.
@@ -69,6 +70,7 @@ namespace sill {
 
     /**
      * Constructor: Choose parameters using a separate validation dataset.
+     *  (CHOOSE_PARAM_VALIDATION)
      *
      * @param train_ds       Training data.
      * @param test_ds        Separate validation dataset.
@@ -83,6 +85,7 @@ namespace sill {
     /**
      * Constructor: Run a test multiple times (using K-fold cross validation),
      *              and get statistics about the results.
+     *  (TEST_CV)
      *
      * This uses mean/stderr by default, but you can get all of the results
      * and compute median/MAD or the like yourself.
@@ -100,6 +103,7 @@ namespace sill {
      * Constructor: Run a test multiple times (using different random seeds)
      *              on the same training and validation sets,
      *              and get statistics about the results.
+     *  (TEST_VALIDATION)
      *
      * @param train_ds       Training data.
      * @param test_ds        Separate validation dataset.
@@ -207,8 +211,7 @@ namespace sill {
                 << "  " << svp.first << " "
                 << statistics::generalized_deviation_string(run_combo_type)
                 << ": "
-                << generalized_deviation((safe_get(all_results_,svp.first))
-                                         [best_i],
+                << generalized_deviation((safe_get(all_results_,svp.first))[best_i],
                                          run_combo_type)
                 << "\n";
           }

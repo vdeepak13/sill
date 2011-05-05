@@ -10,7 +10,10 @@ set(PRL_FACTOR_SOURCES
   nonlinear_gaussian
   random/random
   random/random_gaussian_crf_factor_functor
-  random/random_gaussian_factor_functor
+  random/random_gaussian_crf_factor_functor_builder
+  random/random_canonical_gaussian_functor
+  random/random_moment_gaussian_functor
+  random/random_moment_gaussian_functor_builder
   random/random_table_crf_factor_functor
   random/random_table_crf_factor_functor_builder
   random/random_table_factor_functor

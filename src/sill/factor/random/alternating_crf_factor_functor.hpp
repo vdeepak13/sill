@@ -1,10 +1,10 @@
-#ifndef SILL_RANDOM_ALTERNATING_FACTOR_FUNCTOR_HPP
-#define SILL_RANDOM_ALTERNATING_FACTOR_FUNCTOR_HPP
+#ifndef SILL_ALTERNATING_CRF_FACTOR_FUNCTOR_HPP
+#define SILL_ALTERNATING_CRF_FACTOR_FUNCTOR_HPP
 
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <sill/factor/random/random_factor_functor_i.hpp>
+#include <sill/factor/random/random_crf_factor_functor_i.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -14,39 +14,40 @@ namespace sill {
   //! @{
 
   /**
-   * Wrapper for other random_factor_functor_i types which
-   * permits variety via alternation between multiple random_factor_functor_i
-   * instances.
+   * Wrapper for other random_crf_factor_functor_i types which permits variety
+   * via alternation between multiple random_crf_factor_functor_i instances.
    *
-   * This takes two random_factor_functor_i.
+   * This takes two random_crf_factor_functor_i instances.
    * It generally generates factors using the first functor.
    * Every alternation_period times this functor generates a factor,
    * it generates one of those factors using the second functor.
    *
-   * @tparam RFF  base random_factor_functor_i type
+   * @tparam RFF  base random_crf_factor_functor_i type
    */
   template <typename RFF>
-  struct random_alternating_factor_functor
-    : random_factor_functor_i<typename RFF::factor_type> {
+  struct alternating_crf_factor_functor
+    : random_crf_factor_functor_i<typename RFF::crf_factor_type> {
 
     // Public types
     //==========================================================================
 
-    typedef typename RFF::factor_type factor_type;
+    typedef typename RFF::crf_factor_type crf_factor_type;
 
-    typedef random_factor_functor_i<factor_type> base;
+    typedef random_crf_factor_functor_i<crf_factor_type> base;
 
-    typedef typename factor_type::variable_type variable_type;
-    typedef typename factor_type::domain_type   domain_type;
+    typedef typename crf_factor_type::output_variable_type output_variable_type;
+    typedef typename crf_factor_type::input_variable_type  input_variable_type;
+    typedef typename crf_factor_type::output_domain_type   output_domain_type;
+    typedef typename crf_factor_type::input_domain_type    input_domain_type;
 
     //! Parameters
     struct parameters {
 
-      //! First (default) random factor functor.
+      //! First (default) random crf_factor functor.
       //! This functor is also used for the generate_variable method.
       RFF default_rff;
 
-      //! Second (alternate) random factor functor.
+      //! Second (alternate) random crf_factor functor.
       RFF alternate_rff;
 
       //! Alternation period (> 0)
@@ -74,7 +75,7 @@ namespace sill {
 
     //! Constructor.
     explicit
-    random_alternating_factor_functor(unsigned random_seed = time(NULL))
+    alternating_crf_factor_functor(unsigned random_seed = time(NULL))
       : cnt(0) {
       seed(random_seed);
     }
@@ -82,8 +83,8 @@ namespace sill {
     using base::generate_marginal;
     using base::generate_conditional;
 
-    //! Generate a marginal factor P(X) using the stored parameters.
-    factor_type generate_marginal(const domain_type& X) {
+    //! Generate a marginal crf_factor P(X) using the stored parameters.
+    crf_factor_type generate_marginal(const output_domain_type& X) {
       assert(params.alternation_period != 0);
       ++cnt;
       if (cnt % params.alternation_period == 0) {
@@ -93,10 +94,11 @@ namespace sill {
       }
     }
 
-    //! Generate a conditional factor P(Y|X) using the stored parameters.
+    //! Generate a conditional crf_factor P(Y|X) using the stored parameters.
     //! This uses generate_marginal and then conditions on X.
-    factor_type
-    generate_conditional(const domain_type& Y, const domain_type& X) {
+    crf_factor_type
+    generate_conditional(const output_domain_type& Y,
+                         const input_domain_type& X) {
       assert(params.alternation_period != 0);
       ++cnt;
       if (cnt % params.alternation_period == 0) {
@@ -106,11 +108,22 @@ namespace sill {
       }
     }
 
-    //! Generate a variable of the appropriate type and dimensionality,
-    //! using the given name.
-    variable_type*
-    generate_variable(universe& u, const std::string& name = "") const {
-      return params.default_rff.generate_variable(u, name);
+    /**
+     * Generate an output variable of the appropriate type and dimensionality,
+     * using the given name.
+     */
+    output_variable_type*
+    generate_output_variable(universe& u, const std::string& name = "") const {
+      return params.default_rff.generate_output_variable(u, name);
+    }
+
+    /**
+     * Generate an input variable of the appropriate type and dimensionality,
+     * using the given name.
+     */
+    input_variable_type*
+    generate_input_variable(universe& u, const std::string& name = "") const {
+      return params.default_rff.generate_input_variable(u, name);
     }
 
     //! Set random seed.
@@ -129,7 +142,7 @@ namespace sill {
     //! (for use with alternation_period).
     size_t cnt;
 
-  }; // struct random_alternating_factor_functor
+  }; // struct alternating_crf_factor_functor
 
   //! @} group factor_random
 
@@ -137,4 +150,4 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
-#endif // SILL_RANDOM_ALTERNATING_FACTOR_FUNCTOR_HPP
+#endif // SILL_ALTERNATING_CRF_FACTOR_FUNCTOR_HPP

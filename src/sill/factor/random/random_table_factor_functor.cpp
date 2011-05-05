@@ -6,6 +6,33 @@
 
 namespace sill {
 
+  std::string
+  random_table_factor_functor::parameters::factor_choice_string() const {
+    switch (factor_choice) {
+    case RANDOM_RANGE:
+      return "random_range";
+      break;
+    case ASSOCIATIVE:
+      return "associative";
+      break;
+    case RANDOM_ASSOCIATIVE:
+      return "random_associative";
+      break;
+    default:
+      assert(false);
+      return "";
+    }
+  }
+
+  void
+  random_table_factor_functor::parameters::print(std::ostream& out) const {
+    out << "factor_choice: " << factor_choice_string() << "\n"
+        << "lower_bound: " << lower_bound << "\n"
+        << "upper_bound: " << upper_bound << "\n"
+        << "base_val: " << base_val << "\n"
+        << "arity: " << arity << "\n";
+  }
+
   random_table_factor_functor::
   random_table_factor_functor(unsigned random_seed)
     : rng(random_seed) { }
@@ -60,6 +87,13 @@ namespace sill {
   void
   random_table_factor_functor::seed(unsigned random_seed) {
     rng.seed(random_seed);
+  }
+
+  std::ostream&
+  operator<<(std::ostream& out,
+             const random_table_factor_functor::parameters& params) {
+    params.print(out);
+    return out;
   }
 
 } // namespace sill

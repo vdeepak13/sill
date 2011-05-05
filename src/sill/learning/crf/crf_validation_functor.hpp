@@ -77,11 +77,11 @@ namespace sill {
       cpl_params.random_seed = random_seed;
       if (model.num_arguments() != 0) {
         crf_parameter_learner<F> cpl(model, !use_weights, ds, cpl_params);
-        model = cpl.current_model();
+        model = cpl.model();
       } else {
         assert(false); // This version does not work with templated factors. Figure out a way to resolve this issue.
         crf_parameter_learner<F> cpl(structure, ds, cpl_params);
-        model = cpl.current_model();
+        model = cpl.model();
       }
     }
 

@@ -140,7 +140,7 @@ namespace sill {
     // =========================================================================
 
     //! Return the current model.
-    const crf_model_type& current_model() const { return crf_; }
+    const crf_model_type& model() const { return crf_; }
 
     /**
      * Do one step of parameter learning.

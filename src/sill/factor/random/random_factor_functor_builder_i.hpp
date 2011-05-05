@@ -32,9 +32,14 @@ namespace sill {
      * Add options to the given Options Description.
      * Once the Options Description is used to parse argv, this struct will
      * hold the specified values.
+     *
+     * @param opt_prefix  Prefix added to command line option names.
+     *                    This is useful when using multiple functor instances.
+     *                    (default = "")
      */
     virtual
-    void add_options(boost::program_options::options_description& desc) = 0;
+    void add_options(boost::program_options::options_description& desc,
+                     const std::string& opt_prefix = "") = 0;
 
     //! Check options.  Assert false if invalid.
     virtual
@@ -45,7 +50,30 @@ namespace sill {
     const typename rff_type::parameters&
     get_parameters() const = 0;
 
+    //! Generate a functor with the parsed options.
+    virtual
+    rff_type create_functor(unsigned random_seed = time(NULL)) const {
+      rff_type func;
+      func.params = get_parameters();
+      func.seed(random_seed);
+      return func;
+    }
+
+    //! Print the options in this struct.
+    virtual void print(std::ostream& out) const = 0;/* {
+      out << "[random_factor_functor_builder_i]\n";
+      }*/
+
   }; // struct random_factor_functor_builder_i
+
+  //! Print the options in the given random_factor_functor_builder_i.
+  template <typename RFF>
+  std::ostream&
+  operator<<(std::ostream& out,
+             const random_factor_functor_builder_i<RFF>& rff_builder) {
+    rff_builder.print(out);
+    return out;
+  }
 
   //! @} group factor_random
 

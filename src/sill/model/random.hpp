@@ -187,7 +187,7 @@ namespace sill {
    * X variable.
    * Note that other X variables may be in the Y variable's Markov blanket.
    *
-   * @param model_choice       "chain" or "tree"
+   * @param model_structure    "chain" or "tree"
    * @param n                  number of Y variables (and X variables)
    * @param tractable          If true, P(Y,X) will be tractable.
    * @param add_cross_factors  If true, add factors (Y_i, X_{i+1}), etc.
@@ -206,7 +206,7 @@ namespace sill {
                std::map<typename CRFfactor::output_variable_type*,
                         copy_ptr<typename CRFfactor::input_domain_type> > >
   create_random_crf
-  (const std::string& model_choice, size_t n,
+  (const std::string& model_structure, size_t n,
    bool tractable, bool add_cross_factors,
    random_crf_factor_functor_i<CRFfactor>& YY_factor_func,
    random_crf_factor_functor_i<CRFfactor>& YX_factor_func,
@@ -224,7 +224,7 @@ namespace sill {
     typedef typename CRFfactor::input_var_vector_type input_var_vector_type;
     typedef typename CRFfactor::output_factor_type output_factor_type;
 
-    assert((model_choice == "chain") || (model_choice == "tree"));
+    assert((model_structure == "chain") || (model_structure == "tree"));
 
     boost::mt11213b rng(random_seed);
     Xmodel.clear();
@@ -266,7 +266,7 @@ namespace sill {
       // Add the rest.
       for (size_t i = 1; i < n; ++i) {
         // Choose which existing vertex j to attach to.
-        size_t j((model_choice == "chain") ?
+        size_t j((model_structure == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         Xmodel *=
           XX_factor_func.generate_marginal(make_domain(Xvars[i],Xvars[j]));
@@ -286,7 +286,7 @@ namespace sill {
       // First, create P(X).
       for (size_t i(1); i < n; ++i) {
         // Choose which existing vertex j to attach to.
-        size_t j((model_choice == "chain") ?
+        size_t j((model_structure == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         Xmodel *=
           XX_factor_func.generate_marginal(make_domain(Xvars[i], Xvars[j]));
@@ -302,7 +302,7 @@ namespace sill {
         (YX_factor_func.generate_conditional(Yvars[0], Xvars[xind[0]]));
       for (size_t i(1); i < n; ++i) {
         // Choose which existing Y_j to attach to.
-        size_t j((model_choice == "chain") ?
+        size_t j((model_structure == "chain") ?
                  i-1 : boost::uniform_int<int>(0,i-1)(rng));
         YgivenXmodel.add_factor
           (YX_factor_func.generate_conditional(Yvars[i], Xvars[xind[i]]));
@@ -331,7 +331,7 @@ namespace sill {
    *
    * @tparam F  Factor type.
    *
-   * @param model_choice       "chain" or "tree"
+   * @param model_structure    "chain" or "tree"
    * @param n                  number of Y variables (and X variables)
    * @param tractable          If true, P(Y,X) will be tractable.
    * @param add_cross_factors  If true, add factors (Y_i, X_{i+1}), etc.
@@ -346,7 +346,7 @@ namespace sill {
   <typename F::var_vector_type, typename F::var_vector_type,
    std::map<typename F::variable_type*, copy_ptr<typename F::domain_type> > >
   create_random_bayesian_network_crf
-  (const std::string& model_choice, size_t n,
+  (const std::string& model_structure, size_t n,
    bool tractable, bool add_cross_factors,
    random_factor_functor_i<F>& rand_factor_func,
    universe& u, unsigned random_seed,
@@ -356,7 +356,7 @@ namespace sill {
     typedef typename F::var_vector_type var_vector_type;
     typedef typename F::domain_type     domain_type;
 
-    assert((model_choice == "chain") || (model_choice == "tree"));
+    assert((model_structure == "chain") || (model_structure == "tree"));
 
     boost::mt11213b rng(random_seed);
     model.clear();
@@ -401,7 +401,7 @@ namespace sill {
     model.add_factor(Xvars[0], rand_factor_func.generate_marginal(Xvars[0]));
     for (size_t i(1); i < n; ++i) {
       // Choose which existing vertex j to attach to.
-      size_t j((model_choice == "chain") ?
+      size_t j((model_structure == "chain") ?
                i-1 : boost::uniform_int<int>(0,i-1)(rng));
       model.add_factor
         (Xvars[i], rand_factor_func.generate_conditional(Xvars[i], Xvars[j]));
@@ -411,7 +411,7 @@ namespace sill {
     std::vector<size_t> Y_parents(n); // Y_i has parent Y_parents[i]
     Y_parents[0] = (size_t)(-1);
     for (size_t i = 1; i < n; ++i) {
-      Y_parents[i] = (model_choice == "chain"
+      Y_parents[i] = (model_structure == "chain"
                       ? i-1
                       : boost::uniform_int<int>(0,i-1)(rng));
     }
@@ -505,7 +505,7 @@ namespace sill {
    * @param YgivenXmodel  (Return value) CRF model for P(Y|X)
    * @param n             number of Y variables (and X variables)
    * @param arity         arity of the variables
-   * @param model_choice  "chain" or "tree"
+   * @param model_structure  "chain" or "tree"
    * @param tractable     If true, P(Y,X) will be tractable.
    * @param factor_choice "random" / "associative" / "random_assoc"
    * @param YYstrengthD   Value 's' for Y-Y default potentials; see above.
@@ -532,7 +532,7 @@ namespace sill {
   create_fancy_random_crf(decomposable<table_factor>& Xmodel,
                           crf_model<table_crf_factor>& YgivenXmodel,
                           size_t n, size_t arity, universe& u,
-                          const std::string& model_choice, bool tractable,
+                          const std::string& model_structure, bool tractable,
                           const std::string& factor_choice,
                           double YYstrengthD, double YXstrengthD,
                           double XXstrengthD, double strength_baseD,
@@ -553,7 +553,7 @@ namespace sill {
    * @param YgivenXmodel  empty CRF model for P(Y|X)
    * @param n             number of Y variables (and X variables)
    * @param arity         arity of the variables
-   * @param model_choice  "chain" or "tree"
+   * @param model_structure  "chain" or "tree"
    * @param factor_choice "random" / "associative" / "random_assoc"
    * @param YYstrength    Value 's' for Y-Y potentials; see above.
    * @param YXstrength    Value 's' for Y-X potentials; see above.
@@ -568,7 +568,7 @@ namespace sill {
   create_random_crf(decomposable<table_factor>& Xmodel,
                     crf_model<table_crf_factor>& YgivenXmodel,
                     size_t n, size_t arity, universe& u,
-                    const std::string& model_choice,
+                    const std::string& model_structure,
                     const std::string& factor_choice,
                     double YYstrength, double YXstrength,
                     double XXstrength, bool add_cross_factors,
@@ -625,7 +625,7 @@ namespace sill {
    * @param Xmodel        empty decomposable model for P(X)
    * @param YgivenXmodel  empty CRF model for P(Y|X)
    * @param n             number of Y variables (and X variables)
-   * @param model_choice  "chain" or "tree"
+   * @param model_structure  "chain" or "tree"
    * @param b_max         Used to parametrize factors.
    * @param c_max         Used to parametrize factors.
    * @param variance      Used to parametrize factors.
@@ -641,7 +641,7 @@ namespace sill {
   create_random_gaussian_crf(decomposable<canonical_gaussian>& Xmodel,
                              crf_model<gaussian_crf_factor>& YgivenXmodel,
                              size_t n, universe& u,
-                             const std::string& model_choice,
+                             const std::string& model_structure,
                              double b_max, double c_max, double variance,
                              double YYcorrelation, double YXcorrelation,
                              double XXcorrelation,

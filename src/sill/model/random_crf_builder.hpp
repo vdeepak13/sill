@@ -3,6 +3,8 @@
 
 #include <boost/program_options.hpp>
 
+#include <sill/factor/random/random_gaussian_crf_factor_functor_builder.hpp>
+#include <sill/factor/random/random_table_crf_factor_functor_builder.hpp>
 #include <sill/model/random.hpp>
 
 namespace sill {
@@ -22,18 +24,17 @@ namespace sill {
    *        Parse the command line using the modified options description.
    *        Use this struct's create_model() method to create the synthetic
    *        model specified by the options.
-   *
-   * @todo Change "factor_type" so that it includes gaussian, and then
-   *       eliminate "variable_type."
    */
   struct random_crf_builder {
 
     // Model parameters
     //==========================================================================
 
-    std::string model_structure;
+    //! Factor type: table/gaussian
+    //! This implicitly specifies the variable type.
+    std::string factor_type;
 
-    std::string variable_type;
+    std::string model_structure;
 
     size_t model_size;
 
@@ -41,45 +42,52 @@ namespace sill {
 
     bool add_cross_factors;
 
+    //! Factor alternation period.
+    //! (0 means no alternation; 1 means use alt parameters only)
+    size_t factor_alt_period;
+
     // Factor parameters for discrete variables
     //==========================================================================
 
-    size_t variable_arity;
+    //! Y-Y table factor parameters.
+    //! These are used to specify the variable arity.
+    random_table_crf_factor_functor_builder YY_rtcff_builder;
 
-    std::string factor_type;
+    //! Y-X table factor parameters.
+    random_table_crf_factor_functor_builder YX_rtcff_builder;
 
-    double YYstrength;
+    //! X-X table factor parameters.
+    random_table_factor_functor_builder XX_rtff_builder;
 
-    double YXstrength;
+    //! Alternative Y-Y table factor parameters.
+    random_table_crf_factor_functor_builder alt_YY_rtcff_builder;
 
-    double XXstrength;
+    //! Alternative Y-X table factor parameters.
+    random_table_crf_factor_functor_builder alt_YX_rtcff_builder;
 
-    double strength_base;
-
-    size_t alternation_period;
-
-    double altYYstrength;
-
-    double altYXstrength;
-
-    double altXXstrength;
-
-    double alt_strength_base;
+    //! Alternative X-X table factor parameters.
+    random_table_factor_functor_builder alt_XX_rtff_builder;
 
     // Factor parameters for real variables
     //==========================================================================
 
-    double b_max;
+    //! Y-Y Gaussian factor parameters.
+    random_gaussian_crf_factor_functor_builder YY_rgcff_builder;
 
-    double c_max;
+    //! Y-X Gaussian factor parameters.
+    random_gaussian_crf_factor_functor_builder YX_rgcff_builder;
 
-    double variance;
+    //! X-X Gaussian factor parameters.
+    random_moment_gaussian_functor_builder XX_rmgf_builder;
 
-    double YYcorrelation;
+    //! Alternative Y-Y Gaussian factor parameters.
+    random_gaussian_crf_factor_functor_builder alt_YY_rgcff_builder;
 
-    double YXcorrelation;
+    //! Alternative Y-X Gaussian factor parameters.
+    random_gaussian_crf_factor_functor_builder alt_YX_rgcff_builder;
 
-    double XXcorrelation;
+    //! Alternative X-X Gaussian factor parameters.
+    random_moment_gaussian_functor_builder alt_XX_rmgf_builder;
 
     // Methods
     //==========================================================================
@@ -92,13 +100,8 @@ namespace sill {
      */
     void add_options(boost::program_options::options_description& desc);
 
-    /**
-     * Check options.  Return true if valid and false if invalid.
-     * @param  print_warnings   If true, print warnings to STDERR about invalid
-     *                          options.
-     *                          (default = true)
-     */
-    bool valid(bool print_warnings = true) const;
+    //! Check options.  Assert false if invalid.
+    void check() const;
 
     /**
      * Generate a synthetic CRF using the current options and the given
@@ -142,9 +145,7 @@ namespace sill {
      std::map<vector_variable*, copy_ptr<vector_domain> >& Y2X_map,
      universe& u, unsigned int random_seed) const;
 
-    /**
-     * Print the options in this struct.
-     */
+    //! Print the options in this struct.
     void print(std::ostream& out) const;
 
   }; // struct random_crf_builder

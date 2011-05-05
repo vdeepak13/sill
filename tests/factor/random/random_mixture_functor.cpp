@@ -6,7 +6,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/random/random_mixture_functor.hpp>
-#include <sill/factor/random/random_gaussian_factor_functor.hpp>
+#include <sill/factor/random/random_moment_gaussian_functor.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -16,14 +16,16 @@ int main(int argc, char** argv) {
 
   unsigned random_seed = time(NULL);
 
+  size_t k = 3;
+
   boost::mt11213b rng(random_seed);
   boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
   universe u;
   vector_variable* Y = u.new_vector_variable(1);
   vector_variable* X = u.new_vector_variable(1);
 
-  random_gaussian_factor_functor<moment_gaussian> rmgf(unif_int(rng));
-  random_mixture_functor<moment_gaussian> rmf(rmgf);
+  random_moment_gaussian_functor rmgf(unif_int(rng));
+  random_mixture_functor<moment_gaussian> rmf(k, rmgf);
 
   std::cout << "Test: random_mixture_functor with moment_gaussian factors\n"
             << "-----------------------------------------------------------"

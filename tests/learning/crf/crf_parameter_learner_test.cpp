@@ -84,14 +84,14 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
   if (init_with_pwl) {
     crf_parameter_learner<F>
       param_learner(init_model, false, train_ds, cpl_params);
-    learned_model = param_learner.current_model();
+    learned_model = param_learner.model();
     cpl_iterations = param_learner.iteration();
     cpl_obj_calls_per_iter = param_learner.objective_calls_per_iteration();
   } else {
     crf_parameter_learner<F>
       param_learner(YgivenXmodel, true,
                     train_ds, cpl_params);
-    learned_model = param_learner.current_model();
+    learned_model = param_learner.model();
     cpl_iterations = param_learner.iteration();
     cpl_obj_calls_per_iter = param_learner.objective_calls_per_iteration();
   }

@@ -15,6 +15,7 @@
 #include <sill/serialization/set.hpp>
 #include <sill/serialization/map.hpp>
 #include <sill/iterator/counting_output_iterator.hpp>
+#include <sill/iterator/map_value_iterator.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -53,6 +54,16 @@ namespace sill {
 
   template <typename T>
   std::set<T> set_intersect(const std::set<T>& a, const std::set<T>& b) {
+    std::set<T> output;
+    std::set_intersection(a.begin(), a.end(), 
+                          b.begin(), b.end(),
+                          std::inserter(output, output.begin()));
+    return output;
+  }
+
+  template <typename T>
+  std::set<T>
+  set_intersect(const forward_range<T>& a, const forward_range<T>& b) {
     std::set<T> output;
     std::set_intersection(a.begin(), a.end(), 
                           b.begin(), b.end(),
@@ -307,15 +318,13 @@ namespace sill {
    * Gets the values from a map
    */
   template <typename Key, typename T>
-  std::set<T> values(const std::map<Key, T>& map) {
-    std::set<T> output;
-    typedef std::pair<Key, T> pair_type;
-    foreach(const pair_type& pair, map) {
-      output.insert(pair.second);
-    }
-    return output;
+  std::pair<map_value_iterator<std::map<Key,T> >,
+            map_value_iterator<std::map<Key,T> > >
+  values(const std::map<Key, T>& map) {
+    return std::make_pair(map_value_iterator<std::map<Key,T> >(map.begin()),
+                          map_value_iterator<std::map<Key,T> >(map.end()));
   }
-  
+
   template <typename Key, typename T>
   std::vector<T> values(const std::map<Key, T>& m, 
                         const std::set<Key>& keys) {

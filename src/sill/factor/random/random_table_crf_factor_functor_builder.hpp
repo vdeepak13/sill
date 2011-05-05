@@ -28,14 +28,21 @@ namespace sill {
      * Add options to the given Options Description.
      * Once the Options Description is used to parse argv, this struct will
      * hold the specified values.
+     *
+     * @param opt_prefix  Prefix added to command line option names.
+     *                    (default = "")
      */
-    void add_options(boost::program_options::options_description& desc);
+    void add_options(boost::program_options::options_description& desc,
+                     const std::string& opt_prefix = "");
 
     //! Check options.  Assert false if invalid.
     void check() const;
 
     //! Get the parsed options.
     const rff_type::parameters& get_parameters() const;
+
+    //! Print the options in this struct.
+    void print(std::ostream& out) const;
 
   private:
     random_table_factor_functor_builder rtff_builder;

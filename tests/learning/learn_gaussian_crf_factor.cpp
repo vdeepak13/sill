@@ -160,7 +160,7 @@ int main(int argc, char** argv) {
   gcf_ll /= ds.size();
   double cpl_ll(0);
   foreach(const record<>& r, ds.records()) {
-    cpl_ll += cpl.current_model().log_likelihood(r);
+    cpl_ll += cpl.model().log_likelihood(r);
   }
   cpl_ll /= ds.size();
 
@@ -186,7 +186,7 @@ int main(int argc, char** argv) {
   gcf_test_ll /= test_ds.size();
   double cpl_test_ll(0);
   foreach(const record<>& r, test_ds.records()) {
-    cpl_test_ll += cpl.current_model().log_likelihood(r);
+    cpl_test_ll += cpl.model().log_likelihood(r);
   }
   cpl_test_ll /= test_ds.size();
 
@@ -196,9 +196,9 @@ int main(int argc, char** argv) {
        << (*f1) << endl;
   cout << "... and as a moment Gaussian:\n"
        << f1->get_gaussian<moment_gaussian>() << "\n" << endl;
-  cout << "Learned via CRF parameter learner:\n" << cpl.current_model() << endl;
+  cout << "Learned via CRF parameter learner:\n" << cpl.model() << endl;
   cout << "... and as a moment Gaussian:\n"
-       << cpl.current_model().factors().front().get_gaussian<moment_gaussian>()
+       << cpl.model().factors().front().get_gaussian<moment_gaussian>()
        << "\n" << endl;
 
   cout << "Joint Gaussian factor's data log likelihood: " << joint_ll << "\n"

@@ -76,6 +76,12 @@ namespace sill {
         assert(arity != 0);
       }
 
+      //! Return string form of factor_choice.
+      std::string factor_choice_string() const;
+
+      //! Print the options in this struct.
+      void print(std::ostream& out) const;
+
     }; // struct parameters
 
     // Public data
@@ -116,6 +122,11 @@ namespace sill {
     boost::mt11213b rng;
 
   }; // struct random_table_factor_functor
+
+  //! Print the options in the given random_table_factor_functor::parameters.
+  std::ostream&
+  operator<<(std::ostream& out,
+             const random_table_factor_functor::parameters& params);
 
   //! @} group factor_random
 

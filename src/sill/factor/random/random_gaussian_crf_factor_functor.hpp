@@ -3,7 +3,7 @@
 
 #include <sill/factor/gaussian_crf_factor.hpp>
 #include <sill/factor/random/random_crf_factor_functor_i.hpp>
-#include <sill/factor/random/random_factor_functor_i.hpp>
+#include <sill/factor/random/random_moment_gaussian_functor.hpp>
 
 namespace sill {
 
@@ -16,18 +16,39 @@ namespace sill {
   struct random_gaussian_crf_factor_functor
     : random_crf_factor_functor_i<gaussian_crf_factor> {
 
+    // Public types
+    //==========================================================================
+
     typedef random_crf_factor_functor_i<gaussian_crf_factor> base;
+
+    //! Parameters
+    struct parameters {
+
+      random_moment_gaussian_functor rmg_func;
+
+      //! Assert validity.
+      void check() const {
+        rmg_func.params.check();
+      }
+
+    }; // struct parameters
+
+    // Public data
+    //==========================================================================
+
+    parameters params;
 
     // Public methods
     //==========================================================================
 
     //! Constructor.
-    explicit random_gaussian_crf_factor_functor
-    (random_factor_functor_i<moment_gaussian>& mg_factor_func);
+    explicit
+    random_gaussian_crf_factor_functor(unsigned random_seed = time(NULL));
 
     //! Constructor.
-    explicit random_gaussian_crf_factor_functor
-    (random_factor_functor_i<canonical_gaussian>& cg_factor_func);
+    explicit
+    random_gaussian_crf_factor_functor
+    (const random_moment_gaussian_functor& rmg_func);
 
     using base::generate_marginal;
     using base::generate_conditional;
@@ -57,15 +78,8 @@ namespace sill {
     input_variable_type*
     generate_input_variable(universe& u, const std::string& name = "") const;
 
-    // Private data and methods
-    //==========================================================================
-  private:
-
-    random_factor_functor_i<moment_gaussian>* mg_factor_func_ptr;
-
-    random_factor_functor_i<canonical_gaussian>* cg_factor_func_ptr;
-
-    random_gaussian_crf_factor_functor();
+    //! Set random seed.
+    void seed(unsigned random_seed = time(NULL));
 
   }; // struct random_gaussian_crf_factor_functor
 

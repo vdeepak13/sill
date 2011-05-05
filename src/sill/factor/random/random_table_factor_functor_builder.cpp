@@ -7,12 +7,6 @@ namespace sill {
 
   void
   random_table_factor_functor_builder::
-  add_options(boost::program_options::options_description& desc) {
-    add_options(desc, "");
-  }
-
-  void
-  random_table_factor_functor_builder::
   add_options(boost::program_options::options_description& desc,
               const std::string& opt_prefix) {
 
@@ -64,6 +58,11 @@ namespace sill {
         random_table_factor_functor::parameters::RANDOM_ASSOCIATIVE;
     return params;
   } // get_parameters
+
+  void random_table_factor_functor_builder::print(std::ostream& out) const {
+    out << factor_choice_string << "\n"
+        << params;
+  }
 
 } // namespace sill
 

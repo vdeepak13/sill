@@ -223,7 +223,7 @@ test_crf_parameter_learner
   crf_parameter_learner<F> cpl(tmp_true_model, true, train_ds, cpl_params);
   cpl_time = timer.elapsed();
 
-  cout << "Learned via CRF parameter learner:\n" << cpl.current_model() << "\n"
+  cout << "Learned via CRF parameter learner:\n" << cpl.model() << "\n"
        << endl;
 
   cout << "crf_parameter_learner made " << cpl.iteration()
@@ -234,12 +234,12 @@ test_crf_parameter_learner
 
   double cpl_ll(0);
   foreach(const record<>& r, train_ds.records()) {
-    cpl_ll += cpl.current_model().log_likelihood(r);
+    cpl_ll += cpl.model().log_likelihood(r);
   }
   cpl_ll /= train_ds.size();
   double cpl_test_ll(0);
   foreach(const record<>& r, test_ds.records()) {
-    cpl_test_ll += cpl.current_model().log_likelihood(r);
+    cpl_test_ll += cpl.model().log_likelihood(r);
   }
   cpl_test_ll /= test_ds.size();
 
