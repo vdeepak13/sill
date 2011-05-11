@@ -104,13 +104,10 @@ namespace sill {
 
     table_factor factor(X, smoothing);
 
-    size_t i(0);
-    typename dataset<LA>::assignment_iterator end_it(ds.end_assignments());
-    for (typename dataset<LA>::assignment_iterator a_it(ds.begin_assignments());
-         a_it != end_it; ++a_it) {
-      const finite_assignment& a = *a_it;
-      factor.v(a) += ds.weight(i);
-      ++i;
+    typename dataset<LA>::record_iterator r_end(ds.end());
+    for (typename dataset<LA>::record_iterator r_it(ds.begin());
+         r_it != r_end; ++r_it) {
+      factor.v(*r_it) += r_it.weight();
     }
 
     factor.normalize();

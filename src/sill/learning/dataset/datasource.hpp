@@ -102,6 +102,14 @@ namespace sill {
     typename variable_type_group<VarType>::var_vector_type
     variable_sequence() const;
 
+    //! Returns the finite class variable.
+    //! NOTE: This asserts false if there is not exactly 1 finite class var.
+    finite_variable* finite_class_variable() const;
+
+    //! Returns the vector class variable (or NULL if none exists).
+    //! NOTE: This asserts false if there is not exactly 1 vector class var.
+    vector_variable* vector_class_variable() const;
+
     //! Returns the finite class variables (if any)
     const finite_var_vector& finite_class_variables() const;
 

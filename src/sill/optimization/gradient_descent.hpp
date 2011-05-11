@@ -21,16 +21,18 @@ namespace sill {
   }; // struct gradient_descent_parameters
 
   /**
-   * Batch and stochastic gradient descent
+   * Gradient descent
    *  - for unconstrained nonlinear optimization
-   *  - minimizes the given objective
+   *  - MINIMIZES the objective
    *
    * This tries to minimize the Objective, parametrized by an OptVector,
    * by calling a Gradient functor to compute a descent direction and then
    * taking a step in that direction.
    * Multiple algorithms may be implemented using this class:
    *  - Gradient: This may be an exact (batch) gradient computation,
-   *              or it may be stochastic.
+   *              or it may be stochastic.  For stochastic, consider using
+   *              the stochastic_gradient class, which helpfully restricts
+   *              certain options.
    *  - step: Use the parameter settings to choose how progress is
    *          made in descent directions.  A step may be done via
    *          single steps or via line searches.
@@ -47,31 +49,24 @@ namespace sill {
   class gradient_descent
     : public gradient_method<OptVector, Objective, Gradient> {
 
-    // Protected data and methods
-    //==========================================================================
-  protected:
-
-    typedef gradient_method<OptVector, Objective, Gradient> base;
-
-    // Import from base class:
-    using base::grad_functor;
-    using base::x_;
-    using base::direction_;
-    using base::iteration_;
-
-    // Public methods
+    // Public types
     //==========================================================================
   public:
 
+    typedef gradient_method<OptVector, Objective, Gradient> base;
+
+    // Public methods
+    //==========================================================================
+
     /**
      * Constructor.
-     * @param x_   Pre-allocated and initialized variables being optimized over.
+     * @param x_   Pre-allocated and initialized optimization variables.
      */
     gradient_descent(const Objective& obj_functor,
-                    const Gradient& grad_functor,
-                    OptVector& x_,
-                    const gradient_descent_parameters& params
-                    = gradient_descent_parameters())
+                     const Gradient& grad_functor,
+                     OptVector& x_,
+                     const gradient_descent_parameters& params
+                     = gradient_descent_parameters())
       : base(obj_functor, grad_functor, x_, params) {
     }
 
@@ -84,6 +79,16 @@ namespace sill {
       // Do a line search
       return base::run_line_search();
     }
+
+    // Protected data and methods
+    //==========================================================================
+  protected:
+
+    // Import from base class:
+    using base::grad_functor;
+    using base::x_;
+    using base::direction_;
+    using base::iteration_;
 
   }; // class gradient_descent
 

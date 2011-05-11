@@ -99,6 +99,9 @@ namespace sill {
     //! This works regardless of the specified method.
     stochastic_gradient_parameters get_sg_parameters();
 
+    //! Return the string version of the given optimization method type.
+    static std::string real_optimizer_string(real_optimizer_type rot);
+
   }; // class real_optimizer_builder
 
   oarchive&

@@ -137,6 +137,16 @@ namespace sill {
     return vector_seq;
   }
 
+  finite_variable* datasource::finite_class_variable() const {
+    assert(finite_class_vars.size() == 1);
+    return finite_class_vars[0];
+  }
+
+  vector_variable* datasource::vector_class_variable() const {
+    assert(vector_class_vars.size() == 1);
+    return vector_class_vars[0];
+  }
+
   const finite_var_vector& datasource::finite_class_variables() const {
     return finite_class_vars;
   }

@@ -30,11 +30,11 @@ namespace sill {
     typedef vector_base<T,SizeType> base;
 
     typedef T                 value_type;
-    typedef SizeType             size_type;
+    typedef SizeType          size_type;
     typedef const T*          const_iterator;
     typedef T*                iterator;
-    typedef const size_type* const_index_iterator;
-    typedef size_type*       index_iterator;
+    typedef const size_type*  const_index_iterator;
+    typedef size_type*        index_iterator;
 
     typedef ivec              index_vector_type;
 
@@ -213,6 +213,9 @@ namespace sill {
 
     //! Values of non-zeros.
     const vector<value_type>& values() const { return values_; }
+
+    //! Values of non-zeros.
+    vector<value_type>& values() { return values_; }
 
     //! Get a const iterator to the beginning of the indices.
     const_index_iterator begin_indices() const { return indices_.begin(); }

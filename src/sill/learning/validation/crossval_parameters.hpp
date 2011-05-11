@@ -62,7 +62,12 @@ namespace sill {
 
     void load(iarchive& ar);
 
+    void print(std::ostream& out) const;
+
   }; // struct crossval_parameters
+
+  std::ostream&
+  operator<<(std::ostream& out, const crossval_parameters& cv_params);
 
 } // namespace sill
 

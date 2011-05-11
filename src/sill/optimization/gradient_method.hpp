@@ -135,6 +135,37 @@ namespace sill {
     //! Options.
     typedef gradient_method_parameters parameters;
 
+    // Public methods
+    //==========================================================================
+
+    /**
+     * Constructor for gradient_method.
+     * @param x_   Pre-allocated and initialized variables being optimized over.
+     */
+    gradient_method(const Objective& obj_functor, const Gradient& grad_functor,
+                    OptVector& x_, const parameters& params)
+      : base(x_, obj_functor.objective(x_)), params(params),
+        convergence_zero(params.ls_params.convergence_zero),
+        obj_functor(obj_functor), grad_functor(grad_functor),
+        direction_(x_.size(), 0), total_obj_calls_(0),
+        step_ptr(NULL), void_step_functor_ptr(NULL), basic_step_type_ptr(NULL),
+        wolfe_step_type_ptr(NULL) {
+      init();
+    }
+
+    virtual ~gradient_method() {
+      clear_pointers();
+    }
+
+    //! Return the average number of objective function calls per line search,
+    //! or -1 if no iterations have completed.
+    double objective_calls_per_iteration() const {
+      if (iteration_ == 0)
+        return -1;
+      else
+        return ((double)(total_obj_calls_) / iteration_);
+    }
+
     // Protected types
     //==========================================================================
   protected:
@@ -147,18 +178,7 @@ namespace sill {
     typedef wolfe_step_functor<OptVector, Objective, Gradient>
     wolfe_step_type;
 
-    /*
-    //! Type for line_search_type = 0
-    typedef line_search<line_search_objective_functor<OptVector,Objective> >
-      line_search_type0;
-
-    //! Type for line_search_type = 1
-    typedef line_search<wolfe_conditions_functor<OptVector,Objective,Gradient>,
-                        wolfe_conditions_functor<OptVector,Objective,Gradient> >
-      line_search_type1;
-    */
-
-    // Protected data and methods
+    // Protected data
     //==========================================================================
 
     // Inherited from base class
@@ -171,23 +191,6 @@ namespace sill {
 
     //! From parameters:
     double convergence_zero;
-
-    /*
-    //! From parameters:
-    parameters::real_opt_step_type step_type;
-
-    //! From parameters:
-    parameters::ls_stopping_type ls_stopping;
-
-    //! From parameters:
-    single_opt_step_parameters single_opt_step_params;
-
-    //! From parameters:
-    line_search_parameters line_search_params;
-
-    //! From parameters:
-    size_t debug;
-    */
 
     //! Objective functor
     const Objective& obj_functor;
@@ -215,91 +218,6 @@ namespace sill {
 
     // Protected methods
     //==========================================================================
-
-    //! Free memory.
-    void clear_pointers() {
-      if (step_ptr)
-        delete(step_ptr);
-      step_ptr = NULL;
-      if (void_step_functor_ptr)
-        delete(void_step_functor_ptr);
-      void_step_functor_ptr = NULL;
-      if (basic_step_type_ptr)
-        delete(basic_step_type_ptr);
-      basic_step_type_ptr = NULL;
-      if (wolfe_step_type_ptr)
-        delete(wolfe_step_type_ptr);
-      wolfe_step_type_ptr = NULL;
-    }
-
-    void init() {
-      if (params.debug > 1)
-        params.ls_params.debug = params.debug - 1;
-      switch (params.step_type) {
-      case parameters::SINGLE_OPT_STEP:
-        step_ptr = new single_opt_step(params.single_opt_step_params);
-        void_step_functor_ptr = new void_step_functor();
-        break;
-      case parameters::LINE_SEARCH:
-        step_ptr = new line_search(params.ls_params);
-        basic_step_type_ptr = new basic_step_type(obj_functor, x_, direction_);
-        break;
-      case parameters::LINE_SEARCH_WITH_GRAD:
-        step_ptr = new line_search_with_grad(params.ls_params);
-        wolfe_step_type_ptr = new wolfe_step_type(convergence_zero);
-        switch (params.ls_stopping) {
-        case parameters::LS_EXACT:
-          wolfe_step_type_ptr->disable_early_stopping = true;
-          break;
-        case parameters::LS_STRONG_WOLFE:
-          wolfe_step_type_ptr->disable_early_stopping = false;
-          wolfe_step_type_ptr->use_strong_conditions = true;
-          break;
-        case parameters::LS_WEAK_WOLFE:
-          wolfe_step_type_ptr->disable_early_stopping = false;
-          wolfe_step_type_ptr->use_strong_conditions = false;
-          break;
-        default:
-          assert(false);
-        }
-        break;
-      default:
-        assert(false);
-      }
-
-      /*
-      case 0:
-        switch(line_search_stopping) {
-        case 0:
-          init_ls0();
-          break;
-        case 1:
-        case 2:
-          init_ls1();
-          break;
-        default:
-          assert(false);
-        }
-        break;
-      case 1:
-        init_ls1();
-        switch(line_search_stopping) {
-        case 0:
-          ls_obj_functor1_ptr->disable_early_stopping = true;
-          break;
-        case 1:
-        case 2:
-          ls_obj_functor1_ptr->disable_early_stopping = false;
-          break;
-        default:
-          assert(false);
-        }
-        break;
-      default:
-        assert(false);
-      }
-      */
-    } // init()
 
     /**
      * Perform one line search, and update x_ unless at the optimum.
@@ -435,19 +353,6 @@ namespace sill {
       return true;
     } // run_line_search()
 
-    //! Print debugging info at the beginning of run_line_search.
-    void rls_debug_begin_() const {
-      std::cerr << "gradient_method::run_line_search(): begin" << std::endl;
-      if (params.debug > 2) {
-        /*
-          std::cerr << "gradient_method is about to run line search:\n"
-          << "\t from x = " << x_ << "\n"
-          << "\t in direction = " << direction_ << "\n";
-        */
-        // TO DO: FINISH PRINTING ALL OF THIS INFO.
-      }
-    }
-
     //! Check step magnitude in run_line_search.
     //! @return false if magnitude is invalid
     bool rls_valid_step_magnitude_(double step_magnitude) const {
@@ -465,6 +370,96 @@ namespace sill {
         return false;
       }
       return true;
+    }
+
+    // Private methods
+    //==========================================================================
+  private:
+
+    void init() {
+      assert(params.valid());
+      if (params.debug > 1)
+        params.ls_params.debug = params.debug - 1;
+      switch (params.step_type) {
+      case parameters::SINGLE_OPT_STEP:
+        step_ptr = new single_opt_step(params.single_opt_step_params);
+        void_step_functor_ptr = new void_step_functor();
+        break;
+      case parameters::LINE_SEARCH:
+        step_ptr = new line_search(params.ls_params);
+        basic_step_type_ptr = new basic_step_type(obj_functor, x_, direction_);
+        break;
+      case parameters::LINE_SEARCH_WITH_GRAD:
+        step_ptr = new line_search_with_grad(params.ls_params);
+        wolfe_step_type_ptr = new wolfe_step_type(convergence_zero);
+        switch (params.ls_stopping) {
+        case parameters::LS_EXACT:
+          wolfe_step_type_ptr->disable_early_stopping = true;
+          break;
+        case parameters::LS_STRONG_WOLFE:
+          wolfe_step_type_ptr->disable_early_stopping = false;
+          wolfe_step_type_ptr->use_strong_conditions = true;
+          break;
+        case parameters::LS_WEAK_WOLFE:
+          wolfe_step_type_ptr->disable_early_stopping = false;
+          wolfe_step_type_ptr->use_strong_conditions = false;
+          break;
+        default:
+          assert(false);
+        }
+        break;
+      default:
+        assert(false);
+      }
+
+      /*
+      case 0:
+        switch(line_search_stopping) {
+        case 0:
+          init_ls0();
+          break;
+        case 1:
+        case 2:
+          init_ls1();
+          break;
+        default:
+          assert(false);
+        }
+        break;
+      case 1:
+        init_ls1();
+        switch(line_search_stopping) {
+        case 0:
+          ls_obj_functor1_ptr->disable_early_stopping = true;
+          break;
+        case 1:
+        case 2:
+          ls_obj_functor1_ptr->disable_early_stopping = false;
+          break;
+        default:
+          assert(false);
+        }
+        break;
+      default:
+        assert(false);
+      }
+      */
+    } // init()
+
+    //! Free memory.
+    void clear_pointers() {
+      if (step_ptr)
+        delete(step_ptr);
+      step_ptr = NULL;
+      if (void_step_functor_ptr)
+        delete(void_step_functor_ptr);
+      void_step_functor_ptr = NULL;
+      if (basic_step_type_ptr)
+        delete(basic_step_type_ptr);
+      basic_step_type_ptr = NULL;
+      if (wolfe_step_type_ptr)
+        delete(wolfe_step_type_ptr);
+      wolfe_step_type_ptr = NULL;
     }
 
     //! Check objective_change_ for convergence (and for non-convexity).
@@ -490,6 +485,19 @@ namespace sill {
       return true;
     }
 
+    //! Print debugging info at the beginning of run_line_search.
+    void rls_debug_begin_() const {
+      std::cerr << "gradient_method::run_line_search(): begin" << std::endl;
+      if (params.debug > 2) {
+        /*
+          std::cerr << "gradient_method is about to run line search:\n"
+          << "\t from x = " << x_ << "\n"
+          << "\t in direction = " << direction_ << "\n";
+        */
+        // TO DO: FINISH PRINTING ALL OF THIS INFO.
+      }
+    }
+
     //! Print debugging info at the end of run_line_search.
     void rls_debug_end_(double eta) const {
       double stepnorm(direction_.L2norm() * eta);
@@ -501,38 +509,6 @@ namespace sill {
                 << "  iteration = " << iteration_ << ", eta = " << eta
                 << ", objective = " << objective_ << ", objective change = "
                 << objective_change_ << std::endl;
-    }
-
-    // Public methods
-    //==========================================================================
-  public:
-
-    /**
-     * Constructor for gradient_method.
-     * @param x_   Pre-allocated and initialized variables being optimized over.
-     */
-    gradient_method(const Objective& obj_functor, const Gradient& grad_functor,
-                    OptVector& x_, const parameters& params)
-      : base(x_, obj_functor.objective(x_)), params(params),
-        convergence_zero(params.ls_params.convergence_zero),
-        obj_functor(obj_functor), grad_functor(grad_functor),
-        direction_(x_.size(), 0), total_obj_calls_(0),
-        step_ptr(NULL), void_step_functor_ptr(NULL), basic_step_type_ptr(NULL),
-        wolfe_step_type_ptr(NULL) {
-      init();
-    }
-
-    virtual ~gradient_method() {
-      clear_pointers();
-    }
-
-    //! Return the average number of objective function calls per line search,
-    //! or -1 if no iterations have completed.
-    double objective_calls_per_iteration() const {
-      if (iteration_ == 0)
-        return -1;
-      else
-        return ((double)(total_obj_calls_) / iteration_);
     }
 
   }; // class gradient_method

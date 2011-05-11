@@ -1952,7 +1952,7 @@ namespace sill {
 	size_t val(findata[finite_indices[j]]);
 	hd.f.add_column(finite_offset[j] + val, v);
       }
-      elem_mult_out((*it).vector(), (*it).vector(), vecdata); // COULD BE FASTER FOR SPARSE DATA
+      elem_mult_out((*it).vector(), (*it).vector(), vecdata);
       hd.v += outer_product(v, vecdata);
       hd.b += v;
       ++i;

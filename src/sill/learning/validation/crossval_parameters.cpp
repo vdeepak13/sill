@@ -52,6 +52,23 @@ namespace sill {
        >> run_combo_type;
   }
 
+  void crossval_parameters::print(std::ostream& out) const {
+    out << "dim : " << dim << "\n"
+        << "nfolds: " << nfolds << "\n"
+        << "minvals: " << minvals << "\n"
+        << "nvals: " << nvals << "\n"
+        << "zoom: " << zoom << "\n"
+        << "log_scale: " << log_scale << "\n"
+        << "run_combo_type: "
+        << statistics::generalized_mean_string(run_combo_type) << "\n";
+  }
+
+  std::ostream&
+  operator<<(std::ostream& out, const crossval_parameters& cv_params) {
+    cv_params.print(out);
+    return out;
+  }
+
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

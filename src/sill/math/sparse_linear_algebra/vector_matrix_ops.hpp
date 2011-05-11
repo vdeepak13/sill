@@ -35,6 +35,7 @@ namespace sill {
    *  - dot
    *  - outer_product
    *  - elem_mult_out
+   *  - elem_square_out
    ****************************************************************************/
 
   //! Addition
@@ -81,6 +82,11 @@ namespace sill {
                      const sparse_vector<T,SizeType>& b,
                      sparse_vector<T,SizeType>& c);
 
+  //! Store result of elem_mult(a,a) in b.
+  template <typename T, typename SizeType>
+  void elem_square_out(const sparse_vector<T,SizeType>& a,
+                       sparse_vector<T,SizeType>& b);
+
   /*****************************************************************************
    * Matrix-Vector operations
    *  - operator*
@@ -88,11 +94,13 @@ namespace sill {
 
   //! Dense matrix  x  sparse vector --> dense vector
   template <typename T, typename SizeType>
-  vector<T> operator*(const matrix<T>& m, const sparse_vector<T,SizeType>& v);
+  vector<T>
+  operator*(const matrix<T>& m, const sparse_vector<T,SizeType>& v);
 
   //! Dense matrix  x  sparse vector --> dense vector
   template <typename T, typename SizeType>
-  vector<T> operator*(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v);
+  vector<T>
+  operator*(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v);
 
   /*****************************************************************************
    * Matrix-Matrix operations
@@ -174,7 +182,8 @@ namespace sill {
   }
 
   template <typename T, typename SizeType>
-  T dot(const dense_vector_view<T,SizeType>& x, const sparse_vector<T,SizeType>& y) {
+  T dot(const dense_vector_view<T,SizeType>& x,
+        const sparse_vector<T,SizeType>& y) {
     assert(x.size() == y.size());
     T r = 0;
     for (SizeType i = 0; i < y.num_non_zeros(); ++i)
@@ -232,6 +241,11 @@ namespace sill {
                      const sparse_vector<T,SizeType>& b,
                      sparse_vector<T,SizeType>& c) {
     assert(a.size() == b.size());
+    if (&a == &b) {
+      elem_square_out(a, c);
+      return;
+    }
+    // TO DO: If a,b are sorted, make this more efficient.
     std::vector<SizeType> inds;
     std::vector<T> vals;
     if (a.num_non_zeros() < b.num_non_zeros()) {
@@ -252,6 +266,13 @@ namespace sill {
     c.reset(a.size(), inds, vals);
   }
 
+  template <typename T, typename SizeType>
+  void elem_square_out(const sparse_vector<T,SizeType>& a,
+                       sparse_vector<T,SizeType>& b) {
+    b.resize(a.size(), a.num_non_zeros());
+    elem_mult_out(a.values(), a.values(), b.values());
+  }
+
   //============================================================================
   // Matrix-Vector operations: implementations
   //============================================================================
@@ -264,6 +285,7 @@ namespace sill {
      * this does m * k multiplications.
      *
      * This version computes one element of y at a time.
+     * (It is faster when y is very short.)
      */
     template <typename InVecType, typename T, typename SizeType>
     inline vector<T>

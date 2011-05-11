@@ -82,6 +82,25 @@ namespace sill {
     return params;
   }
 
+  std::string
+  real_optimizer_builder::real_optimizer_string(real_optimizer_type rot) {
+    switch (rot) {
+    case GRADIENT_DESCENT:
+      return "gradient_descent";
+    case CONJUGATE_GRADIENT:
+      return "conjugate_gradient";
+    case CONJUGATE_GRADIENT_DIAG_PREC:
+      return "conjugate_gradient_diag_prec";
+    case LBFGS:
+      return "lbfgs";
+    case STOCHASTIC_GRADIENT:
+      return "stochastic_gradient";
+    default:
+      assert(false);
+      return "";
+    }
+  }
+
   oarchive&
   operator<<(oarchive& a,
              real_optimizer_builder::real_optimizer_type val) {

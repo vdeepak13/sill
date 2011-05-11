@@ -14,10 +14,12 @@ namespace sill {
       ("eta_choice",
        po::value<std::string>(&eta_choice_string)->default_value("fixed_eta"),
        "Method for choosing step size eta.")
-      ("fixed_eta",
-       po::value<double>(&(sos_params.fixed_eta))
-       ->default_value(.1),
-       "If using FIXED_ETA, this specifies eta (> 0).");
+      ("init_eta",
+       po::value<double>(&(sos_params.init_eta))->default_value(.1),
+       "Initial step size value (> 0).")
+      ("shrink_eta",
+       po::value<double>(&(sos_params.shrink_eta))->default_value(.999),
+       "(For DECREASING_ETA) Discount factor in (0,1] by which eta is shrunk each round.");
     desc.add(sub_desc1);
 
   } // add_options

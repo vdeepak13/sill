@@ -96,7 +96,8 @@ namespace sill {
         << resolve_numerical_problems << "\n"
         << line_prefix << "random_seed: " << random_seed << "\n"
         << line_prefix << "debug: " << debug << "\n"
-        << line_prefix << "opt_method: " << opt_method << "\n"
+        << line_prefix << "opt_method: "
+        << real_optimizer_builder::real_optimizer_string(opt_method) << "\n"
         << line_prefix << "gm_params:\n";
     gm_params.print(out, line_prefix + "  ");
     out << line_prefix << "cg_update_method: " << cg_update_method << "\n"
