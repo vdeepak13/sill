@@ -443,6 +443,16 @@ namespace sill {
       return false;
     }
 
+    //! Returns the Markov blanket of the given variable.
+    domain_type markov_blanket(output_variable_type* v) const {
+      domain_type d;
+      foreach(const vertex& u, neighbors(v)) {
+        domain_type udom(arguments(u));
+        d.insert(udom.begin(), udom.end());
+      }
+      return d;
+    }
+
     //! Returns all edges in the graph
     std::pair<edge_iterator, edge_iterator>
     edges() const {

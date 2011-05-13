@@ -5,7 +5,7 @@
 #include <boost/random/uniform_real.hpp>
 
 #include <sill/math/vector.hpp>
-#include <sill/optimization/stochastic_gradient_new.hpp>
+#include <sill/optimization/stochastic_gradient.hpp>
 
 // minimize -5 + (val - <1,1>)^2
 struct obj_grad_functor1 {
@@ -34,14 +34,14 @@ int main(int argc, char* argv[]) {
   size_t niter = 100;
   double range = 1; // controls amount of noise added to the gradient
 
-  stochastic_gradient_new_parameters sg_params;
+  stochastic_gradient_parameters sg_params;
   sg_params.single_opt_step_params.set_shrink_eta(niter);
 
   std::cerr << "sg_params:\n" << sg_params << std::endl;
 
   obj_grad_functor1 og1(range);
   vec val1(2, 0);
-  stochastic_gradient_new<vec, obj_grad_functor1>
+  stochastic_gradient<vec, obj_grad_functor1>
     sg1(og1, val1, sg_params);
   double last_obj = og1.objective(sg1.x());
   std::cout << "Testing stochastic gradient\n"

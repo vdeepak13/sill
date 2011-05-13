@@ -77,37 +77,8 @@ namespace sill {
      */
     size_t debug;
 
-    // Real optimization parameters
+    // Optimization parameters
     //==========================================================================
-
-    /**
-     * 0 = batch gradient descent with line search,
-     * 1 = batch conjugate gradient,
-     * 2 = stochastic gradient descent (without line search)
-     *  (default = 2)
-     * 3 = batch conjugate gradient with a diagonal preconditioner
-     */
-//    size_t method;
-
-    //! Learning rate in (0,1]
-    //! This is only used to choose the initial step size
-    //! if using a line search.
-    //!  (default = .1)
-//    double eta;
-
-    /**
-     * Rate at which to decrease the learning rate
-     * (by multiplying ETA by MU each round).
-     * This is not used if using a line search.
-     *  (default = exp(log(10^-4) / INIT_ITERATIONS),
-     *            or .999 if INIT_ITERATIONS == 0)
-     */
-//    double mu;
-
-    //! Amount of change in average log likelihood
-    //! below which algorithm will consider itself converged
-    //!  (default = .000001)
-//    double convergence_zero;
 
     //! Optimization method.
     real_optimizer_builder::real_optimizer_type opt_method;
@@ -123,15 +94,6 @@ namespace sill {
 
     // Methods
     //==========================================================================
-
-    /*
-    double choose_mu() const {
-      if (init_iterations == 0)
-        return .999;
-      else
-        return exp(-4. * std::log(10.) / init_iterations);
-    }
-    */
 
     multiclass_logistic_regression_parameters();
 
@@ -555,26 +517,6 @@ namespace sill {
 
     };  // class preconditioner_functor
 
-    //! Types for optimization methods
-    typedef gradient_method<opt_variables,objective_functor,gradient_functor>
-    gradient_method_type;
-
-    typedef gradient_descent<opt_variables,objective_functor,gradient_functor>
-    gradient_descent_type;
-
-    typedef conjugate_gradient<opt_variables,objective_functor,gradient_functor>
-    conjugate_gradient_type;
-
-    typedef conjugate_gradient<opt_variables,objective_functor,
-                               gradient_functor,preconditioner_functor>
-    prec_conjugate_gradient_type;
-
-    typedef lbfgs<opt_variables,objective_functor,gradient_functor>
-    lbfgs_type;
-
-    typedef stochastic_gradient<opt_variables,gradient_functor>
-    stochastic_gradient_type;
-
     // Protected data members
     //==========================================================================
 
@@ -594,7 +536,7 @@ namespace sill {
     //! Dataset (for batch learning)
     const dataset<la_type>* ds_ptr;
 
-    //! Oracle (for online/stochastic learning)
+    //! Oracle (for online learning)
     oracle<la_type>* o_ptr;
 
     //! datasource.finite_list()
@@ -639,17 +581,8 @@ namespace sill {
     //! For all generic optimization methods
     preconditioner_functor* prec_functor_ptr;
 
-    //! For batch gradient methods
-    gradient_method_type* gradient_method_ptr;
-
-    //! For stochastic optimization methods
-    stochastic_gradient_type* stochastic_gradient_ptr;
-
-    //! For stochastic gradient descent: gradients (to avoid reallocation)
-//    opt_variables* gradient_ptr;
-
-    //! For stochastic gradient descent: current eta (learning rate)
-//    double eta;
+    //! For batch and stochastic optimization methods
+    real_optimizer<opt_variables>* optimizer_ptr;
 
     //! Current iteration; i.e., # iterations completed
     size_t iteration_;
@@ -675,11 +608,13 @@ namespace sill {
     // Protected methods
     //==========================================================================
 
-    //! Initializes datasource according to the optimization method.
-    void init_datasource(size_t n = 0);
-
-    //! Initializes stuff using preset ds, o.
-    void init(bool init_weights = true);
+    /**
+     * Initializes stuff using preset ds, o.
+     * @param init_weights  If true, initialize the optimization variables.
+     * @param n             If drawing a dataset from an oracle, draw this many
+     *                      samples.
+     */
+    void init(bool init_weights, size_t n);
 
     //! Initialize optimization-related pointers (not ds,o pointers).
     void init_opt_pointers();
@@ -776,16 +711,6 @@ namespace sill {
     void
     my_hessian_diag(opt_variables& hd, const opt_variables& x) const;
 
-    //! Take one step of a batch gradient method.
-    //! @return  true iff learner may be trained further (and has not converged)
-//    bool step_gradient_method();
-
-    //! Take one step of stochastic gradient descent.
-    //! @todo How should we estimate convergence?
-    //!       (Estimate change based on a certain number of previous examples?)
-    //! @return  true iff learner may be trained further (and has not converged)
-//    bool step_stochastic_gradient_descent();
-
     // Public methods
     //==========================================================================
   public:
@@ -822,7 +747,7 @@ namespace sill {
      = multiclass_logistic_regression_parameters())
       : params(params), my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(NULL),
         o_ptr(NULL) {
-      init();
+      init(true, 0);
     }
 
     /**
@@ -837,8 +762,7 @@ namespace sill {
       : base(stats.get_dataset()), params(params),
         my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(&(stats.get_dataset())),
         o_ptr(NULL) {
-      init_datasource();
-      init();
+      init(true, 0);
       build();
     }
 
@@ -854,8 +778,7 @@ namespace sill {
      = multiclass_logistic_regression_parameters())
       : base(o), params(params),
         my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(NULL), o_ptr(&o) {
-      init_datasource(n);
-      init();
+      init(true, n);
       build();
     }
 
@@ -870,8 +793,7 @@ namespace sill {
      = multiclass_logistic_regression_parameters())
       : base(ds), params(params),
         my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(&ds), o_ptr(NULL) {
-      init_datasource();
-      init();
+      init(true, 0);
       build();
     }
 
@@ -889,8 +811,7 @@ namespace sill {
       : base(ds), params(params),
         my_ds_ptr(NULL), my_ds_o_ptr(NULL), ds_ptr(&ds), o_ptr(NULL),
         weights_(init_mlr.weights_) {
-      init_datasource();
-      init(false);
+      init(false, 0);
       // Check base:
       assert(label_ == init_mlr.label_);
       assert(label_index_ == init_mlr.label_index_);
@@ -1026,13 +947,10 @@ namespace sill {
       case real_optimizer_builder::CONJUGATE_GRADIENT:
       case real_optimizer_builder::CONJUGATE_GRADIENT_DIAG_PREC:
       case real_optimizer_builder::LBFGS:
-        if (gradient_method_ptr)
-          out << "multiclass_logistic_regression used a gradient_method:\n"
-              << "\t iteration = " << gradient_method_ptr->iteration() << "\n"
-              << "\t objective calls per iteration = "
-              << gradient_method_ptr->objective_calls_per_iteration() << "\n";
-        break;
       case real_optimizer_builder::STOCHASTIC_GRADIENT:
+        if (optimizer_ptr)
+          out << "multiclass_logistic_regression used a gradient_method:\n"
+              << "\t iteration = " << optimizer_ptr->iteration() << "\n";
         break;
       default:
         assert(false);
@@ -1470,32 +1388,40 @@ namespace sill {
   //==========================================================================
 
   template <typename LA>
-  void multiclass_logistic_regression<LA>::init_datasource(size_t n) {
-    if (real_optimizer_builder::is_stochastic(params.opt_method)) {
-      if (!o_ptr) {
-        if (my_ds_ptr) {
-          my_ds_o_ptr = new ds_oracle<la_type>(*my_ds_ptr);
-          o_ptr = my_ds_o_ptr;
-        }
-      }
-    } else {
-      if (!ds_ptr) {
-        if (o_ptr) {
-          my_ds_ptr = new vector_dataset<la_type>(o_ptr->datasource_info(), n);
-          for (size_t i = 0; i < n; ++i) {
-            if (o_ptr->next())
-              my_ds_ptr->insert(o_ptr->current());
-            else
-              break;
+  void multiclass_logistic_regression<LA>::init(bool init_weights,
+                                                size_t n) {
+    rng.seed(static_cast<unsigned>(params.random_seed));
+
+    // Init datasource
+    if (ds_ptr || o_ptr) {
+      if (real_optimizer_builder::is_stochastic(params.opt_method)) {
+        if (!o_ptr) {
+          if (my_ds_ptr) {
+            typename ds_oracle<la_type>::parameters dso_params;
+            dso_params.randomization_period = 5;
+            boost::uniform_int<int> unif_int(0,std::numeric_limits<int>::max());
+            dso_params.random_seed = unif_int(rng);
+            my_ds_o_ptr = new ds_oracle<la_type>(*my_ds_ptr);
+            o_ptr = my_ds_o_ptr;
           }
-          ds_ptr = my_ds_ptr;
+        }
+      } else {
+        if (!ds_ptr) {
+          if (o_ptr) {
+            my_ds_ptr = new vector_dataset<la_type>(o_ptr->datasource_info(),n);
+            for (size_t i = 0; i < n; ++i) {
+              if (o_ptr->next())
+                my_ds_ptr->insert(o_ptr->current());
+              else
+                break;
+            }
+            ds_ptr = my_ds_ptr;
+          }
         }
       }
     }
-  }
 
-  template <typename LA>
-  void multiclass_logistic_regression<LA>::init(bool init_weights) {
+    // Init other stuff
     fixed_record = false;
     if (ds_ptr) {
       finite_seq = ds_ptr->finite_list();
@@ -1512,9 +1438,7 @@ namespace sill {
     obj_functor_ptr = NULL;
     grad_functor_ptr = NULL;
     prec_functor_ptr = NULL;
-    gradient_method_ptr = NULL;
-    stochastic_gradient_ptr = NULL;
-    //      gradient_ptr = NULL;
+    optimizer_ptr = NULL;
     iteration_ = 0;
     total_train_weight = 0;
     train_acc = 0;
@@ -1527,7 +1451,7 @@ namespace sill {
       log_max_double = std::log(std::numeric_limits<double>::max()/nclasses_);
     else
       log_max_double = std::log(std::numeric_limits<double>::max());
-  } // init
+  } // init(init_weights, n)
 
   template <typename LA>
   void multiclass_logistic_regression<LA>::init_opt_pointers() {
@@ -1550,7 +1474,10 @@ namespace sill {
     case real_optimizer_builder::GRADIENT_DESCENT:
       {
         gradient_descent_parameters ga_params(params.gm_params);
-        gradient_method_ptr =
+        typedef
+          gradient_descent<opt_variables,objective_functor,gradient_functor>
+          gradient_descent_type;
+        optimizer_ptr =
           new gradient_descent_type(*obj_functor_ptr, *grad_functor_ptr,
                                     weights_, ga_params);
       }
@@ -1559,7 +1486,10 @@ namespace sill {
       {
         conjugate_gradient_parameters cg_params(params.gm_params);
         cg_params.update_method = params.cg_update_method;
-        gradient_method_ptr =
+        typedef
+          conjugate_gradient<opt_variables,objective_functor,gradient_functor>
+          conjugate_gradient_type;
+        optimizer_ptr =
           new conjugate_gradient_type(*obj_functor_ptr, *grad_functor_ptr,
                                       weights_, cg_params);
       }
@@ -1568,7 +1498,10 @@ namespace sill {
       {
         conjugate_gradient_parameters cg_params(params.gm_params);
         cg_params.update_method = params.cg_update_method;
-        gradient_method_ptr =
+        typedef conjugate_gradient<opt_variables,objective_functor,
+                                   gradient_functor,preconditioner_functor>
+          prec_conjugate_gradient_type;
+        optimizer_ptr =
           new prec_conjugate_gradient_type(*obj_functor_ptr, *grad_functor_ptr,
 					   *prec_functor_ptr, weights_,
 					   cg_params);
@@ -1578,18 +1511,22 @@ namespace sill {
       {
         lbfgs_parameters lbfgs_params(params.gm_params);
         lbfgs_params.M = params.lbfgs_M;
-        gradient_method_ptr =
+        typedef lbfgs<opt_variables,objective_functor,gradient_functor>
+          lbfgs_type;
+        optimizer_ptr =
           new lbfgs_type(*obj_functor_ptr, *grad_functor_ptr,
                          weights_, lbfgs_params);
       }
       break;
     case real_optimizer_builder::STOCHASTIC_GRADIENT:
       {
-        stochastic_gradient_parameters sg_params;
+        stochastic_gradient_parameters sg_params(params.gm_params);
         if (params.init_iterations != 0)
-          sg_params.step_multiplier =
-            std::exp(std::log(.0001) / params.init_iterations);
-        stochastic_gradient_ptr =
+          sg_params.single_opt_step_params.set_shrink_eta
+            (params.init_iterations);
+        typedef stochastic_gradient<opt_variables,gradient_functor>
+          stochastic_gradient_type;
+        optimizer_ptr =
           new stochastic_gradient_type(*grad_functor_ptr, weights_, sg_params);
       }
       break;
@@ -1617,13 +1554,9 @@ namespace sill {
     if (prec_functor_ptr)
       delete(prec_functor_ptr);
     prec_functor_ptr = NULL;
-    if (gradient_method_ptr)
-      delete(gradient_method_ptr);
-    gradient_method_ptr = NULL;
-    if (stochastic_gradient_ptr)
-      delete(stochastic_gradient_ptr);
-    stochastic_gradient_ptr = NULL;
-    //      if (gradient_ptr)    delete(gradient_ptr);
+    if (optimizer_ptr)
+      delete(optimizer_ptr);
+    optimizer_ptr = NULL;
   }
 
   template <typename LA>
@@ -1657,7 +1590,6 @@ namespace sill {
         return;
       }
     }
-    rng.seed(static_cast<unsigned>(params.random_seed));
     for (size_t i(0); i < ds.size(); ++i)
       total_train_weight += ds.weight(i);
 
@@ -1978,47 +1910,6 @@ namespace sill {
 
   } // my_hessian_diag()
 
-  /*
-  template <typename LA>
-  bool multiclass_logistic_regression<LA>::step_stochastic_gradient_descent() {
-    if (!gradient_ptr)
-      return false;
-    if (!(o_ptr->next()))
-      return false;
-    const record_type& r = o_ptr->current();
-    double r_weight(o_ptr->weight());
-    total_train_weight += r_weight;
-    // Compute v = prediction for *it.  Update accuracy, log likelihood.
-    gradient_ptr->f.zeros_memset();
-    gradient_ptr->v.zeros_memset();
-    gradient_ptr->b.zeros_memset();
-    add_raw_gradient(*gradient_ptr, train_acc, train_log_like, r, r_weight,
-                     eta, weights_);
-    // Update gradients to account for regularization
-    add_reg_gradient(*gradient_ptr, eta, weights_);
-
-    if (params.debug > 1) {
-      std::cerr << "Gradient extrema info:\n";
-      gradient_ptr->print_extrema_info(std::cerr);
-    }
-
-    // Update weights and learning rate eta.
-    //  (Note that the gradient has already been multiplied by eta.)
-    weights_.f -= gradient_ptr->f;
-    weights_.v -= gradient_ptr->v;
-    weights_.b -= gradient_ptr->b;
-    eta *= params.mu;
-
-    if (params.debug > 1) {
-      std::cerr << "Weights extrema info:\n";
-      weights_.print_extrema_info(std::cerr);
-    }
-
-    ++iteration_;
-    return true;
-  } // end of function: void step_stochastic_gradient_descent()
-  */
-
   // Constructors, etc.
   //==========================================================================
 
@@ -2051,9 +1942,8 @@ namespace sill {
     lambda = other.lambda;
     weights_ = other.weights_;
 
-    // To do eventually: Do a more careful deep copy of gradient_method_ptr,
-    //  stochastic_gradient_ptr, but have them reference the *_functor_ptr
-    //  copies.
+    // To do eventually: Do a more careful deep copy of optimizer_ptr,
+    //  but have it reference the *_functor_ptr copies.
     init_opt_pointers();
 
     iteration_ = other.iteration_;
@@ -2313,26 +2203,28 @@ namespace sill {
 
   template <typename LA>
   bool multiclass_logistic_regression<LA>::step() {
-    if (gradient_method_ptr) {
+    assert(optimizer_ptr);
+    if (!optimizer_ptr->step())
+      return false;
+    if (!real_optimizer_builder::is_stochastic(params.opt_method)) {
       double prev_train_obj(train_obj);
-      if (!gradient_method_ptr->step())
-        return false;
-      train_obj = gradient_method_ptr->objective();
+      train_obj = optimizer_ptr->objective();
       if (train_obj == inf()) {
         if (params.debug > 0)
           std::cerr << "multiclass_logistic_regression::step() failed since"
                     << " objective = inf." << std::endl;
         return false;
       }
-      if (train_obj > prev_train_obj) {
-        if (params.debug > 0)
+      if (params.debug > 0) {
+        if (train_obj > prev_train_obj) {
           std::cerr << "multiclass_logistic_regression took a step which "
                     << "increased the objective from " << prev_train_obj
                     << " to " << train_obj << std::endl;
-      }
-      if (params.debug > 1) {
-        std::cerr << "change in objective = "
-                  << (train_obj - prev_train_obj) << std::endl;
+        }
+        if (params.debug > 1) {
+          std::cerr << "change in objective = "
+                    << (train_obj - prev_train_obj) << std::endl;
+        }
       }
       // Check for convergence
       if (fabs(train_obj - prev_train_obj)
@@ -2345,15 +2237,10 @@ namespace sill {
                     << std::endl;
         return false;
       }
-    } else if (stochastic_gradient_ptr) {
-      if (!stochastic_gradient_ptr->step())
-        return false;
-    } else {
-      assert(false);
     }
     ++iteration_;
     return true;
-  }
+  } // step
 
   // Save and load methods
   //==========================================================================

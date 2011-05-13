@@ -2,160 +2,134 @@
 #ifndef SILL_STOCHASTIC_GRADIENT_HPP
 #define SILL_STOCHASTIC_GRADIENT_HPP
 
-#include <boost/type_traits/is_same.hpp>
-
-#include <sill/base/stl_util.hpp>
-#include <sill/math/is_finite.hpp>
-#include <sill/math/vector.hpp>
-#include <sill/optimization/concepts.hpp>
+#include <sill/optimization/gradient_method.hpp>
+#include <sill/optimization/void_objective.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
 
-  //! Parameters for stochastic_gradient subclasses.
-  struct stochastic_gradient_parameters {
+  /**
+   * Parameters for stochastic_gradient.
+   *
+   * Note that some options from gradient_method_parameters cannot be changed
+   * (and are ignored if set incorrectly):
+   *  - step_type (fixed to SINGLE_OPT_STEP)
+   *  - ls_params (not used)
+   *  - ls_stopping (not used)
+   *
+   * By default, this adjusts single_opt_step_params to use DECREASING_ETA
+   * with init_eta = 1 and shrink_eta =~ .999 (which is reasonable for about
+   * 10000 iterations).
+   */
+  struct stochastic_gradient_parameters
+    : public gradient_method_parameters {
 
-    //! Value (>= 0) small enough to be considered 0 for numerical purposes.
-    //!  (default = .00001)
-    double convergence_zero;
+    typedef gradient_method_parameters base;
 
-    /**
-     * Method for choosing step sizes.
-     *  - 0: Use step size: init_step_size * step_multiplier ^ iteration
-     *     (default)
-     */
-    size_t step_size_method;
+    stochastic_gradient_parameters();
 
-    //! Initial step size (> 0).
-    //!  (default = 1)
-    double init_step_size;
+    explicit
+    stochastic_gradient_parameters
+    (const gradient_method_parameters& gm_params);
 
-    //! Step size multiplier (in (0, 1)).
-    //!  (default = .99)
-    double step_multiplier;
+    //! This method is called by stochastic_gradient to correct options in
+    //! gradient_method_parameters.
+    void set_defaults();
 
-    /**
-     * Debug mode:
-     *  - 0: no debugging (default)
-     *  - 1: some
-     *  - 2: more
-     *  - higher: revert to highest debugging mode
-     */
-    size_t debug;
+    bool valid() const;
 
-    stochastic_gradient_parameters()
-      : convergence_zero(.00001), step_size_method(0), init_step_size(1),
-        step_multiplier(.99), debug(0) { }
-
-    bool valid() const {
-      if (convergence_zero < 0)
-        return false;
-      if (step_size_method > 0)
-        return false;
-      if (init_step_size <= 0)
-        return false;
-      if ((step_multiplier <= 0) || (step_multiplier >= 1))
-        return false;
-      return true;
-    }
+    void print(std::ostream& out) const;
 
   }; // struct stochastic_gradient_parameters
 
+  std::ostream&
+  operator<<(std::ostream& out,
+             const stochastic_gradient_parameters& params);
+
+
   /**
-   * Interface for stochastic gradient-based algorithms which choose directions
-   * and then take step sizes (of decreasing size) in those directions.
-   * This is for unconstrained nonlinear optimization,
-   * and it tries to minimize the objective.
+   * Stochastic gradient descent
+   *  - for unconstrained nonlinear optimization
+   *  - MINIMIZES the objective
    *
-   * @tparam OptVector      Datatype which stores the optimization variables.
-   * @tparam Gradient       Type of functor which computes the gradient.
+   * This class is similar to gradient_descent, but it restricts some parameter
+   * choices.  Specifically, it does not use line searches.
+   *
+   * @tparam OptVector   Datatype which stores the optimization variables.
+   * @tparam Gradient    Type of functor which computes the gradient.
+   *                      (This will presumably be a stochastic estimate.)
    *
    * @author Joseph Bradley
    *
    * \ingroup optimization_algorithms
    */
   template <typename OptVector, typename Gradient>
-  class stochastic_gradient {
+  class stochastic_gradient
+    : public gradient_method<OptVector, void_objective<OptVector>, Gradient> {
 
     concept_assert((sill::OptimizationVector<OptVector>));
     concept_assert((sill::GradientFunctor<Gradient, OptVector>));
+
+    // Public types
+    //==========================================================================
+  public:
+
+    typedef gradient_method<OptVector,void_objective<OptVector>,Gradient> base;
+
+    // Public methods
+    //==========================================================================
+
+    /**
+     * Constructor for stochastic_gradient.
+     * @param x_   Pre-allocated and initialized optimization variables.
+     */
+    stochastic_gradient
+    (const Gradient& grad_functor, OptVector& x_,
+     const stochastic_gradient_parameters& params
+     = stochastic_gradient_parameters())
+      : base(void_obj_functor, grad_functor, x_, params) {
+      assert(params.valid());
+    }
+
+    //! Perform one step.
+    //! @return  Always true.
+    bool step() {
+      // Note: This method does not use gradient_method::run_line_search,
+      //       which incurs extra overhead.
+      grad_functor.gradient(direction_, x_);
+
+      if (params.debug > 0) {
+        double step_magnitude(direction_.L2norm());
+        if (!rls_valid_step_magnitude_(step_magnitude))
+          return false;
+      }
+
+      assert(step_ptr);
+      step_ptr->step(*void_step_functor_ptr);
+      x_ -= direction_ * step_ptr->eta();
+
+      ++iteration_;
+
+      return true;
+    }
 
     // Protected data and methods
     //==========================================================================
   protected:
 
-    //! Gradient functor
-    const Gradient& grad_functor;
+    // Import from base class:
+    using base::grad_functor;
+    using base::x_;
+    using base::direction_;
+    using base::iteration_;
+    using base::step_ptr;
+    using base::params;
+    using base::void_step_functor_ptr;
 
-    //! Current values of variables being optimized over.
-    OptVector& x_;
+    using base::rls_valid_step_magnitude_;
 
-    //! From parameters:
-    double convergence_zero;
-
-    //! From parameters:
-    size_t step_size_method;
-
-    //! From parameters:
-    double step_multiplier;
-
-    //! From parameters:
-    size_t debug;
-
-    //! Update direction.
-    //! When step() is called, this direction can be modified.
-    OptVector direction_;
-
-    //! Iteration number.
-    size_t iteration_;
-
-    //! Current step size.
-    double current_step_size_;
-
-    // Public methods
-    //==========================================================================
-  public:
-
-    /**
-     * Constructor for stochastic_gradient.
-     * @param x_   Pre-allocated and initialized variables being optimized over.
-     */
-    stochastic_gradient
-    (const Gradient& grad_functor, OptVector& x_,
-     const stochastic_gradient_parameters& params)
-      : grad_functor(grad_functor), x_(x_),
-        convergence_zero(params.convergence_zero),
-        step_size_method(params.step_size_method),
-        step_multiplier(params.step_multiplier), debug(params.debug),
-        direction_(x_.size(), 0),
-        iteration_(0), current_step_size_(params.init_step_size) {
-      assert(params.valid());
-    }
-
-    //! Perform one step.
-    //! @return  Always true (but perhaps false eventually once we can
-    //!          measure convergence).
-    bool step() {
-      grad_functor.gradient(direction_, x_);
-      direction_ *= current_step_size_;
-      x_ += direction_;
-      current_step_size_ *= step_multiplier;
-      // TO DO: Make sure the step size does not get small enough to have
-      //        numerical issues.
-      ++iteration_;
-      return true;
-    } // step()
-
-    //! Current values of variables being optimized over.
-    const OptVector& x() const {
-      return x_;
-    }
-
-    //! Current iteration (from 0), i.e., number of iterations completed.
-    size_t iteration() const {
-      return iteration_;
-    }
+    void_objective<OptVector> void_obj_functor;
 
   }; // class stochastic_gradient
 

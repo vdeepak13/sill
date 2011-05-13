@@ -18,7 +18,6 @@ namespace sill {
   // Forward declarations
   template <typename F> class crf_validation_functor;
 
-
   /**
    * This is a class which represents algorithms for learning a crf_model
    * from data.  This treats models as a collection of factors with these
@@ -148,11 +147,12 @@ namespace sill {
      *          have converged)
      */
     bool step() {
-      if (gradient_method_ptr) {
+      assert(optimizer_ptr);
+      if (!optimizer_ptr->step())
+        return false;
+      if (!real_optimizer_builder::is_stochastic(params.opt_method)) {
         double prev_train_obj(train_obj);
-        if (!gradient_method_ptr->step())
-          return false;
-        train_obj = gradient_method_ptr->objective();
+        train_obj = optimizer_ptr->objective();
         if (params.debug > 1) {
           if (train_obj > prev_train_obj)
             std::cerr << "crf_parameter_learner took a step which "
@@ -172,11 +172,6 @@ namespace sill {
                       << std::endl;
           return false;
         }
-      } else if (stochastic_gradient_ptr) {
-        if (!stochastic_gradient_ptr->step())
-          return false;
-      } else {
-        assert(false);
       }
       ++iteration_;
       return true;
@@ -261,15 +256,6 @@ namespace sill {
       return my_objective_count_;
     }
 
-    //! Return the average number of objective function calls per iteration,
-    //! or -1 if no iterations have completed, if the underlying optimization
-    //! routine supports this.  If not, returns -2.
-    double objective_calls_per_iteration() const {
-      if (!gradient_method_ptr)
-        return -2;
-      return gradient_method_ptr->objective_calls_per_iteration();
-    }
-
     //! Number of calls made to my_gradient().
     size_t my_gradient_count() const {
       return my_gradient_count_;
@@ -300,9 +286,9 @@ namespace sill {
     //! Print debugging info about calls to objective, gradient, etc.,
     //! as well as objective info (if available).
     void print_stats(std::ostream& out) const {
-      if (gradient_method_ptr)
+      if (optimizer_ptr)
         out << " Initial objective: " << init_train_obj << "\n"
-            << " Current objective: " << gradient_method_ptr->objective()
+            << " Current objective: " << optimizer_ptr->objective()
             << "\n";
       out << " Method calls:\n"
           << "\tmy_objective:             " << my_objective_count() << "\n"
@@ -321,6 +307,10 @@ namespace sill {
   private:
 
     /**
+     * This supports both batch and stochastic optimization.
+     *
+     * FOR BATCH OPTIMIZATION:
+     *
      * A combination of:
      *  - Objective functor (fitting the ObjectiveFunctor concept).
      *  - Gradient functor (fitting the GradientFunctor concept).
@@ -342,6 +332,10 @@ namespace sill {
      *        - the preconditioner (if using preconditioning) (since objective
      *          is always called before gradient by the line search methods)
      *     - If computing the preconditioner, compute everything.
+     *
+     * FOR STOCHASTIC OPTIMIZATION:
+     *
+     * This only supports computation of the gradient (currently).
      */
     class everything_functor {
 
@@ -391,6 +385,9 @@ namespace sill {
     public:
       /**
        * Constructor.
+       * @param no_shared_computation
+       *           See above for more info.
+       *           This should be true for STOCHASTIC_GRADIENT.
        */
       everything_functor(const crf_parameter_learner& cpl,
                          bool no_shared_computation)
@@ -398,13 +395,18 @@ namespace sill {
           obj_check_current_x(false),
           current_objective(std::numeric_limits<double>::infinity()),
           grad_check_current_x(false), hd_check_current_x(false) {
-        if (!no_shared_computation) {
-          current_x.resize(cpl.crf_.weights().size());
-          current_gradient.resize(cpl.crf_.weights().size());
-        }
         if (cpl.params.opt_method ==
-            real_optimizer_builder::CONJUGATE_GRADIENT_DIAG_PREC) {
-          hd.resize(cpl.crf_.weights().size());
+            real_optimizer_builder::STOCHASTIC_GRADIENT) {
+          assert(no_shared_computation);
+        } else {
+          if (!no_shared_computation) {
+            current_x.resize(cpl.crf_.weights().size());
+            current_gradient.resize(cpl.crf_.weights().size());
+          }
+          if (cpl.params.opt_method ==
+              real_optimizer_builder::CONJUGATE_GRADIENT_DIAG_PREC) {
+            hd.resize(cpl.crf_.weights().size());
+          }
         }
       }
 
@@ -444,7 +446,7 @@ namespace sill {
         } catch (normalization_error exc) {
           throw normalization_error((std::string("crf_parameter_learner::everything_functor::objective() could not normalize the CRF; consider using more regularization (Message from normalization attempt: ") + exc.what() + ")").c_str());
         }
-      }
+      } // objective(x)
 
       //! Computes the gradient of the function at x.
       //! @param grad  Location to store the gradient.
@@ -469,12 +471,16 @@ namespace sill {
               grad = current_gradient;
             }
           } else {
-            cpl.my_gradient(grad, x);
+            if (cpl.params.opt_method ==
+                real_optimizer_builder::STOCHASTIC_GRADIENT)
+              cpl.my_stochastic_gradient(grad, x);
+            else
+              cpl.my_gradient(grad, x);
           }
         } catch (normalization_error exc) {
           throw normalization_error((std::string("crf_parameter_learner::everything_functor::gradient() could not normalize the CRF; consider using more regularization (Message from normalization attempt: ") + exc.what() + ")").c_str());
         }
-      }
+      } // gradient(grad,x)
 
       //! Applies the preconditioner to the given direction,
       //! when the optimization variables have value x.
@@ -494,14 +500,19 @@ namespace sill {
               direction.elem_mult(hd);
             }
           } else {
-            cpl.my_hessian_diag(hd, x);
-            hd.reciprocal();
-            direction.elem_mult(hd);
+            if (cpl.params.opt_method ==
+                real_optimizer_builder::STOCHASTIC_GRADIENT) {
+              assert(false); // NOT YET IMPLEMENTED
+            } else {
+              cpl.my_hessian_diag(hd, x);
+              hd.reciprocal();
+              direction.elem_mult(hd);
+            }
           }
         } catch (normalization_error exc) {
           throw normalization_error((std::string("crf_parameter_learner::everything_functor::precondition() could not normalize the CRF; consider using more regularization (Message from normalization attempt: ") + exc.what() + ")").c_str());
         }
-      }
+      } // precondition(direction, x)
 
       //! Applies the last computed preconditioner to the given direction.
       void precondition(opt_variables& direction) const {
@@ -510,54 +521,10 @@ namespace sill {
 
     }; // class everything_functor
 
-    /**
-     * Version of everything_functor which is made for stochastic gradient.
-     * It currently computes the gradient and objective for a datapoint
-     * chosen uniformly at random.
-     */
-    class stochastic_everything_functor {
-
-      const crf_parameter_learner& cpl;
-
-      //! Objective value for the datapoint used to compute the last gradient.
-      mutable double last_objective_;
-
-    public:
-      //! Constructor.
-      stochastic_everything_functor(const crf_parameter_learner& cpl)
-        : cpl(cpl) { }
-
-      //! Objective value for the datapoint used to compute the last gradient.
-      double last_objective() const {
-        return last_objective_;
-      }
-
-      //! Computes the gradient at x by sampling a single datapoint.
-      //! @param grad  Data type in which to store the gradient.
-      void gradient(opt_variables& grad, const opt_variables& x) const {
-        try {
-          last_objective_ = cpl.my_stochastic_gradient(grad, x);
-        } catch (normalization_error exc) {
-          throw normalization_error
-            (std::string("crf_parameter_learner::stochastic_everything_functor")
-             + "::gradient() could not normalize the CRF; consider using more"
-             + " regularization (Message from normalization attempt: "
-             + exc.what() + ")");
-        }
-      }
-
-    }; // stochastic_everything_functor
-
     //! Type for optimization methods
-    typedef
-    gradient_method<opt_variables,everything_functor,everything_functor>
-    gradient_method_type;
+    typedef real_optimizer<opt_variables> real_optimizer_type;
 
-    //! Type for optimization methods
-    typedef stochastic_gradient<opt_variables,stochastic_everything_functor>
-    stochastic_gradient_type;
-
-    // Private data members
+     // Private data members
     // =========================================================================
 
     crf_parameter_learner_parameters params;
@@ -599,17 +566,11 @@ namespace sill {
     // Optimization pointers
     //--------------------------------------------------------------------------
 
-    //! For batch optimization methods
+    //! For batch and stochastic optimization methods
     everything_functor* everything_functor_ptr;
 
-    //! For stochastic optimization methods
-    stochastic_everything_functor* stochastic_everything_functor_ptr;
-
-    //! For batch optimization methods
-    gradient_method_type* gradient_method_ptr;
-
-    //! For stochastic optimization methods
-    stochastic_gradient_type* stochastic_gradient_ptr;
+    //! For batch and stochastic optimization methods
+    real_optimizer_type* optimizer_ptr;//gradient_method_ptr;
 
     // Optimization counters
     //--------------------------------------------------------------------------
@@ -662,9 +623,7 @@ namespace sill {
       unif_int = boost::uniform_int<int>(0, ds.size() - 1);
       rng.seed(params.random_seed);
       everything_functor_ptr = NULL;
-      stochastic_everything_functor_ptr = NULL;
-      gradient_method_ptr = NULL;
-      stochastic_gradient_ptr = NULL;
+      optimizer_ptr = NULL;
       iteration_ = 0;
       total_train_weight = 0;
       init_train_obj = std::numeric_limits<double>::max();
@@ -728,8 +687,7 @@ namespace sill {
           new everything_functor(*this, no_shared_computation);
         break;
       case real_optimizer_builder::STOCHASTIC_GRADIENT:
-        stochastic_everything_functor_ptr =
-          new stochastic_everything_functor(*this);
+        everything_functor_ptr = new everything_functor(*this, true);
         break;
       default:
         assert(false);
@@ -743,7 +701,7 @@ namespace sill {
             gradient_descent
             <opt_variables,everything_functor,everything_functor>
             gradient_descent_type;
-          gradient_method_ptr =
+          optimizer_ptr =
             new gradient_descent_type
             (*everything_functor_ptr, *everything_functor_ptr, crf_.weights(),
              ga_params);
@@ -756,7 +714,7 @@ namespace sill {
             conjugate_gradient
             <opt_variables,everything_functor,everything_functor>
             conjugate_gradient_type;
-          gradient_method_ptr =
+          optimizer_ptr =
             new conjugate_gradient_type
             (*everything_functor_ptr, *everything_functor_ptr, crf_.weights(),
              cg_params);
@@ -769,7 +727,7 @@ namespace sill {
             <opt_variables,everything_functor,everything_functor,
             everything_functor>
             prec_conjugate_gradient_type;
-          gradient_method_ptr =
+          optimizer_ptr =
             new prec_conjugate_gradient_type
             (*everything_functor_ptr, *everything_functor_ptr,
              *everything_functor_ptr, crf_.weights(), cg_params);
@@ -780,7 +738,7 @@ namespace sill {
           lbfgs_parameters lbfgs_params(params.gm_params);
           typedef lbfgs<opt_variables,everything_functor,everything_functor>
             lbfgs_type;
-          gradient_method_ptr =
+          optimizer_ptr =
             new lbfgs_type
             (*everything_functor_ptr, *everything_functor_ptr, crf_.weights(),
              lbfgs_params);
@@ -788,13 +746,15 @@ namespace sill {
         break;
       case real_optimizer_builder::STOCHASTIC_GRADIENT:
         {
-          stochastic_gradient_parameters sg_params;
+          stochastic_gradient_parameters sg_params(params.gm_params);
           if (params.init_iterations != 0)
-            sg_params.step_multiplier =
-              std::exp(std::log(.0001) / params.init_iterations);
-          stochastic_gradient_ptr =
-            new stochastic_gradient_type
-            (*stochastic_everything_functor_ptr, crf_.weights(), sg_params);
+            sg_params.single_opt_step_params.set_shrink_eta
+              (params.init_iterations);
+          typedef stochastic_gradient<opt_variables,everything_functor>
+            stochastic_gradient_type;
+          optimizer_ptr =
+            new stochastic_gradient_type(*everything_functor_ptr,
+                                         crf_.weights(), sg_params);
         }
         break;
       default:
@@ -807,15 +767,9 @@ namespace sill {
       if (everything_functor_ptr)
         delete(everything_functor_ptr);
       everything_functor_ptr = NULL;
-      if (stochastic_everything_functor_ptr)
-        delete(stochastic_everything_functor_ptr);
-      stochastic_everything_functor_ptr = NULL;
-      if (gradient_method_ptr)
-        delete(gradient_method_ptr);
-      gradient_method_ptr = NULL;
-      if (stochastic_gradient_ptr)
-        delete(stochastic_gradient_ptr);
-      stochastic_gradient_ptr = NULL;
+      if (optimizer_ptr)
+        delete(optimizer_ptr);
+      optimizer_ptr = NULL;
     }
 
     //! Finish the initialization, and run learning.
@@ -842,9 +796,8 @@ namespace sill {
 
       init_pointers();
 
-      if (gradient_method_ptr) {
-        train_obj = gradient_method_ptr->objective();
-      } else if (stochastic_gradient_ptr) {
+      if (optimizer_ptr) {
+        train_obj = optimizer_ptr->objective();
       } else {
         assert(false);
       }

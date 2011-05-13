@@ -228,7 +228,7 @@ test_crf_parameter_learner
 
   cout << "crf_parameter_learner made " << cpl.iteration()
        << " calls to gradient, with "
-       << cpl.objective_calls_per_iteration()
+       << (cpl.my_objective_count() / cpl.iteration())
        << " avg calls to objective per gradient call."
        << endl;
 

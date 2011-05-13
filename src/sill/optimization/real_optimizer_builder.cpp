@@ -77,8 +77,7 @@ namespace sill {
   }
 
   stochastic_gradient_parameters real_optimizer_builder::get_sg_parameters() {
-    throw std::runtime_error("NOT YET IMPLEMENTED!");
-    stochastic_gradient_parameters params;
+    stochastic_gradient_parameters params(gm_builder.get_parameters());
     return params;
   }
 
