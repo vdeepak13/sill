@@ -450,6 +450,7 @@ namespace sill {
         domain_type udom(arguments(u));
         d.insert(udom.begin(), udom.end());
       }
+      d.erase(v);
       return d;
     }
 
