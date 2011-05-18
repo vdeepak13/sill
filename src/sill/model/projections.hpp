@@ -3,6 +3,7 @@
 #define SILL_MODEL_PROJECTIONS_HPP
 
 #include <sill/graph/undirected_graph.hpp>
+#include <sill/model/decomposable.hpp>
 #include <sill/range/concepts.hpp>
 
 #include <sill/macros_def.hpp>
@@ -57,7 +58,7 @@ namespace sill {
    *
    * To choose the subtree, this function computes the mutual information
    * between all pairs of variables appearing in factors together and
-   * then build a maximum weight spanning tree over those variables.
+   * then builds a maximum weight spanning tree over those variables.
    */
   template <typename F, typename FactorRange>
   decomposable<F> factors2thin_decomposable(const FactorRange& factors) {

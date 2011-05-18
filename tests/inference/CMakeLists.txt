@@ -4,6 +4,7 @@ subdirs(
   mpi
 )
 
+#add_executable(approximate_inference_engine approximate_inference_engine.cpp)
 add_executable(belief_propagation belief_propagation.cpp)
 add_executable(gibbs_sampler gibbs_sampler.cpp)
 add_executable(bethe_bp bethe_bp.cpp)

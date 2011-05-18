@@ -11,6 +11,7 @@
 /**
  * \file io.hpp Functions for reading data in Stanford-like syntax.
  *              (this file may be renamed in the future to be more specific).
+ * @todo Move this to the parsers/ directory.
  */
 
 namespace sill {

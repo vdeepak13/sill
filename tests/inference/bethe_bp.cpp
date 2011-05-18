@@ -12,21 +12,21 @@
 int main(int argc, char** argv) {
   using namespace std;
   using namespace sill;
-  
+
   if (argc < 4) {
     cout << "Usage: belief_propagation m n niters engine [eta]" << endl;
     return 1;
   }
-  
+
   size_t m         = boost::lexical_cast<size_t>(argv[1]);
   size_t n         = boost::lexical_cast<size_t>(argv[2]);
   size_t niters    = boost::lexical_cast<size_t>(argv[3]);
   size_t engine_id = (argc <= 4) ? 1 : boost::lexical_cast<size_t>(argv[4]);
   double eta       = (argc <= 5) ? 1 : boost::lexical_cast<double>(argv[5]);
-  
+
   boost::mt19937 rng;
   universe u;
-                      
+
   finite_var_vector variables = u.new_finite_variables(m*n, 2);
   cout << "Generating random model" << endl;
   pairwise_markov_network<table_factor> mn;
