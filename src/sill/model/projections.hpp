@@ -3,6 +3,7 @@
 #define SILL_MODEL_PROJECTIONS_HPP
 
 #include <sill/graph/undirected_graph.hpp>
+#include <sill/iterator/transform_output_iterator.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/range/concepts.hpp>
 
