@@ -1,8 +1,9 @@
 #ifndef SILL_MOMENT_GAUSSIAN_HPP
 #define SILL_MOMENT_GAUSSIAN_HPP
 
-#include <boost/random/normal_distribution.hpp>
 #include <boost/random/lagged_fibonacci.hpp>
+#include <boost/random/normal_distribution.hpp>
+#include <boost/random/uniform_int.hpp>
 
 #include <sill/factor/constant_factor.hpp>
 #include <sill/factor/gaussian_factor.hpp>

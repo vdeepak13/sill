@@ -1,8 +1,6 @@
 #ifndef SILL_FINITE_ASSIGNMENT_HPP
 #define SILL_FINITE_ASSIGNMENT_HPP
 
-#include <boost/random/uniform_int.hpp>
-
 #include <sill/base/finite_variable.hpp>
 #include <sill/base/stl_util.hpp>
 
@@ -23,20 +21,6 @@ namespace sill {
     return a;
   }
 
-  //! Returns a uniformly random to the given set of finite variables
-  //! \param Engine a random number generator
-  template<typename Engine>
-  finite_assignment 
-  random_assignment(const finite_domain& domain, Engine& rand) {
-    boost::uniform_int<int> unif_int;
-    finite_assignment a;
-    foreach(finite_variable* v, domain) {
-      a[v] = unif_int(rand, v->size());
-    }
-    return a;
-  }
-
-
   //! Returns the number of variable values for which both finite_assignments
   //! agree.
   inline size_t assignment_agreement(const finite_assignment &fa1, 
@@ -49,10 +33,9 @@ namespace sill {
     return count;
   }
 
-
   //! @}
 
-}
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

@@ -22,6 +22,20 @@ namespace sill {
     }
   };
 
+  /**
+   * A functor that returns the output arguments of a CRF factor.
+   * \ingroup factor_types
+   */
+  template <typename F>
+  struct output_arguments_functor 
+    : public std::unary_function<const F&,
+                                 const typename F::output_domain_type&> {
+//    concept_assert((CRFfactor<F>));
+    const typename F::output_domain_type& operator()(const F& f) const {
+      return f.output_arguments();
+    }
+  };
+
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

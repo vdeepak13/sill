@@ -80,14 +80,16 @@ namespace sill {
 
   template <typename Engine>
   void random_ising_model(double alpha_max, double w_max,
-                          pairwise_markov_network<table_factor>& mn, Engine& engine) {
+                          pairwise_markov_network<table_factor>& mn,
+                          Engine& engine) {
     boost::uniform_real<> unif_alpha(0, alpha_max);
     boost::uniform_real<> unif_w(0, w_max);
     foreach(finite_variable* v, mn.vertices()) {
       mn[v] = make_ising_factor<table_factor>(v, unif_alpha(engine));
     }
     foreach(undirected_edge<finite_variable*> e, mn.edges()) {
-      mn[e] = make_ising_factor<table_factor>(e.source(), e.target(), unif_w(engine));
+      mn[e] = make_ising_factor<table_factor>(e.source(), e.target(),
+                                              unif_w(engine));
     }
   }
 

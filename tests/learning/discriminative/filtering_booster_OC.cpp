@@ -44,7 +44,6 @@ int main(int argc, char* argv[]) {
   dataset_statistics<> stats_train(ds_train);
 
   finite_variable* class_var = ds_train.finite_class_variables().front();
-  size_t class_var_index = ds_train.record_index(class_var);
   finite_variable* binary_var = u.new_finite_variable(2);
 
   cout << "Marginal (from training set) over class variable:\n"

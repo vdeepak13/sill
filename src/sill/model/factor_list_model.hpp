@@ -21,23 +21,23 @@ namespace sill {
   template <typename F>
   class factor_list_model
     : public factorized_model<F> {
+
     concept_assert((Factor<F>));
 
+    // Public types
+    //==========================================================================
   public:
+
     typedef factorized_model<F> base;
 
     typedef typename base::domain_type domain_type;
     
     typedef typename base::assignment_type assignment_type;
-    
-  private:
-    //! The factors in the model.
-    std::list<F> factors_;
-    //! The arguments to the model--note that some variables may not appear
-    //! in factors.
-    domain_type args;
 
+    // Public methods
+    //==========================================================================
   public:
+
     //! Creates a factor list model with no factors.
     factor_list_model() { }
 
@@ -47,14 +47,29 @@ namespace sill {
 
     //! Creates a factor list model with the given factors.
     template <typename FactorRange>
-    factor_list_model(const FactorRange& factors)
-      : factors_(boost::begin(factors), boost::end(factors)) {
+    factor_list_model(const FactorRange& factors_)
+      : factors_(boost::begin(factors_), boost::end(factors_)) {
       foreach(const F& f, factors_)
         args.insert(f.arguments());
     }
 
-    void add_factor(const F& factor) {
-      factors_.push_back(factor);
+    //! Add a factor, adding new arguments as needed.
+    void add_factor(const F& f) {
+      factors_.push_back(f);
+      args.insert(f.arguments().begin(), f.arguments().end());
+    }
+
+    //! Add factors, adding new arguments as needed.
+    template <typename FactorRange>
+    void add_factors(const FactorRange& new_factors) {
+      foreach(const F& f, new_factors)
+        add_factor(f);
+    }
+
+    //! Clear all factors and arguments.
+    void clear() {
+      factors_.clear();
+      args.clear();
     }
 
     /**
@@ -133,6 +148,17 @@ namespace sill {
       // std::ostringstream out; out << *this; return out.str(); 
       return std::string();
     }
+
+    // Private data
+    //==========================================================================
+  private:
+
+    //! The factors in the model.
+    std::list<F> factors_;
+
+    //! The arguments to the model--note that some variables may not appear
+    //! in factors.
+    domain_type args;
 
   }; // factor_list_model
 
