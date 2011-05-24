@@ -221,7 +221,7 @@ namespace sill {
       return cmean(safe_get(var_range,v));
     }
 
-    //! Returns the covariance a subset of variables in the given order
+    //! Returns the covariance of a subset of variables in the given order
     mat covariance(const vector_var_vector& vars) const {
       ivec ind = indices(vars);
       return cov(ind, ind);
@@ -240,6 +240,15 @@ namespace sill {
       return tmpvec(ind);
     }
 
+    //! Returns the covariance of two subsets of variables in the given order:
+    //!  cov(vars1, vars2)
+    mat covariance(const vector_var_vector& vars1,
+                   const vector_var_vector& vars2) const {
+      ivec ind1(indices(vars1));
+      ivec ind2(indices(vars2));
+      return cov(ind1, ind2);
+    }
+
     //! Returns true if the two factors are equivalent
     bool operator==(const moment_gaussian& other) const;
 
@@ -252,8 +261,12 @@ namespace sill {
     //! Evaluates the Gaussian for a given assignment
     logarithmic<double> operator()(const vector_assignment& a) const;
 
-    //! Evaluates the Gaussian for a given vector
-    logarithmic<double> operator()(const vec& x) const;
+    //! Evaluates the Gaussian P(Y) for a given vector.
+    //! (The Gaussian must be a marginal over Y.)
+    logarithmic<double> operator()(const vec& y) const;
+
+    //! Evaluates the Gaussian P(Y|X) for given vectors y,x.
+    logarithmic<double> operator()(const vec& y, const vec& x) const;
 
     //! Returns the value associated with an assignment.
     double logv(const vector_assignment& a) const {

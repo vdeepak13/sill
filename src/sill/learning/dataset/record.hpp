@@ -193,6 +193,23 @@ namespace sill {
       vector_record<la_type>::add_to_assignment(X, a);
     }
 
+    //! Returns the set of arguments.
+    //! NOTE: This is not stored and must be computed!
+    domain variables() const {
+      finite_domain fvars(this->finite_record::variables());
+      vector_domain vvars(this->vector_record<la_type>::variables());
+      domain vars;
+      vars.insert(fvars.begin(), fvars.end());
+      vars.insert(vvars.begin(), vvars.end());
+      return vars;
+    }
+
+    //! Returns the number of arguments.
+    size_t num_variables() const {
+      return finite_record::num_variables()
+        + vector_record<la_type>::num_variables();
+    }
+
     //! Write the record to the given output stream.
     void write(std::ostream& out) const {
       out << this->assignment();

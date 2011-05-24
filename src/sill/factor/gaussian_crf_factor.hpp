@@ -89,8 +89,7 @@ namespace sill {
                                  gaussian_opt_vector, 2> base;
 
     typedef base::la_type la_type;
-    typedef record<la_type> record_type;
-    typedef vector_record<la_type> vector_record_type;
+    typedef vector_record<la_type> record_type;
 
     //! Parameters used for learn_crf_factor().
     struct parameters {
@@ -268,7 +267,7 @@ namespace sill {
      * inputs may become outputs (if variable_type = output_variable_type) and
      * outputs may become inputs (if variable_type = input_variable_type).
      * The entire argument set must remain the same, i.e.,
-     * union(Y,X) must equal union(new_Y, new_X).
+     * union(Y,X) must be a subset of union(new_Y, new_X).
      */
     void relabel_outputs_inputs(const output_domain_type& new_Y,
                                 const input_domain_type& new_X);
@@ -282,7 +281,7 @@ namespace sill {
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
-    double v(const vector_record_type& r) const;
+    double v(const record_type& r) const;
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
@@ -290,7 +289,7 @@ namespace sill {
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
-    double logv(const vector_record_type& r) const;
+    double logv(const record_type& r) const;
 
     /**
      * If this factor is f(Y,X), compute f(Y, X = x).
@@ -313,7 +312,7 @@ namespace sill {
      *          the given input variable (X) instantiation;
      *          in real space
      */
-    const canonical_gaussian& condition(const vector_record_type& r) const;
+    const canonical_gaussian& condition(const record_type& r) const;
 
     /**
      * If this factor is f(Y,X), compute f(Y, X = x).
@@ -455,7 +454,8 @@ namespace sill {
      * This option MUST be turned off before using this factor with records
      * with different variable orderings!
      */
-    void fix_records(const vector_record_type& r) {
+    void fix_records(const record_type& r) {
+      // TO DO: Use this when relabeled==true.  (It is currently ignored.)
       r.vector_indices(head_indices_, head_);
       r.vector_indices(tail_indices_, tail_);
       fixed_records_ = true;
@@ -489,7 +489,7 @@ namespace sill {
     //! @param grad   Pre-allocated vector to which to add the gradient.
     //! @param r      Datapoint.
     //! @param w      Weight by which to multiply the added values.
-    void add_gradient(optimization_vector& grad, const vector_record_type& r,
+    void add_gradient(optimization_vector& grad, const record_type& r,
                       double w) const;
 
     /**
@@ -505,7 +505,7 @@ namespace sill {
      * @tparam YFactor  Factor type for a distribution over Y variables.
      */
     void add_expected_gradient(optimization_vector& grad,
-                               const vector_record_type& r,
+                               const record_type& r,
                                const canonical_gaussian& fy,
                                double w = 1) const;
 
@@ -522,7 +522,7 @@ namespace sill {
      * @tparam YFactor  Factor type for a distribution over Y variables.
      */
     void add_expected_gradient(optimization_vector& grad,
-                               const vector_record_type& r,
+                               const record_type& r,
                                const moment_gaussian& fy, double w = 1) const;
 
     /**
@@ -531,7 +531,7 @@ namespace sill {
      *   add_expected_gradient(grad, r, fy, -1 * w);
      */
     void
-    add_combined_gradient(optimization_vector& grad, const vector_record_type& r,
+    add_combined_gradient(optimization_vector& grad, const record_type& r,
                           const canonical_gaussian& fy, double w = 1.) const;
 
     /**
@@ -540,7 +540,7 @@ namespace sill {
      *   add_expected_gradient(grad, r, fy, -1 * w);
      */
     void
-    add_combined_gradient(optimization_vector& grad, const vector_record_type& r,
+    add_combined_gradient(optimization_vector& grad, const record_type& r,
                           const moment_gaussian& fy, double w = 1.) const;
 
     /**
@@ -551,7 +551,7 @@ namespace sill {
      * @param w       Weight by which to multiply the added values.
      */
     void
-    add_hessian_diag(optimization_vector& hessian, const vector_record_type& r,
+    add_hessian_diag(optimization_vector& hessian, const record_type& r,
                      double w) const;
 
     /**
@@ -567,12 +567,12 @@ namespace sill {
      */
     void
     add_expected_hessian_diag(optimization_vector& hessian,
-                              const vector_record_type& r,
+                              const record_type& r,
                               const canonical_gaussian& fy, double w) const;
 
     void
     add_expected_hessian_diag(optimization_vector& hessian,
-                              const vector_record_type& r,
+                              const record_type& r,
                               const moment_gaussian& fy, double w) const;
 
     /**
@@ -588,12 +588,12 @@ namespace sill {
      */
     void
     add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                  const vector_record_type& r,
+                                  const record_type& r,
                                   const canonical_gaussian& fy, double w) const;
 
     void
     add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                  const vector_record_type& r,
+                                  const record_type& r,
                                   const moment_gaussian& fy, double w) const;
 
     /**
@@ -635,12 +635,14 @@ namespace sill {
 
     //! Y variables
     //! These correspond to the head variables of the conditional Gaussian.
-    //! By default, this matches Ydomain_; if not, then relabeled_ is true.
+    //! (This matches rows of ov.A.
+    //!  If relabeled==false, then this matches Ydomain_ too.)
     vector_var_vector head_;
 
     //! X variables
     //! These correspond to the tail variables of the conditional Gaussian.
-    //! By default, this matches Xdomain_ptr_; if not, then relabeled_ is true.
+    //! (This matches cols of ov.A.
+    //!  If relabeled==false, then this matches Xdomain_ptr_ too.)
     vector_var_vector tail_;
 
     optimization_vector ov;
@@ -667,66 +669,81 @@ namespace sill {
     //--------------------------------------------------------------------------
 
     //! Indicates if the variables have been relabeled,
-    //! in which case head_,Ydomain_ and tail_,Xdomain_ptr_ may not match.
+    //! in which case (head_,Ydomain_) and (tail_,Xdomain_ptr_) may not match.
     bool relabeled;
+
+    //! If relabeled = true,
+    //! this stores vars for rows of ov.C corresponding to output arguments.
+    vector_var_vector Y_in_head_;
+
+    //! Indices of ov.A for Y_in_head_.
+    ivec Y_in_head_ov_indices_;
 
     //! If relabeled = true,
     //! this stores vars for rows of ov.C corresponding to input arguments.
     vector_var_vector X_in_head_;
 
+    //! Indices of ov.A for X_in_head_.
+    ivec X_in_head_ov_indices_;
+
+    //! If relabeled = true,
+    //! this stores vars for cols of ov.C corresponding to output arguments.
+    vector_var_vector Y_in_tail_;
+
+    //! Cols of ov.C for Y_in_tail_.
+    ivec Y_in_tail_ov_indices_;
+
     //! If relabeled = true,
     //! this stores vars for cols of ov.C corresponding to input arguments.
     vector_var_vector X_in_tail_;
 
+    //! Cols of ov.C for X_in_tail_.
+    ivec X_in_tail_ov_indices_;
+
     //--------------------------------------------------------------------------
 
-    //! Get Y,X values from record.
-    void get_yx_values(const vector_record_type& r, vec& y, vec& x) const {
+    //! Get head,tail values from record.
+    void get_head_tail_values(const record_type& r, vec& h, vec& t) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
-        y = rvec(head_indices_);
-        x = rvec(tail_indices_);
+        h = rvec(head_indices_);
+        t = rvec(tail_indices_);
       } else {
-        r.vector_values(y, head_);
-        r.vector_values(x, tail_);
+        r.vector_values(h, head_);
+        r.vector_values(t, tail_);
       }
     }
 
-    //! Get Y values from record.
-    void get_y_values(const vector_record_type& r, vec& y) const {
+    //! Get head values from record.
+    void get_head_values(const record_type& r, vec& h) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
-        y = rvec(head_indices_);
+        h = rvec(head_indices_);
       } else {
-        r.vector_values(y, head_);
+        r.vector_values(h, head_);
       }
     }
 
-    //! Get Y,X values from record.
-    void get_x_values(const vector_record_type& r, vec& x) const {
+    //! Get tail values from record.
+    void get_tail_values(const record_type& r, vec& t) const {
       if (fixed_records_) {
         const vec& rvec = r.vector();
-        x = rvec(tail_indices_);
+        t = rvec(tail_indices_);
       } else {
-        r.vector_values(x, tail_);
+        r.vector_values(t, tail_);
       }
     }
 
     /**
      * Get Y,X values from record.
-     * This version is used for relabeled outputs/inputs.
+     * This version is used for relabeled outputs/inputs ONLY.
      * @param x_in_head   X values in head variables of conditional Gaussian.
      * @param x_in_tail   X values in tail variables of conditional Gaussian.
      */
     void
-    get_x_values(const vector_record_type& r, vec& x_in_head, vec& x_in_tail) const {
+    get_x_values(const record_type& r, vec& x_in_head, vec& x_in_tail) const {
       // TO DO: Support fixed_records_.
-      if (!relabeled) {
-        throw std::runtime_error
-          (std::string("gaussian_crf_factor::get_x_values") +
-           "(r,x_in_head,x_in_tail) called on factor whose vars had not" +
-           " been relabeled.");
-      }
+      assert(relabeled);
       r.vector_values(x_in_head, X_in_head_);
       r.vector_values(x_in_tail, X_in_tail_);
     }
@@ -803,7 +820,7 @@ namespace sill {
           conditioned_f = cg;
         }
       }
-    } // cg2gcf
+    } // reset_ov
 
   };  // class gaussian_crf_factor
 

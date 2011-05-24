@@ -73,7 +73,6 @@ int main(int argc, char** argv) {
   table_type a_table(shape_type(dims, dims + d));
   cout << a_table.shape() << endl;
   {
-    clock_t begin = clock();
     // Number the elements uniquely.
     int x = 0;
     foreach(const table_type::shape_type& index, a_table.indices()) {

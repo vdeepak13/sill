@@ -449,7 +449,7 @@ namespace sill {
       if (lr_params.cv_score_type == 1) {
         for (size_t k(0); k < lambdas_zoom.size(); ++k) {
           std::pair<double,double>
-            m_mad(median_MAD(temp_scores_mad.get_col(k)));
+            m_mad(median_MAD(vec(temp_scores_mad.get_col(k))));
           scores_zoom[k] = m_mad.first;
           stderrs_zoom[k] = m_mad.second;
         }

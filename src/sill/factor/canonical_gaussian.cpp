@@ -327,7 +327,7 @@ namespace sill {
          lambda(ix, ix),
          eta(ix) - lambda(ix, iy)*vy,
          log_mult + inner_prod(eta(iy), vy)
-         - 0.5*(vy * (lambda(iy,iy)*vy))); // TODO: check. Joseph: OK, I think.
+         - 0.5*(vy * (lambda(iy,iy)*vy)));
   } // restrict(a)
 
   void canonical_gaussian::
@@ -361,8 +361,10 @@ namespace sill {
 
     // If the arguments of x are disjoint from the bound variables,
     // we can simply return a copy of the factor
-    if (y.size() == 0)
+    if (y.size() == 0) {
       f = *this;
+      return;
+    }
 
     ivec ix = indices(x);
     ivec iy = indices(y);

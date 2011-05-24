@@ -37,17 +37,13 @@ namespace sill {
     // =========================================================================
   public:
 
-    //! The type of variables that form the factor's domain
-    typedef typename F::variable_type variable_type;
+    //! The types of variables, etc. used by the factor.
+    typedef typename F::variable_type    variable_type;
+    typedef typename F::domain_type      domain_type;
+    typedef typename F::assignment_type  assignment_type;
+    typedef typename F::record_type      record_type;
 
-    //! The domain type of the factor
-    typedef typename F::domain_type domain_type;
-
-    //! The assignment type of the factor
-    typedef std::map<variable_type*, typename variable_type::value_type> 
-      assignment_type;
-
-    //! The base class
+    //! The primary base class
     typedef bayesian_graph<variable_type*, F> base;
 
     // Shortcuts
@@ -141,20 +137,40 @@ namespace sill {
     // Probabilistic model queries
     //==========================================================================
 
-    double log_likelihood(const assignment_type& a) const {
-      if (!includes(keys(a), arguments())) {
-        throw std::invalid_argument
-          (std::string("bayesian_network::log_likelihood(assignment)") +
-           " called with assignment which did not cover the arguments.");
-      }
+    //! Log likelihood (using the given base)
+    double log_likelihood(const assignment_type& a, double base) const {
+      assert(base > 0);
       double ll = 0;
       foreach(const F& f, factors())
         ll += f.logv(a);
-      return ll;
+      return ll / base;
+    }
+
+    //! Log (base e) likelihood
+    double log_likelihood(const assignment_type& a) const {
+      return log_likelihood(a, std::exp(1.0));
+    }
+
+    //! Log likelihood (using the given base)
+    double log_likelihood(const record_type& r, double base) const {
+      assert(base > 0);
+      double ll = 0;
+      foreach(const F& f, factors())
+        ll += f.logv(r);
+      return ll / base;
+    }
+
+    //! Log (base e) likelihood
+    double log_likelihood(const record_type& r) const {
+      return log_likelihood(r, std::exp(1.0));
     }
 
     logarithmic<double> operator()(const assignment_type& a) const {
       return logarithmic<double>(log_likelihood(a), log_tag());
+    }
+
+    logarithmic<double> operator()(const record_type& r) const {
+      return logarithmic<double>(log_likelihood(r), log_tag());
     }
 
     //! Returns a sample from a Bayes net over discrete variables.
@@ -209,16 +225,14 @@ namespace sill {
     bayesian_network&
     condition(const assignment_type& a_, const domain_type& restrict_vars) {
       assignment_type a;
-      foreach(variable_type* v, restrict_vars) {
-        if (a_.count(v))
-          a[v] = safe_get(a_, v);
-      }
-      domain_type akeys(keys(a));
+      foreach(variable_type* v, restrict_vars)
+        a[v] = safe_get(a_, v);
+
       bayesian_network tmp_bn;
       foreach(variable_type* v, vertices()) {
-        if (includes(akeys, factor(v).arguments())) {
+        if (includes(restrict_vars, factor(v).arguments())) {
           // Do nothing.
-        } else if (akeys.count(v)) {
+        } else if (restrict_vars.count(v)) {
           // Some parents of v remain.
           assert(false); // Not yet implemented.
         } else {
@@ -231,6 +245,58 @@ namespace sill {
       *this = tmp_bn;
       return *this;
     } // condition(a, restrict_vars)
+
+    /**
+     * Computes the expected conditional log likelihood E[P(Y|X)],
+     * where the expectation is w.r.t. the given dataset and
+     * this model represents P(Y,X).
+     *
+     * @param ds   Dataset with values for all of the variables in this model.
+     *             If ds assigns values to variables not in this model,
+     *             then those variables are ignored.
+     * @param X    Variables (which MUST be a subset of this model's arguments)
+     *             to condition on.
+     * @param base base of the log (default = e)
+     *
+     * @return  expected conditional log likelihood, or 0 if dataset is empty
+     */
+    template <typename LA>
+    double expected_conditional_log_likelihood(const dataset<LA>& ds,
+                                               const domain_type& X,
+                                               double base) const {
+      if (ds.size() == 0)
+        return 0;
+      double cll(0);
+      domain_type YX(arguments());
+      assert(includes(ds.variables(), YX));
+      assert(includes(YX, X));
+      foreach(const record<LA>& r, ds.records()) {
+        bayesian_network tmpbn(*this);
+        tmpbn.condition(r, X);
+        cll += tmpbn.log_likelihood(r, base);
+      }
+      return cll / ds.size();
+    }
+
+    /**
+     * Computes the expected conditional log likelihood E[P(Y|X)],
+     * where the expectation is w.r.t. the given dataset and
+     * this model represents P(Y,X).
+     *
+     * @param ds   Dataset with values for all of the variables in this model.
+     *             If ds assigns values to variables not in this model,
+     *             then those variables are ignored.
+     * @param X    Variables (which MUST be a subset of this model's arguments)
+     *             to condition on.
+     * @param base base of the log (default = e)
+     *
+     * @return  expected conditional log likelihood, or 0 if dataset is empty
+     */
+    template <typename LA>
+    double expected_conditional_log_likelihood(const dataset<LA>& ds,
+                                               const domain_type& X) const {
+      return expected_conditional_log_likelihood(ds, X, std::exp(1.0));
+    }
 
   }; // class bayesian_network
 

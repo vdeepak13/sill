@@ -152,6 +152,9 @@ namespace sill {
     //! NOTE: This is not stored and must be computed from vector_numbering!
     finite_domain variables() const;
 
+    //! Returns the number of arguments.
+    size_t num_variables() const;
+
     //! Returns the finite component of this record as a vector
     std::vector<size_t>& finite() {
       return *fin_ptr;

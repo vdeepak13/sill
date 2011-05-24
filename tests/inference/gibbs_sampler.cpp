@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
   }
   cout << "Samples\tAvg L1 Error" << endl;
   for (size_t i = 0; i < nsamples; ++i) {
-    const finite_assignment& sample = sampler.next_sample();
+    const finite_record& sample = sampler.next_sample();
     for (size_t j = 0; j < variables.size(); ++j) {
       approx_var_marginals[j](sample)++;
     }

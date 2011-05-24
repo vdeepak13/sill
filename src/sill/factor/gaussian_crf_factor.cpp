@@ -135,7 +135,7 @@ namespace sill {
                       const vector_domain& Y,
                       const vector_domain& X)
     : base(Y, copy_ptr<vector_domain>(new vector_domain(X))),
-      fixed_records_(false) {
+      fixed_records_(false), relabeled(false) {
 
     // Check arguments.
     if (!includes(cg.arguments(), Y) ||
@@ -154,7 +154,6 @@ namespace sill {
         tail_.push_back(v);
       }
     }
-    relabeled = false;
 
     reset_ov(cg);
   } // gaussian_crf_factor(cg, Y, X)
@@ -226,6 +225,7 @@ namespace sill {
       ar << head_ << tail_ << ov << relabeled;
       if (relabeled)
         ar << X_in_head_ << X_in_tail_;
+      // TO DO: AFTER NIPS, REMOVE THIS RELABELING STUFF SINCE IT IS NOT NEEDED.
     }
   }
 
@@ -238,8 +238,13 @@ namespace sill {
       relabeled = false;
     } else {
       ar >> head_ >> tail_ >> ov >> relabeled;
-      if (relabeled)
+      // TO DO: AFTER NIPS, REMOVE LOADING THIS RELABELING STUFF SINCE IT IS NOT NEEDED.
+      if (relabeled) {
         ar >> X_in_head_ >> X_in_tail_;
+      }
+      vector_domain tmpY(output_arguments());
+      vector_domain tmpX(input_arguments());
+      relabel_outputs_inputs(tmpY, tmpX);
     }
     fixed_records_ = false;
   }
@@ -275,34 +280,67 @@ namespace sill {
   void
   gaussian_crf_factor::relabel_outputs_inputs(const output_domain_type& new_Y,
                                               const input_domain_type& new_X) {
-    output_domain_type new_Ydomain_;
-    if (relabeled) {
-      throw std::runtime_error
-        (std::string("gaussian_crf_factor::relabel_outputs_inputs") +
-         " not yet fully implemented!");
-    } else {
-      X_in_head_.clear();
-      X_in_tail_.clear();
-      foreach(vector_variable* v, Ydomain_) {
-        if (new_Y.count(v))
-          new_Ydomain_.insert(v);
-        else if (new_X.count(v))
-          X_in_head_.push_back(v);
-      }
-      foreach(vector_variable* v, *Xdomain_ptr_) {
-        if (new_Y.count(v))
-          new_Ydomain_.insert(v);
-        else if (new_X.count(v))
-          X_in_tail_.push_back(v);
+    {
+      vector_domain headset(head_.begin(), head_.end());
+      vector_domain tailset(tail_.begin(), tail_.end());
+      if (includes(new_Y, headset) && includes(new_X, tailset)) {
+        relabeled = false;
+        return; // No relabeling needed
       }
     }
-    if (new_Ydomain_.size() + X_in_head_.size() + X_in_tail_.size()
-        != Ydomain_.size() + Xdomain_ptr_->size()) {
-      throw std::invalid_argument
-        (std::string("gaussian_crf_factor::relabel_outputs_inputs") +
-         " given new_Y,new_X whose union did not include the old Y,X.");
+
+    Y_in_head_.clear();
+    Y_in_tail_.clear();
+    X_in_head_.clear();
+    X_in_tail_.clear();
+    std::vector<size_t> Y_in_head_ov_indices_tmp, Y_in_tail_ov_indices_tmp,
+      X_in_head_ov_indices_tmp, X_in_tail_ov_indices_tmp;
+    size_t i = 0;
+    foreach(vector_variable* v, head_) {
+      if (new_Y.count(v)) {
+        Y_in_head_.push_back(v);
+        assert(new_X.count(v) == 0);
+        for (size_t j = 0; j < v->size(); ++j) {
+          Y_in_head_ov_indices_tmp.push_back(i);
+          ++i;
+        }
+      } else if (new_X.count(v)) {
+        X_in_head_.push_back(v);
+        for (size_t j = 0; j < v->size(); ++j) {
+          X_in_head_ov_indices_tmp.push_back(i);
+          ++i;
+        }
+      } else {
+        assert(false);
+      }
     }
-    Ydomain_ = new_Ydomain_;
+    i = 0;
+    foreach(vector_variable* v, tail_) {
+      if (new_Y.count(v)) {
+        Y_in_tail_.push_back(v);
+        assert(new_X.count(v) == 0);
+        for (size_t j = 0; j < v->size(); ++j) {
+          Y_in_tail_ov_indices_tmp.push_back(i);
+          ++i;
+        }
+      } else if (new_X.count(v)) {
+        X_in_tail_.push_back(v);
+        for (size_t j = 0; j < v->size(); ++j) {
+          X_in_tail_ov_indices_tmp.push_back(i);
+          ++i;
+        }
+      } else {
+        assert(false);
+      }
+    }
+    Y_in_head_ov_indices_ = ivec(Y_in_head_ov_indices_tmp);
+    Y_in_tail_ov_indices_ = ivec(Y_in_tail_ov_indices_tmp);
+    X_in_head_ov_indices_ = ivec(X_in_head_ov_indices_tmp);
+    X_in_tail_ov_indices_ = ivec(X_in_tail_ov_indices_tmp);
+
+    Ydomain_.clear();
+    Ydomain_.insert(Y_in_head_.begin(), Y_in_head_.end());
+    Ydomain_.insert(Y_in_tail_.begin(), Y_in_tail_.end());
     Xdomain_ptr_->clear();
     Xdomain_ptr_->insert(X_in_head_.begin(), X_in_head_.end());
     Xdomain_ptr_->insert(X_in_tail_.begin(), X_in_tail_.end());
@@ -316,7 +354,7 @@ namespace sill {
     return exp(logv(a));
   }
 
-  double gaussian_crf_factor::v(const vector_record_type& r) const {
+  double gaussian_crf_factor::v(const record_type& r) const {
     return exp(logv(r));
   }
 
@@ -331,12 +369,12 @@ namespace sill {
     return (-.5) * inner_prod(y, y);
   }
 
-  double gaussian_crf_factor::logv(const vector_record_type& r) const {
+  double gaussian_crf_factor::logv(const record_type& r) const {
     if (head_.size() == 0)
       return conditioned_f(r);
     vec y(ov.C.size1(), 0);
     vec x(ov.C.size2(), 0);
-    get_yx_values(r, y, x);
+    get_head_tail_values(r, y, x);
     y = (ov.A * y) - ov.b - (ov.C * x);
     return (-.5) * inner_prod(y, y);
   }
@@ -357,7 +395,7 @@ namespace sill {
   }
 
   const canonical_gaussian&
-  gaussian_crf_factor::condition(const vector_record_type& r) const {
+  gaussian_crf_factor::condition(const record_type& r) const {
     if (relabeled) {
       gaussian_crf_factor gcf(*this);
       gcf.partial_condition(r, output_domain_type(), *Xdomain_ptr_);
@@ -371,7 +409,7 @@ namespace sill {
       */
     } else {
       vec x(ov.C.size2(), 0);
-      get_x_values(r, x);
+      get_tail_values(r, x);
       return condition(x);
     }
   }
@@ -451,6 +489,7 @@ namespace sill {
   gaussian_crf_factor::
   partial_expectation_in_log_space(const output_domain_type& Y_part,
                                    const dataset<dense_linear_algebra<> >& ds) {
+    assert(!relabeled); // TO DO
     if (ds.size() == 0) {
       throw std::invalid_argument
         (std::string("gaussian_crf_factor::partial_expectation_in_log_space") +
@@ -464,7 +503,7 @@ namespace sill {
     vector_assignment va;
     mat lambda(cg.inf_matrix().size1(), cg.inf_matrix().size2(), 0);
     vec eta(cg.inf_vector().size(), 0);
-    foreach(const vector_record_type& r, ds.records()) {
+    foreach(const record_type& r, ds.records()) {
       r.add_to_assignment(Y_part, va);
       canonical_gaussian tmpcg(cg.restrict(va));
       lambda += tmpcg.inf_matrix();
@@ -554,26 +593,27 @@ namespace sill {
     head_ = new_head;
     tail_ = new_tail;
     fixed_records_ = false; // TO DO: maintain this
-    if (relabeled) {
-      X_in_head_ = select_subvector_complement(X_in_head_, YX_part);
-      X_in_tail_ = select_subvector_complement(X_in_tail_, YX_part);
-    }
     foreach(vector_variable* v, Y_part)
       Ydomain_.erase(v);
     foreach(vector_variable* v, X_part)
       Xdomain_ptr_->erase(v);
+    if (relabeled) {
+      vector_domain tmpY(Ydomain_);
+      vector_domain tmpX(*Xdomain_ptr_);
+      relabel_outputs_inputs(tmpY, tmpX);
+    }
 
     return *this;
-  }
+  } // partial_condition(r, Y_part, X_part)
 
   double gaussian_crf_factor::log_expected_value(const dataset<dense_linear_algebra<> >& ds) const {
     double val(0.);
     double total_ds_weight(0);
     size_t i(0);
-    foreach(const vector_record_type& r, ds.records()) {
+    foreach(const record_type& r, ds.records()) {
       vec y(ov.C.size1(), 0);
       vec x(ov.C.size2(), 0);
-      get_yx_values(r, y, x);
+      get_head_tail_values(r, y, x);
       y = (ov.A * y) - ov.b - (ov.C * x);
       val += ds.weight(i) * (-.5) * inner_prod(y, y);
       total_ds_weight += ds.weight(i);
@@ -670,12 +710,15 @@ namespace sill {
 
   void gaussian_crf_factor::add_gradient
   (gaussian_crf_factor::optimization_vector& grad,
-   const vector_record_type& r, double w) const {
+   const record_type& r, double w) const {
+    // grad.A += w (b + Cx - Ay) y'
+    // grad.b += -w (b + Cx - Ay)
+    // grad.C += -w (b + Cx - Ay) x'
     vec y(ov.A.size1(), 0);
     if (y.size() == 0)
       return;
     vec x(ov.C.size2(), 0);
-    get_yx_values(r, y, x);
+    get_head_tail_values(r, y, x);
     vec tmpvec(ov.b);
     if (x.size() != 0)
       tmpvec += ov.C * x;
@@ -688,7 +731,7 @@ namespace sill {
   }
 
   void gaussian_crf_factor::add_expected_gradient(optimization_vector& grad,
-                                                  const vector_record_type& r,
+                                                  const record_type& r,
                                                   const canonical_gaussian& fy,
                                                   double w) const {
     add_expected_gradient(grad, r, moment_gaussian(fy), w);
@@ -696,75 +739,132 @@ namespace sill {
 
   void
   gaussian_crf_factor::add_expected_gradient(optimization_vector& grad,
-                                             const vector_record_type& r,
+                                             const record_type& r,
                                              const moment_gaussian& fy,
                                              double w) const {
     if (relabeled) {
-      throw std::runtime_error
-        (std::string("gaussian_crf_factor::add_expected_gradient") +
-         " not yet fully implemented.");
-    }
-    vec mu(fy.mean(head_));
-    if (mu.size() == 0)
-      return;
-    vec x(ov.C.size2(), 0);
-    get_x_values(r, x);
-    vec tmpvec(ov.b);
-    if (x.size() != 0)
-      tmpvec += ov.C * x;
+      vec mu_x_head(ov.A.size1());
+      {
+        mu_x_head.set_subvector(Y_in_head_ov_indices_, fy.mean(Y_in_head_));
+        vec x_head(X_in_head_ov_indices_.size());
+        r.vector_values(x_head, X_in_head_);
+        mu_x_head.set_subvector(X_in_head_ov_indices_, x_head);
+      }
+      vec mu_x_tail(ov.C.size2());
+      {
+        mu_x_tail.set_subvector(Y_in_tail_ov_indices_, fy.mean(Y_in_tail_));
+        vec x_tail(X_in_tail_ov_indices_.size());
+        r.vector_values(x_tail, X_in_tail_);
+        mu_x_tail.set_subvector(X_in_tail_ov_indices_, x_tail);
+      }
 
-    grad.A += outer_product(tmpvec, w * mu);
-    grad.A -= w * ov.A * (fy.covariance(head_) + outer_product(mu, mu));
-    tmpvec -= ov.A * mu;
-    tmpvec *= w;
-    grad.b -= tmpvec;
-    if (x.size() != 0)
-      grad.C -= outer_product(tmpvec, x);
-  }
+      vec tmpvec(ov.b);
+      if (mu_x_tail.size() != 0)
+        tmpvec += ov.C * mu_x_tail;
+      if (mu_x_head.size() != 0)
+        tmpvec -= ov.A * mu_x_head;
+      tmpvec *= w;
+
+      if (Y_in_head_.size() != 0) {
+        grad.A.subtract_submatrix
+          (irange(0,grad.A.size1()),
+           Y_in_head_ov_indices_,
+           w * ov.A.columns(Y_in_head_ov_indices_) * fy.covariance(Y_in_head_));
+        if (Y_in_tail_.size() != 0)
+          grad.A.add_submatrix
+            (irange(0,grad.A.size1()),
+             Y_in_head_ov_indices_,
+             w * ov.C.columns(Y_in_tail_ov_indices_)
+             * fy.covariance(Y_in_tail_, Y_in_head_));
+      }
+      if (mu_x_head.size() != 0)
+        grad.A += outer_product(tmpvec, mu_x_head);
+
+      grad.b -= tmpvec;
+
+      if (Y_in_tail_.size() != 0) {
+        grad.C.subtract_submatrix
+          (irange(0,grad.A.size1()),
+           Y_in_tail_ov_indices_,
+           w * ov.C.columns(Y_in_tail_ov_indices_)
+           * fy.covariance(Y_in_tail_));
+        if (Y_in_head_.size() != 0)
+          grad.C.add_submatrix
+            (irange(0,grad.A.size1()),
+             Y_in_head_ov_indices_,
+             w * ov.A.columns(Y_in_head_ov_indices_)
+             * fy.covariance(Y_in_head_,Y_in_tail_));
+      }
+      if (mu_x_tail.size() != 0)
+        grad.C -= outer_product(tmpvec, mu_x_tail);
+
+    } else { // else not relabeled
+
+      // grad.A += w [(b + Cx) mu' - A (Sigma + mu mu')]
+      // grad.b += -w [b + Cx - A mu]
+      // grad.C += -w [(b + Cx - A mu) x']
+      vec mu(fy.mean(head_));
+      if (mu.size() == 0)
+        return;
+      vec x(ov.C.size2(), 0);
+      get_tail_values(r, x);
+      vec tmpvec(ov.b);
+      if (x.size() != 0)
+        tmpvec += ov.C * x;
+
+      grad.A += outer_product(tmpvec, w * mu);
+      grad.A -= w * ov.A * (fy.covariance(head_) + outer_product(mu, mu));
+      tmpvec -= ov.A * mu;
+      tmpvec *= w;
+      grad.b -= tmpvec;
+      if (x.size() != 0)
+        grad.C -= outer_product(tmpvec, x);
+    }
+  } // add_expected_gradient(grad, r, fy, w);
 
   void
   gaussian_crf_factor::
-  add_combined_gradient(optimization_vector& grad, const vector_record_type& r,
+  add_combined_gradient(optimization_vector& grad, const record_type& r,
                         const canonical_gaussian& fy, double w) const {
     add_combined_gradient(grad, r, moment_gaussian(fy), w);
   }
 
   void
   gaussian_crf_factor::add_combined_gradient
-  (optimization_vector& grad, const vector_record_type& r,
+  (optimization_vector& grad, const record_type& r,
    const moment_gaussian& fy, double w) const {
     if (relabeled) {
-      throw std::runtime_error
-        (std::string("gaussian_crf_factor::add_combined_gradient") +
-         " not yet fully implemented.");
+      add_gradient(grad, r, w);
+      add_expected_gradient(grad, r, fy, -1 * w);
+    } else {
+      vec y(ov.A.size1(), 0);
+      if (y.size() == 0)
+        return;
+      vec x(ov.C.size2(), 0);
+      get_head_tail_values(r, y, x);
+      vec mu(fy.mean(head_));
+
+      vec tmpvec(ov.b);
+      if (x.size() != 0)
+        tmpvec += ov.C * x;
+      vec tmpvec2(tmpvec);
+      tmpvec -= ov.A * y;
+      tmpvec *= w;
+      grad.A += outer_product(tmpvec, y);
+      grad.b -= tmpvec;
+
+      tmpvec2 -= ov.A * mu;
+      tmpvec2 *= (-1. * w);
+      grad.A += outer_product(tmpvec2, mu);
+      grad.A += w * ov.A * fy.covariance(head_);
+      grad.b -= tmpvec2;
+      if (x.size() != 0)
+        grad.C -= outer_product(tmpvec + tmpvec2, x);
     }
-    vec y(ov.A.size1(), 0);
-    if (y.size() == 0)
-      return;
-    vec x(ov.C.size2(), 0);
-    get_yx_values(r, y, x);
-    vec mu(fy.mean(head_));
-
-    vec tmpvec(ov.b);
-    if (x.size() != 0)
-      tmpvec += ov.C * x;
-    vec tmpvec2(tmpvec);
-    tmpvec -= ov.A * y;
-    tmpvec *= w;
-    grad.A += outer_product(tmpvec, y);
-    grad.b -= tmpvec;
-
-    tmpvec2 -= ov.A * mu;
-    tmpvec2 *= (-1. * w);
-    grad.A += outer_product(tmpvec2, mu);
-    grad.A += w * ov.A * fy.covariance(head_);
-    grad.b -= tmpvec2;
-    if (x.size() != 0)
-      grad.C -= outer_product(tmpvec + tmpvec2, x);
   }
 
   void gaussian_crf_factor::
-  add_hessian_diag(optimization_vector& hessian, const vector_record_type& r,
+  add_hessian_diag(optimization_vector& hessian, const record_type& r,
                    double w) const {
     if (relabeled) {
       throw std::runtime_error
@@ -773,7 +873,7 @@ namespace sill {
     }
     vec tmpvec(ov.A.size1());
     if (tmpvec.size() != 0) {
-      get_y_values(r, tmpvec);
+      get_head_values(r, tmpvec);
       elem_mult_inplace(tmpvec, tmpvec);
       if (w != 1)
         tmpvec *= w;
@@ -783,7 +883,7 @@ namespace sill {
     hessian.b -= w;
     if (ov.C.size2() != 0) {
       tmpvec.resize(ov.C.size2());
-      get_x_values(r, tmpvec);
+      get_tail_values(r, tmpvec);
       elem_mult_inplace(tmpvec, tmpvec);
       if (w != 1)
         tmpvec *= w;
@@ -794,14 +894,14 @@ namespace sill {
 
   void gaussian_crf_factor::
   add_expected_hessian_diag(optimization_vector& hessian,
-                            const vector_record_type& r,
+                            const record_type& r,
                             const canonical_gaussian& fy, double w) const {
     add_expected_hessian_diag(hessian, r, moment_gaussian(fy), w);
   }
 
   void gaussian_crf_factor::
   add_expected_hessian_diag(optimization_vector& hessian,
-                            const vector_record_type& r,
+                            const record_type& r,
                             const moment_gaussian& fy, double w) const {
     if (relabeled) {
       throw std::runtime_error
@@ -820,7 +920,7 @@ namespace sill {
     hessian.b -= w;
     if (ov.C.size2() != 0) {
       tmpvec.resize(ov.C.size2());
-      get_x_values(r, tmpvec);
+      get_tail_values(r, tmpvec);
       elem_mult_inplace(tmpvec, tmpvec);
       if (w != 1)
         tmpvec *= w;
@@ -831,14 +931,14 @@ namespace sill {
 
   void gaussian_crf_factor::
   add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                const vector_record_type& r,
+                                const record_type& r,
                                 const canonical_gaussian& fy, double w) const{
     add_expected_squared_gradient(sqrgrad, r, moment_gaussian(fy), w);
   }
 
   void gaussian_crf_factor::
   add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                const vector_record_type& r,
+                                const record_type& r,
                                 const moment_gaussian& fy, double w) const {
     if (relabeled) {
       throw std::runtime_error
@@ -850,7 +950,7 @@ namespace sill {
       return;
     mat cov(fy.covariance(head_));
     vec x(ov.C.size2(), 0);
-    get_x_values(r, x);
+    get_tail_values(r, x);
     mat tmpmat(outer_product(mu, mu));
     tmpmat += cov;
     vec Gdiag(diag(tmpmat));   // Gdiag(j) = G_{jj}

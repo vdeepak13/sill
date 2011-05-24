@@ -241,6 +241,71 @@ namespace sill {
       return val_frame.best_lambdas();
     }
 
+    /**
+     * Choose regularization parameters via separate training and validation
+     * datasets.
+     *
+     * @param cv_params   Parameters specifying how to do cross validation.
+     * @param model       CRF model on which to do parameter learning.
+     * @param keep_weights  If true, keep weights in model; if false, set to 0.
+     * @param train_ds    Training data.
+     * @param val_ds      Validation data.
+     * @param params      Parameters for this class.
+     * @param score_type  0: log likelihood, 1: per-label accuracy,
+     *                    2: all-or-nothing label accuracy,
+     *                    3: mean squared error
+     * @param random_seed This uses this random seed, not the one in the
+     *                    algorithm parameters.
+     *
+     * @return  chosen regularization parameters
+     */
+    static
+    vec
+    choose_lambda(const crossval_parameters& cv_params,
+                  const crf_model_type& model, bool keep_weights, // TO DO: CHANGE TO init_weights
+                  const dataset<la_type>& train_ds,
+                  const dataset<la_type>& val_ds,
+                  const parameters& params,
+                  size_t score_type, unsigned random_seed) {
+      assert(score_type == 0); // others not yet implemented
+      crf_validation_functor<F> crf_val_func(model, keep_weights, params);
+      validation_framework<la_type>
+        val_frame(train_ds, val_ds, cv_params, crf_val_func, random_seed);
+      return val_frame.best_lambdas();
+    }
+
+    /**
+     * Choose regularization parameters via separate training and validation
+     * datasets.
+     *
+     * @param cv_params   Parameters specifying how to do cross validation.
+     * @param model       CRF structure.
+     * @param train_ds    Training data.
+     * @param val_ds      Validation data.
+     * @param params      Parameters for this class.
+     * @param score_type  0: log likelihood, 1: per-label accuracy,
+     *                    2: all-or-nothing label accuracy,
+     *                    3: mean squared error
+     * @param random_seed This uses this random seed, not the one in the
+     *                    algorithm parameters.
+     *
+     * @return  chosen regularization parameters
+     */
+    static
+    vec
+    choose_lambda(const crossval_parameters& cv_params,
+                  const crf_graph_type& structure,
+                  const dataset<la_type>& train_ds,
+                  const dataset<la_type>& val_ds,
+                  const parameters& params,
+                  size_t score_type, unsigned random_seed) {
+      assert(score_type == 0); // others not yet implemented
+      crf_validation_functor<F> crf_val_func(structure, params);
+      validation_framework<la_type>
+        val_frame(train_ds, val_ds, cv_params, crf_val_func, random_seed);
+      return val_frame.best_lambdas();
+    }
+
     // Counters and optimization info
     // =========================================================================
 
@@ -1260,9 +1325,20 @@ namespace sill {
           const crf_factor& f = *(crf_[neighbor_v]);
           if (f.fixed_value())
             continue;
-          f.add_combined_gradient
-            (gradient.factor_weight(crf_.factor_vertex2index(neighbor_v)),
-             r, P_Yi_given_MB, - w);
+          if (f.output_arguments().size() == 1) {
+            f.add_combined_gradient
+              (gradient.factor_weight(crf_.factor_vertex2index(neighbor_v)),
+               r, P_Yi_given_MB, - w);
+          } else {
+            // TO DO: GET RID OF THIS HACK, AND MAKE THIS MORE EFFICIENT.
+            crf_factor tmpf(f);
+            tmpf.relabel_outputs_inputs
+              (make_domain(Yi),
+               set_difference(tmpf.arguments(), make_domain(Yi)));
+            tmpf.add_combined_gradient
+              (gradient.factor_weight(crf_.factor_vertex2index(neighbor_v)),
+               r, P_Yi_given_MB, - w);
+          }
         }
       }
       obj -= w * pl;

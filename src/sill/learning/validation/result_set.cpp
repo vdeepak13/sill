@@ -17,6 +17,17 @@ namespace sill {
     }
   }
 
+  std::pair<double,double>
+  result_set::
+  get(const std::string& result_name,
+      statistics::generalized_mean_enum run_combo_type) const {
+    double avg =
+      generalized_mean(safe_get(results_, result_name), run_combo_type);
+    double dev =
+      generalized_deviation(safe_get(results_, result_name), run_combo_type);
+    return std::make_pair(avg, dev);
+  }
+
   void
   result_set::print(std::ostream& out, size_t print_mode,
                     statistics::generalized_mean_enum run_combo_type) const {

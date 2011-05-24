@@ -7,14 +7,16 @@
 
 #include <sill/base/random_assignment.hpp>
 #include <sill/factor/concepts.hpp>
+#include <sill/factor/table_factor.hpp>
 #include <sill/math/permutations.hpp>
 #include <sill/model/interfaces.hpp>
-
-//#include <sill/range/transformed.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  // Forward declaration
+  class table_factor;
 
   /**
    * Class for doing Gibbs sampling for a factorized model.
@@ -35,17 +37,18 @@ namespace sill {
     typedef typename F::domain_type      domain_type;
     typedef typename F::var_vector_type  var_vector_type;
     typedef typename F::assignment_type  assignment_type;
+    typedef typename F::record_type      record_type;
 
     //! Parameters
     struct parameters {
 
       parameters()
-        : init_a(), random_seed(time(NULL)) { }
+        : init_r(), random_seed(time(NULL)) { }
 
       //! Initial state of the sampler.
       //! If empty, reverts to default (random).
       //!  (default = random)
-      assignment_type init_a;
+      record_type init_r;
 
       //! (default = time)
       unsigned random_seed;
@@ -64,7 +67,7 @@ namespace sill {
     gibbs_sampler(const factorized_model<factor_type>& model,
                   const parameters& params = parameters())
       : params(params), rng(params.random_seed), uniform_prob(0,1),
-        a(params.init_a), last_v(NULL) {
+        r(params.init_r), last_v(NULL) {
       init(model);
     } // constructor
 
@@ -73,7 +76,7 @@ namespace sill {
                const parameters& params = parameters()) {
       this->params = params;
       rng.seed(params.random_seed);
-      a = params.init_a;
+      r = params.init_r;
       last_v = NULL;
       init(model);
     }
@@ -83,23 +86,27 @@ namespace sill {
     /**
      * Get the next sample from the model (updating a single variable).
      */
-    const assignment_type& next_sample() {
+    const record_type& next_sample() {
       last_v = next_variable();
       // Restrict the factors containing last_v, multiply them together,
       //  and normalize the resulting factor.
-      assignment_type tmp_a(a);
-      tmp_a.erase(last_v);
-      factor_type vfactor(1);
-      foreach(const factor_type* fptr, var2factors[last_v])
-        vfactor *= fptr->restrict(tmp_a);
-      vfactor.normalize();
+      factor_type& f = singleton_factors[last_v];
+      factor_type& f_tmp = singleton_factors_tmp[last_v];
+      f = 1;
+      foreach(const factor_type* fptr, var2factors[last_v]) {
+        fptr->restrict(r,
+                       set_difference(fptr->arguments(), make_domain(last_v)),
+                       f_tmp);
+        f *= f_tmp;
+      }
+      f.normalize();
       // Sample a new value for last_v.
-      a[last_v] = vfactor.sample(rng)[last_v];
-      return a;
+      r.copy_from_assignment(f.sample(rng));
+      return r;
     } // next_sample
 
     //! Return the current sample from the model.
-    const assignment_type& current_sample() const { return a; }
+    const record_type& current_sample() const { return r; }
 
     //! Return the last variable which was updated.
     //! This returns NULL if no samples have been taken.
@@ -112,8 +119,8 @@ namespace sill {
 
     //! Resets the current sample to a random assignment.
     void randomize_current_sample() const {
-      domain_type args(keys(a));
-      a = random_assignment(args, rng);
+      domain_type args(r.variables());
+      r = random_assignment(args, rng);
     }
 
     // Protected data and methods
@@ -132,13 +139,21 @@ namespace sill {
     std::map<variable_type*, std::vector<const factor_type*> > var2factors;
 
     //! Current assignment to variables
-    assignment_type a;
+    record_type r;
 
     //! Last variable which was updated
     variable_type* last_v;
 
     //! Function returning the next variable to update
     virtual variable_type* next_variable() = 0;
+
+    // TO DO: CHANGE next_variable() TO RETURN AN INDEX INTO A FIXED-ORDER VECTOR OF VARIABLES; THEN CHANGE THIS TO BE A VECTOR, NOT A MAP.
+    //! singleton_factors[v] = factor whose domain is v
+    //! (used to avoid reallocation)
+    std::map<variable_type*, factor_type> singleton_factors;
+
+    //! Same as singleton_factors, but used for a separate purpose.
+    std::map<variable_type*, factor_type> singleton_factors_tmp;
 
     void init(const factorized_model<factor_type>& model) {
       var2factors.clear();
@@ -154,9 +169,17 @@ namespace sill {
       assert(var2factors.size() == model.arguments().size());
 
       // If no initial assignment was given, choose one uniformly at random.
-      if (a.size() == 0)
-        a = random_assignment(model.arguments(), rng);
-    }
+      if (r.num_variables() == 0) {
+        r = record_type(make_vector(model.arguments()));
+        r = random_assignment(model.arguments(), rng);
+      }
+
+      singleton_factors.clear();
+      singleton_factors_tmp.clear();
+      foreach(variable_type* v, model.arguments())
+        singleton_factors[v] = factor_type(make_domain(v));
+      singleton_factors_tmp = singleton_factors;
+    } // init(model)
 
   }; // class gibbs_sampler
 
@@ -251,6 +274,14 @@ namespace sill {
     }
 
   }; // class sequential_gibbs_sampler
+
+
+  // Specialization of gibbs_sampler methods
+  //============================================================================
+
+  template <>
+  const gibbs_sampler<table_factor>::record_type&
+  gibbs_sampler<table_factor>::next_sample();
 
 } // namespace sill
 

@@ -5,6 +5,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
+#include <sill/math/is_finite.hpp>
 #include <sill/math/linear_algebra.hpp>
 
 #include <sill/macros_def.hpp>
@@ -63,18 +64,48 @@ namespace sill {
   }
 
   //! Return the <mean, std error> for the given vector of values.
-  std::pair<double, double> mean_stderr(const std::vector<double>& vals);
-
-  //! Return the <mean, std error> for the given vector of values.
-  std::pair<double, double> mean_stderr(const vec& vals);
+  template <typename VectorType>
+  std::pair<typename VectorType::value_type, typename VectorType::value_type>
+  mean_stderr(const VectorType& vals) {
+    typedef typename VectorType::value_type value_type;
+    value_type sum(0);
+    value_type sum2(0);
+    if (vals.size() == 0)
+      return std::make_pair(0, 0);
+    foreach(value_type d, vals) {
+      if (!is_finite(d))
+        return std::make_pair(d,std::numeric_limits<value_type>::infinity());
+      sum += d;
+      sum2 += d * d;
+    }
+    value_type mean(sum / vals.size());
+    value_type stderror(std::sqrt(sum2 / vals.size() - mean * mean)
+                    / std::sqrt(vals.size()));
+    if (std::isnan(stderror)) {
+      // Check for numerical issues.
+      value_type tmp = sum2 / vals.size() - mean * mean;
+      if (tmp < 0  &&  fabs(tmp) < 0.000000001)
+        stderror = 0;
+    }
+    return std::make_pair(mean, stderror);
+  }
 
   //! Return the <median, Median Absolute Deviation> for the given vector of
   //! values.
-  std::pair<double, double> median_MAD(const std::vector<double>& vals);
-
-  //! Return the <median, Median Absolute Deviation> for the given vector of
-  //! values.
-  std::pair<double, double> median_MAD(const vec& vals);
+  template <typename VectorType>
+  std::pair<typename VectorType::value_type, typename VectorType::value_type>
+  median_MAD(const VectorType& vals) {
+    typedef typename VectorType::value_type value_type;
+    assert(vals.size() != 0);
+    VectorType sorted(vals);
+    std::sort(sorted.begin(), sorted.end());
+    size_t median_i(sorted.size() / 2);
+    value_type median(sorted[median_i]);
+    foreach(value_type& v, sorted)
+      v = fabs(v - median);
+    std::sort(sorted.begin(), sorted.end());
+    return std::make_pair(median, sorted[median_i]);
+  }
 
   namespace statistics {
 

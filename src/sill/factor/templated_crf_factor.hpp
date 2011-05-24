@@ -202,6 +202,18 @@ namespace sill {
       out << std::flush;
     }
 
+    /**
+     * Relabels outputs Y, inputs X so that
+     * inputs may become outputs (if variable_type = output_variable_type) and
+     * outputs may become inputs (if variable_type = input_variable_type).
+     * The entire argument set must remain the same, i.e.,
+     * union(Y,X) must be a subset of union(new_Y, new_X).
+     */
+    void relabel_outputs_inputs(const output_domain_type& new_Y,
+                                const input_domain_type& new_X) {
+      assert(false); // NOT YET IMPLEMENTED
+    }
+
     // Public methods: Probabilistic queries
     // =========================================================================
 

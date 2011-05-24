@@ -154,6 +154,13 @@ namespace sill {
                                         const finite_record& r,
                                         const finite_domain& r_vars);
 
+    //! Creates an object that maps indices of a table to fixed values,
+    //! but limits record r to include all variables EXCEPT for except_v.
+    static shape_type
+    make_restrict_map_except(const finite_var_vector& vars,
+                             const finite_record& r,
+                             finite_variable* except_v);
+
     //! Creates an object that maps indices of a set to 0..(n-1)
     static var_index_map make_index_map(const finite_domain& vars);
 
@@ -175,7 +182,7 @@ namespace sill {
     //! Creates a factor with the specified arguments. The table
     //! geometry will respect the specified order of arguments.
     table_factor(const forward_range<finite_variable*>& arguments,
-                 result_type default_value)
+                 result_type default_value = 0.0)
       : args(boost::begin(arguments), boost::end(arguments)) {
       initialize(arguments, default_value);
     }
@@ -654,6 +661,17 @@ namespace sill {
     void restrict_aligned(const finite_record& r,
                           shape_type& restrict_map,
                           table_factor& f) const;
+
+    /**
+     * Restrict all variables but retain_v, storing the result in f.
+     * @param r         Record with values used for restricting variables.
+     * @param retain_v  Variable which is retained.
+     *                  It must be an argument to this factor.
+     * @param f         (Return value) This factor must have been pre-allocated.
+     */
+    void restrict_other(const finite_record& r,
+                        finite_variable* retain_v,
+                        table_factor& f) const;
 
     //! implements Factor::combine_in
     table_factor& combine_in(const table_factor& y, op_type op);

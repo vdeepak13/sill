@@ -66,6 +66,10 @@ namespace sill {
     return keys(*finite_numbering_ptr);
   }
 
+  size_t finite_record::num_variables() const {
+    return finite_numbering_ptr->size();
+  }
+
   finite_record_iterator finite_record::find(finite_variable* v) const {
     return finite_record_iterator(*this, v);
   }
@@ -147,15 +151,25 @@ namespace sill {
   }
 
   void finite_record::copy_from_assignment(const sill::finite_assignment& a) {
-    for (std::map<finite_variable*, size_t>::const_iterator it =
-           finite_numbering_ptr->begin();
-         it != finite_numbering_ptr->end();
-         ++it) {
-      sill::finite_assignment::const_iterator a_it = a.find(it->first);
-      if (a_it != a.end())
-        this->finite(it->second) = a_it->second;
+    if (finite_numbering_ptr->size() <= a.size()) {
+      for (std::map<finite_variable*, size_t>::const_iterator it =
+             finite_numbering_ptr->begin();
+           it != finite_numbering_ptr->end();
+           ++it) {
+        sill::finite_assignment::const_iterator a_it = a.find(it->first);
+        if (a_it != a.end())
+          this->finite(it->second) = a_it->second;
+      }
+    } else {
+      for (sill::finite_assignment::const_iterator a_it(a.begin());
+           a_it != a.end(); ++a_it) {
+        std::map<finite_variable*, size_t>::const_iterator
+          it(finite_numbering_ptr->find(a_it->first));
+        if (it != finite_numbering_ptr->end())
+          this->finite(it->second) = a_it->second;
+      }
     }
-  }
+  } // copy_from_assignment(a)
 
   void finite_record::
   copy_from_assignment_mapped(const sill::finite_assignment& a,

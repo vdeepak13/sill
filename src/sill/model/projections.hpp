@@ -64,7 +64,6 @@ namespace sill {
   template <typename F, typename FactorRange>
   decomposable<F> factors2thin_decomposable(const FactorRange& factors) {
     concept_assert((InputRangeConvertible<FactorRange, F>));
-    using namespace sill;
     /*
       Create a graph and a mapping of edges to weights.
       - for each belief
@@ -79,8 +78,10 @@ namespace sill {
             information between the variables, make the marginalized belief
             the new edge potential
     */
+    typedef typename F::variable_type   variable_type;
+    typedef typename F::assignment_type assignment_type;
     typedef std::pair<double, F> edge_mi_pot;
-    typedef undirected_graph<finite_variable*, void_, edge_mi_pot> ig_type;
+    typedef undirected_graph<variable_type*, void_, edge_mi_pot> ig_type;
     ig_type g;
 
     // List of single-variable beliefs
@@ -89,21 +90,16 @@ namespace sill {
       if (f.arguments().size() == 1)
         single_var_beliefs.push_back(f);
       else if (f.arguments().size() > 1) {
-        std::vector<finite_variable*> args(f.arguments().begin(),
+        std::vector<variable_type*> args(f.arguments().begin(),
                                            f.arguments().end());
-        foreach(finite_variable* v, args)
+        foreach(variable_type* v, args)
           if (!(g.contains(v)))
             g.add_vertex(v);
         for (size_t i = 0; i < args.size(); i++) {
           for (size_t j = i + 1; j < args.size(); j++) {
             F edge_f(f.marginal(make_domain(args[i], args[j])));
-            // TODO: Once factors implement mutual info, replace this code here.
-            double mi(0);
-            F edge_f_i(edge_f.marginal(make_domain(args[i])));
-            F edge_f_j(edge_f.marginal(make_domain(args[j])));
-            foreach(finite_assignment a, edge_f.assignments())
-              mi += edge_f.v(a) * (edge_f.logv(a) -
-                                 edge_f_i.logv(a) - edge_f_j.logv(a));
+            double mi = edge_f.mutual_information(make_domain(args[i]),
+                                                  make_domain(args[j]));
             // Get or make edge
             if (g.contains(args[i], args[j]) ) {
               typename ig_type::edge e(g.get_edge(args[i], args[j]));
@@ -112,13 +108,6 @@ namespace sill {
                 g[e] = std::make_pair(mi, edge_f);
             } else {
               g.add_edge(args[i], args[j], std::make_pair(mi, edge_f));
-              /*
-              typename ig_type::edge e(g.get_edge(args[i], args[j]));
-              bool edge_found;
-              boost::tie(e, edge_found) = g.add_edge(args[i], args[j]);
-              assert(edge_found);
-              g[e] = std::make_pair(mi, edge_f);
-              */
             }
           }
         }
@@ -135,7 +124,7 @@ namespace sill {
     domain decomposable_args(boost::begin(g.vertices()),
                              boost::end(g.vertices()));
     foreach(F& f, single_var_beliefs) {
-      finite_variable* f_arg = *(f.arguments().begin());
+      variable_type* f_arg = *(f.arguments().begin());
       if (!(decomposable_args.count(f_arg))) {
         decomposable_args.insert(f_arg);
         mst_factors.push_back(f);

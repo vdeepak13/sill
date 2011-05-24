@@ -117,13 +117,13 @@ namespace sill {
                             make_restrict_map(arg_seq, a),
                             make_dim_map(f.arg_seq, var_index));
     }
-  }
+  } // restrict(a, f)
 
   void table_factor::
   restrict(const finite_assignment& a, const finite_domain& a_vars,
            table_factor& f) const {
     this->restrict(a, a_vars, false, f);
-  }
+  } // restrict(a, a_vars, f)
 
   void table_factor::
   restrict(const finite_assignment& a, const finite_domain& a_vars,
@@ -166,7 +166,7 @@ namespace sill {
                             make_restrict_map(arg_seq, a, a_vars),
                             make_dim_map(f.arg_seq, var_index));
     }
-  } // restrict
+  } // restrict(a, a_vars, strict, f)
 
   void
   table_factor::restrict(const finite_record& r, table_factor& f) const {
@@ -197,13 +197,13 @@ namespace sill {
                             make_restrict_map(arg_seq, r),
                             make_dim_map(f.arg_seq, var_index));
     }
-  } // restrict
+  } // restrict(r, f)
 
   void table_factor::
   restrict(const finite_record& r, const finite_domain& r_vars,
            table_factor& f) const {
     this->restrict(r, r_vars, false, f);
-  }
+  } // restrict(r, r_vars, f)
 
   void table_factor::
   restrict(const finite_record& r, const finite_domain& r_vars,
@@ -246,7 +246,7 @@ namespace sill {
                             make_restrict_map(arg_seq, r, r_vars),
                             make_dim_map(f.arg_seq, var_index));
     }
-  } // restrict
+  } // restrict(r, r_vars, strict, f)
 
   void table_factor::restrict_aligned(const finite_record& r,
                                       shape_type& restrict_map,
@@ -270,7 +270,23 @@ namespace sill {
     for (size_t i = f.arg_seq.size(); i < this->arg_seq.size(); ++i)
       restrict_map[i] = r.finite(this->arg_seq[i]);
     f.table_data.restrict_aligned(this->table(), restrict_map);
-  } // restrict_aligned
+  } // restrict_aligned(r, restrict_map, f)
+
+  void table_factor::restrict_other(const finite_record& r,
+                                    finite_variable* retain_v,
+                                    table_factor& f) const {
+    assert(f.arg_seq.size() == 1 && f.arg_seq[0] == retain_v);
+    assert(args.count(retain_v));
+    if (args.size() == 1) {
+      f.table_data = table_data;
+    } else {
+      // Some variables must be restricted.
+      f.table_data.restrict_other
+        (table(),
+         make_restrict_map_except(arg_seq, r, retain_v),
+         safe_get(var_index,retain_v));
+    }
+  } // restrict_other(r, retain_v, f)
 
   table_factor&
   table_factor::combine_in(const table_factor& y, op_type op) {
@@ -528,6 +544,22 @@ namespace sill {
     dense_table<result_type>::shape_type map(vars.size(), retained);
     for(size_t i = 0; i < vars.size(); i++) {
       if (r_vars.count(vars[i]) != 0) {
+        finite_record_iterator it(r.find(vars[i]));
+        if (it != r.end())
+          map[i] = it->second;
+      }
+    }
+    return map;
+  }
+
+  table_factor::shape_type
+  table_factor::make_restrict_map_except(const finite_var_vector& vars,
+                                         const finite_record& r,
+                                         finite_variable* except_v) {
+    size_t retained = std::numeric_limits<size_t>::max();
+    dense_table<result_type>::shape_type map(vars.size(), retained);
+    for(size_t i = 0; i < vars.size(); i++) {
+      if (vars[i] != except_v) {
         finite_record_iterator it(r.find(vars[i]));
         if (it != r.end())
           map[i] = it->second;

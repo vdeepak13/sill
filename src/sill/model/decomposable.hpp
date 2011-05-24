@@ -316,6 +316,9 @@ namespace sill {
     //! Returns a null vertex
     static vertex null_vertex() { return jt_type::null_vertex(); }
 
+    //! Returns the underlying junction tree.
+    const jt_type& get_junction_tree() const { return jt; }
+
     // Junction tree queries
     //==========================================================================
 
@@ -972,6 +975,22 @@ namespace sill {
     }
 
     /**
+     * Computes the expected per-label accuracy (average over X variables),
+     * where the expectation is over samples in the given dataset.
+     *
+     * @return  expected per-label accuracy, or 0 if the dataset is empty.
+     */
+    template <typename LA>
+    double expected_per_label_accuracy(const dataset<LA>& ds) const {
+      if (ds.size() == 0)
+        return 0;
+      double acc(0);
+      foreach(const record_type& r, ds.records())
+        acc += per_label_accuracy(r);
+      return (acc / ds.size());
+    }
+
+    /**
      * Computes the expected per-label accuracy of predicting Y given X,
      * where the expectation is w.r.t. the given dataset and this distribution
      * represents P(Y,X).
@@ -1558,7 +1577,9 @@ namespace sill {
      * Note: This is virtual to support approx_decomposable (experimental).
      */
     virtual void distribute_evidence(vertex v) {
-      pre_order_traversal(*this, v, flow_functor());
+      flow_functor flow_func;
+      flow_func.require_normalizable = true;
+      pre_order_traversal(*this, v, flow_func);
     }
 
     /**
@@ -1568,7 +1589,11 @@ namespace sill {
      * Note: This is virtual to support approx_decomposable (experimental).
      */
     virtual void calibrate() {
-      mpp_traversal(*this, flow_functor());
+      flow_functor flow_func_post;
+      flow_func_post.require_normalizable = false;
+      flow_functor flow_func_pre;
+      flow_func_pre.require_normalizable = true;
+      mpp_traversal(*this, flow_func_post, flow_func_pre);
     }
 
     /**
@@ -1616,8 +1641,19 @@ namespace sill {
     /**
      * A functor which passes flows through the junction tree.
      * Given an edge e = (u, v), this function passes flow from u to v.
+     * This version requires node and edge factors to be normalizable after
+     * the flow has passed.
      */
     struct flow_functor {
+
+      //! If true, require that node and edge factors be normalizable after
+      //! the flow has passed.
+      //!  (default = true)
+      bool require_normalizable;
+
+      flow_functor()
+        : require_normalizable(true) { }
+
       void operator()(edge e, decomposable& dm) {
         // Get the source and target vertices.
         vertex u = e.source();
@@ -1625,43 +1661,25 @@ namespace sill {
 
         // Compute the new separator potential using u and
         // update v's potential with ratio of the new and the old separator
-        /*
-        std::cerr << "BEFORE:\n" // DEBUGGING
-                  << "dm.clique(u): " << dm.clique(u) << "\n"
-                  << "dm.separator(e): " << dm.separator(e) << "\n"
-                  << "dm.clique(v): " << dm.clique(v) << "\n"
-                  << "dm.jt[u]: " << dm.jt[u] << "\n"
-                  << "dm.jt[e]: " << dm.jt[e] << "\n"
-                  << "dm.jt[v]: " << dm.jt[v] << std::endl;
-        */
         dm.jt[v] /= dm.jt[e];
 //        dm.jt[u].marginal(dm.jt[e], dm.separator(e));
         dm.jt[u].collapse_unnormalized(sum_op, dm.separator(e), dm.jt[e]);
         dm.jt[v] *= dm.jt[e];
-        /*
-        std::cerr << "AFTER:\n" // DEBUGGING
-                  << "dm.jt[v]: " << dm.jt[v] << "\n"
-                  << "dm.jt[e]: " << dm.jt[e] << std::endl;
-        */
 
-        /* DEBUG */
-        // Note: this would fail for Gaussian factors which may not be
-        // initially normalizable; add a flag
-        if (!dm.jt[e].is_normalizable() ||
-            !dm.jt[v].is_normalizable()) {
-          using std::endl;
-          std::cerr << "Cannot normalize after flow.  Source potential:"
-                    << endl << dm.jt[u] << endl
-                    << "separator potential: " << endl
-                    << dm.jt[e] << endl
-                    << "target potential: " << endl
-                    << dm.jt[v] << endl;
-          throw normalization_error
-            (std::string("decomposable::flow_functor::operator()") +
-             " ran into factor which could not be normalized.");
+        if (require_normalizable) {
+          if (!dm.jt[e].is_normalizable() ||
+              !dm.jt[v].is_normalizable()) {
+            std::cerr << "Cannot normalize after flow.  "
+                      << "Source potential:\n" << dm.jt[u] << "\n"
+                      << "separator potential:\n" << dm.jt[e] << "\n"
+                      << "target potential:\n" << dm.jt[v] << std::endl;
+            throw normalization_error
+              (std::string("decomposable::flow_functor::operator()") +
+               " ran into factor which could not be normalized.");
+          }
         }
       }
-    };
+    }; // struct flow_functor
 
     /**
      * A functor which passes flows through the junction tree for computing

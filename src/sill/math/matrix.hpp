@@ -459,6 +459,25 @@ namespace sill {
       }
     }
 
+    /**
+     * Updates a submatrix with a binary function
+     * @tparam F a type that satisfies the BinaryFunction concept
+     * \todo this function is not very efficient at the moment.
+     */
+    template <typename F>
+    void update_submatrix(irange i, const itpp::ivec& j,
+                          const itpp::Mat<T>& a, F f) {
+      concept_assert((BinaryFunction<F, T, T, T>));
+      assert(i.size() == (size_t)(a.rows()));
+      assert(j.size() == a.cols());
+      for(size_t r = 0; r < i.size(); r++) {
+        for(size_t c = 0; c < (size_t)(j.size()); c++) {
+          size_t ir = i(r), jc = j(c);
+          base::set(ir, jc, f(operator()(ir, jc), a(r, c)));
+        }
+      }
+    }
+
     //! Updates row i with a binary function
     //! @tparam F a type that satisfies the BinaryFunction concept
     template <typename F>
@@ -571,6 +590,11 @@ namespace sill {
       update_submatrix(i, j, m, std::plus<T>());
     }
 
+    //! Adds to a submatrix (i, j)
+    void add_submatrix(irange i, const itpp::ivec& j, const itpp::Mat<T>& m) {
+      update_submatrix(i, j, m, std::plus<T>());
+    }
+
     //! Subtracts from a submatrix (i, j)
     void subtract_submatrix(irange i, irange j, const itpp::Mat<T>& m) {
       update_submatrix(i, j, m, std::minus<T>());
@@ -578,7 +602,13 @@ namespace sill {
 
     //! Subtracts from a submatrix (i, j)
     void subtract_submatrix(const itpp::ivec& i, const itpp::ivec& j, 
-                       const itpp::Mat<T>& m) {
+                            const itpp::Mat<T>& m) {
+      update_submatrix(i, j, m, std::minus<T>());
+    }
+
+    //! Subtracts from a submatrix (i, j)
+    void subtract_submatrix(irange i, const itpp::ivec& j,
+                            const itpp::Mat<T>& m) {
       update_submatrix(i, j, m, std::minus<T>());
     }
 

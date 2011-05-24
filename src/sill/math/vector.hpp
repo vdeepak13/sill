@@ -87,14 +87,23 @@ namespace sill {
     //! Conversion from the base class
     vector(const base& v) : base(v) { }
 
-    //! Creates a vector from a C array (the contents of the array is copied).
+    //! Creates a vector from a C array (the contents of the array are copied).
     vector(const T* array, size_t size) : base(array, size) {
       assert(size <= (size_t)(std::numeric_limits<int>::max()));
     }
 
-    //! Creates a vector from an STL vector (the contents is copied)
+    //! Creates a vector from an STL vector (the contents are copied)
     vector(const std::vector<T>& v) : base(&v[0], v.size()) {
       assert(v.size() <= (size_t)(std::numeric_limits<int>::max()));
+    }
+
+    //! Creates a vector from an STL vector of a different type
+    //! (the contents are copied)
+    template <typename U>
+    vector(const std::vector<U>& v) : base(v.size()) {
+      assert(v.size() <= (size_t)(std::numeric_limits<int>::max()));
+      for(size_t i = 0; i < size(); i++)
+        base::set(i, v[i]);
     }
 
     //! Conversion from human-readable representation

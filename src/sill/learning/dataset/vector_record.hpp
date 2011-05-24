@@ -231,6 +231,11 @@ namespace sill {
       return keys(*vector_numbering_ptr);
     }
 
+    //! Returns the number of arguments.
+    size_t num_variables() const {
+      return vector_numbering_ptr->size();
+    }
+
     //! Returns the vector component of this record as one continuous vector
     vector_type& vector() {
       return *vec_ptr;
@@ -440,18 +445,29 @@ namespace sill {
      * This does not change this record's domain.
      */
     void copy_from_assignment(const sill::vector_assignment& a) {
-      for (std::map<vector_variable*, size_t>::const_iterator it =
-             vector_numbering_ptr->begin();
-           it != vector_numbering_ptr->end();
-           ++it) {
-        typename sill::vector_assignment::const_iterator a_it =
-          a.find(it->first);
-        if (a_it != a.end())
-          vec_ptr->set_subvector
-            (irange(it->second, it->second + it->first->size()),
-             a_it->second);
+      if (vector_numbering_ptr->size() <= a.size()) {
+        for (std::map<vector_variable*, size_t>::const_iterator it =
+               vector_numbering_ptr->begin();
+             it != vector_numbering_ptr->end();
+             ++it) {
+          sill::vector_assignment::const_iterator a_it(a.find(it->first));
+          if (a_it != a.end())
+            vec_ptr->set_subvector
+              (irange(it->second, it->second + it->first->size()),
+               a_it->second);
+        }
+      } else {
+        for (sill::vector_assignment::const_iterator a_it(a.begin());
+             a_it != a.end(); ++a_it) {
+          std::map<vector_variable*, size_t>::const_iterator
+            it(vector_numbering_ptr->find(a_it->first));
+          if (it != vector_numbering_ptr->end())
+            vec_ptr->set_subvector
+              (irange(it->second, it->second + it->first->size()),
+               a_it->second);
+        }
       }
-    }
+    } // copy_from_assignment(a)
 
     /**
      * For each variable in this record,

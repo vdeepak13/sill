@@ -546,6 +546,39 @@ namespace sill {
 
     } // restrict_aligned
 
+    /**
+     * More efficient version of restrict which restricts all but one
+     * dimension.
+     * @param retain_dim  Dimension in x to be retained.
+     */
+    void restrict_other(const dense_table& x,
+                        const shape_type& restrict_map,
+                        size_t retain_dim) {
+      /* We want to copy x[restrict_map, except for retain_dim] to this[],
+         along retain_dim.
+         So we need to:
+          - Check to make sure this has the correct size.
+          - Calculate the offset for the first element to be copied from x.
+          - Calculate the multiplier for retain_dim in x.
+       */
+      assert(size() == x.size(retain_dim));
+      assert(x.arity() == restrict_map.size());
+      size_t x_offset = 0;
+      size_t x_retain_dim_multiplier = 0;
+      for (size_t d = 0; d < x.arity(); ++d) {
+        if (d != retain_dim) {
+          assert(restrict_map[d] < x.size(d));
+          x_offset += x.offset.get_multiplier(d) * restrict_map[d];
+        } else {
+          x_retain_dim_multiplier = x.offset.get_multiplier(d);
+        }
+      }
+      for (size_t i = 0; i < size(); ++i) {
+        elts[i] = x.elts[x_offset];
+        x_offset += x_retain_dim_multiplier;
+      }
+    } // restrict_other(x, restrict_map, retain_dim)
+
     // Iterators
     //==========================================================================
   public:
@@ -579,8 +612,7 @@ namespace sill {
         : geometry(geometry),
           index(geometry->size(), 0),
           done(false),
-          restrict_map(NULL)
-      {
+          restrict_map(NULL) {
         // If table is of size 0, then mark iterator as done.
         for (size_t i = 0; i < geometry->size(); i++)
           if ((*geometry)[i] == 0) {
@@ -590,14 +622,12 @@ namespace sill {
       }
 
       //! Begin iterator constructor with restrictions.
-      //! \todo test
       index_iterator(const shape_type* geometry,
                      const shape_type* restrict_map)
         : geometry(geometry),
           index(geometry->size(), 0),
           done(false), 
-          restrict_map(restrict_map)
-      {
+          restrict_map(restrict_map) {
         // If table is of size 0, then mark iterator as done.
         for (size_t i = 0; i < geometry->size(); i++)
           if ((*geometry)[i] == 0) {
@@ -797,6 +827,7 @@ namespace sill {
         return offset;
       }
 
+      //! Get the multiplier associated with dimension d.
       size_t get_multiplier(size_t d) const{
         return multiplier_[d];
       }

@@ -145,6 +145,14 @@ namespace sill {
       return mlr_ptr->datasource_info();
     }
 
+    /**
+     * This method may not be used with log_reg_crf_factor.
+     */
+    void relabel_outputs_inputs(const output_domain_type& new_Y,
+                                const input_domain_type& new_X) {
+      assert(false);
+    }
+
     // Public methods: Probabilistic queries
     // =========================================================================
 

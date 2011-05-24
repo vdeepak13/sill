@@ -24,6 +24,18 @@ namespace sill {
     void insert(const std::string& result_name, double val);
 
     /**
+     * Get a result [mean, deviation] pair.
+     *
+     * @param run_combo_type  Type of statistic used to combine the result
+     *                        values for each result type.
+     *                         (default = MEAN)
+     */
+    std::pair<double,double>
+    get(const std::string& result_name,
+        statistics::generalized_mean_enum run_combo_type
+        = statistics::MEAN) const;
+
+    /**
      * Print aggregated results.
      *
      * Print modes:
