@@ -128,8 +128,14 @@ namespace sill {
     }
 
     //! Return the underlying factor.
-    const table_factor& get_table() const {
-      return f.f;
+    table_factor get_table() const {
+      if (log_space_) {
+        table_factor tmpf(f.f);
+        tmpf.update(exponent<double>());
+        return tmpf;
+      } else {
+        return f.f;
+      }
     }
 
     void print(std::ostream& out) const {

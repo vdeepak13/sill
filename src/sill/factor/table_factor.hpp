@@ -68,102 +68,6 @@ namespace sill {
     //! The type of shape / index of the underlying table
     typedef table_type::shape_type shape_type;
 
-    // Private data members
-    //==========================================================================
-  private:
-
-    //! The type that maps variables to table indices
-    typedef std::map<finite_variable*, size_t> var_index_map;
-
-    //! The arguments of this factor.
-    finite_domain args;
-
-    //! A mapping from the arguments' identifiers to \f$[1, ..., k)\f$.
-    var_index_map var_index;
-
-    //! A mapping from the dimensions to the arguments.
-    finite_var_vector arg_seq;
-
-    /**
-     * The table used to store the factor's values.  The dimensions of
-     * this table are ordered such that variable v corresponds to
-     * dimension var_index[i].
-     */
-    table_type table_data;
-
-
-    // Private helper functions
-    //==========================================================================
-    /**
-     * Initializes this table factor to have the supplied collection of
-     * arguments and to have a constant value.
-     */
-    void initialize(const forward_range<finite_variable*>& arguments,
-                    result_type default_value);
-
-    //! Fills in the local table coordinates according to the assignment
-    void get_shape_from_assignment( const finite_assignment& a,
-                                    shape_type& s) const{
-      for(size_t i = 0; i<arg_seq.size(); i++){
-        finite_assignment::const_iterator
-              var_i_value_iterator = a.find(arg_seq[i]);
-        assert(var_i_value_iterator != a.end());
-        s[i] = var_i_value_iterator->second;
-      }
-    }
-
-    //! Fills in the local table coordinates according to the assignment
-    void get_shape_from_assignment( const finite_record& r,
-                                    shape_type& s) const{
-      for(size_t i = 0; i < arg_seq.size(); i++) {
-        s[i] = r.finite(arg_seq[i]);
-      }
-    }
-
-    //! Fills in the assignment according to the local table coordinates
-    void get_assignment_from_shape(const shape_type& s,
-                                   finite_assignment& a) const {
-      a.clear();
-      assert(s.size() == arg_seq.size());
-      for(size_t i(0); i < s.size(); i++) {
-        a[arg_seq[i]] = s[i];
-      }
-    }
-
-    //! Creates an object that maps indices of one table to another
-    static shape_type make_dim_map(const finite_var_vector& vars,
-                                   const var_index_map& to_map);
-
-    //! Creates an object that maps indices of a table to fixed values
-    static shape_type make_restrict_map(const finite_var_vector& vars,
-                                        const finite_assignment& a);
-
-    //! Creates an object that maps indices of a table to fixed values
-    static shape_type make_restrict_map(const finite_var_vector& vars,
-                                        const finite_record& r);
-
-    //! Creates an object that maps indices of a table to fixed values,
-    //! but limits assignment a to include only variables in a_vars.
-    static shape_type make_restrict_map(const finite_var_vector& vars,
-                                        const finite_assignment& a,
-                                        const finite_domain& a_vars);
-
-    //! Creates an object that maps indices of a table to fixed values,
-    //! but limits record r to include only variables in r_vars.
-    static shape_type make_restrict_map(const finite_var_vector& vars,
-                                        const finite_record& r,
-                                        const finite_domain& r_vars);
-
-    //! Creates an object that maps indices of a table to fixed values,
-    //! but limits record r to include all variables EXCEPT for except_v.
-    static shape_type
-    make_restrict_map_except(const finite_var_vector& vars,
-                             const finite_record& r,
-                             finite_variable* except_v);
-
-    //! Creates an object that maps indices of a set to 0..(n-1)
-    static var_index_map make_index_map(const finite_domain& vars);
-
     // Constructors and conversion operators
     //==========================================================================
   public:
@@ -664,12 +568,16 @@ namespace sill {
 
     /**
      * Restrict all variables but retain_v, storing the result in f.
-     * @param r         Record with values used for restricting variables.
-     * @param retain_v  Variable which is retained.
-     *                  It must be an argument to this factor.
-     * @param f         (Return value) This factor must have been pre-allocated.
+     * @param r          Record with values used for restricting variables.
+     * @param r_indices  Indices in r for this factor's arguments,
+     *                    pre-computed by set_record_indices.
+     * @param retain_v   Variable which is retained.
+     *                    It must be an argument to this factor.
+     * @param f          (Return value) This factor must have been
+     *                    pre-allocated.
      */
     void restrict_other(const finite_record& r,
+                        const ivec& r_indices,
                         finite_variable* retain_v,
                         table_factor& f) const;
 
@@ -755,6 +663,39 @@ namespace sill {
         a[v] = v->size() - 1;
       }
       return a;
+    }
+
+    //! Samples from the factor, which is assumed to be normalized
+    //! to be a distribution P(arguments).
+    //! @param rec  (Return value) The value in this record is set
+    //!             to the sampled value for each sampled variable.
+    //!             This record must include all sampled variables!
+    template <typename RandomNumberGenerator>
+    void sample(RandomNumberGenerator& rng, finite_record& rec) const {
+      double r(boost::uniform_real<double>(0,1)(rng));
+      if (arg_seq.size() == 1) { // Optimization for Gibbs sampling
+        for (size_t i = 0; i < arg_seq[0]->size(); ++i) {
+          if (r <= table_data(i)) {
+            rec.finite(arg_seq[0]) = i;
+            return;
+          } else {
+            r -= table_data(i);
+          }
+        }
+      } else {
+        foreach(const shape_type& s, table_data.indices()) {
+          if (r <= table_data(s)) {
+            get_record_from_shape(s, rec);
+            return;
+          } else {
+            r -= table_data(s);
+          }
+        }
+      }
+      // This should not really happen, so just return whatever.
+      foreach(finite_variable* v, arg_seq) {
+        rec.finite(v) = 0;
+      }
     }
 
     /**
@@ -863,6 +804,17 @@ namespace sill {
      */
     table_factor
     roll_up(const finite_var_vector& orig_arg_list) const;
+
+    /**
+     * Given a record, set r_indices to hold the indices in the record's
+     * data for the arguments of this factor.
+     *
+     * Only certain operations support this optimization.
+     * This is useful when you wish to call those operations on records with
+     * the same variable ordering many times.
+     */
+    void set_record_indices(const finite_record& r,
+                            ivec& r_indices) const;
 
     // Combine and collapse operations
     //==========================================================================
@@ -1001,6 +953,153 @@ namespace sill {
      * Multiply all values in the table factor by a constant.
      */
     table_factor& operator*=(double b);
+
+    // Private types
+    //==========================================================================
+  private:
+
+    //! The type that maps variables to table indices
+    typedef std::map<finite_variable*, size_t> var_index_map;
+
+    //! Struct which acts like a restrict_map made by make_restrict_map_except
+    //! but saves on allocation.
+    struct restrict_map_except_functor {
+
+      restrict_map_except_functor()
+        : vars(NULL), r(NULL), r_indices(NULL), except_v(NULL) { }
+
+      restrict_map_except_functor(const finite_var_vector& vars,
+                                  const finite_record& r,
+                                  const ivec& r_indices,
+                                  finite_variable* except_v)
+        : vars(&vars), r(&r), r_indices(&r_indices), except_v(except_v) {
+        assert(except_v);
+      }
+
+      //! Size of dense_table<result_type>::shape_type
+      size_t size() const {
+        assert(vars);
+        return vars->size();
+      }
+
+      //! If dimension i is restricted, returns the value to restrict it to;
+      //! otherwise, returns std::numeric_limits<size_t>::max().
+      size_t operator[](size_t i) const {
+        assert(except_v);
+        if (vars->operator[](i) != except_v)
+          return r->finite(r_indices->operator[](i));
+        else
+          return std::numeric_limits<size_t>::max();
+      }
+
+    private:
+      const finite_var_vector* vars;
+      const finite_record* r;
+      const ivec* r_indices;
+      finite_variable* except_v;
+    }; // struct restrict_map_except_functor
+
+    // Private data members
+    //==========================================================================
+  private:
+
+    //! The arguments of this factor.
+    finite_domain args;
+
+    //! A mapping from the arguments' identifiers to \f$[1, ..., k)\f$.
+    var_index_map var_index;
+
+    //! A mapping from the dimensions to the arguments.
+    finite_var_vector arg_seq;
+
+    /**
+     * The table used to store the factor's values.  The dimensions of
+     * this table are ordered such that variable v corresponds to
+     * dimension var_index[i].
+     */
+    table_type table_data;
+
+
+    // Private helper functions
+    //==========================================================================
+    /**
+     * Initializes this table factor to have the supplied collection of
+     * arguments and to have a constant value.
+     */
+    void initialize(const forward_range<finite_variable*>& arguments,
+                    result_type default_value);
+
+    //! Fills in the local table coordinates according to the assignment
+    void get_shape_from_assignment( const finite_assignment& a,
+                                    shape_type& s) const{
+      for(size_t i = 0; i<arg_seq.size(); i++){
+        finite_assignment::const_iterator
+              var_i_value_iterator = a.find(arg_seq[i]);
+        assert(var_i_value_iterator != a.end());
+        s[i] = var_i_value_iterator->second;
+      }
+    }
+
+    //! Fills in the local table coordinates according to the assignment
+    void get_shape_from_assignment( const finite_record& r,
+                                    shape_type& s) const{
+      for(size_t i = 0; i < arg_seq.size(); i++) {
+        s[i] = r.finite(arg_seq[i]);
+      }
+    }
+
+    //! Fills in the assignment according to the local table coordinates
+    void get_assignment_from_shape(const shape_type& s,
+                                   finite_assignment& a) const {
+      a.clear();
+      assert(s.size() == arg_seq.size());
+      for(size_t i(0); i < s.size(); i++) {
+        a[arg_seq[i]] = s[i];
+      }
+    }
+
+    //! Fills in the record according to the local table coordinates.
+    //! The record MUST include all arguments of this factor.
+    void get_record_from_shape(const shape_type& s,
+                               finite_record& r) const {
+      for(size_t i(0); i < s.size(); i++) {
+        r.finite(arg_seq[i]) = s[i];
+      }
+    }
+
+    //! Creates an object that maps indices of one table to another
+    static shape_type make_dim_map(const finite_var_vector& vars,
+                                   const var_index_map& to_map);
+
+    //! Creates an object that maps indices of a table to fixed values
+    static shape_type make_restrict_map(const finite_var_vector& vars,
+                                        const finite_assignment& a);
+
+    //! Creates an object that maps indices of a table to fixed values
+    static shape_type make_restrict_map(const finite_var_vector& vars,
+                                        const finite_record& r);
+
+    //! Creates an object that maps indices of a table to fixed values,
+    //! but limits assignment a to include only variables in a_vars.
+    static shape_type make_restrict_map(const finite_var_vector& vars,
+                                        const finite_assignment& a,
+                                        const finite_domain& a_vars);
+
+    //! Creates an object that maps indices of a table to fixed values,
+    //! but limits record r to include only variables in r_vars.
+    static shape_type make_restrict_map(const finite_var_vector& vars,
+                                        const finite_record& r,
+                                        const finite_domain& r_vars);
+
+    //! Creates an object that maps indices of a table to fixed values,
+    //! but limits record r to include all variables EXCEPT for except_v.
+    static shape_type
+    make_restrict_map_except(const finite_var_vector& vars,
+                             const finite_record& r,
+                             finite_variable* except_v);
+
+    //! Creates an object that maps indices of a set to 0..(n-1)
+    static var_index_map make_index_map(const finite_domain& vars);
 
   }; // class table_factor
 

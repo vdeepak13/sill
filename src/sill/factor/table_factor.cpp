@@ -273,6 +273,7 @@ namespace sill {
   } // restrict_aligned(r, restrict_map, f)
 
   void table_factor::restrict_other(const finite_record& r,
+                                    const ivec& r_indices,
                                     finite_variable* retain_v,
                                     table_factor& f) const {
     assert(f.arg_seq.size() == 1 && f.arg_seq[0] == retain_v);
@@ -283,7 +284,7 @@ namespace sill {
       // Some variables must be restricted.
       f.table_data.restrict_other
         (table(),
-         make_restrict_map_except(arg_seq, r, retain_v),
+         restrict_map_except_functor(arg_seq, r, r_indices, retain_v),
          safe_get(var_index,retain_v));
     }
   } // restrict_other(r, retain_v, f)
@@ -449,6 +450,12 @@ namespace sill {
     return newf;
   }
 
+  void table_factor::set_record_indices(const finite_record& r,
+                                        ivec& r_indices) const {
+    r_indices.resize(arg_seq.size());
+    for (size_t i = 0; i < arg_seq.size(); ++i)
+      r_indices[i] = r.index(arg_seq[i]);
+  }
 
   finite_assignment
   table_factor::assignment(const shape_type& index) const {

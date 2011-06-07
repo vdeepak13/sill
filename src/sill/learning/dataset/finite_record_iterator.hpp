@@ -66,6 +66,9 @@ namespace sill {
     //! Returns truth if the two iterators are different.
     bool operator!=(const finite_record_iterator& it) const;
 
+    //! Returns truth if this is an end iterator.
+    bool is_end() const;
+
   }; // class finite_record_iterator
 
 } // namespace sill

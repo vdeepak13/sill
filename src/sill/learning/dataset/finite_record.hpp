@@ -165,6 +165,11 @@ namespace sill {
       return *fin_ptr;
     }
 
+    //! Returns the index in this record for variable v.
+    size_t index(finite_variable* v) const {
+      return safe_get(*finite_numbering_ptr, v);
+    }
+
     //! Returns element i of the finite component of this record
     //! Warning: The bounds are not checked!
     size_t& finite(size_t i) {
@@ -179,14 +184,12 @@ namespace sill {
 
     //! Returns the value of variable v in this record.
     size_t& finite(finite_variable* v) {
-      size_t i(safe_get(*finite_numbering_ptr, v));
-      return fin_ptr->operator[](i);
+      return fin_ptr->operator[](index(v));
     }
 
     //! Returns the value of variable v in this record.
     size_t finite(finite_variable* v) const {
-      size_t i(safe_get(*finite_numbering_ptr, v));
-      return fin_ptr->operator[](i);
+      return fin_ptr->operator[](index(v));
     }
 
     //! (Similar to finite_assignment::find)

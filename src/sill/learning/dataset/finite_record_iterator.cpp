@@ -60,6 +60,10 @@ namespace sill {
     return !operator==(it);
   }
 
+  bool finite_record_iterator::is_end() const {
+    return (iter == r_ptr->finite_numbering_ptr->end());
+  }
+
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

@@ -476,7 +476,7 @@ namespace sill {
                       << std::endl;
           std::cerr << "gradient_method::run_line_search() exited step with "
                     << "objective_change_ = " << objective_change_
-                    << " < convergence_zero = " << convergence_zero << "\n"
+                    << " > -convergence_zero = " << (-convergence_zero) << "\n"
                     << "  step direction L2 norm = " << direction_.L2norm()
                     << std::endl;
         }

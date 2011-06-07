@@ -13,16 +13,18 @@ namespace sill {
   table_crf_factor
   random_table_crf_factor_functor::
   generate_marginal(const finite_domain& Y) {
-    return
-      table_crf_factor(params.table_factor_func.generate_marginal(Y), Y, false);
+    table_crf_factor f(params.table_factor_func.generate_marginal(Y), Y, false);
+    f.convert_to_log_space();
+    return f;
   }
 
   table_crf_factor
   random_table_crf_factor_functor::
   generate_conditional(const finite_domain& Y, const finite_domain& X) {
-    return
-      table_crf_factor(params.table_factor_func.generate_conditional(Y,X),
-                       Y, false);
+    table_crf_factor
+      f(params.table_factor_func.generate_conditional(Y,X), Y, false);
+    f.convert_to_log_space();
+    return f;
   }
 
   finite_variable*

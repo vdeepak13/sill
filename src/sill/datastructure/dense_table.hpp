@@ -579,6 +579,46 @@ namespace sill {
       }
     } // restrict_other(x, restrict_map, retain_dim)
 
+    /**
+     * More efficient version of restrict which restricts all but one
+     * dimension.
+     * @param retain_dim  Dimension in x to be retained.
+     */
+    template <typename RestrictMapFunctor>
+    void restrict_other(const dense_table& x,
+                        const RestrictMapFunctor& restrict_map,
+                        size_t retain_dim) {
+      /* We want to copy x[restrict_map, except for retain_dim] to this[],
+         along retain_dim.
+         So we need to:
+          - Check to make sure this has the correct size.
+          - Calculate the offset for the first element to be copied from x.
+          - Calculate the multiplier for retain_dim in x.
+       */
+      assert(size() == x.size(retain_dim));
+      assert(x.arity() == restrict_map.size());
+      size_t x_offset = 0;
+      {
+        size_t d = 0;
+        while (d < retain_dim) {
+          assert(restrict_map[d] < x.size(d));
+          x_offset += x.offset.get_multiplier(d) * restrict_map[d];
+          ++d;
+        }
+        ++d;
+        while (d < x.arity()) {
+          assert(restrict_map[d] < x.size(d));
+          x_offset += x.offset.get_multiplier(d) * restrict_map[d];
+          ++d;
+        }
+      }
+      size_t x_retain_dim_multiplier = x.offset.get_multiplier(retain_dim);
+      for (size_t i = 0; i < size(); ++i) {
+        elts[i] = x.elts[x_offset];
+        x_offset += x_retain_dim_multiplier;
+      }
+    } // restrict_other(x, restrict_map, retain_dim)
+
     // Iterators
     //==========================================================================
   public:
