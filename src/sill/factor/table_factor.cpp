@@ -16,6 +16,7 @@ namespace sill {
 
   void table_factor::load(iarchive& ar) {
     ar >> args >> arg_seq >> table_data >> var_index;
+    index.resize(arg_seq.size());
   }
 
   // Accessors
@@ -29,6 +30,8 @@ namespace sill {
     dense_table<result_type> temp = table_data;
     table_data = f.table_data;
     f.table_data = temp;
+
+    index.swap(f.index);
   }
 
 
@@ -487,8 +490,8 @@ namespace sill {
       var_index[arg_seq[i]] = i;
       geometry[i] = arg_seq[i]->size();
     }
-    // Allocate the table.
     table_data = dense_table<result_type>(geometry, default_value);
+    index.resize(arg_seq.size());
   }
 
   table_factor::shape_type

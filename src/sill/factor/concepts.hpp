@@ -7,9 +7,11 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include <sill/base/assignment.hpp>
+#include <sill/copy_ptr.hpp>
 #include <sill/global.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
-#include <sill/learning/dataset/dataset.hpp>
+//#include <sill/learning/dataset/dataset.hpp>
 #include <sill/math/gdl_enum.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/stl_concepts.hpp>

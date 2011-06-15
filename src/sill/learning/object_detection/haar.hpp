@@ -159,8 +159,8 @@ namespace sill {
       // posA = positive examples in set A (val > 0), etc.
       double posA = 0, posB = 0, negA = 0, negB = 0;
       size_t i = 0; // indexes ds/distribution
-      typename dataset<la_type>::record_iterator end = ds.end();
-      for (typename dataset<la_type>::record_iterator it = ds.begin();
+      typename dataset<la_type>::record_iterator_type end = ds.end();
+      for (typename dataset<la_type>::record_iterator_type it = ds.begin();
            it != end; ++it) {
         double val = 0;
         for (size_t j = 0; j < cur_coordinates.size(); ++j)

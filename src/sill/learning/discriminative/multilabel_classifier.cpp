@@ -65,9 +65,9 @@ namespace sill {
         assert(false);
         return test_acc;
       }
-      dataset<la_type>::record_iterator testds_end = testds.end();
+      dataset<la_type>::record_iterator_type testds_end = testds.end();
       std::vector<size_t> truth;
-      for (dataset<la_type>::record_iterator testds_it = testds.begin();
+      for (dataset<la_type>::record_iterator_type testds_it = testds.begin();
            testds_it != testds_end; ++testds_it) {
         const record_type& example = *testds_it;
         std::vector<size_t> pred(predict(example));
@@ -91,9 +91,9 @@ namespace sill {
       }
       double loglike(0);
       double stddev(0);
-      dataset<la_type>::record_iterator testds_end = testds.end();
+      dataset<la_type>::record_iterator_type testds_end = testds.end();
       finite_assignment fa;
-      for (dataset<la_type>::record_iterator testds_it = testds.begin();
+      for (dataset<la_type>::record_iterator_type testds_it = testds.begin();
            testds_it != testds_end; ++testds_it) {
         const record_type& example = *testds_it;
         assign_labels(example.finite(), fa);

@@ -2,11 +2,11 @@
 #define SILL_LEARNING_GAUSSIAN_HPP
 
 #include <sill/factor/moment_gaussian.hpp>
+#include <sill/learning/dataset/dataset.hpp>
+
+#include <sill/macros_def.hpp>
 
 namespace sill {
-
-  // forward declaration
-  template <typename LA> class dataset;
 
   //! \addtogroup learning_param
   //! @{
@@ -69,5 +69,7 @@ namespace sill {
   }
 
 } // namespace sill
+
+#include <sill/macros_undef.hpp>
 
 #endif

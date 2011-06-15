@@ -25,8 +25,8 @@ namespace sill {
       }
       double loglike(0);
       double stddev(0);
-      dataset<la_type>::record_iterator testds_end = testds.end();
-      for (dataset<la_type>::record_iterator testds_it = testds.begin();
+      dataset<la_type>::record_iterator_type testds_end = testds.end();
+      for (dataset<la_type>::record_iterator_type testds_it = testds.begin();
            testds_it != testds_end; ++testds_it) {
         const record_type& example = *testds_it;
         double ll(probabilities(example)[label(example)]);

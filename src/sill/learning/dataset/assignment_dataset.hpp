@@ -46,7 +46,7 @@ namespace sill {
     typedef typename base::vector_type         vector_type;
     typedef typename base::record_type         record_type;
     typedef typename base::assignment_iterator assignment_iterator;
-    typedef typename base::record_iterator     record_iterator;
+    typedef typename base::record_iterator_type     record_iterator_type;
 
     // Constructors
     //==========================================================================

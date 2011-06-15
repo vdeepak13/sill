@@ -6,7 +6,7 @@
 
 #include <sill/global.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/learning/dataset/record.hpp>
+#include <sill/learning/dataset/dataset.hpp>
 #include <sill/model/bayesian_graph.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/graph/graph_traversal.hpp>

@@ -353,8 +353,8 @@ namespace sill {
         out << "[]";
         return;
       } else {
-        const_iterator row_it = row_indices().begin();
-        const_iterator col_it = col_indices().begin();
+        const_index_iterator row_it = row_indices().begin();
+        const_index_iterator col_it = col_indices().begin();
         const_iterator value_it = values().begin();
         size_type i = 0;
         while (row_it != row_indices().end()) {

@@ -422,9 +422,9 @@ namespace sill {
 
       const multiclass_logistic_regression& mlr;
 
-      mutable typename dataset<la_type>::record_iterator ds_it;
+      mutable typename dataset<la_type>::record_iterator_type ds_it;
 
-      typename dataset<la_type>::record_iterator ds_end;
+      typename dataset<la_type>::record_iterator_type ds_end;
 
     public:
       objective_functor(const multiclass_logistic_regression& mlr)
@@ -1396,27 +1396,25 @@ namespace sill {
     if (ds_ptr || o_ptr) {
       if (real_optimizer_builder::is_stochastic(params.opt_method)) {
         if (!o_ptr) {
-          if (my_ds_ptr) {
-            typename ds_oracle<la_type>::parameters dso_params;
-            dso_params.randomization_period = 5;
-            boost::uniform_int<int> unif_int(0,std::numeric_limits<int>::max());
-            dso_params.random_seed = unif_int(rng);
-            my_ds_o_ptr = new ds_oracle<la_type>(*my_ds_ptr);
-            o_ptr = my_ds_o_ptr;
-          }
+          assert(ds_ptr);
+          typename ds_oracle<la_type>::parameters dso_params;
+          dso_params.randomization_period = 5;
+          boost::uniform_int<int> unif_int(0,std::numeric_limits<int>::max());
+          dso_params.random_seed = unif_int(rng);
+          my_ds_o_ptr = new ds_oracle<la_type>(*ds_ptr);
+          o_ptr = my_ds_o_ptr;
         }
       } else {
         if (!ds_ptr) {
-          if (o_ptr) {
-            my_ds_ptr = new vector_dataset<la_type>(o_ptr->datasource_info(),n);
-            for (size_t i = 0; i < n; ++i) {
-              if (o_ptr->next())
-                my_ds_ptr->insert(o_ptr->current());
-              else
-                break;
-            }
-            ds_ptr = my_ds_ptr;
+          assert(o_ptr);
+          my_ds_ptr = new vector_dataset<la_type>(o_ptr->datasource_info(),n);
+          for (size_t i = 0; i < n; ++i) {
+            if (o_ptr->next())
+              my_ds_ptr->insert(o_ptr->current());
+            else
+              break;
           }
+          ds_ptr = my_ds_ptr;
         }
       }
     }
@@ -1691,7 +1689,8 @@ namespace sill {
       }
     }
     if (w_vec_.size() != 0)
-      v += w_vec_ * example.vector();
+      gemv(w_vec_, example.vector(), v);
+//      v += w_vec_ * example.vector();
     finish_probabilities(v);
   }
 
@@ -1819,9 +1818,9 @@ namespace sill {
     double train_acc(0.);
     double train_log_like(0.);
     gradient.zeros();
-    typename dataset<la_type>::record_iterator it_end(ds_ptr->end());
+    typename dataset<la_type>::record_iterator_type it_end(ds_ptr->end());
     size_t i(0); // index into dataset
-    for (typename dataset<la_type>::record_iterator it(ds_ptr->begin());
+    for (typename dataset<la_type>::record_iterator_type it(ds_ptr->begin());
          it != it_end; ++it) {
       // Compute v = prediction for *it.  Update accuracy, log likelihood.
       add_raw_gradient
@@ -1870,11 +1869,11 @@ namespace sill {
     if (hd.size() != x.size())
       hd.resize(x.size());
     hd.zeros();
-    typename dataset<la_type>::record_iterator it_end(ds_ptr->end());
+    typename dataset<la_type>::record_iterator_type it_end(ds_ptr->end());
     size_t i(0); // index into ds
     dense_vector_type v;
     vector_type vecdata;
-    for (typename dataset<la_type>::record_iterator it(ds_ptr->begin());
+    for (typename dataset<la_type>::record_iterator_type it(ds_ptr->begin());
          it != it_end; ++it) {
       my_probabilities(*it, v, x.f, x.v, x.b);
       v -= elem_mult(v, v);

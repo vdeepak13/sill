@@ -27,6 +27,12 @@
 
 namespace sill {
 
+  // Forward declarations
+  template <typename F>
+  typename combine_result<F, F>::type
+  combine(F f1, const F& f2, op_type op);
+
+
   /**
    * A table factor represents a function of a set of finite variables.
    *
@@ -162,15 +168,13 @@ namespace sill {
     }
 
     //! Returns the values of the factor in a linear order
-    std::pair<table_type::const_iterator,
-              table_type::const_iterator>
+    std::pair<table_type::const_iterator, table_type::const_iterator>
     values() const {
       return table_data.elements();
     }
 
     //! Returns the values of the factor in a linear order
-    std::pair<table_type::iterator,
-              table_type::iterator>
+    std::pair<table_type::iterator, table_type::iterator>
     values() {
       return table_data.elements();
     }
@@ -213,28 +217,24 @@ namespace sill {
     // -------------------------------------------------------------------
     //! Returns the value associated with a given assignment of variables
     result_type v(const finite_assignment& a) const {
-      shape_type index(arg_seq.size());
       get_shape_from_assignment(a,index);
       return table_data(index);
     }
 
     //! Returns the value associated with a given assignment of variables
     result_type& v(const finite_assignment& a) {
-      shape_type index(arg_seq.size());
       get_shape_from_assignment(a,index);
       return table_data(index);
     }
 
     //! Returns the value associated with a given assignment of variables
     result_type v(const finite_record& r) const {
-      shape_type index(arg_seq.size());
       get_shape_from_assignment(r,index);
       return table_data(index);
     }
 
     //! Returns the value associated with a given assignment of variables
     result_type& v(const finite_record& r) {
-      shape_type index(arg_seq.size());
       get_shape_from_assignment(r,index);
       return table_data(index);
     }
@@ -252,7 +252,6 @@ namespace sill {
     //! direct indexing for 2 arguments
     result_type v(size_t i, size_t j) const {
       assert(arguments().size()==2);
-      shape_type index(2);
       index[0] = i;
       index[1] = j;
       return table_data(index);
@@ -261,7 +260,6 @@ namespace sill {
     //! direct indexing for 2 arguments
     result_type& v(size_t i, size_t j) {
       assert(arguments().size()==2);
-      shape_type index(2);
       index[0] = i;
       index[1] = j;
       return table_data(index);
@@ -274,7 +272,6 @@ namespace sill {
      //! direct indexing for 1 argument
     result_type v(size_t i) const {
       assert(arguments().size()==1);
-      shape_type index(1);
       index[0] = i;
       return table_data(index);
     }
@@ -282,7 +279,6 @@ namespace sill {
     //! direct indexing for 1 argument
     result_type& v(size_t i) {
       assert(arguments().size()==1);
-      shape_type index(1);
       index[0] = i;
       return table_data(index);
     }
@@ -299,7 +295,6 @@ namespace sill {
 
     //! Sets the value associated with a given assignment of variables
     void set_v(const finite_assignment& a, result_type v) {
-      shape_type index(arg_seq.size());
       get_shape_from_assignment(a,index);
       table_data(index) = v;
     }
@@ -313,7 +308,6 @@ namespace sill {
     //! direct indexing for 2 arguments
     void set_v(size_t i, size_t j, result_type v) {
       assert(arguments().size()==2);
-      shape_type index(2);
       index[0] = i;
       index[1] = j;
       table_data(index) = v;
@@ -323,11 +317,10 @@ namespace sill {
     void set_logv(size_t i, size_t j, double v) {
       set_v(i, j, std::exp(v));
     }
- 
-     //! direct indexing for 1 argument
+
+    //! direct indexing for 1 argument
     void set_v(size_t i, result_type v) {
       assert(arguments().size()==1);
-      shape_type index(1);
       index[0] = i;
       table_data(index) = v;
     }
@@ -347,6 +340,7 @@ namespace sill {
       var_index = other.var_index;
       arg_seq = other.arg_seq;
       table_data = other.table_data;
+      index = other.index;
       return *this;
     }
 
@@ -1019,6 +1013,8 @@ namespace sill {
      */
     table_type table_data;
 
+    //! Index into table_data (for avoiding reallocation)
+    mutable shape_type index;
 
     // Private helper functions
     //==========================================================================
@@ -1105,8 +1101,9 @@ namespace sill {
 
 
 
-// Free functions
-//============================================================================
+  // Free functions
+  //============================================================================
+
   //! Writes a human-readable representation of the table factor
   //! \relates table_factor
   std::ostream& operator<<(std::ostream& out, const table_factor& f);

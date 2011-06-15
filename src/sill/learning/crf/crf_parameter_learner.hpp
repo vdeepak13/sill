@@ -604,10 +604,10 @@ namespace sill {
     const dataset<la_type>& ds;
 
     //! Iterator for training dataset
-    mutable typename dataset<la_type>::record_iterator ds_it;
+    mutable typename dataset<la_type>::record_iterator_type ds_it;
 
     //! Iterator at end of training dataset
-    typename dataset<la_type>::record_iterator ds_end;
+    typename dataset<la_type>::record_iterator_type ds_end;
 
     //! The underlying CRF model.
     //! This is mutable to allow for evaluation of new weight values during

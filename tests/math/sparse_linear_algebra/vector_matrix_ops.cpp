@@ -40,11 +40,31 @@ int main(int argc, char** argv) {
   }
   std::cout << "dm: " << dm << std::endl;
 
+  coo_matrix<double> coomat(m, n, m*n/2);
+  {
+    size_t k = 0;
+    for (size_t i = 0; i < m; ++i) {
+      for (size_t j = 0; j < n; ++j) {
+        coomat.row_indices()[k] = i;
+        coomat.col_indices()[k] = j;
+        coomat.values()[k] = i * m + j + 1;
+        ++k;
+        if (k >= coomat.num_non_zeros())
+          break;
+      }
+      if (k >= coomat.num_non_zeros())
+        break;
+    }
+  }
+  csc_matrix<double> cscmat(coomat);
+  std::cout << "cscmat: " << cscmat << std::endl;
+
   std::cout << std::endl;
 
   // Vector-scalar ops
   {
     std::cout << "c * sv = " << (c * sv) << std::endl;
+    std::cout << "sum(sv) = " << sum(sv) << std::endl;
   }
 
   // Vector-vector ops
@@ -76,7 +96,17 @@ int main(int argc, char** argv) {
 
   // Matrix-vector ops
   {
-    std::cout << "dm * sv = " << (dm * sv) << std::endl;
+    std::cout << "sum(cscmat,0) = " << sum(cscmat,0) << std::endl;
+    std::cout << "sum(cscmat,1) = " << sum(cscmat,1) << std::endl;
+  }
+
+  // Matrix-vector ops
+  {
+    vector<double> tmp_dv(dm * sv);
+    std::cout << "dm * sv = " << tmp_dv << std::endl;
+    tmp_dv.zeros();
+    gemv(dm, sv, tmp_dv);
+    std::cout << "tmp_dv from gemv(dm, sv, tmp_dv) = " << tmp_dv << std::endl;
   }
 
   // Matrix-matrix ops

@@ -272,8 +272,8 @@ namespace sill {
     }
     value_type loglike(0);
     value_type stddev(0);
-    typename dataset<la_type>::record_iterator testds_end = testds.end();
-    for (typename dataset<la_type>::record_iterator testds_it = testds.begin();
+    typename dataset<la_type>::record_iterator_type testds_end = testds.end();
+    for (typename dataset<la_type>::record_iterator_type testds_it = testds.begin();
          testds_it != testds_end; ++testds_it) {
       const record_type& example = *testds_it;
       value_type ll(probabilities(example)[label(example)]);

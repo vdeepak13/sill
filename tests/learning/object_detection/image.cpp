@@ -24,9 +24,8 @@ int main(int argc, char* argv[]) {
   cout  << "For each image, print original image, rescaled image (1/2 size), "
         << "rescaled image (3/4 size), integral representation of image."
         << endl;
-  for (vector_dataset<>::record_iterator it = data_ptr->begin();
-       it != data_ptr->end(); ++it) {
-    record<> r(*it);
+  foreach(const record<> r_, data_ptr->records()) {
+    record<> r(r_);
     image::write(cout, r);
     cout << endl;
     image::set_view(r, 0, 0,

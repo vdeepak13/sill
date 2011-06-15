@@ -54,21 +54,6 @@ int main(int argc, char* argv[]) {
   }
   cout << "Test accuracy = " << ((double)(nright) / ntest) << endl;
 
-  // -- begin temp
-  nright = 0;
-  dataset<>::record_iterator end = ds_test.end();
-  for (dataset<>::record_iterator it = ds_test.begin();
-       it != end; ++it) {
-    const record<>& example = *it;
-    const assignment& a = example.assignment();
-    size_t predicted = s.predict(a);
-    size_t truth = safe_get(a.finite(), class_var);
-    if (predicted == truth)
-      nright++;
-  }
-  cout << "Test accuracy = " << ((double)(nright) / ntest) << endl;
-  // -- end temp
-
   cout << "Saving stump...";
   s.save("stump_test.txt");
   cout << "loading stump...";

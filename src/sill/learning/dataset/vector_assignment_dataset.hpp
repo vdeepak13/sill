@@ -49,7 +49,7 @@ namespace sill {
     //! Import public typedefs and functions from base class
     typedef typename base::vector_type     vector_type;
     typedef typename base::record_type     record_type;
-    typedef typename base::record_iterator record_iterator;
+    typedef typename base::record_iterator_type record_iterator_type;
     typedef typename base::assignment_iterator assignment_iterator;
 
     // Constructors
@@ -136,12 +136,8 @@ namespace sill {
       return vector_data[i][j];
     }
 
-    //! Returns a range over the records of this dataset
-    //! Eventually, will be able to provide a set of variables
-    std::pair<record_iterator, record_iterator> records() const;
-
     //! Returns an iterator over the records of this dataset
-    record_iterator begin() const;
+    record_iterator_type begin() const;
 
     //! Returns a range over the records of this dataset, as assignments.
     //! Eventually, will be able to provide a set of variables.
@@ -291,20 +287,7 @@ namespace sill {
   //==========================================================================
 
   template <typename LA>
-  std::pair<typename vector_assignment_dataset<LA>::record_iterator,
-            typename vector_assignment_dataset<LA>::record_iterator>
-  vector_assignment_dataset<LA>::records() const {
-    if (nrecords > 0)
-      return std::make_pair
-        (make_record_iterator(0, &(finite_data[0]), &(vector_data[0])),
-         make_record_iterator(nrecords));
-    else
-      return std::make_pair
-        (make_record_iterator(0), make_record_iterator(nrecords));
-  }
-
-  template <typename LA>
-  typename vector_assignment_dataset<LA>::record_iterator
+  typename vector_assignment_dataset<LA>::record_iterator_type
   vector_assignment_dataset<LA>::begin() const {
     if (nrecords > 0)
       return make_record_iterator(0, &(finite_data[0]), &(vector_data[0]));

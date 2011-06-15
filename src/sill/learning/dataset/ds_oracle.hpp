@@ -4,13 +4,15 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/oracle.hpp>
 #include <sill/math/permutations.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  // Forward declaration
+  template <typename LA> class dataset_view;
 
   /**
    * Class for creating an oracle from a dataset.  The oracle presents the
@@ -153,10 +155,10 @@ namespace sill {
 
     //! Iterator into the dataset; this points to the record which will be
     //! loaded when next() is called.
-    typename dataset<la_type>::record_iterator ds_it;
+    typename dataset<la_type>::record_iterator_type ds_it;
 
     //! Iterator into the dataset (end iterator)
-    typename dataset<la_type>::record_iterator ds_end;
+    typename dataset<la_type>::record_iterator_type ds_end;
 
     //! Count of number of examples drawn
     size_t records_used;
@@ -183,5 +185,7 @@ namespace sill {
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
+
+#include <sill/learning/dataset/dataset_view.hpp>
 
 #endif // #ifndef SILL_DS_ORACLE_HPP

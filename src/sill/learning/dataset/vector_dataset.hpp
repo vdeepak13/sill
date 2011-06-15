@@ -51,7 +51,7 @@ namespace sill {
     //! Import stuff from base class
     typedef typename base::record_type record_type;
     typedef typename base::vector_type vector_type;
-    typedef typename base::record_iterator record_iterator;
+    typedef typename base::record_iterator_type record_iterator_type;
 
     // Constructors
     //==========================================================================
@@ -128,12 +128,8 @@ namespace sill {
     //! NOTE: This is slower than record_iterator.
     double vector(size_t i, size_t j) const;
 
-    //! Returns a range over the records of this dataset
-    //! Eventually, will be able to provide a set of variables
-    std::pair<record_iterator, record_iterator> records() const;
-
     //! Returns an iterator over the records of this dataset
-    record_iterator begin() const;
+    record_iterator_type begin() const;
 
     using base::load;
 
@@ -330,20 +326,7 @@ namespace sill {
   }
 
   template <typename LA>
-  std::pair<typename vector_dataset<LA>::record_iterator,
-            typename vector_dataset<LA>::record_iterator>
-  vector_dataset<LA>::records() const {
-    if (nrecords > 0)
-      return std::make_pair
-        (make_record_iterator(0, &(finite_data[0]), &(vector_data[0])),
-         make_record_iterator(nrecords));
-    else
-      return std::make_pair
-        (make_record_iterator(0), make_record_iterator(nrecords));
-  }
-
-  template <typename LA>
-  typename vector_dataset<LA>::record_iterator
+  typename vector_dataset<LA>::record_iterator_type
   vector_dataset<LA>::begin() const {
     if (nrecords > 0)
       return make_record_iterator(0, &(finite_data[0]), &(vector_data[0]));

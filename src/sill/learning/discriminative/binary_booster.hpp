@@ -230,8 +230,8 @@ namespace sill {
         return std::vector<double>();
       }
       std::vector<double> test_acc(iteration_, 0);
-      typename dataset<la_type>::record_iterator testds_end = testds.end();
-      for (typename dataset<la_type>::record_iterator testds_it
+      typename dataset<la_type>::record_iterator_type testds_end = testds.end();
+      for (typename dataset<la_type>::record_iterator_type testds_it
              = testds.begin();
            testds_it != testds_end; ++testds_it) {
         double s = 0;

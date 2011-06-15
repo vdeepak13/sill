@@ -194,19 +194,23 @@ namespace sill {
     }
 
     //! Return the index for the i^th non-zero element.
-    size_type index(size_type i) const { return indices_[i]; }
+    //! WARNING: This is not bound-checked.
+    size_type index(size_type i) const { return indices_._data()[i]; }
 
     //! Return a mutable reference to the index for the i^th non-zero element.
+    //! WARNING: This is not bound-checked.
     size_type& index(size_type i) {
       sorted_ = false;
-      return indices_[i];
+      return indices_._data()[i];
     }
 
     //! Return the value for the i^th non-zero element.
-    value_type value(size_type i) const { return values_[i]; }
+    //! WARNING: This is not bound-checked.
+    value_type value(size_type i) const { return values_._data()[i]; }
 
     //! Return a mutable reference to the value for the i^th non-zero element.
-    value_type& value(size_type i) { return values_[i]; }
+    //! WARNING: This is not bound-checked.
+    value_type& value(size_type i) { return values_._data()[i]; }
 
     //! Indices of non-zeros.
     const vector<size_type>& indices() const { return indices_; }

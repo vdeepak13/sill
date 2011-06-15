@@ -325,7 +325,7 @@ namespace sill {
         std::cerr << " min value in distribution = " << min_dist << std::endl;
         resampler.check_validity();
       }
-      typename dataset<la_type>::record_iterator ds_end = ds.end();
+      typename dataset<la_type>::record_iterator_type ds_end = ds.end();
       if (m_t > 0 && m_t < ds.size()) {
         // Use resampling
         std::vector<size_t> indices(m_t);
@@ -362,7 +362,7 @@ namespace sill {
         //       distribution).
         edge = 0;
         size_t i = 0;
-        for (typename dataset<la_type>::record_iterator ds_it = ds.begin();
+        for (typename dataset<la_type>::record_iterator_type ds_it = ds.begin();
              ds_it != ds_end; ++ds_it) {
           edge += (base_hypotheses.back()->predict(*ds_it) == label(ds,i) ?
                    distribution[i] : 0);
@@ -372,7 +372,7 @@ namespace sill {
         if (BATCH_BOOSTER_DEBUG) {
           double tmpacc = 0;
           size_t i = 0;
-          for (typename dataset<la_type>::record_iterator ds_it = ds.begin();
+          for (typename dataset<la_type>::record_iterator_type ds_it = ds.begin();
                ds_it != ds_end; ++ds_it) {
             tmpacc += (base_hypotheses.back()->predict(*ds_it) == label(ds,i) ?
                        1 : 0);
@@ -429,7 +429,7 @@ namespace sill {
       // Update distribution
       if (Objective::can_update) {
         size_t i = 0;
-        for (typename dataset<la_type>::record_iterator ds_it = ds.begin();
+        for (typename dataset<la_type>::record_iterator_type ds_it = ds.begin();
              ds_it != ds_end; ++ds_it) {
           double tmpw = Objective::weight_update
             (distribution[i], alpha, label(ds,i),
@@ -450,7 +450,7 @@ namespace sill {
         }
       } else {
         size_t i = 0;
-        for (typename dataset<la_type>::record_iterator ds_it = ds.begin();
+        for (typename dataset<la_type>::record_iterator_type ds_it = ds.begin();
              ds_it != ds_end; ++ds_it) {
           resampler.set(i, Objective::weight(label(ds,i), predict_raw(*ds_it)));
           ++i;

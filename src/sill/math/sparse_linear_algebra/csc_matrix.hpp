@@ -35,7 +35,7 @@ namespace sill {
 
     // Helper: Copy data from std containers into CSC matrix.
     //   i_val_per_column[j] = [i,value]  for each value in (i,j)
-    template <typename Tfrom, typename Tto, typename Idxfrom, typename Idxto>
+    template <typename Tto, typename Idxfrom, typename Idxto>
     void
     coo2csc_helper2
     (Idxfrom m, Idxfrom n, Idxfrom k,
@@ -82,9 +82,9 @@ namespace sill {
                  csc_matrix<Tto, Idxto>& cscmat) {
     std::vector<std::vector<std::pair<Idxto, Tto> > > i_val_per_column;
     impl::coo2csc_helper1(coomat, i_val_per_column);
-    impl::coo2csc_helper2(coomat.num_rows(), coomat.num_cols(),
-                                 coomat.num_non_zeros(), i_val_per_column,
-                                 cscmat);
+    impl::coo2csc_helper2
+      (coomat.num_rows(), coomat.num_cols(), coomat.num_non_zeros(),
+       i_val_per_column, cscmat);
   }
 
   /**
@@ -315,6 +315,16 @@ namespace sill {
          values_.begin() + col_offsets_[j]);
     }
 
+    //! Row index for the i^th non-zero element.
+    size_type row_index(size_type i) const {
+      return row_indices_[i];
+    }
+
+    //! Value for the i^th non-zero element.
+    value_type value(size_type i) const {
+      return values_[i];
+    }
+
     //! Column offsets (length n+1)
     //!  col_offsets_[i] = offset in row_indices_ and values_ for column i
     //!  col_offsets_[n] = number of non-zeros
@@ -527,7 +537,7 @@ namespace sill {
       }
     } // coo2csc_helper1
 
-    template <typename Tfrom, typename Tto, typename Idxfrom, typename Idxto>
+    template <typename Tto, typename Idxfrom, typename Idxto>
     void
     coo2csc_helper2
     (Idxfrom m, Idxfrom n, Idxfrom k,

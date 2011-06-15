@@ -111,8 +111,8 @@ namespace sill {
         return -1;
       }
       value_type test_acc(0);
-      typename dataset<la_type>::record_iterator testds_end = testds.end();
-      for (typename dataset<la_type>::record_iterator testds_it(testds.begin());
+      typename dataset<la_type>::record_iterator_type testds_end = testds.end();
+      for (typename dataset<la_type>::record_iterator_type testds_it(testds.begin());
            testds_it != testds_end; ++testds_it) {
         const record_type& example = *testds_it;
         if (predict(example) == label(example))

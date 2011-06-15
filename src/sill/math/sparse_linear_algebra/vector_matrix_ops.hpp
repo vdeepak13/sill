@@ -13,7 +13,12 @@
 /**
  * \file vector_matrix_ops.hpp  Free functions for vectors and matrices.
  *
- * File contents:
+ * File contents by type of operation:
+ *  - Vector-Scalar
+ *  - Vector-Vector
+ *  - Matrix-Scalar
+ *  - Matrix-Vector
+ *  - Matrix-Matrix
  */
 
 namespace sill {
@@ -21,11 +26,54 @@ namespace sill {
   /*****************************************************************************
    * Vector-Scalar operations
    *  - operator*
+   *  - sum
    ****************************************************************************/
 
   //! const * sparse vector --> sparse vector
   template <typename T, typename SizeType>
   sparse_vector<T,SizeType> operator*(T c, const sparse_vector<T,SizeType>& v);
+
+  //! Vector summation.
+  template <typename T, typename SizeType>
+  T sum(const dense_vector_view<T,SizeType>& v);
+
+  /**
+   * Vector summation.
+   * This version takes a functor which is applied to each element of v before
+   * summation.
+   * @param vfunc  Functor applied to each element of v before the summation.
+   *               vfunc(value_type) should return the modified element.
+   */
+  template <typename T, typename SizeType, typename VFunctor>
+  T sum(const dense_vector_view<T,SizeType>& v, VFunctor vfunc);
+
+  //! Vector summation.
+  template <typename T, typename SizeType>
+  T sum(const sparse_vector<T,SizeType>& v);
+
+  //! Vector summation.
+  template <typename T, typename SizeType>
+  T sum(const sparse_vector_view<T,SizeType>& v);
+
+  /**
+   * Vector summation.
+   * This version takes a functor which is applied to each element of v before
+   * summation.
+   * @param vfunc  Functor applied to each element of v before the summation.
+   *               vfunc(value_type) should return the modified element.
+   */
+  template <typename T, typename SizeType, typename VFunctor>
+  T sum(const sparse_vector<T,SizeType>& v, VFunctor vfunc);
+
+  /**
+   * Vector summation.
+   * This version takes a functor which is applied to each element of v before
+   * summation.
+   * @param vfunc  Functor applied to each element of v before the summation.
+   *               vfunc(value_type) should return the modified element.
+   */
+  template <typename T, typename SizeType, typename VFunctor>
+  T sum(const sparse_vector_view<T,SizeType>& v, VFunctor vfunc);
 
   /*****************************************************************************
    * Vector-Vector operations
@@ -88,19 +136,66 @@ namespace sill {
                        sparse_vector<T,SizeType>& b);
 
   /*****************************************************************************
-   * Matrix-Vector operations
-   *  - operator*
+   * Matrix-Scalar operations
+   *  - sum
    ****************************************************************************/
 
-  //! Dense matrix  x  sparse vector --> dense vector
+  /**
+   * Column-wise or row-wise summation of a matrix.
+   * @param dim  If 0, compute column sums.  If 1, compute row sums.
+   *             (Same as in Matlab)
+   *              (default = 0)
+   */
+  template <typename T, typename SizeType>
+  vector<T>
+  sum(const csc_matrix<T,SizeType>& m, size_t dim = 0);
+
+  /**
+   * Column-wise or row-wise summation of a matrix.
+   * This version takes a functor which is applied to each element
+   * of the matrix m before the summation.
+   *
+   * @param dim    If 0, compute column sums.  If 1, compute row sums.
+   *               (Same as in Matlab)
+   * @param mfunc  Functor applied to each element of m before the summation.
+   *               mfunc(value_type) should return the modified element.
+   */
+  template <typename T, typename SizeType, typename MFunctor>
+  vector<T>
+  sum(const csc_matrix<T,SizeType>& m, size_t dim, MFunctor mfunc);
+
+  /*****************************************************************************
+   * Matrix-Vector operations
+   *  - operator*
+   *  - gemv
+   ****************************************************************************/
+
+  //! Dense matrix  *  sparse vector --> dense vector
   template <typename T, typename SizeType>
   vector<T>
   operator*(const matrix<T>& m, const sparse_vector<T,SizeType>& v);
 
-  //! Dense matrix  x  sparse vector --> dense vector
+  //! Dense matrix  *  sparse vector --> dense vector
   template <typename T, typename SizeType>
   vector<T>
   operator*(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v);
+
+  //! Dense vector += dense matrix * dense vector
+  template <typename T>
+  void
+  gemv(const matrix<T>& m, const vector<T>& v, vector<T>& out);
+
+  //! Dense vector += dense matrix  *  sparse vector
+  template <typename T, typename SizeType>
+  void
+  gemv(const matrix<T>& m, const sparse_vector<T,SizeType>& v,
+       vector<T>& out);
+
+  //! Dense vector += dense matrix  *  sparse vector
+  template <typename T, typename SizeType>
+  void
+  gemv(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v,
+       vector<T>& out);
 
   /*****************************************************************************
    * Matrix-Matrix operations
@@ -123,6 +218,42 @@ namespace sill {
     sparse_vector<T,SizeType> r(v);
     r *= c;
     return r;
+  }
+
+  template <typename T, typename SizeType>
+  T sum(const dense_vector_view<T,SizeType>& v) {
+    T val = 0;
+    for (SizeType i = 0; i < v.size(); ++i)
+      val += v[i];
+    return val;
+  }
+
+  template <typename T, typename SizeType, typename VFunctor>
+  T sum(const dense_vector_view<T,SizeType>& v, VFunctor vfunc) {
+    T val = 0;
+    for (SizeType i = 0; i < v.size(); ++i)
+      val += vfunc(v[i]);
+    return val;
+  }
+
+  template <typename T, typename SizeType>
+  T sum(const sparse_vector<T,SizeType>& v) {
+    return sum(v.values());
+  }
+
+  template <typename T, typename SizeType>
+  T sum(const sparse_vector_view<T,SizeType>& v) {
+    return sum(v.values());
+  }
+
+  template <typename T, typename SizeType, typename VFunctor>
+  T sum(const sparse_vector<T,SizeType>& v, VFunctor vfunc) {
+    return sum(v.values(), vfunc);
+  }
+
+  template <typename T, typename SizeType, typename VFunctor>
+  T sum(const sparse_vector_view<T,SizeType>& v, VFunctor vfunc) {
+    return sum(v.values(), vfunc);
   }
 
   //============================================================================
@@ -168,7 +299,7 @@ namespace sill {
     assert(x.size() == y.size());
     T r = 0;
     for (SizeType i = 0; i < y.num_non_zeros(); ++i)
-      r += x[y.index(i)] * y.value(i);
+      r += x._data()[y.index(i)] * y.value(i);
     return r;
   }
 
@@ -177,7 +308,7 @@ namespace sill {
     assert(x.size() == y.size());
     T r = 0;
     for (SizeType i = 0; i < y.num_non_zeros(); ++i)
-      r += x[y.index(i)] * y.value(i);
+      r += x._data()[y.index(i)] * y.value(i);
     return r;
   }
 
@@ -274,6 +405,48 @@ namespace sill {
   }
 
   //============================================================================
+  // Matrix-Scalar operations: implementations
+  //============================================================================
+
+  template <typename T, typename SizeType>
+  vector<T>
+  sum(const csc_matrix<T,SizeType>& m, size_t dim) {
+    if (dim == 0) {
+      vector<T> v(m.num_cols());
+      for (SizeType i = 0; i < v.size(); ++i)
+        v[i] = sum(m.column(i));
+      return v;
+    } else if (dim == 1) {
+      vector<T> v(m.num_rows(),0);
+      for (SizeType k = 0; k < m.num_non_zeros(); ++k)
+        v[m.row_index(k)] += m.value(k);
+      return v;
+    } else {
+      assert(false);
+      return vector<T>();
+    }
+  }
+
+  template <typename T, typename SizeType, typename MFunctor>
+  vector<T>
+  sum(const csc_matrix<T,SizeType>& m, size_t dim, MFunctor mfunc) {
+    if (dim == 0) {
+      vector<T> v(m.num_cols());
+      for (SizeType i = 0; i < v.size(); ++i)
+        v[i] = sum(m.column(i), mfunc);
+      return v;
+    } else if (dim == 1) {
+      vector<T> v(m.num_rows(),0);
+      for (SizeType k = 0; k < m.num_non_zeros(); ++k)
+        v[m.row_index(k)] += mfunc(m.value(k));
+      return v;
+    } else {
+      assert(false);
+      return vector<T>();
+    }
+  }
+
+  //============================================================================
   // Matrix-Vector operations: implementations
   //============================================================================
 
@@ -321,6 +494,28 @@ namespace sill {
     }
     */
 
+    /**
+     * Internal gemv (dense vector += dense matrix * sparse vector).
+     * If A has size [m, n] and x has size n and k non-zeros,
+     * this does m * k multiplications.
+     *
+     * This version computes one element of y at a time.
+     * (It is faster when y is very short.)
+     */
+    template <typename InVecType, typename T, typename SizeType>
+    inline void
+    gemv_densemat_sparsevec_(const matrix<T>& A, const InVecType& x,
+                             vector<T>& y) {
+      assert(A.size2() == x.size());
+      assert(y.size() == A.size1());
+      const T* A_it = A.begin();
+      for (SizeType i = 0; i < y.size(); ++i) {
+        y[i] += dot(dense_vector_view<T,SizeType>(A.size2(), A_it, A.size1()),
+                    x);
+        ++A_it;
+      }
+    }
+
   } // namespace impl
 
   template <typename T, typename SizeType>
@@ -330,13 +525,34 @@ namespace sill {
       (A, x);
   }
 
-  //! Dense matrix  x  sparse vector --> dense vector
   template <typename T, typename SizeType>
   vector<T>
   operator*(const matrix<T>& A, const sparse_vector_view<T,SizeType>& x) {
     return
       impl::mult_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>
       (A,x);
+  }
+
+  template <typename T>
+  void
+  gemv(const matrix<T>& m, const vector<T>& v, vector<T>& out) {
+    out += m * v; // TO DO: USE BLAS
+  }
+
+  template <typename T, typename SizeType>
+  void
+  gemv(const matrix<T>& m, const sparse_vector<T,SizeType>& v,
+       vector<T>& out) {
+    impl::gemv_densemat_sparsevec_<sparse_vector<T,SizeType>,T,SizeType>
+      (m, v, out);
+  }
+
+  template <typename T, typename SizeType>
+  void
+  gemv(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v,
+       vector<T>& out) {
+    impl::gemv_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>
+      (m, v, out);
   }
 
   //============================================================================

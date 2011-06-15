@@ -104,8 +104,8 @@ namespace sill {
 
     table_factor factor(X, smoothing);
 
-    typename dataset<LA>::record_iterator r_end(ds.end());
-    for (typename dataset<LA>::record_iterator r_it(ds.begin());
+    typename dataset<LA>::record_iterator_type r_end(ds.end());
+    for (typename dataset<LA>::record_iterator_type r_it(ds.begin());
          r_it != r_end; ++r_it) {
       factor.v(*r_it) += r_it.weight();
     }

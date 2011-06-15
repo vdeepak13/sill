@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
   cout << "Test 1: use record_iterator for " << nruns << " iterations" << endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++) {
-    vector_dataset<>::record_iterator r_it = ds.records().first;
+    vector_dataset<>::record_iterator_type r_it = ds.records().first;
     for (size_t i = 0; i < 1000; i++) {
       const vec& v = (*r_it).vector();
       for (size_t j = 0; j < nvars; j++)
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
   cout << " vector_dataset: " << t.elapsed() / nruns << std::endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++) {
-    dataset_view<>::record_iterator r_it = ds_view_range.records().first;
+    dataset_view<>::record_iterator_type r_it = ds_view_range.records().first;
     for (size_t i = 0; i < 1000; i++) {
       const vec& v = (*r_it).vector();
       for (size_t j = 0; j < nvars; j++)
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
   cout << " dataset_view (range): " << t.elapsed() / nruns << std::endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++) {
-    dataset_view<>::record_iterator r_it = ds_view_indices.records().first;
+    dataset_view<>::record_iterator_type r_it = ds_view_indices.records().first;
     for (size_t i = 0; i < 1000; i++) {
       const vec& v = (*r_it).vector();
       for (size_t j = 0; j < nvars; j++)
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
   cout << " dataset_view (indices): " << t.elapsed() / nruns << std::endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++) {
-    dataset<>::record_iterator r_it = ds_view_range_ref.records().first;
+    dataset<>::record_iterator_type r_it = ds_view_range_ref.records().first;
     for (size_t i = 0; i < 1000; i++) {
       const vec& v = (*r_it).vector();
       for (size_t j = 0; j < nvars; j++)
@@ -104,7 +104,7 @@ int main(int argc, char* argv[]) {
        << t.elapsed() / nruns << std::endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++) {
-    dataset<>::record_iterator r_it = ds_view_indices_ref.records().first;
+    dataset<>::record_iterator_type r_it = ds_view_indices_ref.records().first;
     for (size_t i = 0; i < 1000; i++) {
       const vec& v = (*r_it).vector();
       for (size_t j = 0; j < nvars; j++)
@@ -302,8 +302,8 @@ int main(int argc, char* argv[]) {
       cout << "Reverted: " << orig_vals << "\n";
     }
     cout << "Using load_record():\n";
-    vector_dataset<>::record_iterator r_it = ds2.begin();
-    vector_dataset<>::record_iterator r_it2 = ds_view_merged2.begin();
+    vector_dataset<>::record_iterator_type r_it = ds2.begin();
+    vector_dataset<>::record_iterator_type r_it2 = ds_view_merged2.begin();
     for (size_t i = 0; i < 6; i++) {
       cout << "Original: " << (*r_it).finite() << "\n"
            << "Merged: " << (*r_it2).finite() << "\n";
@@ -337,7 +337,7 @@ int main(int argc, char* argv[]) {
     cout << "Test: use record_iterator for " << nruns << " iterations" << endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
-      vector_dataset<>::record_iterator r_it = ds2.records().first;
+      vector_dataset<>::record_iterator_type r_it = ds2.records().first;
       for (size_t i = 0; i < 1000; i++) {
         const std::vector<size_t>& f = (*r_it).finite();
         for (size_t j = 0; j < nvars2; j++)
@@ -348,7 +348,7 @@ int main(int argc, char* argv[]) {
     cout << " vector_dataset class: " << t.elapsed() / nruns << std::endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
-      dataset_view<>::record_iterator r_it = ds_view_binarized.records().first;
+      dataset_view<>::record_iterator_type r_it = ds_view_binarized.records().first;
       for (size_t i = 0; i < 1000; i++) {
         const std::vector<size_t>& f = (*r_it).finite();
         for (size_t j = 0; j < nvars2; j++)
@@ -366,7 +366,7 @@ int main(int argc, char* argv[]) {
     cout << "Test: use record_iterator for " << nruns << " iterations" << endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
-      vector_dataset<>::record_iterator r_it = ds2.records().first;
+      vector_dataset<>::record_iterator_type r_it = ds2.records().first;
       for (size_t i = 0; i < 1000; i++) {
         const std::vector<size_t>& f = (*r_it).finite();
         tmp += f.back();
@@ -376,7 +376,7 @@ int main(int argc, char* argv[]) {
     cout << " vector_dataset class: " << t.elapsed() / nruns << std::endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
-      dataset_view<>::record_iterator r_it = ds_view_merged1.records().first;
+      dataset_view<>::record_iterator_type r_it = ds_view_merged1.records().first;
       for (size_t i = 0; i < 1000; i++) {
         const std::vector<size_t>& f = (*r_it).finite();
         tmp += f.back();
@@ -386,7 +386,7 @@ int main(int argc, char* argv[]) {
     cout << " dataset_view (merged 2 vars): " << t.elapsed()/nruns << std::endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
-      dataset_view<>::record_iterator r_it = ds_view_merged2.records().first;
+      dataset_view<>::record_iterator_type r_it = ds_view_merged2.records().first;
       for (size_t i = 0; i < 1000; i++) {
         const std::vector<size_t>& f = (*r_it).finite();
         tmp += f.back();

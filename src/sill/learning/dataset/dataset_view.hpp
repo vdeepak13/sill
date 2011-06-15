@@ -2,18 +2,16 @@
 #ifndef SILL_DATASET_VIEW_HPP
 #define SILL_DATASET_VIEW_HPP
 
-//#include <set>
-//#include <map>
-
-//#include <boost/multi_array.hpp>
-
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset/dataset.hpp>
 #include <sill/range/algorithm.hpp>
 #include <sill/range/concepts.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  // Forward declarations
+  template <typename LA> class vector_dataset;
 
   /**
    * A class that provides a view of a subset of another dataset.
@@ -73,7 +71,7 @@ namespace sill {
     //! Import stuff from base class
     typedef typename base::record_type record_type;
     typedef typename base::vector_type vector_type;
-    typedef typename base::record_iterator record_iterator;
+    typedef typename base::record_iterator_type record_iterator_type;
 
     // Constructors
     //==========================================================================
@@ -183,6 +181,17 @@ namespace sill {
     //! but with n-value vector variables using n indices j)
     //! Note: Full record retrievals are more efficient than this function.
     double vector(size_t i, size_t j) const;
+
+    //! Returns an iterator over the records of this dataset
+    record_iterator_type begin() const {
+      if (m_new_var == NULL && vv_view == VAR_ALL && binarized_var == NULL) {
+        record_iterator_type it(ds.begin());
+        it.data = this;
+        return it;
+      } else {
+        return make_record_iterator(0);
+      }
+    }
 
     //! Convert an assignment from the original dataset into one for this view.
     //! Note: The caller must know what the original dataset looked like!
@@ -455,6 +464,7 @@ namespace sill {
     using base::load_record;
     using base::load_finite;
     using base::load_vector;
+    using base::make_record_iterator;
 
     //! Used for deleting the dataset to make a light class which can convert
     //! records according to the view.
@@ -1472,5 +1482,7 @@ namespace sill {
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
+
+#include <sill/learning/dataset/vector_dataset.hpp>
 
 #endif
