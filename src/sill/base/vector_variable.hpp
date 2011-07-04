@@ -32,12 +32,16 @@ namespace sill {
 
     //! Creates a vector variable with the given name and dimension
     vector_variable(const std::string& name, size_t size)
-      : variable(name), size_(size) { }
+      : variable(name), size_(size) {
+      assert(size > 0);
+    }
 
     //! Constructs a variable with the given name, dimensionality, and process
     vector_variable(const std::string& name, size_t size,
                     sill::process* process, const boost::any& index)
-      : variable(name, process, index), size_(size) { }
+      : variable(name, process, index), size_(size) {
+      assert(size > 0);
+    }
 
     //! Conversion to human-readable format
     operator std::string() const;
