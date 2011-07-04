@@ -309,10 +309,10 @@ namespace sill {
       }
 
       //! Inner product with a value of the same size.
-      double inner_prod(const opt_variables& other) const {
+      double dot(const opt_variables& other) const {
         return (elem_mult_sum(f, other.f)
                 + elem_mult_sum(v, other.v)
-                + sill::inner_prod(b, other.b));
+                + sill::dot(b, other.b));
       }
 
       //! Element-wise multiplication with another value of the same size.
@@ -361,7 +361,7 @@ namespace sill {
 
       //! Returns the L2 norm.
       double L2norm() const {
-        return sqrt(inner_prod(*this));
+        return sqrt(dot(*this));
       }
 
       //! Returns a struct of the same size but with values replaced by their

@@ -180,9 +180,9 @@ namespace sill {
     }
 
     //! Inner product with a value of the same size.
-    double inner_prod(const gaussian_opt_vector& other) const {
+    double dot(const gaussian_opt_vector& other) const {
       return (elem_mult_sum(A, other.A)
-              + sill::inner_prod(b, other.b)
+              + sill::dot(b, other.b)
               + elem_mult_sum(C, other.C));
     }
 
@@ -236,7 +236,7 @@ namespace sill {
     //! WARNING: This should not be used for regularization since this factor
     //!          type supports specialized types of regularization.
     double L2norm() const {
-      return sqrt(inner_prod(*this));
+      return sqrt(dot(*this));
     }
 
     //! Returns a struct of the same size but with values replaced by their

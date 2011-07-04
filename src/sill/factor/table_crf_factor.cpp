@@ -335,7 +335,7 @@ namespace sill {
         return 0.;
       else {
         if (log_space_)
-          return (-.5 * reg.lambdas[0] * f.inner_prod(f));
+          return (-.5 * reg.lambdas[0] * f.dot(f));
         else
           assert(false); // TO DO
       }

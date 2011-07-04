@@ -203,11 +203,11 @@ namespace sill {
     }
 
     //! Inner product with a value of the same size.
-    double inner_prod(const hybrid_opt_vector& other) const {
+    double dot(const hybrid_opt_vector& other) const {
       assert(sub_ov_ptrs.size() == other.sub_ov_ptrs.size());
       double sum(0);
       for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        sum += sub_ov_ptrs[i]->inner_prod(*(other.sub_ov_ptrs[i]));
+        sum += sub_ov_ptrs[i]->dot(*(other.sub_ov_ptrs[i]));
       return sum;
     }
 
@@ -236,7 +236,7 @@ namespace sill {
 
     //! Returns the L2 norm.
     double L2norm() const {
-      return sqrt(inner_prod(*this));
+      return sqrt(dot(*this));
     }
 
     //! Returns a struct of the same size but with values replaced by their

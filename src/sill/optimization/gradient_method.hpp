@@ -313,7 +313,7 @@ namespace sill {
       case parameters::LINE_SEARCH_WITH_GRAD:
         assert(wolfe_step_type_ptr);
         {
-          double direction_dot_grad(direction_.inner_prod(grad));
+          double direction_dot_grad(direction_.dot(grad));
           if (direction_dot_grad >= 0) {
             if (params.debug > 0)
               std::cerr << "gradient_method::run_line_search() was given a"

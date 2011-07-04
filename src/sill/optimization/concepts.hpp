@@ -90,7 +90,7 @@ namespace sill {
     V& operator/=(double d);
 
     //! Inner product with a value of the same size.
-    double inner_prod(const V& other) const;
+    double dot(const V& other) const;
 
     //! Element-wise multiplication with another value of the same size.
     V& elem_mult(const V& other);
@@ -130,7 +130,7 @@ namespace sill {
       sill::same_type(v -= const_vref, vref);
       sill::same_type(const_vref * d, v);
       sill::same_type(v *= d, vref);
-      sill::same_type(d, const_vref.inner_prod(const_vref));
+      sill::same_type(d, const_vref.dot(const_vref));
       sill::same_type(vref, vref.elem_mult(const_vref));
       sill::same_type(vref, vref.reciprocal());
       sill::same_type(d, const_vref.L1norm());

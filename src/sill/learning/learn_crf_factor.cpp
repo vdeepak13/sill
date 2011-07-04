@@ -497,7 +497,7 @@ namespace sill {
             double ll(0.);
             for (size_t i(0); i < fold_test_view.size(); ++i) {
               tmpvec = tmpmat.row(i);
-              ll += inner_prod(tmpvec, sigma_inv * tmpvec);
+              ll += dot(tmpvec, sigma_inv * tmpvec);
             }
             ll *= (-.5 / fold_test_view.size());
             if (lambda_cov == 0)

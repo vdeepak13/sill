@@ -133,7 +133,7 @@ namespace sill {
         }
         Shist.back()->operator-=(prev_x);
         Yhist.back()->operator-=(prev_grad);
-        rho_list.push_back(1. / Shist.back()->inner_prod(*(Yhist.back())));
+        rho_list.push_back(1. / Shist.back()->dot(*(Yhist.back())));
       }
       prev_x = x_;
       prev_grad = direction_;
@@ -149,7 +149,7 @@ namespace sill {
       for (size_t i(0); i < bound; ++i) {
         const OptVector& s = *(*Shist_rit);
         const OptVector& y = *(*Yhist_rit);
-        alphas[bound-i-1] = (*rho_list_rit) * direction_.inner_prod(s);
+        alphas[bound-i-1] = (*rho_list_rit) * direction_.dot(s);
         direction_ -= y * alphas[bound-i-1]; //COULD AVOID ALLOCATION
         ++Shist_rit;
         ++Yhist_rit;
@@ -163,7 +163,7 @@ namespace sill {
         const OptVector& s = *(*Shist_it);
         const OptVector& y = *(*Yhist_it);
         direction_ +=
-          s * (alphas[i] - (*rho_list_it) * direction_.inner_prod(y));
+          s * (alphas[i] - (*rho_list_it) * direction_.dot(y));
         ++Shist_it;
         ++Yhist_it;
         ++rho_list_it;

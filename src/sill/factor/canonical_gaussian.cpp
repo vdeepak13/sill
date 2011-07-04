@@ -266,7 +266,7 @@ namespace sill {
       return 0; // shouldn't this be log_mult?
     vec v = sill::concat(values(a, arg_list));
     // will assertion if a does not cover the arguments of this
-    return - 0.5*inner_prod(v, lambda*v) + inner_prod(v, eta) + log_mult;
+    return - 0.5*dot(v, lambda*v) + dot(v, eta) + log_mult;
   }
 
   double canonical_gaussian::logv(const record_type& r) const {
@@ -444,7 +444,7 @@ namespace sill {
     /*
     return (-.5 * (eta.n_elem * std::log(2*pi())
                    - logdet(lambda)
-                   + inner_prod(eta, lambda * eta)));
+                   + dot(eta, lambda * eta)));
     */
   }
 

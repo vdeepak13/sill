@@ -714,7 +714,7 @@ namespace sill {
     //==========================================================================
 
     //! Inner product
-    T inner_prod(const itpp::Mat<T>& x) const {
+    T dot(const itpp::Mat<T>& x) const {
       return elem_mult_sum(*this, x);
     }
 
@@ -725,7 +725,7 @@ namespace sill {
 
     //! Returns the L2 norm.
     double L2norm() const {
-      return sqrt(inner_prod(*this));
+      return sqrt(dot(*this));
     }
 
     // Serialization

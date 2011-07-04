@@ -32,7 +32,7 @@ namespace sill {
     //! Evaluates the function on a real input
     double operator()(const vec& x) const {
       using std::exp;
-      return 1.0 / (1 + exp(-b - inner_prod(w, x)));
+      return 1.0 / (1 + exp(-b - dot(w, x)));
     }
 
     //! Prints the parameters to an output stream

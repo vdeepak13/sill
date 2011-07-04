@@ -295,7 +295,7 @@ namespace sill {
         ("Cholesky decomposition failed in moment_gaussian::collapse");
     }
     double logl = 0;
-    logl -= 0.5 * inner_prod(dh, ls_solve_chol(cov(ih,ih), dh));
+    logl -= 0.5 * dot(dh, ls_solve_chol(cov(ih,ih), dh));
     logl -= 0.5 * (dh.n_elem * std::log(2*pi()) + logdet(cov(ih,ih)));
     if (H.size() == 0) {
       return moment_gaussian

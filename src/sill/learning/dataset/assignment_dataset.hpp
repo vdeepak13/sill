@@ -410,7 +410,7 @@ namespace sill {
       double normalizer(0);
       foreach(vector_variable* v, vars) {
         const vector_type& tmpval = data_vector[i].vector()[v];
-        normalizer += tmpval.inner_prod(tmpval);
+        normalizer += tmpval.dot(tmpval);
       }
       if (normalizer == 0)
         continue;

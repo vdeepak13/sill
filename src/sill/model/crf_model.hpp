@@ -438,11 +438,11 @@ namespace sill {
       }
 
       //! Inner product with a value of the same size.
-      double inner_prod(const opt_variables& other) const {
+      double dot(const opt_variables& other) const {
         assert(factor_weights_.size() == other.factor_weights_.size());
         double val(0);
         for (size_t i(0); i < other.factor_weights_.size(); ++i)
-          val += factor_weights_[i]->inner_prod(*(other.factor_weights_[i]));
+          val += factor_weights_[i]->dot(*(other.factor_weights_[i]));
         return val;
       }
 
@@ -473,7 +473,7 @@ namespace sill {
 
       //! Returns the L2 norm.
       double L2norm() const {
-        return sqrt(inner_prod(*this));
+        return sqrt(dot(*this));
       }
 
       //! Returns a struct of the same size but with values replaced by their

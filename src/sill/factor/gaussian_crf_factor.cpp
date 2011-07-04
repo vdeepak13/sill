@@ -366,7 +366,7 @@ namespace sill {
     vector_assignment2vector(a, head_, y);
     vector_assignment2vector(a, tail_, x);
     y = (ov.A * y) - ov.b - (ov.C * x);
-    return (-.5) * inner_prod(y, y);
+    return (-.5) * dot(y, y);
   }
 
   double gaussian_crf_factor::logv(const record_type& r) const {
@@ -376,7 +376,7 @@ namespace sill {
     vec x(ov.C.n_cols, 0);
     get_head_tail_values(r, y, x);
     y = (ov.A * y) - ov.b - (ov.C * x);
-    return (-.5) * inner_prod(y, y);
+    return (-.5) * dot(y, y);
   }
 
   const canonical_gaussian&
@@ -615,7 +615,7 @@ namespace sill {
       vec x(ov.C.n_cols, 0);
       get_head_tail_values(r, y, x);
       y = (ov.A * y) - ov.b - (ov.C * x);
-      val += ds.weight(i) * (-.5) * inner_prod(y, y);
+      val += ds.weight(i) * (-.5) * dot(y, y);
       total_ds_weight += ds.weight(i);
       ++i;
     }
@@ -996,9 +996,9 @@ namespace sill {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -=
-            reg.lambdas[0] * (ov.C.inner_prod(ov.C) + ov.b.inner_prod(ov.b));
+            reg.lambdas[0] * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
         if (reg.lambdas[1] != 0)
-          val -= reg.lambdas[1] * ov.A.inner_prod(ov.A);
+          val -= reg.lambdas[1] * ov.A.dot(ov.A);
         return (.5 * val);
       }
     case 3: // L2 on b,C and logdet((A'A)^-1)
@@ -1006,7 +1006,7 @@ namespace sill {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -= .5 * reg.lambdas[0]
-            * (ov.C.inner_prod(ov.C) + ov.b.inner_prod(ov.b));
+            * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
 //        val += (reg.lambdas[1] + 2 * ov.A.n_rows) * logdet(ov.A);
         val += (.5 * reg.lambdas[1] + ov.A.n_rows) * logdet(ov.A.transpose() * ov.A);
         return val;
@@ -1016,11 +1016,11 @@ namespace sill {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -= .5 * reg.lambdas[0]
-            * (ov.C.inner_prod(ov.C) + ov.b.inner_prod(ov.b));
+            * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
 //        val += (reg.lambdas[1] + 2 * ov.A.n_rows) * logdet(ov.A);
         val += (.5 * reg.lambdas[1] + ov.A.n_rows) * logdet(ov.A.transpose() * ov.A);
         if (reg.lambdas[1] != 0)
-          val -= .5 * reg.lambdas[1] * ov.A.inner_prod(ov.A);
+          val -= .5 * reg.lambdas[1] * ov.A.dot(ov.A);
         return val;
       }
     case 5: // L2 on b,C and tr((A'A)^-1)
@@ -1028,7 +1028,7 @@ namespace sill {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -=
-            reg.lambdas[0] * (ov.C.inner_prod(ov.C) + ov.b.inner_prod(ov.b));
+            reg.lambdas[0] * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
         if (reg.lambdas[1] != 0) {
           vec eig_AtA;
           bool result = eig_sym(ov.A.transpose() * ov.A, eig_AtA);
@@ -1044,7 +1044,7 @@ namespace sill {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -= .5 * reg.lambdas[0]
-            * (ov.C.inner_prod(ov.C) + ov.b.inner_prod(ov.b));
+            * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
         if (reg.lambdas[1] != 0) {
 //          val -= reg.lambdas[1] * logdet(ov.A);
           val -= (.5 * reg.lambdas[1]) * logdet(ov.A.transpose() * ov.A);

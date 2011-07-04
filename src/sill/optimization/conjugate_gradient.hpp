@@ -163,10 +163,10 @@ namespace sill {
           prec_functor_ptr->precondition(new_gradprec, x_);
           switch(update_method) {
           case 0: // max{0, Polak-Ribiere}
-            beta = last_grad.inner_prod(last_gradprec);
+            beta = last_grad.dot(last_gradprec);
             if (beta == 0)
               return false;
-            beta = new_grad.inner_prod(new_gradprec - last_gradprec) / beta;
+            beta = new_grad.dot(new_gradprec - last_gradprec) / beta;
             if (beta < 0)
               beta = 0;
             break;
@@ -179,10 +179,10 @@ namespace sill {
         } else {
           switch(update_method) {
           case 0: // max{0, Polak-Ribiere}
-            beta = last_grad.inner_prod(last_grad);
+            beta = last_grad.dot(last_grad);
             if (beta == 0)
               return false;
-            beta = new_grad.inner_prod(new_grad - last_grad) / beta;
+            beta = new_grad.dot(new_grad - last_grad) / beta;
             if (beta < 0)
               beta = 0;
             break;

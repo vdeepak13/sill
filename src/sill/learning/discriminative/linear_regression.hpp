@@ -325,9 +325,9 @@ namespace sill {
       }
 
       //! Inner product with a value of the same size.
-      double inner_prod(const opt_vector& other) const {
+      double dot(const opt_vector& other) const {
         return (elem_mult_sum(A, other.A)
-                + sill::inner_prod(b, other.b));
+                + sill::dot(b, other.b));
       }
 
       //! Element-wise multiplication with another value of the same size.
@@ -366,7 +366,7 @@ namespace sill {
 
       //! Returns the L2 norm.
       double L2norm() const {
-        return sqrt(inner_prod(*this));
+        return sqrt(dot(*this));
       }
 
       //! Returns a struct of the same size but with values replaced by their
@@ -430,7 +430,7 @@ namespace sill {
           if (lr.data_weights.size() == 0)
             obj += sumsum(tmpmat);
           else
-            obj += inner_prod(lr.data_weights,
+            obj += dot(lr.data_weights,
                               tmpmat * vec(lr.data_weights.size(), 1.));
           break;
         default:
@@ -447,9 +447,9 @@ namespace sill {
             obj += lr.params.lambda * x.b.L1norm();
           break;
         case 2:
-          obj += lr.params.lambda * .5 * x.A.inner_prod(x.A);
+          obj += lr.params.lambda * .5 * x.A.dot(x.A);
           if (lr.params.regularize_mean)
-            obj += lr.params.lambda * .5 * x.b.inner_prod(x.b);
+            obj += lr.params.lambda * .5 * x.b.dot(x.b);
           break;
         default:
           assert(false);
@@ -1004,7 +1004,7 @@ namespace sill {
 //        vector_record2vector(r, Yvec, tmpy);
         r.vector_values(tmpy, Yvec);
         tmpy -= predict(r);
-        double tmpval(testds.weight(i) * inner_prod(tmpy, tmpy));
+        double tmpval(testds.weight(i) * dot(tmpy, tmpy));
         totalw += testds.weight(i);
         s += tmpval;
         s2 += tmpval * tmpval;
@@ -1039,7 +1039,7 @@ namespace sill {
 //        vector_record2vector(r, Yvec, tmpy);
         r.vector_values(tmpy, Yvec);
         tmpy -= predict(r);
-        double tmpval(inner_prod(tmpy, tmpy));
+        double tmpval(dot(tmpy, tmpy));
         errors[i] = tmpval;
         ++i;
       }

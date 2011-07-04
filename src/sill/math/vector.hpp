@@ -524,7 +524,7 @@ namespace sill {
     //==========================================================================
 
     //! Inner product
-    T inner_prod(const itpp::Vec<T>& x) const {
+    T dot(const itpp::Vec<T>& x) const {
       return dot(*this, x);
     }
 
@@ -550,7 +550,7 @@ namespace sill {
 
     //! Returns the L2 norm.
     double L2norm() const {
-      return sqrt(inner_prod(*this));
+      return sqrt(dot(*this));
     }
 
     //! Returns a vector of the same size but with values replaced by their
@@ -653,7 +653,7 @@ namespace sill {
   //! Inner product
   //! \relates vector
   template <typename T>
-  T inner_prod(const itpp::Vec<T>& x, const itpp::Vec<T>& y) {
+  T dot(const itpp::Vec<T>& x, const itpp::Vec<T>& y) {
     return dot(x, y);
   }
 

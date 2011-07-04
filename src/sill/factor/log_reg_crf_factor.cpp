@@ -178,7 +178,7 @@ namespace sill {
         return 0.;
       } else {
         const optimization_vector& tmpov = weights();
-        return (-.5 * reg.lambdas[0] * tmpov.inner_prod(tmpov));
+        return (-.5 * reg.lambdas[0] * tmpov.dot(tmpov));
       }
     default:
       throw std::invalid_argument("log_reg_crf_factor::regularization_penalty() given bad regularization argument.");

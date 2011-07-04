@@ -90,7 +90,7 @@ namespace sill {
     mutable double last_objective_;
 
     //! Last gradient value computed: gradient(last_eta_).
-    //! This equals direction(x).inner_prod(gradient(x + eta * direction)).
+    //! This equals direction(x).dot(gradient(x + eta * direction)).
     mutable double last_gradient_;
 
     //! Compute the objective and gradient as necessary.
@@ -106,7 +106,7 @@ namespace sill {
       tmp_x += (*x_ptr);
       last_objective_ = obj_functor_ptr->objective(tmp_x);
       grad_functor_ptr->gradient(tmp_grad, tmp_x);
-      last_gradient_ = tmp_grad.inner_prod(*direction_ptr);
+      last_gradient_ = tmp_grad.dot(*direction_ptr);
 
       stop_early_ = false;
       if (!disable_early_stopping) {

@@ -80,7 +80,7 @@ namespace sill {
     //! Returns the value of the function for the given input
     double operator()(const vec& x) const {
       assert(a.size() == x.size());
-      return inner_prod(a, x) + b;
+      return dot(a, x) + b;
     }
 
     //! Returns the gradient of the function at the given input

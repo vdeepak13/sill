@@ -157,7 +157,7 @@ namespace sill {
     }
 
     //! Inner product with a value of the same size.
-    double inner_prod(const table_factor_opt_vector& other) const {
+    double dot(const table_factor_opt_vector& other) const {
       return table_factor::combine_collapse(f, other.f,
                                             std::multiplies<double>(),
                                             std::plus<double>(), 0.);
@@ -185,7 +185,7 @@ namespace sill {
 
     //! Returns the L2 norm.
     double L2norm() const {
-      return sqrt(inner_prod(*this));
+      return sqrt(dot(*this));
     }
 
     //! Returns a struct of the same size but with values replaced by their
