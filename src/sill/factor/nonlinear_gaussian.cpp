@@ -28,10 +28,10 @@ namespace sill {
     assert(args.size() == head.size() + tail.size());
     assert(nh == fmean.size_out());
     assert(nt == fmean.size_in());
-    if (cov.size1() == 0 && cov.size2() == 0)
+    if (cov.n_rows == 0 && cov.n_cols == 0)
       this->cov = zeros(nh, nh);
     else
-      assert(cov.size1() == nh && cov.size2() == nh);
+      assert(cov.n_rows == nh && cov.n_cols == nh);
     // Construct the input maps
     fixed_input.resize(nt);
     input_map.resize(nt);

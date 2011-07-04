@@ -42,17 +42,17 @@ namespace sill {
     } else
       assert(cmean.size()==nhead);
 
-    if (cov.size1()==0 && cov.size2()==0) {
+    if (cov.n_rows==0 && cov.n_cols==0) {
       cov.resize(nhead, nhead, false);
       cov = identity(nhead);
     } else
-      assert(cov.size1()==nhead && cov.size2()==nhead);
+      assert(cov.n_rows==nhead && cov.n_cols==nhead);
 
-    if (coeff.size1()==0 && coeff.size2()==0) {
+    if (coeff.n_rows==0 && coeff.n_cols==0) {
       coeff.resize(nhead, ntail, false);
       coeff.clear();
     } else
-      assert(coeff.size1()==nhead && coeff.size2()==ntail);
+      assert(coeff.n_rows==nhead && coeff.n_cols==ntail);
   }
 
   moment_gaussian::
@@ -189,7 +189,7 @@ namespace sill {
   moment_gaussian::operator()(const vec& y, const vec& x) const {
     using std::log;
     assert(y.size() == cmean.size());
-    assert(x.size() == coeff.size2());
+    assert(x.size() == coeff.n_cols);
     vec yc(y);
     yc -= cmean;
     yc += coeff * x;

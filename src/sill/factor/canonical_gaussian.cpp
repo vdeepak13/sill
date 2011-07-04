@@ -33,7 +33,7 @@ namespace sill {
       eta.clear();
       log_mult = 0;
     } else {
-      assert(lambda.size1() == n && lambda.size2() == n);
+      assert(lambda.n_rows == n && lambda.n_cols == n);
       assert(eta.size() == n);
     }
   }
@@ -238,8 +238,8 @@ namespace sill {
 
       if (inf_vector() == other_vector) {
         mat other_matrix = other.inf_matrix(arg_list);
-        for(size_t i = 0; i<lambda.size1(); i++) {
-          for(size_t j = 0; j<lambda.size2(); j++) {
+        for(size_t i = 0; i<lambda.n_rows; i++) {
+          for(size_t j = 0; j<lambda.n_cols; j++) {
             if (lambda(i,j) != other_matrix(i,j))
               return lambda(i,j) < other_matrix(i,j);
           }

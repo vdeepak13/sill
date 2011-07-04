@@ -58,13 +58,13 @@ namespace sill {
     size_type num_rows() const { return m_; }
 
     //! Number of rows.
-    size_type size1() const { return m_; }
+    size_type n_rows const { return m_; }
 
     //! Number of columns.
     size_type num_cols() const { return n_; }
 
     //! Number of columns.
-    size_type size2() const { return n_; }
+    size_type n_cols const { return n_; }
 
     //! Total number of elements (rows x columns).
     //! NOTE: This is hard-coded to use size_t to support larger matrices.

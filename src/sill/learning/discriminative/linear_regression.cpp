@@ -44,8 +44,8 @@ namespace sill {
       Ydata_own = *Ydata_ptr;
     }
     weights_.b = sum(Ydata_own, 1);
-    weights_.b /= Ydata_own.size1();
-    Ydata_own -= repmat(weights_.b, Ydata().size1(), 1, true);
+    weights_.b /= Ydata_own.n_rows;
+    Ydata_own -= repmat(weights_.b, Ydata().n_rows, 1, true);
     bool result(false);
     switch(params.regularization) {
     case 0: // none
@@ -56,7 +56,7 @@ namespace sill {
     case 2: // L2
       result =
         ls_solve_chol(Xdata().transpose() * Xdata()
-                      + (.5 * params.lambda) * identity(Xdata().size2()),
+                      + (.5 * params.lambda) * identity(Xdata().n_cols),
                       Xdata().transpose() * Ydata_own, weights_.A);
       break;
     default:
@@ -78,8 +78,8 @@ namespace sill {
   void linear_regression::train_matrix_inversion_with_mean() {
     /*
     if (!Ydata_ptr) {
-      Xdata_own.resize(Xdata_own.size1(), Xdata_own.size2() + 1, true);
-      Xdata_own.set_column(Xdata_own.size2() - 1, vec(Xdata_own.size1(), 1.));
+      Xdata_own.resize(Xdata_own.n_rows, Xdata_own.n_cols + 1, true);
+      Xdata_own.set_column(Xdata_own.n_cols - 1, vec(Xdata_own.n_rows, 1.));
     }
     */
     mat tmpA;
@@ -93,7 +93,7 @@ namespace sill {
     case 2: // L2
       result =
         ls_solve_chol(Xdata().transpose() * Xdata()
-                      + (.5 * params.lambda) * identity(Xdata().size2()),
+                      + (.5 * params.lambda) * identity(Xdata().n_cols),
                       Xdata().transpose() * Ydata(), tmpA);
       break;
     default:
@@ -103,8 +103,8 @@ namespace sill {
       throw std::runtime_error
         ("Cholesky decomposition failed in linear_regression::train_matrix_inversion_with_mean");
     }
-    weights_.A = tmpA.rows(irange(0, tmpA.size1() - 1)).transpose();
-    weights_.b = tmpA.row(tmpA.size1() - 1);
+    weights_.A = tmpA.rows(irange(0, tmpA.n_rows - 1)).transpose();
+    weights_.b = tmpA.row(tmpA.n_rows - 1);
   } // train_matrix_inversion_with_mean()
 
   void linear_regression::init(const dataset<la_type>& ds, bool own_data) {
@@ -125,20 +125,20 @@ namespace sill {
       else
         ds.get_value_matrix(Xdata_own, Xvec, false);
     } else {
-      assert(Ydata().size1() == ds.size());
-      assert(Ydata().size2() == Yvec_size);
-      assert(Xdata().size1() == ds.size());
+      assert(Ydata().n_rows == ds.size());
+      assert(Ydata().n_cols == Yvec_size);
+      assert(Xdata().n_rows == ds.size());
       if ((params.opt_method == 0) && params.regularize_mean) {
-        if (Xdata().size2() == Xvec_size) {
+        if (Xdata().n_cols == Xvec_size) {
           // add ones vector
-          Xdata_own.resize(Xdata().size1(), Xdata().size2() + 1);
+          Xdata_own.resize(Xdata().n_rows, Xdata().n_cols + 1);
           Xdata_own.set_submatrix(0, 0, Xdata());
           Xdata_ptr = NULL;
         } else {
-          assert(Xdata().size2() == Xvec_size + 1);
+          assert(Xdata().n_cols == Xvec_size + 1);
         }
       } else {
-        assert(Xdata().size2() == Xvec_size);
+        assert(Xdata().n_cols == Xvec_size);
       }
     }
 
@@ -150,8 +150,8 @@ namespace sill {
         boost::uniform_real<double> uniform_dist;
         uniform_dist = boost::uniform_real<double>
           (-1 * params.perturb_init, params.perturb_init);
-        for (size_t i = 0; i < weights_.A.size1(); ++i)
-          for (size_t j = 0; j < weights_.A.size2(); ++j)
+        for (size_t i = 0; i < weights_.A.n_rows; ++i)
+          for (size_t j = 0; j < weights_.A.n_cols; ++j)
             weights_.A(i,j) = uniform_dist(rng);
         foreach(double& v, weights_.b)
           v = uniform_dist(rng);
@@ -217,7 +217,7 @@ namespace sill {
       assert(false);
     }
 
-    tmpx.resize(weights_.A.size2());
+    tmpx.resize(weights_.A.n_cols);
 
     if (params.opt_method != 0) {
       while (iteration_ < params.init_iterations)
@@ -532,8 +532,8 @@ namespace sill {
       ds.get_value_matrix(Xdata, Xvec, true);
     } else {
       mean_b = sum(Ydata, 1);
-      mean_b /= Ydata.size1();
-      Ydata -= repmat(mean_b, Ydata.size1(), 1, true);
+      mean_b /= Ydata.n_rows;
+      Ydata -= repmat(mean_b, Ydata.n_rows, 1, true);
       ds.get_value_matrix(Xdata, Xvec, false);
     }
     mat G0(Xdata.transpose() * Xdata);
@@ -551,7 +551,7 @@ namespace sill {
     bool s0_has_0(min(s0) == 0);
     vec temp_scores_mad; // for computing median/MAD
     if (lr_params.cv_score_type == 1)
-      temp_scores_mad.resize(Xdata.size1());
+      temp_scores_mad.resize(Xdata.n_rows);
     for (size_t zoom_i(0); zoom_i <= zoom; ++zoom_i) {
       for (size_t k(0); k < lambdas_zoom.size(); ++k) {
         if (s0_has_0 && lambdas_zoom[k] == 0.) {
@@ -633,8 +633,8 @@ namespace sill {
       mat tmpA(Vt * diag(1. / (s0 + .5 * best_lambda)) * Ut
                * Xdata.transpose() * Ydata);
       if (lr_params.regularize_mean) {
-        lr_ptr->weights_.A = tmpA.rows(irange(0, tmpA.size1() - 1)).transpose();
-        lr_ptr->weights_.b = tmpA.row(tmpA.size1() - 1);
+        lr_ptr->weights_.A = tmpA.rows(irange(0, tmpA.n_rows - 1)).transpose();
+        lr_ptr->weights_.b = tmpA.row(tmpA.n_rows - 1);
       } else {
         lr_ptr->weights_.A = tmpA.transpose();
         lr_ptr->weights_.b = mean_b;

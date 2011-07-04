@@ -112,7 +112,7 @@ int main(int argc, char** argv) {
   // Matrix-matrix ops
   {
     matrix<double> tmp_dm(dm);
-    vector<double> tmp_dv(dv(irange(0,dm.size1())));
+    vector<double> tmp_dv(dv(irange(0,dm.n_rows)));
     tmp_dm += outer_product(tmp_dv,sv);
     std::cout << "dm += outer_product(" << tmp_dv << ",sv) -->\n" << tmp_dm
               << std::endl;

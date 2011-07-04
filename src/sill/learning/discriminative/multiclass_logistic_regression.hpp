@@ -220,7 +220,7 @@ namespace sill {
       }
 
       size_type size() const {
-        return size_type(f.size1(), f.size2(), v.size1(), v.size2(), b.size());
+        return size_type(f.n_rows, f.n_cols, v.n_rows, v.n_cols, b.size());
       }
 
       //! Resize the data.
@@ -325,15 +325,15 @@ namespace sill {
 
       //! Element-wise reciprocal (i.e., change v to 1/v).
       opt_variables& reciprocal() {
-        for (size_t i(0); i < f.size1(); ++i) {
-          for (size_t j(0); j < f.size2(); ++j) {
+        for (size_t i(0); i < f.n_rows; ++i) {
+          for (size_t j(0); j < f.n_cols; ++j) {
             double& val = f(i,j);
             assert(val != 0);
             val = 1. / val;
           }
         }
-        for (size_t i(0); i < v.size1(); ++i) {
-          for (size_t j(0); j < v.size2(); ++j) {
+        for (size_t i(0); i < v.n_rows; ++i) {
+          for (size_t j(0); j < v.n_cols; ++j) {
             double& val = v(i,j);
             assert(val != 0);
             val = 1. / val;
@@ -387,14 +387,14 @@ namespace sill {
 
       //! Print info about this vector (for debugging).
       void print_info(std::ostream& out) const {
-        out << "f.size: [" << f.size1() << ", " << f.size2() << "], "
-            << "v.size: [" << v.size1() << ", " << v.size2() << "], "
+        out << "f.size: [" << f.n_rows << ", " << f.n_cols << "], "
+            << "v.size: [" << v.n_rows << ", " << v.n_cols << "], "
             << "b.size: " << b.size() << "\n";
       }
 
       //! Print info about extrema in this vector (for debugging).
       void print_extrema_info(std::ostream& out) const {
-        for (size_t i(0); i < f.size1(); ++i) {
+        for (size_t i(0); i < f.n_rows; ++i) {
           if (f.size() > 0)
             out << "f(" << i << ",min) = " << f(i, min_index(f.row(i)))
                 << "\t"
@@ -1596,11 +1596,11 @@ namespace sill {
       boost::uniform_real<double> uniform_dist;
       uniform_dist = boost::uniform_real<double>
         (-1 * params.perturb, params.perturb);
-      for (size_t i = 0; i < weights_.f.size1(); ++i)
-        for (size_t j = 0; j < weights_.f.size2(); ++j)
+      for (size_t i = 0; i < weights_.f.n_rows; ++i)
+        for (size_t j = 0; j < weights_.f.n_cols; ++j)
           weights_.f(i,j) = uniform_dist(rng);
-      for (size_t i = 0; i < weights_.v.size1(); ++i)
-        for (size_t j = 0; j < weights_.v.size2(); ++j)
+      for (size_t i = 0; i < weights_.v.n_rows; ++i)
+        for (size_t j = 0; j < weights_.v.n_cols; ++j)
           weights_.v(i,j) = uniform_dist(rng);
       foreach(double& v, weights_.b)
         v = uniform_dist(rng);
@@ -1783,13 +1783,13 @@ namespace sill {
       // TODO: Figure out a better way to do this.
       //       (Add more functionality to vector.hpp and matrix.hpp?)
       for (size_t i(0); i < nclasses_; ++i) {
-        for (size_t j(0); j < x.f.size2(); ++j) {
+        for (size_t j(0); j < x.f.n_cols; ++j) {
           if (x.f(i,j) > 0)
             gradient.f(i,j) += w;
           else if (x.f(i,j) < 0)
             gradient.f(i,j) -= w;
         }
-        for (size_t j(0); j < x.v.size2(); ++j) {
+        for (size_t j(0); j < x.v.n_cols; ++j) {
           if (x.v(i,j) > 0)
             gradient.v(i,j) += w;
           else if (x.v(i,j) < 0)
@@ -2039,7 +2039,7 @@ namespace sill {
     table_factor
       label_marginal(fy.marginal(make_domain<finite_variable>(label_)));
     finite_assignment tmpa;
-    dense_vector_type r_vector(grad.v.size2());
+    dense_vector_type r_vector(grad.v.n_cols);
     vector_assignment2vector(a.vector(), vector_seq, r_vector);
     for (size_t label_val(0); label_val < nclasses_; ++label_val) {
       tmpa[label_] = label_val;
@@ -2254,10 +2254,10 @@ namespace sill {
     params.save(out);
     out << train_acc << " " << train_obj
         << " " << iteration_ << " " << total_train_weight << "\n";
-    for (size_t i = 0; i < weights_.f.size1(); ++i)
+    for (size_t i = 0; i < weights_.f.n_rows; ++i)
       out << weights_.f.row(i) << " ";
     out << "\n";
-    for (size_t i = 0; i < weights_.f.size1(); ++i)
+    for (size_t i = 0; i < weights_.f.n_rows; ++i)
       out << weights_.v.row(i) << " ";
     out << "\n" << weights_.b << "\n";
   }

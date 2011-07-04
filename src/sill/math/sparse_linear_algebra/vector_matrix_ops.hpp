@@ -463,11 +463,11 @@ namespace sill {
     template <typename InVecType, typename T, typename SizeType>
     inline vector<T>
     mult_densemat_sparsevec_(const matrix<T>& A, const InVecType& x) {
-      assert(A.size2() == x.size());
-      vector<T> y(A.size1(),0);
+      assert(A.n_cols == x.size());
+      vector<T> y(A.n_rows,0);
       const T* A_it = A.begin();
       for (SizeType i = 0; i < y.size(); ++i) {
-        y[i] = dot(dense_vector_view<T,SizeType>(A.size2(), A_it, A.size1()),
+        y[i] = dot(dense_vector_view<T,SizeType>(A.n_cols, A_it, A.n_rows),
                    x);
         ++A_it;
       }
@@ -481,13 +481,13 @@ namespace sill {
     inline vector<double>
     mult_densemat_sparsevec_<sparse_vector<double,size_t>,double,size_t>
     (const matrix<double>& A, const sparse_vector<double,size_t>& x) {
-      assert(A.size2() == x.size());
-      vector<double> y(A.size1(),0);
-      int n = A.size1();
+      assert(A.n_cols == x.size());
+      vector<double> y(A.n_rows,0);
+      int n = A.n_rows;
       int inc = 1;
       for (size_t k = 0; k < x.num_non_zeros(); ++k) {
         double alpha = x.value(k);
-        blas::daxpy_(&n, &alpha, A.begin() + A.size1() * x.index(k), &inc,
+        blas::daxpy_(&n, &alpha, A.begin() + A.n_rows * x.index(k), &inc,
                      y.begin(), &inc);
       }
       return y;
@@ -506,11 +506,11 @@ namespace sill {
     inline void
     gemv_densemat_sparsevec_(const matrix<T>& A, const InVecType& x,
                              vector<T>& y) {
-      assert(A.size2() == x.size());
-      assert(y.size() == A.size1());
+      assert(A.n_cols == x.size());
+      assert(y.size() == A.n_rows);
       const T* A_it = A.begin();
       for (SizeType i = 0; i < y.size(); ++i) {
-        y[i] += dot(dense_vector_view<T,SizeType>(A.size2(), A_it, A.size1()),
+        y[i] += dot(dense_vector_view<T,SizeType>(A.n_cols, A_it, A.n_rows),
                     x);
         ++A_it;
       }
@@ -563,7 +563,7 @@ namespace sill {
   matrix<T>&
   operator+=(matrix<T>& A,
              const rank_one_matrix<vector<T>,sparse_vector<T,SizeType> >& B) {
-    assert(A.size1() == B.size1() && A.size2() == B.size2());
+    assert(A.n_rows == B.n_rows && A.n_cols == B.n_cols);
     for (SizeType k = 0; k < B.y().num_non_zeros(); ++k)
       A.add_column(B.y().index(k), B.x() * B.y().value(k));
     return A;

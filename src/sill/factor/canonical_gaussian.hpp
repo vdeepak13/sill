@@ -7,7 +7,7 @@
 #include <sill/factor/invalid_operation.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 #include <sill/macros_def.hpp>
 

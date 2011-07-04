@@ -8,28 +8,28 @@ namespace sill {
 
   //! Evaluates the function on a discrete input
   double logistic_discrete::operator()(const ivec& x) const {
-    assert(x.size() == w.size1());
+    assert(x.size() == w.n_rows);
     double arg = b;
     for(size_t i = 0; i < x.size(); i++) {
-      assert(x[i] >= 0 && size_t(x[i]) < w.size2());
+      assert(x[i] >= 0 && size_t(x[i]) < w.n_cols);
       arg += w(i, x[i]);
     }
     return 1.0 / (1 + std::exp(-arg));
   }
 
   double logistic_discrete::operator()(const ivec& x, const vec& u) const {
-    assert(x.size() == w.size1());
+    assert(x.size() == w.n_rows);
     double arg = b;
     for(size_t i = 0; i < x.size(); i++) {
-      assert(x[i] >=0 && size_t(x[i]) < w.size2());
+      assert(x[i] >=0 && size_t(x[i]) < w.n_cols);
       arg += w(i, x[i]) * u[i];
     }
     return 1.0 / (1 + std::exp(-arg));
   }
   
   double logistic_discrete::operator()(const mat& x) const {
-    assert(x.size1() == w.size1());
-    assert(x.size2() == w.size2());
+    assert(x.n_rows == w.n_rows);
+    assert(x.n_cols == w.n_cols);
     double arg = b + sumsum(elem_mult(w, x));
     return 1.0 / (1 + std::exp(-arg));
   }  

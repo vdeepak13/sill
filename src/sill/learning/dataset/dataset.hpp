@@ -771,11 +771,11 @@ namespace sill {
       assert(this->has_variable(v));
     size_t vars_size(vector_size(vars));
     if (add_ones) {
-      if (X.size1() != nrecords || X.size2() != vars_size + 1)
+      if (X.n_rows != nrecords || X.n_cols != vars_size + 1)
         X.resize(nrecords, vars_size + 1);
       X.set_col(vars_size, vec(nrecords, 1.));
     } else {
-      if (X.size1() != nrecords || X.size2() != vars_size)
+      if (X.n_rows != nrecords || X.n_cols != vars_size)
         X.resize(nrecords, vars_size);
     }
     for (size_t i(0); i < nrecords; ++i) {
@@ -833,7 +833,7 @@ namespace sill {
           ("dataset::covariance() given variable not in dataset");
       Xsize += v->size();
     }
-    if ((cov.size1() != Xsize) || (cov.size2() != Xsize))
+    if ((cov.n_rows != Xsize) || (cov.n_cols != Xsize))
       cov.resize(Xsize, Xsize);
     cov.zeros();
     if (nrecords <= 1)

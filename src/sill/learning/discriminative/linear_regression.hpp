@@ -251,7 +251,7 @@ namespace sill {
       }
 
       size_type size() const {
-        return size_type(A.size1(), A.size2());
+        return size_type(A.n_rows, A.n_cols);
       }
 
       //! Resize the data.
@@ -339,8 +339,8 @@ namespace sill {
 
       //! Element-wise reciprocal (i.e., change v to 1/v).
       opt_vector& reciprocal() {
-        for (size_t i(0); i < A.size1(); ++i) {
-          for (size_t j(0); j < A.size2(); ++j) {
+        for (size_t i(0); i < A.n_rows; ++i) {
+          for (size_t j(0); j < A.n_cols; ++j) {
             double& val = A(i,j);
             assert(val != 0);
             val = 1. / val;
@@ -392,7 +392,7 @@ namespace sill {
 
       //! Print info about this vector (for debugging).
       void print_info(std::ostream& out) const {
-        out << "A.size: [" << A.size1() << ", " << A.size2() << "], "
+        out << "A.size: [" << A.n_rows << ", " << A.n_cols << "], "
             << "b.size: " << b.size() << "\n";
       }
 
@@ -414,7 +414,7 @@ namespace sill {
     public:
       objective_functor(const linear_regression& lr)
         : lr(lr), yvec(lr.Yvec_size, 0.),
-          tmpmat(lr.Ydata().size1(), lr.Ydata().size2(), 0.) { }
+          tmpmat(lr.Ydata().n_rows, lr.Ydata().n_cols, 0.) { }
 
       //! Computes the value of the objective at x.
       double objective(const opt_vector& x) const {
@@ -424,7 +424,7 @@ namespace sill {
         case 2: // least-squares
           tmpmat = lr.Ydata();
           tmpmat -= lr.Xdata() * x.A.transpose();
-          for (size_t i(0); i < tmpmat.size1(); ++i)
+          for (size_t i(0); i < tmpmat.n_rows; ++i)
             tmpmat.subtract_row(i, x.b);
           elem_mult_inplace(tmpmat, tmpmat);
           if (lr.data_weights.size() == 0)
@@ -473,7 +473,7 @@ namespace sill {
     public:
       gradient_functor(const linear_regression& lr)
         : lr(lr), yvec(lr.Yvec_size, 0.),
-          tmpmat(lr.Ydata().size1(), lr.Ydata().size2(), 0.) { }
+          tmpmat(lr.Ydata().n_rows, lr.Ydata().n_cols, 0.) { }
 
       //! Computes the gradient of the function at x.
       //! @param grad  Data type in which to store the gradient.
@@ -486,13 +486,13 @@ namespace sill {
           tmpmat = lr.Xdata() * x.A.transpose();
           tmpmat -= lr.Ydata();
           if (lr.data_weights.size() == 0) {
-            for (size_t i(0); i < tmpmat.size1(); ++i) {
+            for (size_t i(0); i < tmpmat.n_rows; ++i) {
               tmpmat.add_row(i, x.b);
               grad.A += 2. * outer_product(tmpmat.row(i), lr.Xdata().row(i));
             }
             grad.b = sum(tmpmat, 1);
           } else {
-            for (size_t i(0); i < tmpmat.size1(); ++i) {
+            for (size_t i(0); i < tmpmat.n_rows; ++i) {
               tmpmat.add_row(i, x.b);
               grad.A += (2. * lr.data_weights[i])
                 * outer_product(tmpmat.row(i), lr.Xdata().row(i));
@@ -511,7 +511,7 @@ namespace sill {
           break;
         case 1:
           for (size_t i(0); i < x.b.size(); ++i) {
-            for (size_t j(0); j < x.A.size2(); ++j) {
+            for (size_t j(0); j < x.A.n_cols; ++j) {
               if (x.A(i,j) > 0)
                 grad.A(i,j) += lr.params.lambda;
               else if (x.A(i,j) > 0)

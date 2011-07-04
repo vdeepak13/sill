@@ -137,12 +137,12 @@ namespace sill {
     using base::rows;
 
     //! The number of rows
-    size_t size1() const {
+    size_t n_rows const {
       return base::no_rows;
     }
 
     //! The number of columns
-    size_t size2() const {
+    size_t n_cols const {
       return base::no_cols;
     }
 
@@ -203,7 +203,7 @@ namespace sill {
     //! Returns the rows in a continuous range
     const itpp::Mat<T> rows(irange i) const {
       if (i.empty())
-        return itpp::Mat<T>(0, size2());
+        return itpp::Mat<T>(0, n_cols);
       else
         return base::get_rows(i.start(), i.end());
     }
@@ -221,7 +221,7 @@ namespace sill {
     //! Returns the columns in a continuous range
     const itpp::Mat<T> columns(irange i) const {
       if (i.empty())
-        return itpp::Mat<T>(size1(), 0);
+        return itpp::Mat<T>(n_rows, 0);
       else
         return base::get_cols(i.start(), i.end());
     }
@@ -235,7 +235,7 @@ namespace sill {
     matrix transpose() const {
       if (size() == 0)
         return matrix();
-//        return matrix(size2(), size1());
+//        return matrix(n_cols, n_rows);
       else
         return base::transpose();
     }
@@ -486,7 +486,7 @@ namespace sill {
     void update_row(size_t i, const itpp::Vec<T>& v, F f) {
       concept_assert((BinaryFunction<F, T, T, T>));
       assert(this->cols() == v.size());
-      for(size_t j = 0; j < size2(); j++) 
+      for(size_t j = 0; j < n_cols; j++) 
         base::set(i, j, f(operator()(i, j), v[j]));
     }
 
@@ -495,7 +495,7 @@ namespace sill {
     template <typename F>
     void update_row(size_t i, T v, F f) {
       concept_assert((BinaryFunction<F, T, T, T>));
-      for(size_t j = 0; j < size2(); j++)
+      for(size_t j = 0; j < n_cols; j++)
         base::set(i, j, f(operator()(i, j), v));
     }
 
@@ -507,7 +507,7 @@ namespace sill {
     void scaled_update_row(size_t i, const itpp::Vec<T>& v, F f, T alpha) {
       concept_assert((BinaryFunction<F, T, T, T>));
       assert(this->cols() == v.size());
-      for(size_t j = 0; j < size2(); j++) 
+      for(size_t j = 0; j < n_cols; j++) 
         base::set(i, j, f(operator()(i, j), alpha * v[j]));
     }
 
@@ -517,7 +517,7 @@ namespace sill {
     void update_column(size_t j, const itpp::Vec<T>& v, F f) {
       concept_assert((BinaryFunction<F, T, T, T>));
       assert(this->rows() == v.size());
-      for(size_t i = 0; i < size1(); i++) 
+      for(size_t i = 0; i < n_rows; i++) 
         base::set(i, j, f(operator()(i, j), v[i]));
     }
 
@@ -526,7 +526,7 @@ namespace sill {
     template <typename F>
     void update_column(size_t j, T v, F f) {
       concept_assert((BinaryFunction<F, T, T, T>));
-      for(size_t i = 0; i < size1(); i++)
+      for(size_t i = 0; i < n_rows; i++)
         base::set(i, j, f(operator()(i, j), v));
     }
 
@@ -555,10 +555,10 @@ namespace sill {
     //! Matrix-matrix multiplication
     matrix& operator*=(const matrix& m) {
       if (size() == 0 || m.size() == 0) {
-        if (size2() != m.size1())
+        if (n_cols != m.n_rows)
           throw std::invalid_argument
             ("matrix<T>::operator*=(m) given m with non-matching dimensions");
-        this->resize(size1(), m.size2());
+        this->resize(n_rows, m.n_cols);
         this->zeros();
       } else {
         base::operator*=(m);
@@ -731,8 +731,8 @@ namespace sill {
     // Serialization
     //==========================================================================
     void save(oarchive& ar) const {
-      ar << size1();
-      ar << size2();
+      ar << n_rows;
+      ar << n_cols;
       for(size_t i = 0; i < size(); i++)
         ar << operator()(i);
     }
@@ -752,10 +752,10 @@ namespace sill {
      */
     void print(std::ostream& out, const std::string& elem_delimiter = " ",
                const std::string& row_delimiter = "\n") const {
-      for (size_t i(0); i < size1(); ++i) {
-        for (size_t j(0); j < size2(); ++j) {
+      for (size_t i(0); i < n_rows; ++i) {
+        for (size_t j(0); j < n_cols; ++j) {
           out << operator()(i,j);
-          if (j + 1 == size2())
+          if (j + 1 == n_cols)
             out << row_delimiter;
           else
             out << elem_delimiter;

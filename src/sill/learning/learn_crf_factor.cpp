@@ -237,8 +237,8 @@ namespace sill {
     ds.get_value_matrix(Xdata, Xvec, false);
     // Compute mean, and center Y values.
     vec mu(sum(Ydata,1));
-    mu /= Ydata.size1();
-    Ydata -= repmat(mu, Ydata.size1(), 1, true);
+    mu /= Ydata.n_rows;
+    Ydata -= repmat(mu, Ydata.n_rows, 1, true);
 
     // Compute X'Y
     mat XtY(Xdata.transpose() * Ydata);
@@ -247,7 +247,7 @@ namespace sill {
     bool result;
     if (params.reg.lambdas[0] > 0)
       result = ls_solve_chol(Xdata.transpose() * Xdata
-                             + params.reg.lambdas[0] * identity(Xdata.size2()),
+                             + params.reg.lambdas[0] * identity(Xdata.n_cols),
                              XtY, Ct);
     else
       result = ls_solve_chol(Xdata.transpose() * Xdata, XtY, Ct);
@@ -257,7 +257,7 @@ namespace sill {
     // Compute covariance matrix
     mat cov(Ydata.transpose() * Ydata);
     if (params.reg.lambdas[1] > 0) {
-      cov += params.reg.lambdas[1] * identity(cov.size1());
+      cov += params.reg.lambdas[1] * identity(cov.n_rows);
     }
     cov -= XtY.transpose() * Ct;
     cov /= ds.size();
@@ -287,7 +287,7 @@ namespace sill {
                       / params.lambda_cov_increments)
             + params.reg.lambdas[1];
           cov += ((new_lambda_cov - old_lambda_cov) / ds.size())
-            * identity(cov.size1());
+            * identity(cov.n_rows);
           // FINISH THIS IF NECESSARY
         }
       */
@@ -404,12 +404,12 @@ namespace sill {
         fold_test_view.get_value_matrix(testYdata, Yvec);
         // Compute mean, and center Y values.
         vec mu(sum(Ydata,1));
-        mu /= Ydata.size1();
-        Ydata -= repmat(mu, Ydata.size1(), 1, true);
-        testYdata -= repmat(mu, testYdata.size1(), 1, true);
+        mu /= Ydata.n_rows;
+        Ydata -= repmat(mu, Ydata.n_rows, 1, true);
+        testYdata -= repmat(mu, testYdata.n_rows, 1, true);
         // If (# examples) >= |X|, then do SVD of X' X.
         // Otherwise, do SVD of X X'.
-        bool num_exs_bigger = (Xdata.size1() >= Xdata.size2());
+        bool num_exs_bigger = (Xdata.n_rows >= Xdata.n_cols);
         // Compute X' * X = U D0 V, where diag(D0) = s0.
         mat tmpmat(num_exs_bigger ?
                    Xdata.transpose() * Xdata :
@@ -504,7 +504,7 @@ namespace sill {
               ll += ll_constant - .5 * logdet_sigma0;
             else
               ll += ll_constant
-                - .5 * (logdet_sigma0 + Ydata.size2() * lambda_cov);
+                - .5 * (logdet_sigma0 + Ydata.n_cols * lambda_cov);
             means[reg_params_i] -= ll;
             stderrs[reg_params_i] += ll * ll;
           }

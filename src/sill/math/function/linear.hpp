@@ -24,7 +24,7 @@ namespace sill {
   public:
     linear_vec(const mat& a, const vec& b)
       : a(a), b(b) {
-      assert(a.size1() == b.size());
+      assert(a.n_rows == b.size());
     }
 
     operator std::string() const {
@@ -36,16 +36,16 @@ namespace sill {
     }
     
     void value(const vec& x, vec& y) const {
-      assert(x.size() == a.size2());
+      assert(x.size() == a.n_cols);
       y = a * x + b;
     }
 
     size_t size_out() const {
-      return a.size1();
+      return a.n_rows;
     }
     
     size_t size_in() const {
-      return a.size2();
+      return a.n_cols;
     }
     
   }; // class linear_vec

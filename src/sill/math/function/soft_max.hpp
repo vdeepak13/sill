@@ -18,7 +18,7 @@ namespace sill {
   public:
     //! Creates a soft-max function with the given set of weights and biases
     soft_max(const mat& w, const vec& b) : w(w), b(b) {
-      assert(w.size1() == b.size());
+      assert(w.n_rows == b.size());
     }
 
     //! Returns the weight parameters

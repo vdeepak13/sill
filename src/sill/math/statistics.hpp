@@ -370,8 +370,8 @@ namespace sill {
     double best(v(0,0));
     size_t nbest(0);
     std::pair<size_t,size_t> best_indices(std::make_pair(0,0));
-    for (size_t i(0); i < v.size1(); ++i) {
-      for (size_t j(0); j < v.size2(); ++j) {
+    for (size_t i(0); i < v.n_rows; ++i) {
+      for (size_t j(0); j < v.n_cols; ++j) {
         if (v(i,j) < best)
           continue;
         if (v(i,j) == best) {

@@ -90,13 +90,13 @@ namespace sill {
 
     //! Returns the dimensions of this data structure.
     size_type size() const {
-      return size_type(C.size1(), C.size2());
+      return size_type(C.n_rows, C.n_cols);
     }
 
     //! Returns true iff the sizes of A, b, C match each other.
     bool valid_size() const {
-      if ((A.size1() != A.size2()) || (A.size1() != b.size()) ||
-          (A.size1() != C.size1()))
+      if ((A.n_rows != A.n_cols) || (A.n_rows != b.size()) ||
+          (A.n_rows != C.n_rows))
         return false;
       return true;
     }
@@ -196,8 +196,8 @@ namespace sill {
 
     //! Element-wise reciprocal (i.e., change v to 1/v).
     gaussian_opt_vector& reciprocal() {
-      for (size_t i(0); i < A.size1(); ++i) {
-        for (size_t j(0); j < A.size2(); ++j) {
+      for (size_t i(0); i < A.n_rows; ++i) {
+        for (size_t j(0); j < A.n_cols; ++j) {
           double& val = A(i,j);
           assert(val != 0);
           val = 1. / val;
@@ -208,8 +208,8 @@ namespace sill {
         assert(val != 0);
         val = 1. / val;
       }
-      for (size_t i(0); i < C.size1(); ++i) {
-        for (size_t j(0); j < C.size2(); ++j) {
+      for (size_t i(0); i < C.n_rows; ++i) {
+        for (size_t j(0); j < C.n_cols; ++j) {
           double& val = C(i,j);
           assert(val != 0);
           val = 1. / val;
@@ -262,7 +262,7 @@ namespace sill {
      *                (default = 1)
      */
     void zeros(double zero_A = 1.) {
-      A = zero_A * identity(A.size1());
+      A = zero_A * identity(A.n_rows);
       b = 0.;
       C = 0.;
     }
@@ -275,9 +275,9 @@ namespace sill {
 
     //! Print info about this vector (for debugging).
     void print_info(std::ostream& out) const {
-      out << "A.size: [" << A.size1() << ", " << A.size2() << "], "
+      out << "A.size: [" << A.n_rows << ", " << A.n_cols << "], "
           << "b.size: " << b.size() << ", "
-          << "C.size: [" << C.size1() << ", " << C.size2() << "]\n";
+          << "C.size: [" << C.n_rows << ", " << C.n_cols << "]\n";
     }
 
   }; // struct gaussian_opt_vector

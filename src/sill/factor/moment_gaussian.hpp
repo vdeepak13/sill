@@ -8,10 +8,8 @@
 #include <sill/factor/constant_factor.hpp>
 #include <sill/factor/gaussian_factor.hpp>
 #include <sill/factor/invalid_operation.hpp>
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
-#include <sill/math/matrix.hpp>
-#include <sill/math/vector.hpp>
 #include <sill/range/forward_range.hpp>
 
 #include <sill/macros_def.hpp>
@@ -159,7 +157,7 @@ namespace sill {
 
     //! Returns the total vector size (length) of the tail variables
     size_t size_tail() const {
-      return coeff.size2();
+      return coeff.n_cols;
     }
 
     //! Returns the head variables
@@ -362,7 +360,7 @@ namespace sill {
       bool result = chol(cov, At);
       if (!result)
         throw invalid_operation("Cholesky decomposition failed in canonical_gaussian::sample");
-//      vals = A * vals + (mg.mean() - (A * vec(A.size2(), 1.)));
+//      vals = A * vals + (mg.mean() - (A * vec(A.n_cols, 1.)));
       vals = At.transpose() * vals + cmean;
       vector_assignment a;
       size_t k(0); // index into vals
