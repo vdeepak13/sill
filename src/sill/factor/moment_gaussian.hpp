@@ -152,7 +152,7 @@ namespace sill {
 
     //! Returns the total vector size (length) of the head variables
     size_t size_head() const {
-      return cmean.size();
+      return cmean.n_elem;
     }
 
     //! Returns the total vector size (length) of the tail variables
@@ -216,7 +216,7 @@ namespace sill {
 
     //! Returns the mean for a single variable
     vec mean(vector_variable* v) const {
-      return cmean(safe_get(var_range,v));
+      return cmean(safe_get(var_span,v));
     }
 
     //! Returns the covariance of a subset of variables in the given order
@@ -227,14 +227,14 @@ namespace sill {
 
     //! Returns the covariance for a single variable
     mat covariance(vector_variable* v) const {
-      return cov(safe_get(var_range, v), safe_get(var_range, v));
+      return cov(safe_get(var_span, v), safe_get(var_span, v));
     }
 
     //! Returns the diagonal of the covariance for a subset of variables
     //! in the given order
     vec covariance_diag(const vector_var_vector& vars) const {
       uvec ind(indices(vars));
-      vec tmpvec(diag(cov));
+      vec tmpvec(diagvec(cov));
       return tmpvec(ind);
     }
 
@@ -335,8 +335,8 @@ namespace sill {
           ("moment_gaussian::sample() was called on a conditional Gaussian.");
       // Sample vals ~ Normal(1's, Identity),
       // i.e., the multivariate standard normal distribution.
-      vec vals(vector_size(head_list), 0.);
-      if (vals.size() == 0)
+      vec vals = zeros(vector_size(head_list));
+      if (vals.n_elem == 0)
         return vector_assignment();
       boost::normal_distribution<double> normal_dist(0,1);
       bool use_different_rng(false);
@@ -361,11 +361,11 @@ namespace sill {
       if (!result)
         throw invalid_operation("Cholesky decomposition failed in canonical_gaussian::sample");
 //      vals = A * vals + (mg.mean() - (A * vec(A.n_cols, 1.)));
-      vals = At.transpose() * vals + cmean;
+      vals = trans(At) * vals + cmean;
       vector_assignment a;
-      size_t k(0); // index into vals
+      size_t k = 0; // index into vals
       foreach(vector_variable* v, head_list) {
-        a[v] = vals(irange(k, k + v->size()));
+        a[v] = vals(span(k, k + v->size() - 1));
         k += v->size();
       }
       return a;

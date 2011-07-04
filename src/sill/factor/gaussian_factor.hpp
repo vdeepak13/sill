@@ -50,8 +50,8 @@ namespace sill {
     //==========================================================================
   protected:
 
-    //! The map from each variable to its index range
-    std::map<vector_variable*, irange> var_range;
+    //! The map from each variable to its index span
+    std::map<vector_variable*, span> var_span;
 
     //! The argument set of this factor
     vector_domain args;
@@ -71,19 +71,19 @@ namespace sill {
     gaussian_factor(const forward_range<vector_variable*>& vars)
       : args(vars.begin(), vars.end()) { }
 
-    //! Assigns an index range to each variable in vars in an increasing order.
+    //! Assigns an index span to each variable in vars in an increasing order.
     void compute_indices(const vector_var_vector& vars) {
       size_t n = 0;
       foreach(vector_variable* v, vars) {
-        var_range[v] = irange(n, n + v->size());
+        var_span[v] = span(n, n + v->size() - 1);
         n = n + v->size();
       }
     }
 
-    //! Renames the arguments and the variable-index range map
+    //! Renames the arguments and the variable-index span map
     void subst_args(const vector_var_map& map) {
       args = subst_vars(args, map);
-      var_range = rekey(var_range, map);
+      var_span = rekey(var_span, map);
     }
 
     // Public member functions
@@ -119,9 +119,9 @@ namespace sill {
         ind.resize(n);
       n = 0;
       foreach(vector_variable* v, vars) {
-        std::map<vector_variable*, irange>::const_iterator
-          it(var_range.find(v));
-        if (it == var_range.end()) {
+        std::map<vector_variable*, span>::const_iterator
+          it(var_span.find(v));
+        if (it == var_span.end()) {
           if (strict) {
             throw std::runtime_error
               (std::string("gaussian_factor::indices(vars,ind,strict)") +
@@ -129,9 +129,9 @@ namespace sill {
                " strict = true.");
           }
         } else {
-          const irange& range = it->second;
-          for(size_t i = 0; i < range.size(); i++)
-            ind[n++] = range(i);
+          const span& s = it->second;
+          for(size_t i = s.a; i <= s.b; i++)
+            ind[n++] = i;
         }
       }
     }
@@ -161,9 +161,9 @@ namespace sill {
         ind.resize(n);
       n = 0;
       foreach(vector_variable* v, vars) {
-        std::map<vector_variable*, irange>::const_iterator
-          it(var_range.find(v));
-        if (it == var_range.end()) {
+        std::map<vector_variable*, span>::const_iterator
+          it(var_span.find(v));
+        if (it == var_span.end()) {
           if (strict) {
             throw std::runtime_error
               (std::string("gaussian_factor::indices(vars,ind,strict)") +
@@ -171,9 +171,9 @@ namespace sill {
                " strict = true.");
           }
         } else {
-          const irange& range = it->second;
-          for(size_t i = 0; i < range.size(); i++)
-            ind[n++] = range(i);
+          const span& s = it->second;
+          for(size_t i = s.a; i <= s.b; i++)
+            ind[n++] = i;
         }
       }
     }

@@ -27,14 +27,12 @@ namespace sill {
 
     if (use_default) {
       // Initialize the matrices
-      lambda.resize(n, n, false);
-      lambda.clear();
-      eta.resize(n, false);
-      eta.clear();
+      lambda = zeros(n, n);
+      eta = zeros(n);
       log_mult = 0;
     } else {
       assert(lambda.n_rows == n && lambda.n_cols == n);
-      assert(eta.size() == n);
+      assert(eta.n_elem == n);
     }
   }
 
@@ -89,6 +87,8 @@ namespace sill {
     size_t nhead = mg.size_head();
     size_t ntail = mg.size_tail();
     size_t n = nhead + ntail;
+    lambda.set_size(n, n);
+    eta.set_size(n);
 
     // Initialize the argument list
     arg_list = concat(mg.head_list, mg.tail_list);
@@ -98,28 +98,27 @@ namespace sill {
     compute_indices(arg_list);
 
     // Initialize the matrices
-    irange ih(0, nhead);
-    irange it(nhead, n);
-    mat invcov;
-    bool result = inv(mg.cov, invcov);
-    assert(result);
+    // TODO: deal with empty head or tail
+    span ih(0, nhead-1);
+    span it(nhead, n-1);
+    mat invcov = inv(mg.cov);
 
-    lambda.resize(n, n);
-    lambda.set_submatrix(ih, ih, invcov);
-    eta.resize(n);
-    eta.set_subvector(ih, invcov * mg.cmean);
+    if (nhead > 0) {
+      lambda(ih, ih) = invcov;
+      eta(ih) = invcov * mg.cmean;
+    }
 
     if (ntail > 0) {
-      mat Atinvcov(mg.coeff.transpose()*invcov);
-      lambda.set_submatrix(it, it, Atinvcov*mg.coeff);
-      lambda.set_submatrix(ih, it, -Atinvcov.transpose());
-      lambda.set_submatrix(it, ih, -Atinvcov);
-      eta.set_subvector(it, -Atinvcov * mg.cmean);
+      mat Atinvcov = mg.coeff.transpose()*invcov;
+      lambda(it, it) = Atinvcov*mg.coeff;
+      lambda(ih, it) = -trans(Atinvcov);
+      lambda(it, ih) = -Atinvcov;
+      eta(it) = -Atinvcov * mg.cmean;
     }
 
     log_mult = mg.likelihood.log_value()
-      - .5 * (mg.cmean.size() * std::log(2*pi()) + logdet(mg.cov)
-              + inner_prod(mg.cmean, invcov * mg.cmean));
+      - .5 * (mg.cmean.size() * std::log(2*pi()) + log_det(mg.cov)
+              + as_scalar(trans(mg.cmean) * invcov * mg.cmean);
   }
 
   /*
@@ -179,7 +178,7 @@ namespace sill {
   }
 
   size_t canonical_gaussian::size() const {
-    return eta.size();
+    return eta.n_elem;
   }
 
   const mat& canonical_gaussian::inf_matrix() const {
@@ -263,20 +262,20 @@ namespace sill {
   }
 
   double canonical_gaussian::logv(const vector_assignment& a) const {
-    if (eta.size() == 0)
-      return 0;
+    if (eta.is_empty())
+      return 0; // shouldn't this be log_mult?
     vec v = sill::concat(values(a, arg_list));
     // will assertion if a does not cover the arguments of this
     return - 0.5*inner_prod(v, lambda*v) + inner_prod(v, eta) + log_mult;
   }
 
   double canonical_gaussian::logv(const record_type& r) const {
-    if (eta.size() == 0)
-      return 0;
-    vec v(eta.size(), 0.);
+    if (eta.is_empty())
+      return 0; // shouldn't this be log_mult?
+    vec v = zeros(eta.n_elem);
     r.vector_values(v, arg_list);
     // will assertion if a does not cover the arguments of this
-    return - 0.5*inner_prod(v, lambda*v) + inner_prod(v, eta) + log_mult;
+    return - 0.5*as_scalar(trans(v) * lambda * v) + dot(v, eta) + log_mult;
   }
 
   canonical_gaussian
@@ -311,23 +310,24 @@ namespace sill {
     }
     // If the arguments of x are disjoint from the bound variables,
     // we can simply return a copy of the factor
-    if (y.size() == 0) return *this;
+    if (y.empty()) return *this;
 
     uvec ix = indices(x);
     uvec iy = indices(y);
     vec vy = sill::concat(values(a, y));
-    assert(vy.size()==iy.size());
+    assert(vy.n_elem == iy.n_elem);
 
-    if (x.size() == 0)
-      return canonical_gaussian(log_mult + inner_prod(eta(iy), vy)
-                                - 0.5*(vy * (lambda(iy,iy)*vy)));
+    if (x.empty()) {
+      return canonical_gaussian(log_mult + dot(eta(iy), vy)
+                                - 0.5*as_scalar(trans(vy) * lambda(iy,iy) * vy));
+    }
     else
       return canonical_gaussian
         (x,
          lambda(ix, ix),
          eta(ix) - lambda(ix, iy)*vy,
-         log_mult + inner_prod(eta(iy), vy)
-         - 0.5*(vy * (lambda(iy,iy)*vy)));
+         log_mult + dot(eta(iy), vy)
+         - 0.5 * as_scalar(trans(vy) * lambda(iy,iy) * vy));
   } // restrict(a)
 
   void canonical_gaussian::
@@ -361,7 +361,7 @@ namespace sill {
 
     // If the arguments of x are disjoint from the bound variables,
     // we can simply return a copy of the factor
-    if (y.size() == 0) {
+    if (y.empty()) {
       f = *this;
       return;
     }
@@ -370,17 +370,17 @@ namespace sill {
     uvec iy = indices(y);
     vec vy;
     r.vector_values(vy, y);
-    assert(vy.size()==iy.size());
+    assert(vy.n_elem == iy.n_elem);
 
-    if (x.size() == 0) {
-      f = canonical_gaussian(log_mult + inner_prod(eta(iy), vy)
-                             - 0.5*(vy * (lambda(iy,iy)*vy)));
+    if (x.empty()) {
+      f = canonical_gaussian(log_mult + dot(eta(iy), vy)
+                             - 0.5*as_scalar(trans(vy) * lambda(iy,iy) * vy));
     } else {
       f = canonical_gaussian(x,
                              lambda(ix, ix),
                              eta(ix) - lambda(ix, iy)*vy,
-                             log_mult + inner_prod(eta(iy), vy)
-                             - 0.5*(vy * (lambda(iy,iy)*vy)));
+                             log_mult + dot(eta(iy), vy)
+                             - 0.5*as_scalar(vy * lambda(iy,iy) * vy));
     }
   } // restrict(f, r, r_vars, strict)
 
@@ -428,19 +428,21 @@ namespace sill {
 
   double canonical_gaussian::log_norm_constant() const {
     mat lambda_inv;
-    if (lambda.size() == 0)
+    if (lambda.is_empty())
       return 0;
-    bool result = inv(lambda, lambda_inv);
-    if (!result) {
-      if (lambda.size() < 16)
+    try {
+      lambda_inv = inv(lambda);
+    } catch(std::runtime_error& e) {
+      if (lambda.n_elem <= 16)
         std::cerr << "Lambda:\n" << lambda << std::endl;
       throw invalid_operation("Inversion of lambda matrix failed in canonical_gaussian::log_norm_constant.");
     }
-    return (-.5 * (eta.size() * std::log(2*pi())
-                   - logdet(lambda)
-                   + inner_prod(eta, lambda_inv.transpose() * eta)));
+    return (-0.5 * (eta.n_elem * std::log(2*pi())
+                    - log_det(lambda)
+                    + as_scalar(trans(eta) * trans(lambda_inv) * eta)));
+    // why trans(lambda_inv) ?
     /*
-    return (-.5 * (eta.size() * std::log(2*pi())
+    return (-.5 * (eta.n_elem * std::log(2*pi())
                    - logdet(lambda)
                    + inner_prod(eta, lambda * eta)));
     */
@@ -476,12 +478,12 @@ namespace sill {
   }
 
   double canonical_gaussian::entropy(double base) const {
-    size_t N(eta.size());
-    return (N + ((N*std::log(2. * pi()) - logdet(lambda)) / std::log(base)))/2.;
+    size_t N = eta.n_elem;
+    return (N + ((N*std::log(2.0 * pi()) - logdet(lambda)) / std::log(base)))/2.0;
   }
 
   double canonical_gaussian::entropy() const {
-    return entropy(std::exp(1.));
+    return entropy(e());
   }
 
   double canonical_gaussian::relative_entropy(const canonical_gaussian& q) const
@@ -513,29 +515,30 @@ namespace sill {
     check_supported(op, combine_ops);
     double sign = (op == product_op) ? 1 : -1;
     if (!includes(arguments(), x.arguments())) {
-      size_t n(eta.size());
-      for (vector_domain::const_iterator it(x.args.begin());
-           it != x.args.end(); ++it) {
-        vector_variable* v = *it;
-        if (args.insert(v).second) { // then variable was not yet in args
-          var_range[v] = irange(n, n + v->size());
-          n += v->size();
-          arg_list.push_back(v);
-        }
-      }
-      lambda.resize(n, n, true);
-      eta.resize(n, true);
-//      *this = combine(*this, x, op);
+//       size_t n(eta.n_elem);
+//       for (vector_domain::const_iterator it(x.args.begin());
+//            it != x.args.end(); ++it) {
+//         vector_variable* v = *it;
+//         if (args.insert(v).second) { // then variable was not yet in args
+//           var_range[v] = irange(n, n + v->size());
+//           n += v->size();
+//           arg_list.push_back(v);
+//         }
+//       }
+//       lambda.resize(n, n, true);
+//       eta.resize(n, true);
+      *this = combine(*this, x, op);
+      return *this;
     }
     uvec indx;
     indices(x.arg_list, indx);
     if (sign == 1) {
-      lambda.add_submatrix(indx, indx, x.lambda);
-      eta.add_subvector(indx, x.eta);
+      lambda(indx, indx) += x.lambda;
+      eta(indx) += x.eta;
       log_mult += x.log_mult;
     } else {
-      lambda.subtract_submatrix(indx, indx, x.lambda);
-      eta.subtract_subvector(indx, x.eta);
+      lambda(indx, indx) -= x.lambda;
+      eta(indx) -= x.eta;
       log_mult -= x.log_mult;
     }
     return *this;
@@ -559,7 +562,7 @@ namespace sill {
 //                 << "); adjusting." << std::endl;
       for(size_t i = 0; i < d.size(); i++) 
         d(i) = std::max(0.0, d(i));
-      mat new_lambda = v * diag(d) * v.transpose();
+      mat new_lambda = v * diagmat(d) * trans(v);
       eta += (new_lambda - lambda) * mean;
       lambda = new_lambda;
       return false;
@@ -574,12 +577,12 @@ namespace sill {
                                      canonical_gaussian& cg) const {
     check_supported(op, collapse_ops);
 
-    if (retain.size() == 0) {
+    if (retain.empty()) {
       cg.var_range.clear();
       cg.args.clear();
       cg.arg_list.clear();
-      cg.lambda.resize(0,0);
-      cg.eta.resize(0);
+      cg.lambda.set_size(0, 0);
+      cg.eta.set_size(0);
       if (renormalize)
         cg.log_mult = log_mult - log_norm_constant();
       return;
@@ -600,8 +603,8 @@ namespace sill {
         cg = *this;
       }
     } else {
-      uvec ix(indices(x));
-      uvec iy(indices(y));
+      uvec ix = indices(x);
+      uvec iy = indices(y);
       mat invyy_lamyx;
       bool info = ls_solve_chol(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
       if (!info) {
