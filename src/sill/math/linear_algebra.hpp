@@ -1,6 +1,8 @@
 #ifndef SILL_LINEAR_ALGEBRA_HPP
 #define SILL_LINEAR_ALGEBRA_HPP
 
+#warning "linear_algebra.hpp is deprecated"
+
 #include <itpp/base/algebra/cholesky.h>
 #include <itpp/itbase.h>
 

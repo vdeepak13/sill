@@ -1,6 +1,8 @@
 #ifndef SILL_VECTOR_HPP
 #define SILL_VECTOR_HPP
 
+#warning "sill/math/vector.hpp is deprecated"
+
 #include <functional>
 #include <ostream>
 #include <string>

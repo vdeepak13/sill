@@ -1,6 +1,8 @@
 #ifndef SILL_MATRIX_HPP
 #define SILL_MATRIX_HPP
 
+#warning "sill/math/matrix.hpp is deprecated"
+
 #include <functional>
 #include <string>
 

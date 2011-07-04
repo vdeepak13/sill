@@ -1,6 +1,8 @@
 #ifndef SILL_INDEX_RANGE_HPP
 #define SILL_INDEX_RANGE_HPP
 
+#warning "irange is deprecated; use span instead"
+
 #include <iostream>
 
 #include <sill/serialization/serialize.hpp>
