@@ -31,7 +31,7 @@ namespace sill {
     typedef vector<T>  dense_vector_type;
     typedef matrix<T>  dense_matrix_type;
 
-    typedef ivec  index_vector_type;
+    typedef uvec  index_vector_type;
 
   };
 
@@ -47,7 +47,7 @@ namespace sill {
     typedef vector<T>  dense_vector_type;
     typedef matrix<T>  dense_matrix_type;
 
-    typedef ivec  index_vector_type;
+    typedef uvec  index_vector_type;
 
   };
 

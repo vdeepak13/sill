@@ -654,10 +654,10 @@ namespace sill {
     bool fixed_records_;
 
     //! See fixed_records_; head_indices_ = indices of head_ in records.
-    ivec head_indices_;
+    uvec head_indices_;
 
     //! See fixed_records_; tail_indices_ = indices of tail_ in records.
-    ivec tail_indices_;
+    uvec tail_indices_;
 
     //! Temporary used to avoid reallocation for conditioning.
     //! If this CRF factor has no arguments (i.e., is a constant factor),
@@ -677,28 +677,28 @@ namespace sill {
     vector_var_vector Y_in_head_;
 
     //! Indices of ov.A for Y_in_head_.
-    ivec Y_in_head_ov_indices_;
+    uvec Y_in_head_ov_indices_;
 
     //! If relabeled = true,
     //! this stores vars for rows of ov.C corresponding to input arguments.
     vector_var_vector X_in_head_;
 
     //! Indices of ov.A for X_in_head_.
-    ivec X_in_head_ov_indices_;
+    uvec X_in_head_ov_indices_;
 
     //! If relabeled = true,
     //! this stores vars for cols of ov.C corresponding to output arguments.
     vector_var_vector Y_in_tail_;
 
     //! Cols of ov.C for Y_in_tail_.
-    ivec Y_in_tail_ov_indices_;
+    uvec Y_in_tail_ov_indices_;
 
     //! If relabeled = true,
     //! this stores vars for cols of ov.C corresponding to input arguments.
     vector_var_vector X_in_tail_;
 
     //! Cols of ov.C for X_in_tail_.
-    ivec X_in_tail_ov_indices_;
+    uvec X_in_tail_ov_indices_;
 
     //--------------------------------------------------------------------------
 
@@ -756,9 +756,9 @@ namespace sill {
     void reset_ov(const canonical_gaussian& cg) {
       if (head_.size() > 0) {
         if (tail_.size() > 0) {
-          ivec head_ind; // indices in cg for head
+          uvec head_ind; // indices in cg for head
           cg.indices(head_, head_ind);
-          ivec tail_ind; // indices in cg for tail
+          uvec tail_ind; // indices in cg for tail
           cg.indices(tail_, tail_ind);
           bool result = chol(cg.inf_matrix()(head_ind, head_ind), ov.A);
           if (!result) {

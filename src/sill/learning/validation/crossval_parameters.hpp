@@ -32,7 +32,7 @@ namespace sill {
 
     //! Number of regularization values to try in each dimension. (>= 1)
     //!  (default = 10)
-    ivec nvals;
+    uvec nvals;
 
     //! If true, iteratively try extra regularization values around
     //! the current best value for this many iterations.

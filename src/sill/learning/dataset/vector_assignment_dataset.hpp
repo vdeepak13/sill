@@ -402,7 +402,7 @@ namespace sill {
                                             const vector_var_vector& vars) {
     foreach(vector_variable* v, vars)
       assert(this->has_variable(v));
-    ivec vars_inds(vector_indices(vars));
+    uvec vars_inds(vector_indices(vars));
     assert(means.size() == vars_inds.size());
     assert(std_devs.size() == vars_inds.size());
     vec stddevs(std_devs);
@@ -427,7 +427,7 @@ namespace sill {
   vector_assignment_dataset<LA>::normalize2(const vector_var_vector& vars) {
     foreach(vector_variable* v, vars)
       assert(this->has_variable(v));
-    ivec vars_inds(vector_indices(vars));
+    uvec vars_inds(vector_indices(vars));
     for (size_t i(0); i < nrecords; ++i) {
       double normalizer(norm_2(vector_data[i](vars_inds)));
       if (normalizer == 0)

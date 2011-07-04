@@ -14,8 +14,8 @@ int main() {
   mat b = "1 3; 4 6";
   mat b2 = "-1 -2; -3 -4";
   mat a2 = "-1 2 -2; -3 5 -4; 7 8 9";
-  ivec i01 = "0 1";
-  ivec i02 = "0 2";
+  uvec i01 = "0 1";
+  uvec i02 = "0 2";
   
   assert(a(i01, i02) == b);
   a.set_submatrix(i01, i02, b2);

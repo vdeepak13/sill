@@ -10,7 +10,7 @@ int main() {
   vec b = "2 4";
   vec b2 = "-1 -3";
   vec a2 = "1 -1 3 -3 5";
-  ivec i = "1 3";
+  uvec i = "1 3";
   
   assert(a(i) == b);
   a.set_subvector(i, b2);

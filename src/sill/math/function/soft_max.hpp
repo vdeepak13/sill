@@ -39,7 +39,7 @@ namespace sill {
 
     /*
     //! Evaluates te function on an integer input
-    vec operator()(const ivec& x) const {
+    vec operator()(const uvec& x) const {
       vec y = exp(w*to_vec(x) + b);
       return y /= sum(y);
     }

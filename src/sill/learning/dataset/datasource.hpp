@@ -193,11 +193,11 @@ namespace sill {
 
     //! Returns the indices (in records) of the given vector variables.
     //! @todo Check to make sure this works with variables of length > 1.
-    ivec vector_indices(const vector_domain& vars) const;
+    uvec vector_indices(const vector_domain& vars) const;
 
     //! Returns the indices (in records) of the given vector variables.
     //! @todo Check to make sure this works with variables of length > 1.
-    ivec vector_indices(const vector_var_vector& vars) const;
+    uvec vector_indices(const vector_var_vector& vars) const;
 
     //! Mapping from finite variables to indices in finite component of record.
     const std::map<finite_variable*, size_t>& finite_numbering() const;

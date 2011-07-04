@@ -508,7 +508,7 @@ namespace sill {
     std::vector<size_t> vv_finite_var_indices;
 
     //! Indices of vector variables in view in original dataset's vector data
-    ivec vv_vector_var_indices;
+    uvec vv_vector_var_indices;
     //    std::vector<size_t> vv_vector_var_indices;
 
     // Protected data members: for binarizing finite variables
@@ -978,7 +978,7 @@ namespace sill {
     nrecords = record_indices.size();
     record_view = RECORD_INDICES;
     if (weighted) {
-      ivec tmp_ind(indices.size());
+      uvec tmp_ind(indices.size());
       for (size_t i = 0; i < indices.size(); ++i)
         tmp_ind[i] = indices[i];
       weights_ = weights_(tmp_ind);

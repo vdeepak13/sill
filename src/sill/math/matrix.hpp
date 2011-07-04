@@ -186,8 +186,8 @@ namespace sill {
 
     //! Returns a submatrix over rows \c i and columns \c j
     //! \todo This function is not very efficient yet
-    const matrix operator()(const itpp::ivec& i, 
-                            const itpp::ivec& j) const {
+    const matrix operator()(const itpp::uvec& i, 
+                            const itpp::uvec& j) const {
       itpp::Mat<T> a(i.size(), j.size());
       for(int k = 0; k < i.size(); k++)
         for(int l = 0; l < j.size(); l++)
@@ -209,7 +209,7 @@ namespace sill {
     }
 
     //! Returns the rows with indices \c i
-    const itpp::Mat<T> rows(const itpp::ivec& i) const {
+    const itpp::Mat<T> rows(const itpp::uvec& i) const {
       return base::get_rows(i);
     }
 
@@ -227,7 +227,7 @@ namespace sill {
     }
 
     //! Returns the columns with indices \c i
-    const itpp::Mat<T> columns(const itpp::ivec& i) const {
+    const itpp::Mat<T> columns(const itpp::uvec& i) const {
       return base::get_cols(i);
     }
 
@@ -323,7 +323,7 @@ namespace sill {
 
     //! Sets a submatrix with rows \c i and columns \c j
     //! \todo This function is not very efficient at the moment
-    void set_submatrix(const itpp::ivec& i, const itpp::ivec& j, 
+    void set_submatrix(const itpp::uvec& i, const itpp::uvec& j, 
                        const itpp::Mat<T>& m) {
       assert(i.size() == m.rows());
       assert(j.size() == m.cols());
@@ -333,7 +333,7 @@ namespace sill {
     }
 
     //! Sets a submatrix with rows \c i and columns \c j to a constant
-    void set_submatrix(const itpp::ivec& i, const itpp::ivec& j, T value) {
+    void set_submatrix(const itpp::uvec& i, const itpp::uvec& j, T value) {
       for(size_t k = 0; k < i.size(); k++)
         for(size_t l = 0; l < j.size(); l++)
           base::set(i(k), j(l), value);
@@ -447,7 +447,7 @@ namespace sill {
      * \todo this function is not very efficient at the moment.
      */
     template <typename F>
-    void update_submatrix(const itpp::ivec& i, const itpp::ivec& j,
+    void update_submatrix(const itpp::uvec& i, const itpp::uvec& j,
                           const itpp::Mat<T>& a, F f) {
       concept_assert((BinaryFunction<F, T, T, T>));
       assert(i.size() == a.rows());
@@ -467,7 +467,7 @@ namespace sill {
      * \todo this function is not very efficient at the moment.
      */
     template <typename F>
-    void update_submatrix(irange i, const itpp::ivec& j,
+    void update_submatrix(irange i, const itpp::uvec& j,
                           const itpp::Mat<T>& a, F f) {
       concept_assert((BinaryFunction<F, T, T, T>));
       assert(i.size() == (size_t)(a.rows()));
@@ -587,13 +587,13 @@ namespace sill {
     }
 
     //! Adds to a submatrix (i, j)
-    void add_submatrix(const itpp::ivec& i, const itpp::ivec& j, 
+    void add_submatrix(const itpp::uvec& i, const itpp::uvec& j, 
                        const itpp::Mat<T>& m) {
       update_submatrix(i, j, m, std::plus<T>());
     }
 
     //! Adds to a submatrix (i, j)
-    void add_submatrix(irange i, const itpp::ivec& j, const itpp::Mat<T>& m) {
+    void add_submatrix(irange i, const itpp::uvec& j, const itpp::Mat<T>& m) {
       update_submatrix(i, j, m, std::plus<T>());
     }
 
@@ -603,13 +603,13 @@ namespace sill {
     }
 
     //! Subtracts from a submatrix (i, j)
-    void subtract_submatrix(const itpp::ivec& i, const itpp::ivec& j, 
+    void subtract_submatrix(const itpp::uvec& i, const itpp::uvec& j, 
                             const itpp::Mat<T>& m) {
       update_submatrix(i, j, m, std::minus<T>());
     }
 
     //! Subtracts from a submatrix (i, j)
-    void subtract_submatrix(irange i, const itpp::ivec& j,
+    void subtract_submatrix(irange i, const itpp::uvec& j,
                             const itpp::Mat<T>& m) {
       update_submatrix(i, j, m, std::minus<T>());
     }
@@ -620,7 +620,7 @@ namespace sill {
     }
 
     //! Divides a submatrix (i, j) element-wise
-    void divide_submatrix(const itpp::ivec& i, const itpp::ivec& j, 
+    void divide_submatrix(const itpp::uvec& i, const itpp::uvec& j, 
                           const itpp::Mat<T>& m) {
       update_submatrix(i, j, m, std::divides<T>());
     }

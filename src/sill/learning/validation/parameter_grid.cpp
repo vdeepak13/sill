@@ -8,12 +8,12 @@ namespace sill {
   std::vector<vec>
   create_parameter_grid(const vec& minvals, const vec& maxvals, size_t k,
                         bool log_scale, bool inclusive) {
-    ivec tmpk(maxvals.size(), k);
+    uvec tmpk(maxvals.size(), k);
     return create_parameter_grid(minvals, maxvals, tmpk, log_scale, inclusive);
   }
 
   std::vector<vec>
-  create_parameter_grid(const vec& minvals, const vec& maxvals, const ivec& k,
+  create_parameter_grid(const vec& minvals, const vec& maxvals, const uvec& k,
                         bool log_scale, bool inclusive) {
     assert(minvals.size() == maxvals.size());
     assert(maxvals.size() == k.size());
@@ -99,14 +99,14 @@ namespace sill {
   std::vector<vec>
   create_parameter_grid_alt(const vec& minvals, const vec& maxvals, size_t k,
                             bool log_scale, bool inclusive) {
-    ivec tmpk(maxvals.size(), k);
+    uvec tmpk(maxvals.size(), k);
     return create_parameter_grid_alt(minvals, maxvals, tmpk, log_scale,
                                      inclusive);
   }
 
   std::vector<vec>
   create_parameter_grid_alt(const vec& minvals, const vec& maxvals,
-                            const ivec& k,
+                            const uvec& k,
                             bool log_scale, bool inclusive) {
     assert(minvals.size() == maxvals.size());
     assert(maxvals.size() == k.size());
@@ -183,13 +183,13 @@ namespace sill {
   std::vector<vec>
   zoom_parameter_grid(const std::vector<vec>& oldgrid, const vec& val,
                       size_t k, bool log_scale) {
-    ivec tmpk(val.size(), k);
+    uvec tmpk(val.size(), k);
     return zoom_parameter_grid(oldgrid, val, tmpk, log_scale);
   }
 
   std::vector<vec>
   zoom_parameter_grid(const std::vector<vec>& oldgrid, const vec& val,
-                      const ivec& k, bool log_scale) {
+                      const uvec& k, bool log_scale) {
     assert(oldgrid.size() > 0);
     size_t n(val.size());
     // Find bounding box.
@@ -273,13 +273,13 @@ namespace sill {
   std::vector<vec>
   zoom_parameter_grid_alt(const std::vector<vec>& oldgrid, const vec& val,
                           size_t k, bool log_scale) {
-    ivec tmpk(val.size(), k);
+    uvec tmpk(val.size(), k);
     return zoom_parameter_grid_alt(oldgrid, val, tmpk, log_scale);
   }
 
   std::vector<vec>
   zoom_parameter_grid_alt(const std::vector<vec>& oldgrid, const vec& val,
-                          const ivec& k, bool log_scale) {
+                          const uvec& k, bool log_scale) {
     size_t n(val.size());
     // Find bounding box.
     vec minvals(n, -std::numeric_limits<double>::max());

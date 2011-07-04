@@ -19,7 +19,7 @@ namespace sill {
                           double XXstrengthD, double strength_baseD,
                           double YYstrengthS, double YXstrengthS,
                           double XXstrengthS, double strength_baseS,
-                          ivec factor_periods, bool add_cross_factors,
+                          uvec factor_periods, bool add_cross_factors,
                           unsigned random_seed) {
 
     if ((factor_choice == "random") || (factor_choice == "random_assoc")) {
@@ -219,7 +219,7 @@ namespace sill {
     return create_fancy_random_crf
       (Xmodel, YgivenXmodel, n, arity, u, model_structure, true, factor_choice,
        YYstrength, YXstrength, XXstrength, strength_base, 0, 0, 0, 0,
-       ivec(3,std::numeric_limits<int>::max()-10),
+       uvec(3,std::numeric_limits<int>::max()-10),
        add_cross_factors, random_seed);
   } // end of create_random_crf()
 

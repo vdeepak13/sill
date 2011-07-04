@@ -88,8 +88,8 @@ namespace sill {
   void
   vector_indices_relative_to_set(const vector_var_vector& vvec,
                                  const vector_domain& vset,
-                                 ivec& in_vset_indices,
-                                 ivec& notin_vset_indices);
+                                 uvec& in_vset_indices,
+                                 uvec& notin_vset_indices);
 
 }; // namespace sill
 

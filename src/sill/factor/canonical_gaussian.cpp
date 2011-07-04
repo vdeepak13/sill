@@ -207,12 +207,12 @@ namespace sill {
   }
 
   mat canonical_gaussian::inf_matrix(const vector_var_vector& args) const {
-    ivec ind(indices(args));
+    uvec ind(indices(args));
     return lambda(ind, ind);
   }
 
   vec canonical_gaussian::inf_vector(const vector_var_vector& args) const {
-    ivec ind(this->indices(args));
+    uvec ind(this->indices(args));
     return eta(ind);
   }
 
@@ -313,8 +313,8 @@ namespace sill {
     // we can simply return a copy of the factor
     if (y.size() == 0) return *this;
 
-    ivec ix = indices(x);
-    ivec iy = indices(y);
+    uvec ix = indices(x);
+    uvec iy = indices(y);
     vec vy = sill::concat(values(a, y));
     assert(vy.size()==iy.size());
 
@@ -366,8 +366,8 @@ namespace sill {
       return;
     }
 
-    ivec ix = indices(x);
-    ivec iy = indices(y);
+    uvec ix = indices(x);
+    uvec iy = indices(y);
     vec vy;
     r.vector_values(vy, y);
     assert(vy.size()==iy.size());
@@ -527,7 +527,7 @@ namespace sill {
       eta.resize(n, true);
 //      *this = combine(*this, x, op);
     }
-    ivec indx;
+    uvec indx;
     indices(x.arg_list, indx);
     if (sign == 1) {
       lambda.add_submatrix(indx, indx, x.lambda);
@@ -600,8 +600,8 @@ namespace sill {
         cg = *this;
       }
     } else {
-      ivec ix(indices(x));
-      ivec iy(indices(y));
+      uvec ix(indices(x));
+      uvec iy(indices(y));
       mat invyy_lamyx;
       bool info = ls_solve_chol(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
       if (!info) {
@@ -646,8 +646,8 @@ namespace sill {
 
     vector_domain args = set_union(x.arguments(), y.arguments());
     canonical_gaussian result(args, 0);
-    ivec indx = result.indices(x.arg_list);
-    ivec indy = result.indices(y.arg_list);
+    uvec indx = result.indices(x.arg_list);
+    uvec indy = result.indices(y.arg_list);
 
     result.lambda.set_submatrix(indx, indx, x.lambda);
     result.lambda.add_submatrix(indy, indy, sign*y.lambda);

@@ -7,7 +7,7 @@
 namespace sill {
 
   //! Evaluates the function on a discrete input
-  double logistic_discrete::operator()(const ivec& x) const {
+  double logistic_discrete::operator()(const uvec& x) const {
     assert(x.size() == w.n_rows);
     double arg = b;
     for(size_t i = 0; i < x.size(); i++) {
@@ -17,7 +17,7 @@ namespace sill {
     return 1.0 / (1 + std::exp(-arg));
   }
 
-  double logistic_discrete::operator()(const ivec& x, const vec& u) const {
+  double logistic_discrete::operator()(const uvec& x, const vec& u) const {
     assert(x.size() == w.n_rows);
     double arg = b;
     for(size_t i = 0; i < x.size(); i++) {

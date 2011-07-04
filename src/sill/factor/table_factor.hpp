@@ -571,7 +571,7 @@ namespace sill {
      *                    pre-allocated.
      */
     void restrict_other(const finite_record& r,
-                        const ivec& r_indices,
+                        const uvec& r_indices,
                         finite_variable* retain_v,
                         table_factor& f) const;
 
@@ -808,7 +808,7 @@ namespace sill {
      * the same variable ordering many times.
      */
     void set_record_indices(const finite_record& r,
-                            ivec& r_indices) const;
+                            uvec& r_indices) const;
 
     // Combine and collapse operations
     //==========================================================================
@@ -964,7 +964,7 @@ namespace sill {
 
       restrict_map_except_functor(const finite_var_vector& vars,
                                   const finite_record& r,
-                                  const ivec& r_indices,
+                                  const uvec& r_indices,
                                   finite_variable* except_v)
         : vars(&vars), r(&r), r_indices(&r_indices), except_v(except_v) {
         assert(except_v);
@@ -989,7 +989,7 @@ namespace sill {
     private:
       const finite_var_vector* vars;
       const finite_record* r;
-      const ivec* r_indices;
+      const uvec* r_indices;
       finite_variable* except_v;
     }; // struct restrict_map_except_functor
 

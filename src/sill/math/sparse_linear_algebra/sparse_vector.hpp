@@ -36,7 +36,7 @@ namespace sill {
     typedef const size_type*  const_index_iterator;
     typedef size_type*        index_iterator;
 
-    typedef ivec              index_vector_type;
+    typedef uvec              index_vector_type;
 
     // Constructors
     //==========================================================================

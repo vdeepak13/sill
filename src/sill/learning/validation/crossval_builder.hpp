@@ -28,7 +28,7 @@ namespace sill {
 
     vec maxvals;
 
-    ivec nvals;
+    uvec nvals;
 
     size_t zoom;
 

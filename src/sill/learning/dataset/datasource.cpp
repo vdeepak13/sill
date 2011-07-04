@@ -304,8 +304,8 @@ namespace sill {
     return safe_get(*vector_numbering_ptr_, v);
   }
 
-  ivec datasource::vector_indices(const vector_domain& vars) const {
-    ivec vars_inds(vector_size(vars));
+  uvec datasource::vector_indices(const vector_domain& vars) const {
+    uvec vars_inds(vector_size(vars));
     size_t k(0);
     foreach(vector_variable* v, vars) {
       for (size_t j2(0); j2 < v->size(); ++j2) {
@@ -316,8 +316,8 @@ namespace sill {
     return vars_inds;
   }
 
-  ivec datasource::vector_indices(const vector_var_vector& vars) const {
-    ivec vars_inds(vector_size(vars));
+  uvec datasource::vector_indices(const vector_var_vector& vars) const {
+    uvec vars_inds(vector_size(vars));
     size_t k(0);
     foreach(vector_variable* v, vars) {
       for (size_t j2(0); j2 < v->size(); ++j2) {

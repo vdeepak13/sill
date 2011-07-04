@@ -145,8 +145,8 @@ namespace sill {
   bool moment_gaussian::operator==(const moment_gaussian& other) const {
     if (arguments() != other.arguments()) return false;
     // FIXME: need to check head and tail separately
-    ivec indh = other.indices(head_list);
-    ivec indt = other.indices(tail_list);
+    uvec indh = other.indices(head_list);
+    uvec indt = other.indices(tail_list);
     return cmean == other.cmean(indh) &&
       cov == other.cov(indh, indh) &&
       coeff == other.coeff(indh, indt) &&
@@ -224,8 +224,8 @@ namespace sill {
     vector_domain new_head =
       set_intersect(retain,vector_domain(head_list.begin(), head_list.end()));
     vector_var_vector new_head_list = make_vector(new_head);
-    ivec ih = indices(new_head_list);
-    ivec it = indices(tail_list);
+    uvec ih = indices(new_head_list);
+    uvec it = indices(tail_list);
 
     return moment_gaussian(new_head_list, cmean(ih), cov(ih, ih),
                            tail_list, coeff(ih, it), likelihood);
@@ -257,7 +257,7 @@ namespace sill {
     // Handle the tail first.
     vec new_cmean(cmean);
     mat new_coeff;
-    ivec new_tail_ind;
+    uvec new_tail_ind;
     this->indices(new_tail, new_tail_ind, true);
     if (r_tail.size() == 0) {
       new_coeff = coeff;
@@ -267,7 +267,7 @@ namespace sill {
         new_cmean += coeff * v_tail;
       } else {
         new_coeff = coeff.columns(new_tail_ind);
-        ivec r_tail_ind;
+        uvec r_tail_ind;
         this->indices(r_tail, r_tail_ind, true);
         vec r_tail_vals(sill::concat(values(a, r_tail)));
         new_cmean += coeff.columns(r_tail_ind) * r_tail_vals;
@@ -284,8 +284,8 @@ namespace sill {
     }
 
     // Now handle the head.
-    ivec iH(indices(H)); // new head indices
-    ivec ih(indices(h)); // restricted head indices
+    uvec iH(indices(H)); // new head indices
+    uvec ih(indices(h)); // restricted head indices
     vec dh(sill::concat(values(a, h)));
     dh -= new_cmean(ih);
     mat invhh_covhH;
@@ -321,7 +321,7 @@ namespace sill {
   moment_gaussian::add_parameters(const moment_gaussian& f, double w) {
     assert(arguments() == f.arguments());
     assert(marginal() && f.marginal());
-    ivec ind = indices(f.head_list);
+    uvec ind = indices(f.head_list);
     cmean += w * f.cmean(ind);
     cov += w * f.cov(ind, ind);
     likelihood += w * f.likelihood;
@@ -365,8 +365,8 @@ namespace sill {
         (std::string("moment_gaussian::conditional()") +
          " given set B with variables not in the factor");
     }
-    ivec ia(indices(new_head));
-    ivec ib(indices(new_tail));
+    uvec ia(indices(new_head));
+    uvec ib(indices(new_tail));
     mat cov_ab_cov_b_inv;
     bool result = ls_solve_chol(cov(ib,ib), cov(ib,ia), cov_ab_cov_b_inv);
     if (!result) {
@@ -410,12 +410,12 @@ namespace sill {
       throw std::runtime_error
         ("moment_gaussian::mutual_information() called with variables not in the factor arguments.");
     // I(d1; d2) = H(d1) + H(d2) - H(d1,d2)
-    ivec i1(indices(d1));
-    ivec i2(indices(d2));
+    uvec i1(indices(d1));
+    uvec i2(indices(d2));
     if (args.size() == d1.size() + d2.size()) {
       return ((logdet(cov(i1,i1)) + logdet(cov(i2,i2)) - logdet(cov)) / 2.);
     } else {
-      ivec i12(indices(set_union(d1,d2)));
+      uvec i12(indices(set_union(d1,d2)));
       return ((logdet(cov(i1,i1)) + logdet(cov(i2,i2)) - logdet(cov(i12,i12)))
               /2.);
     }
@@ -430,10 +430,10 @@ namespace sill {
     assert(x.marginal());
     vector_domain args = set_union(x.arguments(), y.arguments());
     moment_gaussian result(args, x.likelihood * y.likelihood);
-    ivec xh = result.indices(x.head_list);
-    ivec yh = result.indices(y.head_list);
-    ivec x_yt  = x.indices(y.tail_list);
-    ivec x_all = x.indices(x.head_list);
+    uvec xh = result.indices(x.head_list);
+    uvec yh = result.indices(y.head_list);
+    uvec x_yt  = x.indices(y.tail_list);
+    uvec x_all = x.indices(x.head_list);
     result.cmean.set_subvector(xh, x.cmean);
     result.cmean.set_subvector(yh, y.coeff * x.cmean(x_yt) + y.cmean);
     mat covyx = y.coeff * x.cov(x_yt, x_all);

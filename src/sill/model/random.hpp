@@ -540,7 +540,7 @@ namespace sill {
                           double XXstrengthD, double strength_baseD,
                           double YYstrengthS, double YXstrengthS,
                           double XXstrengthS, double strength_baseS,
-                          ivec factor_periods, bool add_cross_factors,
+                          uvec factor_periods, bool add_cross_factors,
                           unsigned random_seed);
 
   /**

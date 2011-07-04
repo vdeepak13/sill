@@ -95,8 +95,8 @@ namespace sill {
     }
 
     //! Returns an array of indices for the given list of variables
-    ivec indices(const vector_var_vector& vars) const {
-      ivec ind;
+    uvec indices(const vector_var_vector& vars) const {
+      uvec ind;
       indices(vars, ind);
       return ind;
     }
@@ -105,7 +105,7 @@ namespace sill {
     //! @param strict  If true, require that this factor include all of vars.
     //!                (default = true)
     void
-    indices(const vector_var_vector& vars, ivec& ind, bool strict = true) const{
+    indices(const vector_var_vector& vars, uvec& ind, bool strict = true) const{
       size_t n = 0;
       if (strict) {
         n = vector_size(vars);
@@ -137,8 +137,8 @@ namespace sill {
     }
 
     //! Returns an array of indices for the given set of variables.
-    ivec indices(const vector_domain& vars) const {
-      ivec ind;
+    uvec indices(const vector_domain& vars) const {
+      uvec ind;
       indices(vars, ind);
       return ind;
     }
@@ -147,7 +147,7 @@ namespace sill {
     //! @param strict  If true, require that this factor include all of vars.
     //!                (default = true)
     void
-    indices(const vector_domain& vars, ivec& ind, bool strict = true) const {
+    indices(const vector_domain& vars, uvec& ind, bool strict = true) const {
       size_t n = 0;
       if (strict) {
         n = vector_size(vars);

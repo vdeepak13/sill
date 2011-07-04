@@ -333,10 +333,10 @@ namespace sill {
         assert(false);
       }
     }
-    Y_in_head_ov_indices_ = ivec(Y_in_head_ov_indices_tmp);
-    Y_in_tail_ov_indices_ = ivec(Y_in_tail_ov_indices_tmp);
-    X_in_head_ov_indices_ = ivec(X_in_head_ov_indices_tmp);
-    X_in_tail_ov_indices_ = ivec(X_in_tail_ov_indices_tmp);
+    Y_in_head_ov_indices_ = uvec(Y_in_head_ov_indices_tmp);
+    Y_in_tail_ov_indices_ = uvec(Y_in_tail_ov_indices_tmp);
+    X_in_head_ov_indices_ = uvec(X_in_head_ov_indices_tmp);
+    X_in_tail_ov_indices_ = uvec(X_in_tail_ov_indices_tmp);
 
     Ydomain_.clear();
     Ydomain_.insert(Y_in_head_.begin(), Y_in_head_.end());
@@ -557,12 +557,12 @@ namespace sill {
     vector_domain YX_part(Y_part);
     YX_part.insert(X_part.begin(), X_part.end());
 
-    ivec head_part_indices; // head vars in Y/X_part
-    ivec head_retain_indices; // head vars not in Y/X_part
+    uvec head_part_indices; // head vars in Y/X_part
+    uvec head_retain_indices; // head vars not in Y/X_part
     vector_indices_relative_to_set
       (head_, YX_part, head_part_indices, head_retain_indices);
-    ivec tail_part_indices; // tail vars in Y/X_part
-    ivec tail_retain_indices; // tail vars not in Y/X_part
+    uvec tail_part_indices; // tail vars in Y/X_part
+    uvec tail_retain_indices; // tail vars not in Y/X_part
     vector_indices_relative_to_set
       (tail_, YX_part, tail_part_indices, tail_retain_indices);
 

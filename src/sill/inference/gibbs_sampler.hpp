@@ -183,7 +183,7 @@ namespace sill {
 
     //! r_numberings[index in factor_ptrs]
     //!   = indices in r for factor's arguments (in the factor's natural order)
-    std::vector<ivec> r_numberings;
+    std::vector<uvec> r_numberings;
 
     //! Returns the index of the next variable to update.
     virtual size_t next_variable() = 0;

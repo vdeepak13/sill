@@ -17,7 +17,7 @@ namespace sill {
    *
    * \ingroup math_functions
    */
-  class logistic_discrete : public std::unary_function<const ivec&, double> {
+  class logistic_discrete : public std::unary_function<const uvec&, double> {
 
   private:
     //! The weights
@@ -41,11 +41,11 @@ namespace sill {
     }
 
     //! Evaluates the function on a discrete input
-    double operator()(const ivec& x) const;
+    double operator()(const uvec& x) const;
 
     //! Evaluates the function on a discrete input, 
     //! where each input variable \c i is weighted by \c u[i]
-    double operator()(const ivec& x, const vec& u) const;
+    double operator()(const uvec& x, const vec& u) const;
 
     //! Evaluates the function on a weighted matrix
     double operator()(const mat& x) const;

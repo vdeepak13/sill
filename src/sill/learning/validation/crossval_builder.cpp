@@ -27,7 +27,7 @@ namespace sill {
        po::value<vec>(&maxvals)->default_value(vec(1,100)),
        "Maximum values for factor regularization parameters. (>= 0)")
       ("nvals",
-       po::value<ivec>(&nvals)->default_value(ivec(1,10)),
+       po::value<uvec>(&nvals)->default_value(uvec(1,10)),
        "Number of factor regularization values to try in each dimension. (>= 1)")
       ("zoom",
        po::value<size_t>(&zoom)->default_value(0),

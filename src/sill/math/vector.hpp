@@ -198,7 +198,7 @@ namespace sill {
     }
 
     //! Returns a sub-vector with indices given by \c i
-    const itpp::Vec<T> operator()(const itpp::ivec& i) const {
+    const itpp::Vec<T> operator()(const itpp::uvec& i) const {
       return base::operator()(i);
     }
 
@@ -357,14 +357,14 @@ namespace sill {
     }
 
     //! Sets a subvector to a vector
-    void set_subvector(const itpp::ivec& i, const itpp::Vec<T>& v) {
+    void set_subvector(const itpp::uvec& i, const itpp::Vec<T>& v) {
       assert(i.size() == v.size());
       for(int k = 0; k < i.size(); k++)
         base::set(i(k), v(k));
     }
 
     //! Sets a subvector to a vector
-    void set_subvector(const itpp::ivec& i, T value) {
+    void set_subvector(const itpp::uvec& i, T value) {
       for(size_t k = 0; k < i.size(); k++)
         base::set(i(k), value);
     }
@@ -428,7 +428,7 @@ namespace sill {
 
     //! Updates a subvector with the specified binary function
     template <typename F>
-    void update_subvector(const itpp::ivec i, const itpp::Vec<T>& v, F f) {
+    void update_subvector(const itpp::uvec i, const itpp::Vec<T>& v, F f) {
       concept_assert((BinaryFunction<F, T, T, T>));
       assert(i.size() == v.size());
       for(int k = 0; k < v.size(); k++)
@@ -484,7 +484,7 @@ namespace sill {
     }
 
     //! Adds to a subvector of this vector
-    void add_subvector(const itpp::ivec& i, const itpp::Vec<T>& v) {
+    void add_subvector(const itpp::uvec& i, const itpp::Vec<T>& v) {
       update_subvector(i, v, std::plus<T>());
     }
 
@@ -494,7 +494,7 @@ namespace sill {
     }
 
     //! Subtracts from a subvector of this vector
-    void subtract_subvector(const itpp::ivec& i, const itpp::Vec<T>& v) {
+    void subtract_subvector(const itpp::uvec& i, const itpp::Vec<T>& v) {
       update_subvector(i, v, std::minus<T>());
     }
 
@@ -506,7 +506,7 @@ namespace sill {
 
     //! Multiplies a subvector of this vector element-wise
     //! \todo Fix the name?
-    void multiply_subvector(const itpp::ivec& i, const itpp::Vec<T>& v) {
+    void multiply_subvector(const itpp::uvec& i, const itpp::Vec<T>& v) {
       update_subvector(i, v, std::multiplies<T>());
     }
 
@@ -516,7 +516,7 @@ namespace sill {
     }
 
     //! Divides a subvector of this vector element-wise
-    void divide_subvector(const itpp::ivec& i, const itpp::Vec<T>& v) {
+    void divide_subvector(const itpp::uvec& i, const itpp::Vec<T>& v) {
       update_subvector(i, v, std::divides<T>());
     }
 
@@ -689,7 +689,7 @@ namespace sill {
   typedef vector<std::complex<double> > cvec;
 
   //! \relates vector
-  typedef vector<int> ivec;
+  typedef vector<int> uvec;
 
   //! \relates vector
   typedef vector<short> svec;

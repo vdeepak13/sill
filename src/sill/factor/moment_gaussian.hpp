@@ -210,7 +210,7 @@ namespace sill {
 
     //! Returns the mean over a subset of variables in the given order
     vec mean(const vector_var_vector& vars) const {
-      ivec ind = indices(vars);
+      uvec ind = indices(vars);
       return cmean(ind);
     }
 
@@ -221,7 +221,7 @@ namespace sill {
 
     //! Returns the covariance of a subset of variables in the given order
     mat covariance(const vector_var_vector& vars) const {
-      ivec ind = indices(vars);
+      uvec ind = indices(vars);
       return cov(ind, ind);
     }
 
@@ -233,7 +233,7 @@ namespace sill {
     //! Returns the diagonal of the covariance for a subset of variables
     //! in the given order
     vec covariance_diag(const vector_var_vector& vars) const {
-      ivec ind(indices(vars));
+      uvec ind(indices(vars));
       vec tmpvec(diag(cov));
       return tmpvec(ind);
     }
@@ -242,8 +242,8 @@ namespace sill {
     //!  cov(vars1, vars2)
     mat covariance(const vector_var_vector& vars1,
                    const vector_var_vector& vars2) const {
-      ivec ind1(indices(vars1));
-      ivec ind2(indices(vars2));
+      uvec ind1(indices(vars1));
+      uvec ind2(indices(vars2));
       return cov(ind1, ind2);
     }
 

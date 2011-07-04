@@ -41,7 +41,7 @@ namespace sill {
    * @return  constructed grid, in the form of a list of grid points
    */
   std::vector<vec>
-  create_parameter_grid(const vec& minvals, const vec& maxvals, const ivec& k,
+  create_parameter_grid(const vec& minvals, const vec& maxvals, const uvec& k,
                         bool log_scale, bool inclusive = true);
 
   /**
@@ -93,7 +93,7 @@ namespace sill {
    */
   std::vector<vec>
   create_parameter_grid_alt(const vec& minvals, const vec& maxvals,
-                            const ivec& k,
+                            const uvec& k,
                             bool log_scale, bool inclusive = true);
 
   /**
@@ -140,7 +140,7 @@ namespace sill {
    */
   std::vector<vec>
   zoom_parameter_grid(const std::vector<vec>& oldgrid, const vec& val,
-                      const ivec& k, bool log_scale);
+                      const uvec& k, bool log_scale);
 
   /**
    * Given an old grid of parameters and a value in it,
@@ -175,7 +175,7 @@ namespace sill {
    */
   std::vector<vec>
   zoom_parameter_grid_alt(const std::vector<vec>& oldgrid, const vec& val,
-                          const ivec& k, bool log_scale);
+                          const uvec& k, bool log_scale);
 
 } // namespace sill
 

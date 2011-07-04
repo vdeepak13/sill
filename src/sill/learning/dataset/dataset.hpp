@@ -1031,7 +1031,7 @@ namespace sill {
     vec means(vector_size(vars), 0);
     vec std_devs(vector_size(vars), 0);
     value_type total_ds_weight(0);
-    ivec vars_inds(vector_indices(vars));
+    uvec vars_inds(vector_indices(vars));
     for (size_t i = 0; i < nrecords; ++i) {
       for (size_t j = 0; j < vars_inds.size(); ++j) {
         size_t j2(vars_inds[j]);
