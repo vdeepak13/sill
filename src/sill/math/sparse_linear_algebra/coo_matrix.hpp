@@ -2,8 +2,7 @@
 #ifndef _SILL_COO_MATRIX_HPP_
 #define _SILL_COO_MATRIX_HPP_
 
-#include <sill/math/vector.hpp>
-
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/sparse_linear_algebra/coo_matrix_view.hpp>
 #include <sill/math/sparse_linear_algebra/csc_matrix.hpp>
 #include <sill/math/sparse_linear_algebra/sparse_vector.hpp>
@@ -72,7 +71,7 @@ namespace sill {
     //! Constructor from another type.
     template <typename OtherT, typename OtherSizeType>
     explicit coo_matrix(const coo_matrix<OtherT,OtherSizeType>& other)
-      : base(other.num_rows(), other.num_cols()), k_(other.num_non_zeros()),
+      : base(other.n_rows(), other.n_cols()), k_(other.num_non_zeros()),
         row_indices_(other.row_indices()), col_indices_(other.col_indices()),
         values_(other.values()) {
     }
@@ -80,7 +79,7 @@ namespace sill {
     //! Constructor from another type.
     template <typename OtherT, typename OtherSizeType>
     explicit coo_matrix(const csc_matrix<OtherT,OtherSizeType>& other)
-      : base(other.num_rows(), other.num_cols()), k_(other.num_non_zeros()),
+      : base(other.n_rows(), other.n_cols()), k_(other.num_non_zeros()),
         row_indices_(k_), col_indices_(k_), values_(k_) {
       this->operator=(other);
     }
@@ -94,7 +93,7 @@ namespace sill {
       col_indices_.resize(k_);
       values_.resize(k_);
       size_type l(0);
-      for (size_type j(0); j < other.num_cols(); ++j) {
+      for (size_type j(0); j < other.n_cols(); ++j) {
         const sparse_vector_view<OtherT,OtherSizeType>
           other_col_j(other.column(j));
         for (size_type i(0); i < other_col_j.num_non_zeros(); ++i) {
@@ -123,9 +122,9 @@ namespace sill {
     // Getters and setters: dimensions
     //==========================================================================
 
-    using base::num_cols;
+    using base::n_cols;
     using base::size1;
-    using base::num_rows;
+    using base::n_rows;
     using base::size2;
     using base::size;
 
@@ -175,7 +174,7 @@ namespace sill {
         return;
       if (cap > m_ * n_)
         throw std::invalid_argument
-          ("coo_matrix::reserve() was given capacity > num_rows * num_cols.");
+          ("coo_matrix::reserve() was given capacity > n_rows * n_cols.");
       resize_data(cap, true);
     }
 
@@ -244,32 +243,32 @@ namespace sill {
     }
 
     //! Row indices.
-    vector<size_type>& row_indices() {
+    arma::Col<size_type>& row_indices() {
       return row_indices_;
     }
 
     //! Column indices.
-    vector<size_type>& col_indices() {
+    arma::Col<size_type>& col_indices() {
       return col_indices_;
     }
 
     //! Values.
-    vector<value_type>& values() {
+    arma::Col<value_type>& values() {
       return values_;
     }
 
     //! Row indices.
-    const vector<size_type>& row_indices() const {
+    const arma::Col<size_type>& row_indices() const {
       return row_indices_;
     }
 
     //! Column indices.
-    const vector<size_type>& col_indices() const {
+    const arma::Col<size_type>& col_indices() const {
       return col_indices_;
     }
 
     //! Values.
-    const vector<value_type>& values() const {
+    const arma::Col<value_type>& values() const {
       return values_;
     }
 
@@ -292,8 +291,8 @@ namespace sill {
     }
 
     //! Return a vector of the number of non-zeros in each column.
-    vector<size_type> non_zeros_per_column() const {
-      vector<size_type> sizes(num_cols(), 0);
+    arma::Col<size_type> non_zeros_per_column() const {
+      arma::Col<size_type> sizes(n_cols(), 0);
       for (size_type k(0); k < num_non_zeros(); ++k)
         ++sizes[col_index(k)];
       return sizes;
@@ -312,8 +311,8 @@ namespace sill {
      * Permute the columns of this matrix.
      * @param perm  Permutation: perm[i] = new column index for column i
      */
-    void permute_columns(const vector<size_type>& perm) {
-      if (perm.size() != num_cols()) {
+    void permute_columns(const arma::Col<size_type>& perm) {
+      if (perm.size() != n_cols()) {
         throw std::runtime_error
           (std::string("coo_matrix<T>::permute_columns(perm)") +
            " was given a permutation of an incorrect size.");
@@ -330,8 +329,8 @@ namespace sill {
      * This shifts the indices of other columns as necessary.
      * @return vector[i] = new column index for original column i
      */
-    vector<size_type> remove_all_zero_cols() {
-      vector<size_type> col_sizes(non_zeros_per_column());
+    arma::Col<size_type> remove_all_zero_cols() {
+      arma::Col<size_type> col_sizes(non_zeros_per_column());
       if (col_sizes.size() == 0)
         return col_sizes;
       // TO DO: Replace the below code with a prescan call.
@@ -343,7 +342,7 @@ namespace sill {
         carry = next_carry;
       }
       permute_columns(col_sizes);
-      unsafe_set_mnk(num_rows(), col_sizes.last() + carry, num_non_zeros());
+      unsafe_set_mnk(n_rows(), col_sizes.last() + carry, num_non_zeros());
       return col_sizes;
     }
 
@@ -388,9 +387,9 @@ namespace sill {
      * This does not currently check bounds for the given indices.
      */
     void reset_nocopy(size_type m, size_type n,
-                      vector<size_type>& new_row_indices,
-                      vector<size_type>& new_col_indices,
-                      vector<value_type>& new_values) {
+                      arma::Col<size_type>& new_row_indices,
+                      arma::Col<size_type>& new_col_indices,
+                      arma::Col<value_type>& new_values) {
       k_ = new_row_indices.size();
       if (m * n < k_ ||
           new_col_indices.size() != k_ ||
@@ -425,11 +424,11 @@ namespace sill {
     //! Number of non-zero elements.
     size_type k_;
 
-    vector<size_type> row_indices_;
+    arma::Col<size_type> row_indices_;
 
-    vector<size_type> col_indices_;
+    arma::Col<size_type> col_indices_;
 
-    vector<value_type> values_;
+    arma::Col<value_type> values_;
 
     //! Resize all vectors, copying the data.
     void resize_data(size_type cap, bool copy_data) {

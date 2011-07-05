@@ -59,9 +59,9 @@ namespace sill {
     // Getters and setters: dimensions
     //==========================================================================
 
-    using base::num_rows;
+    using base::n_rows;
     using base::size1;
-    using base::num_cols;
+    using base::n_cols;
     using base::size2;
     using base::size;
 
@@ -75,11 +75,11 @@ namespace sill {
 
     //! Return a const view of column j of the matrix.
     sparse_vector_view<value_type,size_type> column(size_type j) const {
-      if (j < num_cols()) {
+      if (j < n_cols()) {
         size_type co_j = col_offsets_[j];
         size_type co_jp1 = col_offsets_[j+1];
         return sparse_vector_view<value_type,size_type>
-          (num_rows(), co_jp1 - co_j, row_indices_ + co_j, values_ + co_j);
+          (n_rows(), co_jp1 - co_j, row_indices_ + co_j, values_ + co_j);
       } else {
         return sparse_vector_view<value_type,size_type>();
       }
@@ -87,7 +87,7 @@ namespace sill {
 
     //! Look for element A(i,j).  Return <found, pointer to value>.
     std::pair<bool, const value_type*> find(size_type i, size_type j) const {
-      if (i < num_rows() && j < num_cols()) {
+      if (i < n_rows() && j < n_cols()) {
         const size_type* row_it = row_indices_ + col_offsets_[j];
         const size_type* row_end = row_indices_ + col_offsets_[j+1];
         while (row_it < row_end) {

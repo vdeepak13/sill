@@ -7,9 +7,10 @@
 #include <sill/base/vector_assignment.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
-#include <sill/math/irange.hpp>
+//#include <sill/math/irange.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
-#include <sill/math/vector.hpp>
+//#include <sill/math/vector.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/range/forward_range.hpp>
 #include <sill/serialization/serialize.hpp>

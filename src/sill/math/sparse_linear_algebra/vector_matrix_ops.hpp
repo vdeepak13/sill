@@ -2,13 +2,12 @@
 #ifndef _SILL_VECTOR_MATRIX_OPS_HPP_
 #define _SILL_VECTOR_MATRIX_OPS_HPP_
 
-#include <sill/math/matrix.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/sparse_linear_algebra/blas.hpp>
 #include <sill/math/sparse_linear_algebra/coo_matrix.hpp>
 #include <sill/math/sparse_linear_algebra/csc_matrix.hpp>
 #include <sill/math/sparse_linear_algebra/rank_one_matrix.hpp>
 #include <sill/math/sparse_linear_algebra/sparse_vector.hpp>
-#include <sill/math/vector.hpp>
 
 /**
  * \file vector_matrix_ops.hpp  Free functions for vectors and matrices.
@@ -88,27 +87,27 @@ namespace sill {
 
   //! Addition
   template <typename T, typename SizeType>
-  vector<T>& operator+=(vector<T>& x, const sparse_vector<T,SizeType>& y);
+  arma::Col<T>& operator+=(arma::Col<T>& x, const sparse_vector<T,SizeType>& y);
 
   //! Subtraction
   template <typename T, typename SizeType>
   sparse_vector<T,SizeType>&
-  operator-=(sparse_vector<T,SizeType>& x, const vector<T>& y);
+  operator-=(sparse_vector<T,SizeType>& x, const arma::Col<T>& y);
 
   //! Division
   //! WARNING: This ignores zero elements of x. If y has zeros,
   //!          this may ignore values 0 / 0.
   template <typename T, typename SizeType>
   sparse_vector<T,SizeType>&
-  operator/=(sparse_vector<T,SizeType>& x, const vector<T>& y);
+  operator/=(sparse_vector<T,SizeType>& x, const arma::Col<T>& y);
 
   //! Dot product.
   template <typename T, typename SizeType>
-  T dot(const vector<T>& x, const sparse_vector<T,SizeType>& y);
+  T dot(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y);
 
   //! Dot product.
   template <typename T, typename SizeType>
-  T dot(const vector<T>& x, const sparse_vector_view<T,SizeType>& y);
+  T dot(const arma::Col<T>& x, const sparse_vector_view<T,SizeType>& y);
 
   //! Dot product.
   template <typename T, typename SizeType>
@@ -121,8 +120,8 @@ namespace sill {
 
   //! Outer product
   template <typename T, typename SizeType>
-  rank_one_matrix<vector<T>, sparse_vector<T,SizeType> >
-  outer_product(const vector<T>& x, const sparse_vector<T,SizeType>& y);
+  rank_one_matrix<arma::Col<T>, sparse_vector<T,SizeType> >
+  outer_product(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y);
 
   //! Store result of elem_mult(a,b) in c.
   template <typename T, typename SizeType>
@@ -147,7 +146,7 @@ namespace sill {
    *              (default = 0)
    */
   template <typename T, typename SizeType>
-  vector<T>
+  arma::Col<T>
   sum(const csc_matrix<T,SizeType>& m, size_t dim = 0);
 
   /**
@@ -161,7 +160,7 @@ namespace sill {
    *               mfunc(value_type) should return the modified element.
    */
   template <typename T, typename SizeType, typename MFunctor>
-  vector<T>
+  arma::Col<T>
   sum(const csc_matrix<T,SizeType>& m, size_t dim, MFunctor mfunc);
 
   /*****************************************************************************
@@ -172,30 +171,30 @@ namespace sill {
 
   //! Dense matrix  *  sparse vector --> dense vector
   template <typename T, typename SizeType>
-  vector<T>
-  operator*(const matrix<T>& m, const sparse_vector<T,SizeType>& v);
+  arma::Col<T>
+  operator*(const arma::Mat<T>& m, const sparse_vector<T,SizeType>& v);
 
   //! Dense matrix  *  sparse vector --> dense vector
   template <typename T, typename SizeType>
-  vector<T>
-  operator*(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v);
+  arma::Col<T>
+  operator*(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v);
 
   //! Dense vector += dense matrix * dense vector
   template <typename T>
   void
-  gemv(const matrix<T>& m, const vector<T>& v, vector<T>& out);
+  gemv(const arma::Mat<T>& m, const arma::Col<T>& v, arma::Col<T>& out);
 
   //! Dense vector += dense matrix  *  sparse vector
   template <typename T, typename SizeType>
   void
-  gemv(const matrix<T>& m, const sparse_vector<T,SizeType>& v,
-       vector<T>& out);
+  gemv(const arma::Mat<T>& m, const sparse_vector<T,SizeType>& v,
+       arma::Col<T>& out);
 
   //! Dense vector += dense matrix  *  sparse vector
   template <typename T, typename SizeType>
   void
-  gemv(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v,
-       vector<T>& out);
+  gemv(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v,
+       arma::Col<T>& out);
 
   /*****************************************************************************
    * Matrix-Matrix operations
@@ -204,9 +203,9 @@ namespace sill {
 
   //! Dense matrix += rank-one matrix
   template <typename T, typename SizeType>
-  matrix<T>&
-  operator+=(matrix<T>& A,
-             const rank_one_matrix<vector<T>,sparse_vector<T,SizeType> >& B);
+  arma::Mat<T>&
+  operator+=(arma::Mat<T>& A,
+             const rank_one_matrix<arma::Col<T>,sparse_vector<T,SizeType> >& B);
 
 
   //============================================================================
@@ -261,7 +260,7 @@ namespace sill {
   //============================================================================
 
   template <typename T, typename SizeType>
-  vector<T>& operator+=(vector<T>& x, const sparse_vector<T,SizeType>& y) {
+  arma::Col<T>& operator+=(arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
     assert(x.size() == y.size());
     for (SizeType k = 0; k < y.num_non_zeros(); ++k)
       x[y.index(k)] += y.value(k);
@@ -270,7 +269,7 @@ namespace sill {
 
   template <typename T, typename SizeType>
   sparse_vector<T,SizeType>&
-  operator-=(sparse_vector<T,SizeType>& x, const vector<T>& y) {
+  operator-=(sparse_vector<T,SizeType>& x, const arma::Col<T>& y) {
     assert(x.size() == y.size());
     // Attempt to keep x sparse.
     std::vector<SizeType> inds;
@@ -288,14 +287,14 @@ namespace sill {
 
   template <typename T, typename SizeType>
   sparse_vector<T,SizeType>&
-  operator/=(sparse_vector<T,SizeType>& x, const vector<T>& y) {
+  operator/=(sparse_vector<T,SizeType>& x, const arma::Col<T>& y) {
     for (SizeType k = 0; k < x.num_non_zeros(); ++k)
       x.value(k) /= y[x.index(k)];
     return x;
   }
 
   template <typename T, typename SizeType>
-  T dot(const vector<T>& x, const sparse_vector<T,SizeType>& y) {
+  T dot(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
     assert(x.size() == y.size());
     T r = 0;
     for (SizeType i = 0; i < y.num_non_zeros(); ++i)
@@ -304,7 +303,7 @@ namespace sill {
   }
 
   template <typename T, typename SizeType>
-  T dot(const vector<T>& x, const sparse_vector_view<T,SizeType>& y) {
+  T dot(const arma::Col<T>& x, const sparse_vector_view<T,SizeType>& y) {
     assert(x.size() == y.size());
     T r = 0;
     for (SizeType i = 0; i < y.num_non_zeros(); ++i)
@@ -334,8 +333,8 @@ namespace sill {
 
   //! Outer product
   template <typename T, typename SizeType>
-  rank_one_matrix<vector<T>, sparse_vector<T,SizeType> >
-  outer_product(const vector<T>& x, const sparse_vector<T,SizeType>& y) {
+  rank_one_matrix<arma::Col<T>, sparse_vector<T,SizeType> >
+  outer_product(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
     return make_rank_one_matrix(x,y);
   }
 
@@ -344,9 +343,9 @@ namespace sill {
   csc_matrix<T,SizeType> outer_product(const dense_vector_view<T,SizeType>& x,
                                     const sparse_vector_i<T,SizeType>& y) {
     csc_matrix<T,SizeType> r;
-    vector<SizeType> col_offsets(y.num_non_zeros() + 1);
-    vector<SizeType> row_indices(x.size() * y.num_non_zeros());
-    vector<T> values(row_indices.size());
+    arma::Col<SizeType> col_offsets(y.num_non_zeros() + 1);
+    arma::Col<SizeType> row_indices(x.size() * y.num_non_zeros());
+    arma::Col<T> values(row_indices.size());
     SizeType k = 0;
     for (SizeType j_ = 0; j_ < y.num_non_zeros(); ++j_) {
       SizeType j = y.index(j_);
@@ -409,40 +408,40 @@ namespace sill {
   //============================================================================
 
   template <typename T, typename SizeType>
-  vector<T>
+  arma::Col<T>
   sum(const csc_matrix<T,SizeType>& m, size_t dim) {
     if (dim == 0) {
-      vector<T> v(m.num_cols());
+      arma::Col<T> v(m.n_cols());
       for (SizeType i = 0; i < v.size(); ++i)
         v[i] = sum(m.column(i));
       return v;
     } else if (dim == 1) {
-      vector<T> v(m.num_rows(),0);
+      arma::Col<T> v(m.n_rows(),0);
       for (SizeType k = 0; k < m.num_non_zeros(); ++k)
         v[m.row_index(k)] += m.value(k);
       return v;
     } else {
       assert(false);
-      return vector<T>();
+      return arma::Col<T>();
     }
   }
 
   template <typename T, typename SizeType, typename MFunctor>
-  vector<T>
+  arma::Col<T>
   sum(const csc_matrix<T,SizeType>& m, size_t dim, MFunctor mfunc) {
     if (dim == 0) {
-      vector<T> v(m.num_cols());
+      arma::Col<T> v(m.n_cols());
       for (SizeType i = 0; i < v.size(); ++i)
         v[i] = sum(m.column(i), mfunc);
       return v;
     } else if (dim == 1) {
-      vector<T> v(m.num_rows(),0);
+      arma::Col<T> v(m.n_rows(),0);
       for (SizeType k = 0; k < m.num_non_zeros(); ++k)
         v[m.row_index(k)] += mfunc(m.value(k));
       return v;
     } else {
       assert(false);
-      return vector<T>();
+      return arma::Col<T>();
     }
   }
 
@@ -461,10 +460,10 @@ namespace sill {
      * (It is faster when y is very short.)
      */
     template <typename InVecType, typename T, typename SizeType>
-    inline vector<T>
-    mult_densemat_sparsevec_(const matrix<T>& A, const InVecType& x) {
+    inline arma::Col<T>
+    mult_densemat_sparsevec_(const arma::Mat<T>& A, const InVecType& x) {
       assert(A.n_cols == x.size());
-      vector<T> y(A.n_rows,0);
+      arma::Col<T> y(A.n_rows,0);
       const T* A_it = A.begin();
       for (SizeType i = 0; i < y.size(); ++i) {
         y[i] = dot(dense_vector_view<T,SizeType>(A.n_cols, A_it, A.n_rows),
@@ -478,11 +477,11 @@ namespace sill {
     // Specialization
     // TO DO: Use this when y is reasonably long and x is reasonably sparse.
     template <>
-    inline vector<double>
+    inline arma::Col<double>
     mult_densemat_sparsevec_<sparse_vector<double,size_t>,double,size_t>
-    (const matrix<double>& A, const sparse_vector<double,size_t>& x) {
+    (const arma::Mat<double>& A, const sparse_vector<double,size_t>& x) {
       assert(A.n_cols == x.size());
-      vector<double> y(A.n_rows,0);
+      arma::Col<double> y(A.n_rows,0);
       int n = A.n_rows;
       int inc = 1;
       for (size_t k = 0; k < x.num_non_zeros(); ++k) {
@@ -504,8 +503,8 @@ namespace sill {
      */
     template <typename InVecType, typename T, typename SizeType>
     inline void
-    gemv_densemat_sparsevec_(const matrix<T>& A, const InVecType& x,
-                             vector<T>& y) {
+    gemv_densemat_sparsevec_(const arma::Mat<T>& A, const InVecType& x,
+                             arma::Col<T>& y) {
       assert(A.n_cols == x.size());
       assert(y.size() == A.n_rows);
       const T* A_it = A.begin();
@@ -519,15 +518,15 @@ namespace sill {
   } // namespace impl
 
   template <typename T, typename SizeType>
-  vector<T> operator*(const matrix<T>& A, const sparse_vector<T,SizeType>& x) {
+  arma::Col<T> operator*(const arma::Mat<T>& A, const sparse_vector<T,SizeType>& x) {
     return
       impl::mult_densemat_sparsevec_<sparse_vector<T,SizeType>,T,SizeType>
       (A, x);
   }
 
   template <typename T, typename SizeType>
-  vector<T>
-  operator*(const matrix<T>& A, const sparse_vector_view<T,SizeType>& x) {
+  arma::Col<T>
+  operator*(const arma::Mat<T>& A, const sparse_vector_view<T,SizeType>& x) {
     return
       impl::mult_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>
       (A,x);
@@ -535,22 +534,22 @@ namespace sill {
 
   template <typename T>
   void
-  gemv(const matrix<T>& m, const vector<T>& v, vector<T>& out) {
+  gemv(const arma::Mat<T>& m, const arma::Col<T>& v, arma::Col<T>& out) {
     out += m * v; // TO DO: USE BLAS
   }
 
   template <typename T, typename SizeType>
   void
-  gemv(const matrix<T>& m, const sparse_vector<T,SizeType>& v,
-       vector<T>& out) {
+  gemv(const arma::Mat<T>& m, const sparse_vector<T,SizeType>& v,
+       arma::Col<T>& out) {
     impl::gemv_densemat_sparsevec_<sparse_vector<T,SizeType>,T,SizeType>
       (m, v, out);
   }
 
   template <typename T, typename SizeType>
   void
-  gemv(const matrix<T>& m, const sparse_vector_view<T,SizeType>& v,
-       vector<T>& out) {
+  gemv(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v,
+       arma::Col<T>& out) {
     impl::gemv_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>
       (m, v, out);
   }
@@ -560,9 +559,9 @@ namespace sill {
   //============================================================================
 
   template <typename T, typename SizeType>
-  matrix<T>&
-  operator+=(matrix<T>& A,
-             const rank_one_matrix<vector<T>,sparse_vector<T,SizeType> >& B) {
+  arma::Mat<T>&
+  operator+=(arma::Mat<T>& A,
+             const rank_one_matrix<arma::Col<T>,sparse_vector<T,SizeType> >& B) {
     assert(A.n_rows == B.n_rows && A.n_cols == B.n_cols);
     for (SizeType k = 0; k < B.y().num_non_zeros(); ++k)
       A.add_column(B.y().index(k), B.x() * B.y().value(k));
@@ -571,10 +570,10 @@ namespace sill {
 
   // Specialization
   template <>
-  matrix<double>&
+  arma::Mat<double>&
   operator+=<double,size_t>
-  (matrix<double>& A,
-   const rank_one_matrix<vector<double>,sparse_vector<double,size_t> >& B);
+  (arma::Mat<double>& A,
+   const rank_one_matrix<arma::Col<double>,sparse_vector<double,size_t> >& B);
 
 } // namespace sill
 

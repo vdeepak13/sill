@@ -23,13 +23,13 @@ namespace sill {
   template <typename T = double, typename SizeType = size_t>
   struct dense_linear_algebra {
 
-    typedef vector<T>  vector_type;
-    typedef matrix<T>  matrix_type;
+    typedef arma::Col<T>  vector_type;
+    typedef arma::Mat<T>  matrix_type;
     typedef typename vector_type::value_type value_type;
     typedef typename vector_type::size_type  size_type;
 
-    typedef vector<T>  dense_vector_type;
-    typedef matrix<T>  dense_matrix_type;
+    typedef arma::Col<T>  dense_vector_type;
+    typedef arma::Mat<T>  dense_matrix_type;
 
     typedef uvec  index_vector_type;
 
@@ -44,8 +44,8 @@ namespace sill {
     typedef typename vector_type::value_type value_type;
     typedef typename vector_type::size_type  size_type;
 
-    typedef vector<T>  dense_vector_type;
-    typedef matrix<T>  dense_matrix_type;
+    typedef arma::Col<T>  dense_vector_type;
+    typedef arma::Mat<T>  dense_matrix_type;
 
     typedef uvec  index_vector_type;
 

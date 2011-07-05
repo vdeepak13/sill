@@ -60,9 +60,9 @@ namespace sill {
     // Getters and setters: dimensions
     //==========================================================================
 
-    using base::num_rows;
+    using base::n_rows;
     using base::size1;
-    using base::num_cols;
+    using base::n_cols;
     using base::size2;
     using base::size;
 

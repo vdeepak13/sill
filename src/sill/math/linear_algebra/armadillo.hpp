@@ -1,5 +1,5 @@
 #ifndef SILL_ARMADILLO_HPP
-#define SILL_ARMAILLOD_HPP
+#define SILL_ARMADILLO_HPP
 
 #include <armadillo>
 
@@ -122,4 +122,4 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
-#endif
+#endif // #ifndef SILL_ARMADILLO_HPP

@@ -6,7 +6,7 @@
 #include <boost/random/uniform_real.hpp>
 
 #include <sill/math/is_finite.hpp>
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -30,7 +30,7 @@ namespace sill {
   //! Return the mean for the given vector of values.
   //! Return 0 for empty vector.
   template <typename T>
-  double mean(const vector<T>& v) {
+  double mean(const arma::Col<T>& v) {
     if (v.size() == 0)
       return 0;
     double sum = 0;
@@ -54,10 +54,10 @@ namespace sill {
   //! Return the median for the given vector of values.
   //! Return 0 for empty vector.
   template <typename T>
-  T median(const vector<T>& v) {
+  T median(const arma::Col<T>& v) {
     if (v.size() == 0)
       return 0;
-    vector<T> sorted(v);
+    arma::Col<T> sorted(v);
     std::sort(sorted.begin(), sorted.end());
     size_t median_i(sorted.size() / 2);
     return sorted[median_i];
@@ -126,7 +126,7 @@ namespace sill {
 
   //! Return the generalized mean of type GM of the given values.
   template <typename T>
-  T generalized_mean(const vector<T>& v,
+  T generalized_mean(const arma::Col<T>& v,
                      statistics::generalized_mean_enum gm) {
     switch (gm) {
     case statistics::MEAN:
@@ -154,7 +154,7 @@ namespace sill {
 
   //! Return the generalized deviation of type GM of the given values.
   template <typename T>
-  T generalized_deviation(const vector<T>& v,
+  T generalized_deviation(const arma::Col<T>& v,
                           statistics::generalized_mean_enum gm) {
     switch (gm) {
     case statistics::MEAN:
@@ -325,14 +325,8 @@ namespace sill {
 
   // For sill::vector
   template <typename T, typename Engine>
-  size_t max_index(const vector<T>& v, Engine& rng) {
+  size_t max_index(const arma::Col<T>& v, Engine& rng) {
     return extreme_index<T, std::less<T>, Engine>(v, rng);
-  }
-
-  // For itpp::vec
-  template <typename T, typename Engine>
-  size_t max_index(const itpp::Vec<T>& v, Engine& rng) {
-    return extreme_index<T, std::less<T>, Engine>(vector<T>(v), rng);
   }
 
   //! Return the index of the min value in the vector.
@@ -350,38 +344,32 @@ namespace sill {
 
   // For sill::vector
   template <typename T, typename Engine>
-  size_t min_index(const vector<T>& v, Engine& rng) {
+  size_t min_index(const arma::Col<T>& v, Engine& rng) {
     return extreme_index<T, std::greater<T>, Engine>(v, rng);
-  }
-
-  // For itpp::vec
-  template <typename T, typename Engine>
-  size_t min_index(const itpp::Vec<T>& v, Engine& rng) {
-    return extreme_index<T, std::greater<T>, Engine>(vector<T>(v), rng);
   }
 
   //! Return the indices of the max value in the matrix.
   //! If multiple values are maximal, choose one with uniform probability.
   template <typename Engine>
-  std::pair<size_t,size_t> max_indices(const mat& v, Engine& rng) {
+  std::pair<size_t,size_t> max_indices(const mat& m, Engine& rng) {
     boost::uniform_real<double> uniform_prob(0,1);
-    if (v.size() == 0)
+    if (m.n_elem() == 0)
       return std::make_pair(0,0);
-    double best(v(0,0));
+    double best(m(0,0));
     size_t nbest(0);
     std::pair<size_t,size_t> best_indices(std::make_pair(0,0));
-    for (size_t i(0); i < v.n_rows; ++i) {
-      for (size_t j(0); j < v.n_cols; ++j) {
-        if (v(i,j) < best)
+    for (size_t i(0); i < m.n_rows; ++i) {
+      for (size_t j(0); j < m.n_cols; ++j) {
+        if (m(i,j) < best)
           continue;
-        if (v(i,j) == best) {
+        if (m(i,j) == best) {
           ++nbest;
           if (uniform_prob(rng) > 1. / nbest)
             continue;
         } else {
           nbest = 1;
         }
-        best = v(i,j);
+        best = m(i,j);
         best_indices.first = i;
         best_indices.second = j;
       }
@@ -409,12 +397,12 @@ namespace sill {
     public:
       explicit sorted_indices_comparator2(const std::vector<vec>& v) : v(v) { }
       bool operator()(size_t a, size_t b) const {
-        size_t min_size = std::min<size_t>(v[a].size(), v[b].size());
+        size_t min_size = std::min<size_t>(v[a].n_elem, v[b].n_elem);
         for (size_t i = 0; i < min_size; ++i) {
           if (v[a][i] != v[b][i])
             return (v[a][i] < v[b][i]);
         }
-        return (v[a].size() < v[b].size());
+        return (v[a].n_elem < v[b].n_elem);
       }
     }; // class sorted_indices_comparator2
 

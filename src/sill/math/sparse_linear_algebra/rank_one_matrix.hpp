@@ -2,7 +2,7 @@
 #ifndef _SILL_RANK_ONE_MATRIX_HPP_
 #define _SILL_RANK_ONE_MATRIX_HPP_
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/sparse_linear_algebra/matrix_base.hpp>
 
 namespace sill {
@@ -64,9 +64,9 @@ namespace sill {
     // Getters and setters: dimensions
     //==========================================================================
 
-    using base::num_rows;
+    using base::n_rows;
     using base::size1;
-    using base::num_cols;
+    using base::n_cols;
     using base::size2;
     using base::size;
 

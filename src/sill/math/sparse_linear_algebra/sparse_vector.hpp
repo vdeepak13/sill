@@ -2,16 +2,18 @@
 #ifndef _SILL_SPARSE_VECTOR_HPP_
 #define _SILL_SPARSE_VECTOR_HPP_
 
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/sparse_linear_algebra/sparse_vector_view.hpp>
 #include <sill/math/statistics.hpp>
-#include <sill/math/vector.hpp>
 
 namespace sill {
 
   // Forward declarations
+  /*
   template <typename T> class vector;
   template <typename T> void vector<T>::save(oarchive& ar) const;
   template <typename T> void vector<T>::load(iarchive& ar);
+  */
 
   /**
    * Sparse host/device vector class.
@@ -184,13 +186,13 @@ namespace sill {
       std::vector<size_type> subinds;
       std::vector<value_type> subvals;
       size_type newi = 0;
-      for (size_type k = 0; k < ind.size(); ++k) {
+      for (size_type k = 0; k < ind.n_elem; ++k) {
         if (this->operator()(ind[k]) != 0) {
           subinds.push_back(newi);
           subvals.push_back(this->operator()(ind[k]));
         }
       }
-      return sparse_vector(ind.size(), subinds, subvals);
+      return sparse_vector(ind.n_elem, subinds, subvals);
     }
 
     //! Return the index for the i^th non-zero element.
@@ -213,13 +215,13 @@ namespace sill {
     value_type& value(size_type i) { return values_._data()[i]; }
 
     //! Indices of non-zeros.
-    const vector<size_type>& indices() const { return indices_; }
+    const arma::Col<size_type>& indices() const { return indices_; }
 
     //! Values of non-zeros.
-    const vector<value_type>& values() const { return values_; }
+    const arma::Col<value_type>& values() const { return values_; }
 
     //! Values of non-zeros.
-    vector<value_type>& values() { return values_; }
+    arma::Col<value_type>& values() { return values_; }
 
     //! Get a const iterator to the beginning of the indices.
     const_index_iterator begin_indices() const { return indices_.begin(); }
@@ -243,7 +245,7 @@ namespace sill {
       if (sorted_)
         return;
       index_vector_type
-        sorted_ind(sorted_indices<vector<size_type>,index_vector_type>
+        sorted_ind(sorted_indices<arma::Col<size_type>,index_vector_type>
                    (indices_));
       indices_ = indices_(sorted_ind);
       values_ = values_(sorted_ind);
@@ -381,10 +383,10 @@ namespace sill {
     using base::n_;
 
     //! Indices of non-zeros.
-    mutable vector<size_type> indices_;
+    mutable arma::Col<size_type> indices_;
 
     //! Values of non-zeros.
-    mutable vector<value_type> values_;
+    mutable arma::Col<value_type> values_;
 
     //! Indicates if the indices are sorted in increasing order.
     mutable bool sorted_;

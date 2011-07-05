@@ -453,7 +453,7 @@ namespace sill {
           sill::vector_assignment::const_iterator a_it(a.find(it->first));
           if (a_it != a.end())
             vec_ptr->set_subvector
-              (irange(it->second, it->second + it->first->size()),
+              (span(it->second, it->second + it->first->size() - 1),
                a_it->second);
         }
       } else {
@@ -463,7 +463,7 @@ namespace sill {
             it(vector_numbering_ptr->find(a_it->first));
           if (it != vector_numbering_ptr->end())
             vec_ptr->set_subvector
-              (irange(it->second, it->second + it->first->size()),
+              (span(it->second, it->second + it->first->size() - 1),
                a_it->second);
         }
       }
@@ -485,7 +485,7 @@ namespace sill {
            it != vector_numbering_ptr->end();
            ++it) {
         vec_ptr->set_subvector
-          (irange(it->second, it->second + it->first->size()),
+          (span(it->second, it->second + it->first->size() - 1),
            safe_get(a, safe_get(vmap, it->first)));
       }
     }

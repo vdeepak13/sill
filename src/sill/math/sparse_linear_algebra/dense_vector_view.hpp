@@ -2,8 +2,7 @@
 #ifndef _SILL_DENSE_VECTOR_VIEW_HPP_
 #define _SILL_DENSE_VECTOR_VIEW_HPP_
 
-#include <sill/math/vector.hpp>
-
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/sparse_linear_algebra/vector_base.hpp>
 
 namespace sill {
@@ -49,7 +48,7 @@ namespace sill {
       : base(n), values_(it), pitch_(pitch_) { }
 
     //! Constructor from a dense vector (with pitch = 1).
-    explicit dense_vector_view(const vector<T>& v)
+    explicit dense_vector_view(const arma::Col<T>& v)
       : base(v.size()), values_(v.begin()), pitch_(1) { }
 
     // NO DESTRUCTOR.
