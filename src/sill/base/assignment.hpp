@@ -113,8 +113,9 @@ namespace sill {
 
     //! Equality test.
     bool operator==(const assignment& a) const {
-      return ((finite_assignment(*this) == finite_assignment(a))
-              && (vector_assignment(*this) == vector_assignment(a)));
+      const finite_assignment& fa(a);
+      const vector_assignment& va(a);
+      return (*this) == fa && (*this) == va;
     }
 
     //! Inequality test

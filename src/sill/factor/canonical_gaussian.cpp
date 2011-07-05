@@ -2,8 +2,6 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/math/constants.hpp>
-#include <sill/math/linear_algebra.hpp>
-#include <sill/math/norms.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
@@ -581,8 +579,8 @@ namespace sill {
       cg.var_range.clear();
       cg.args.clear();
       cg.arg_list.clear();
-      cg.lambda.set_size(0, 0);
-      cg.eta.set_size(0);
+      cg.lambda.reset();
+      cg.eta.reset();
       if (renormalize)
         cg.log_mult = log_mult - log_norm_constant();
       return;
@@ -606,23 +604,23 @@ namespace sill {
       uvec ix = indices(x);
       uvec iy = indices(y);
       mat invyy_lamyx;
-      bool info = ls_solve_chol(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
+      //bool info = ls_solve_chol(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
+      // Armadillo does not yet suppport solve using CHolesky decomposition
+      // try solving via LU factorization
+      // Note: ls_solve_chol failed on some symmetric matrices with
+      //       positive determinants, so it's possible the IT++
+      //       implementation is buggy.
+      //       (ls_solve has worked in these cases so far.)
+      bool info = solve(invyy_lamyx, lambda(iy,iy), lambda(iy,ix));
+      // 
       if (!info) {
-        // Try solving via LU factorization if Cholesky did not work.
-        // Note: ls_solve_chol failed on some symmetric matrices with
-        //       positive determinants, so it's possible the IT++
-        //       implementation is buggy.
-        //       (ls_solve has worked in these cases so far.)
-        info = ls_solve(lambda(iy,iy), lambda(iy,ix), invyy_lamyx);
-        if (!info) {
-          if (iy.size() * ix.size() < 16 &&
-              iy.size() * iy.size() < 16)
-            std::cerr << "Lambda(iy,iy):\n" << lambda(iy,iy) << "\n"
-                      << "Lambda(iy,ix):\n" << lambda(iy,ix) << std::endl;
-          throw invalid_operation
-            (std::string("canonical_gaussian::collapse:") +
-             " Cholesky and LU factorizations failed.");
-        }
+        if (iy.n_elem * ix.n_elem < 16 &&
+            iy.n_elem * iy.n_elem < 16)
+          std::cerr << "Lambda(iy,iy):\n" << lambda(iy,iy) << "\n"
+                    << "Lambda(iy,ix):\n" << lambda(iy,ix) << std::endl;
+        throw invalid_operation
+          (std::string("canonical_gaussian::collapse:") +
+           " LU factorization failed.");
       }
       double old_log_norm_constant = (renormalize ? log_norm_constant() : 0);
       if (cg.arg_list == x) {
@@ -652,10 +650,10 @@ namespace sill {
     uvec indx = result.indices(x.arg_list);
     uvec indy = result.indices(y.arg_list);
 
-    result.lambda.set_submatrix(indx, indx, x.lambda);
-    result.lambda.add_submatrix(indy, indy, sign*y.lambda);
-    result.eta.set_subvector(indx, x.eta);
-    result.eta.add_subvector(indy, sign*y.eta);
+    result.lambda(indx, indx)  = x.lambda;
+    result.lambda(indy, indy) += sign*y.lambda;
+    result.eta(indx)  = x.eta;
+    result.eta(indy) += sign*y.eta;
     result.log_mult = x.log_mult + sign*y.log_mult;
 
     return result;
@@ -664,9 +662,9 @@ namespace sill {
   double norm_inf(const canonical_gaussian& x, const canonical_gaussian& y) {
     assert(x.arguments() == y.arguments());
     double vec_norm =
-      norm_inf(x.inf_vector() - y.inf_vector(x.argument_list()));
+      max(x.inf_vector() - y.inf_vector(x.argument_list()));
     double mat_norm =
-      norm_inf(x.inf_matrix() - y.inf_matrix(x.argument_list()));
+      mat(x.inf_matrix() - y.inf_matrix(x.argument_list())).max();
     return std::max(vec_norm, mat_norm);
   }
 

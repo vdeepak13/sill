@@ -7,20 +7,19 @@
 #include <list>
 #include <set> 
 
+#include <armadillo>
+
 #include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_convertible.hpp>
 #include <boost/range/iterator_range.hpp>
 
 #include <sill/iterator/forward_iterator.hpp>
-#include <sill/math/vector.hpp>
+
 
 namespace sill {
 
   using boost::enable_if;
-
-  // Pre-declaration
-  template <typename T> class vector;
 
   /**
    * A range that implements type erasure to represent a reference 
@@ -84,9 +83,9 @@ namespace sill {
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
       : base(range) { }
 
-    //! Constructs a forward_range from sill::vector
+    //! Constructs a forward_range from arma::Col
     template <typename T>
-    forward_range(const vector<T>& range,
+    forward_range(const arma::Col<T>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
       : base(range) { }
 

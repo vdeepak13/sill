@@ -2,6 +2,8 @@
 #ifndef _SILL_NORMS_HPP_
 #define _SILL_NORMS_HPP_
 
+#warning "This header file is deprecated"
+
 #include <itpp/stat/misc_stat.h>
 #include <itpp/base/matfunc.h>
 

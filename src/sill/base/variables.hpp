@@ -1,7 +1,8 @@
 #ifndef SILL_VARIABLES_HPP
 #define SILL_VARIABLES_HPP
 
-#include <sill/base/variable_type_group.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/vector_variable.hpp>
 
 namespace sill {
 
@@ -51,18 +52,14 @@ namespace sill {
 
   //! Convert from one domain type to another.
   //! Assert false if variables are of incompatible types.
-  template <typename FromVarType, typename ToVarType>
-  void convert_domain
-  (const typename variable_type_group<FromVarType>::domain_type& from,
-   typename variable_type_group<ToVarType>::domain_type& to);
+  template <typename FromVar, typename ToVar>
+  void convert_domain(const std::set<FromVar>& from, std::set<ToVar>& to);
 
   template <>
-  void convert_domain<variable, finite_variable>
-  (const domain& from, finite_domain& to);
+  void convert_domain(const domain& from, finite_domain& to);
 
   template <>
-  void convert_domain<variable, vector_variable>
-  (const domain& from, vector_domain& to);
+  void convert_domain(const domain& from, vector_domain& to);
 
   // Variable vector conversions
   //============================================================================

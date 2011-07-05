@@ -90,8 +90,7 @@ namespace sill {
   //============================================================================
 
   template <>
-  void convert_domain<variable, finite_variable>
-  (const domain& from, finite_domain& to) {
+  void convert_domain(const domain& from, finite_domain& to) {
     to.clear();
     foreach(variable* v, from) {
       if (v->get_variable_type() == variable::FINITE_VARIABLE)
@@ -102,8 +101,7 @@ namespace sill {
   }
 
   template <>
-  void convert_domain<variable, vector_variable>
-  (const domain& from, vector_domain& to) {
+  void convert_domain(const domain& from, vector_domain& to) {
     to.clear();
     foreach(variable* v, from) {
       if (v->get_variable_type() == variable::VECTOR_VARIABLE)
@@ -150,8 +148,8 @@ namespace sill {
       else
         notin += v->size();
     }
-    in_vset_indices.resize(in);
-    notin_vset_indices.resize(notin);
+    in_vset_indices.set_size(in);
+    notin_vset_indices.set_size(notin);
     in = 0;
     notin = 0;
     size_t n = 0;
@@ -164,7 +162,7 @@ namespace sill {
           notin_vset_indices[notin++] = n++;
       }
     }
-    assert(n == in_vset_indices.size() + notin_vset_indices.size());
+    assert(n == in_vset_indices.n_elem + notin_vset_indices.n_elem);
   }
 
 }; // namespace sill

@@ -9,7 +9,6 @@
 #include <map>
 #include <algorithm>
 
-#include <sill/math/vector.hpp>
 #include <sill/range/concepts.hpp>
 
 #include <sill/macros_def.hpp>
@@ -135,31 +134,6 @@ namespace sill
         if (!(in >> val))
           assert(false);
         v.push_back(val);
-        if (in.peek() == ',')
-          in.ignore(1);
-      } while (in.peek() != ']');
-    }
-    in.ignore(1);
-  }
-
-  //! Read in a vector of values [val1,val2,...], ignoring an initial space
-  //! if necessary.
-  //! \todo Can we overload operator<< for this?  I tried but didn't get it to
-  //!       work.
-  template <typename T>
-  static void read_vec(std::istream& in, vector<T>& v) {
-    char c;
-    T val;
-    v.resize(0);
-    in.get(c);
-    if (c == ' ')
-      in.get(c);
-    assert(c == '[');
-    if (in.peek() != ']') {
-      do {
-        if (!(in >> val))
-          assert(false);
-        v.insert(v.size(),val);
         if (in.peek() == ',')
           in.ignore(1);
       } while (in.peek() != ']');

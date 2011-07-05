@@ -6,6 +6,8 @@
 #include <sill/base/vector_variable.hpp>
 #include <sill/base/stl_util.hpp>
 
+#include <sill/macros_def.hpp>
+
 namespace sill {
 
   //! \addtogroup base_types
@@ -31,17 +33,13 @@ namespace sill {
   inline vector_assignment
   make_assignment(const vector_var_vector& vars, const vec& values) {
     vector_assignment a;
-    if (vector_size(vars) != values.size())
+    if (vector_size(vars) != values.n_elem)
       throw std::invalid_argument
         ("make_assignment() given vars, values which did not match.");
-    size_t k(0); // index into values
-    for (size_t j(0); j < vars.size(); ++j) {
-      vec tmpvec(vars[j]->size());
-      for (size_t l(0); l < vars[j]->size(); ++l) {
-        tmpvec[l] = values[k];
-        ++k;
-      }
-      a.insert(std::make_pair(vars[j], tmpvec));
+    size_t k = 0; // index into values
+    foreach(vector_variable* var, vars) {
+      a[var] = values(span(k, k + var->size() - 1));
+      k += var->size();
     }
     return a;
   }

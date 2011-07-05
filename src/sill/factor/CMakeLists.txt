@@ -1,23 +1,23 @@
 set(PRL_FACTOR_SOURCES
-  approx/integration_points
-  approx/hybrid_conditional
-  canonical_gaussian
-  gaussian_crf_factor
-  log_reg_crf_factor
-  log_table_factor
-  moment_gaussian
-  mixture
-  nonlinear_gaussian
-  random/random
-  random/random_gaussian_crf_factor_functor
-  random/random_gaussian_crf_factor_functor_builder
-  random/random_canonical_gaussian_functor
-  random/random_moment_gaussian_functor
-  random/random_moment_gaussian_functor_builder
-  random/random_table_crf_factor_functor
-  random/random_table_crf_factor_functor_builder
+#  approx/integration_points
+#  approx/hybrid_conditional
+#  canonical_gaussian
+#  gaussian_crf_factor
+#  log_reg_crf_factor
+#  log_table_factor
+#  moment_gaussian
+#  mixture
+#  nonlinear_gaussian
+#  random/random
+#  random/random_gaussian_crf_factor_functor
+#  random/random_gaussian_crf_factor_functor_builder
+#  random/random_canonical_gaussian_functor
+#  random/random_moment_gaussian_functor
+#  random/random_moment_gaussian_functor_builder
+#  random/random_table_crf_factor_functor
+#  random/random_table_crf_factor_functor_builder
   random/random_table_factor_functor
   random/random_table_factor_functor_builder
-  table_crf_factor
+#  table_crf_factor
   table_factor
   PARENT_SCOPE)

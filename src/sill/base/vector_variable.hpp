@@ -6,7 +6,7 @@
 #include <map>
 
 #include <sill/base/variable.hpp>
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>

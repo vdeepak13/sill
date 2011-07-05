@@ -6,7 +6,6 @@
 #include <map>
 
 #include <sill/base/variable.hpp>
-#include <sill/math/vector.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>

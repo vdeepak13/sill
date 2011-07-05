@@ -61,7 +61,7 @@ namespace sill {
 
   vec nonlinear_gaussian::mean(const vec& input) const {
     vec x = fixed_input;
-    for(size_t i = 0; i < input.size(); i++)
+    for(size_t i = 0; i < input.n_elem; i++)
       x[input_map[i]] = input[i];
       return fmean()(x);
   }
@@ -104,8 +104,9 @@ namespace sill {
     for(size_t i = 0; i < tail.size(); i++) {
       vector_variable* v = tail[i];
       if(a.count(v)) { // v is now fixed
-        irange ri(input_map[k], input_map[k] + v->size());
-        result.fixed_input.set_subvector(ri, safe_get(a, v));
+        // TODO: check if this correct
+        span s(input_map[k], input_map[k] + v->size() - 1); 
+        result.fixed_input(s) = safe_get(a, v);
         k += v->size();
       } else {
         result.tail.push_back(v);

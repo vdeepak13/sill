@@ -82,9 +82,6 @@ find_package(MPICH2)
 set(MPI_CXX true CACHE BOOL
     "Set to true if the MPI implementation provides a C++ interface.")
 
-# Math library
-find_package(IT++)
-
 # Sparse linear algebra library
 find_package(SuiteSparse)
 
@@ -95,21 +92,18 @@ find_package(OpenCV)
 # set include path for this and all subdirs
 include_directories(
   ${SILL_SOURCE_DIR}/src
-  ${ITPP_INCLUDE_DIR}
   ${Boost_INCLUDE_DIR}
   )
 
 link_directories(
   ${Boost_LIBRARY_DIRS}
-  ${ITPP_LINK_DIR}
   )
 
 link_libraries(
   # ${Boost_LIBRARIES}
   # Boost libraries these are now included in tests/ etc. to ensure proper
   # ordering libraries in static linking.
-  ${ITPP_LIBRARIES}
-  itpp # this can be changed to itpp_debug to turn on bound checking etc.
+  armadillo
   #  mpichcxx
   #  mpich
   bz2

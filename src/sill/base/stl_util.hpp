@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <iterator>
 #include <sstream>
+#include <stdexcept>
 
 #include <sill/stl_io.hpp>
 #include <sill/serialization/serialize.hpp>
@@ -61,15 +62,16 @@ namespace sill {
     return output;
   }
 
-  template <typename T>
-  std::set<T>
-  set_intersect(const forward_range<T>& a, const forward_range<T>& b) {
-    std::set<T> output;
-    std::set_intersection(a.begin(), a.end(), 
-                          b.begin(), b.end(),
-                          std::inserter(output, output.begin()));
-    return output;
-  }
+// std::set_intersection only works on sorted input ranges
+//   template <typename T>
+//   std::set<T>
+//   set_intersect(const forward_range<T>& a, const forward_range<T>& b) {
+//     std::set<T> output;
+//     std::set_intersection(a.begin(), a.end(), 
+//                           b.begin(), b.end(),
+//                           std::inserter(output, output.begin()));
+//     return output;
+//   }
 
   template <typename T>
   size_t intersection_size(const std::set<T>& a, const std::set<T>& b) {

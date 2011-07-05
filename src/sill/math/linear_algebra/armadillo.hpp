@@ -3,7 +3,10 @@
 
 #include <armadillo>
 
+#include <sill/range/forward_range.hpp>
 #include <sill/serialization/iterator.hpp>
+
+#include <sill/macros_def.hpp>
 
 namespace sill {
 
@@ -77,7 +80,7 @@ namespace sill {
     // compute the size of the resulting vector
     size_t n = 0;
     foreach(const arma::Col<T>& v, vectors) n += v.n_elem;
-    vec result(n);
+    arma::Col<T> result(n);
 
     // assign the vectors to the right indices
     n = 0;
@@ -90,6 +93,33 @@ namespace sill {
     return result;
   }
 
+  //! Read in a vector of values [val1,val2,...], ignoring an initial space
+  //! if necessary.
+  //! \todo Can we overload operator<< for this?  I tried but didn't get it to
+  //!       work.
+  template <typename T>
+  static void read_vec(std::istream& in, arma::Col<T>& v) {
+    char c;
+    T val;
+    v.resize(0);
+    in.get(c);
+    if (c == ' ')
+      in.get(c);
+    assert(c == '[');
+    if (in.peek() != ']') {
+      do {
+        if (!(in >> val))
+          assert(false);
+        v.insert(v.size(),val);
+        if (in.peek() == ',')
+          in.ignore(1);
+      } while (in.peek() != ']');
+    }
+    in.ignore(1);
+  }
+
 } // namespace sill
+
+#include <sill/macros_undef.hpp>
 
 #endif

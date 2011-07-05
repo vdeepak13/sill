@@ -64,8 +64,8 @@ namespace sill {
          " has variance and correlation s.t. the covariance equals" +
          " the variance, so the resulting covariance matrix is invalid.");
     }
-    sigma.resize(Xsize, Xsize);
-    sigma = covariance;
+    sigma.set_size(Xsize, Xsize);
+    sigma.fill(covariance);
     for (size_t i = 0; i < Xsize; ++i)
       sigma(i,i) = params.variance;
     if (Xsize > 2) {
