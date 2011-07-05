@@ -662,9 +662,9 @@ namespace sill {
   double norm_inf(const canonical_gaussian& x, const canonical_gaussian& y) {
     assert(x.arguments() == y.arguments());
     double vec_norm =
-      max(x.inf_vector() - y.inf_vector(x.argument_list()));
+      max(abs(x.inf_vector() - y.inf_vector(x.argument_list())));
     double mat_norm =
-      mat(x.inf_matrix() - y.inf_matrix(x.argument_list())).max();
+      mat(abs(x.inf_matrix() - y.inf_matrix(x.argument_list()))).max();
     return std::max(vec_norm, mat_norm);
   }
 
