@@ -116,8 +116,8 @@ namespace sill {
             n += v->size();
         }
       }
-      if (ind.size() != n)
-        ind.resize(n);
+      if (ind.n_elem != n)
+        ind.set_size(n);
       n = 0;
       foreach(vector_variable* v, vars) {
         std::map<vector_variable*, span>::const_iterator
@@ -158,8 +158,8 @@ namespace sill {
             n += v->size();
         }
       }
-      if (ind.size() != n)
-        ind.resize(n);
+      if (ind.n_elem != n)
+        ind.set_size(n);
       n = 0;
       foreach(vector_variable* v, vars) {
         std::map<vector_variable*, span>::const_iterator

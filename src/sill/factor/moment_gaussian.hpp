@@ -357,7 +357,7 @@ namespace sill {
       }
       // Transform vals to be sampled from this Gaussian distribution.
       mat At;
-      bool result = chol(cov, At);
+      bool result = arma::chol(At, cov);
       if (!result)
         throw invalid_operation("Cholesky decomposition failed in canonical_gaussian::sample");
 //      vals = A * vals + (mg.mean() - (A * vec(A.n_cols, 1.)));

@@ -222,7 +222,7 @@ namespace sill {
     foreach(double& val, mu)
       val = unif_real(rng);
     mat sigma(Xsize, Xsize, cov_strength);
-    sigma += spread * identity(Xsize);
+    sigma += spread * eye(Xsize,Xsize);
     return moment_gaussian(X, mu, sigma);
   }
 
@@ -313,10 +313,10 @@ namespace sill {
       val = unif_real(rng);
     unif_real = boost::uniform_real<double>(-c_max, c_max);
     mat coeff(Ysize, Xsize, 0.);
-    for (size_t j(0); j < coeff.size(); ++j)
+    for (size_t j(0); j < coeff.n_elem; ++j)
       coeff(j) = unif_real(rng);
     mat sigma(Ysize, Ysize, cov_strength);
-    sigma += spread * identity(Ysize);
+    sigma += spread * eye(Ysize,Ysize);
     return moment_gaussian(Y, mu, sigma, X, coeff);
   }
 
@@ -347,7 +347,7 @@ namespace sill {
       val = unif_real(rng);
     unif_real = boost::uniform_real<double>(-c_max, c_max);
     mat coeff(Ysize, Xsize, 0.);
-    for (size_t j(0); j < coeff.size(); ++j)
+    for (size_t j(0); j < coeff.n_elem; ++j)
       coeff(j) = unif_real(rng);
     mat sigma(Ysize, Ysize, 1.);
     return moment_gaussian(vector_var_vector(1,Y), mu, sigma,
