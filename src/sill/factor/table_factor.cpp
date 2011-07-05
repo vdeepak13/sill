@@ -455,7 +455,7 @@ namespace sill {
 
   void table_factor::set_record_indices(const finite_record& r,
                                         uvec& r_indices) const {
-    r_indices.resize(arg_seq.size());
+    r_indices.set_size(arg_seq.size());
     for (size_t i = 0; i < arg_seq.size(); ++i)
       r_indices[i] = r.index(arg_seq[i]);
   }

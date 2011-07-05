@@ -75,6 +75,14 @@ namespace sill {
     return a;
   }
 
+  //! Read vector from string.
+  template <typename T, typename CharT>
+  std::basic_istream<CharT>&
+  operator>>(std::basic_istream<CharT>& in, arma::Col<T>& v) {
+    read_vec(in, v);
+    return in;
+  }
+
   template <typename T>
   arma::Col<T> concat(const forward_range<const arma::Col<T>&> vectors) {
     // compute the size of the resulting vector
@@ -95,11 +103,11 @@ namespace sill {
 
   //! Read in a vector of values [val1,val2,...], ignoring an initial space
   //! if necessary.
-  //! \todo Can we overload operator<< for this?  I tried but didn't get it to
+  //! \todo Can we overload operator>> for this?  I tried but didn't get it to
   //!       work.
-  template <typename T>
-  static void read_vec(std::istream& in, arma::Col<T>& v) {
-    char c;
+  template <typename T, typename CharT>
+  void read_vec(std::basic_istream<CharT>& in, arma::Col<T>& v) {
+    CharT c;
     T val;
     v.resize(0);
     in.get(c);
@@ -116,6 +124,17 @@ namespace sill {
       } while (in.peek() != ']');
     }
     in.ignore(1);
+  }
+
+  /**
+   * Outer product free function.
+   * @todo (Joseph B.) I added this to maintain compatability with my sparse
+   *       linear algebra code.  This could be removed in the future once the
+   *       sparse LA code distinguishes between column/row vectors.
+   */
+  template <typename T>
+  arma::Mat<T> outer_product(const arma::Col<T>& a, const arma::Col<T>& b) {
+    return a * trans(b);
   }
 
 } // namespace sill

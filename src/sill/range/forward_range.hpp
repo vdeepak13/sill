@@ -7,8 +7,6 @@
 #include <list>
 #include <set> 
 
-#include <armadillo>
-
 #include <boost/array.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/type_traits/is_convertible.hpp>
@@ -80,12 +78,6 @@ namespace sill {
     //! Constructs a forward_range from std::set
     template <typename T>
     forward_range(const std::set<T>& range,
-                  typename enable_if< is_compatible_ref<const T&> >::type* = 0)
-      : base(range) { }
-
-    //! Constructs a forward_range from arma::Col
-    template <typename T>
-    forward_range(const arma::Col<T>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
       : base(range) { }
 

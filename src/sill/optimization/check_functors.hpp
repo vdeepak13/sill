@@ -54,14 +54,14 @@ namespace sill {
     grad_functor.gradient(grad_x, x);
     double grad_x_wrt_eta = grad_x.L2norm();
     grad_x_wrt_eta *= grad_x_wrt_eta;
-    vec errors(etas.size(), 0);
+    vec errors = zeros(etas.n_elem);
     OptVector x_;
     for (size_t i(0); i < k; ++i) {
       x_ = grad_x;
-      x_ *= etas(i);
+      x_ *= etas[i];
       x_ += x;
       double obj(obj_functor.objective(x_));
-      errors[i] = grad_x_wrt_eta - (obj - obj_x) / etas(i);
+      errors[i] = grad_x_wrt_eta - (obj - obj_x) / etas[i];
     }
     return errors;
   }

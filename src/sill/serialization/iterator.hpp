@@ -1,10 +1,13 @@
 #ifndef SILL_SERIALIZE_ITERATOR_HPP
 #define SILL_SERIALIZE_ITERATOR_HPP
-#include <sill/serialization/iarchive.hpp>
-#include <sill/serialization/oarchive.hpp>
+
 #include <iterator>
 
+#include <sill/serialization/iarchive.hpp>
+#include <sill/serialization/oarchive.hpp>
+
 namespace sill {
+
   /**
     Serializes the contents between the iterators begin and end.
     This version prefers the availability of RandomAccessIterator since it needs
@@ -68,5 +71,7 @@ namespace sill {
       result++;
     }
   }
+
 } // namespace sill
-#endif //PRL_SERIALIZE_ITERATOR_HPP
+
+#endif // #ifndef SILL_SERIALIZE_ITERATOR_HPP

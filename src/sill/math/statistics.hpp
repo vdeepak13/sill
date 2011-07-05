@@ -230,6 +230,13 @@ namespace sill {
     return extreme_index<T, std::less_equal<T> >(v);
   }
 
+  //! Return the index of the max value in the vector.
+  //! If multiple values are maximal, choose the first one.
+  template <typename T>
+  size_t max_index(const arma::Col<T>& v) {
+    return extreme_index<T, std::less_equal<T> >(v);
+  }
+
   //! Return the index of the min value in the vector.
   //! If multiple values are minimal, choose the first one.
   template <typename T>

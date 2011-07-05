@@ -14,7 +14,6 @@
 #include <sill/base/assignment.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/dataset/dataset.hpp>
-#include <sill/math/norms.hpp>
 #include <sill/range/forward_range.hpp>
 
 #include <sill/macros_def.hpp>
@@ -407,9 +406,9 @@ namespace sill {
 
   template <typename LA>
   void vector_dataset<LA>::normalize(const vec& means,
-                                 const vec& std_devs) {
-    assert(means.size() == dvector);
-    assert(std_devs.size() == dvector);
+                                     const vec& std_devs) {
+    assert(means.n_elem == dvector);
+    assert(std_devs.n_elem == dvector);
     vec stddevs(std_devs);
     for (size_t j(0); j < dvector; ++j) {
       if (stddevs[j] < 0)
@@ -429,20 +428,20 @@ namespace sill {
     foreach(vector_variable* v, vars)
       assert(this->has_variable(v));
     uvec vars_inds(vector_indices(vars));
-    assert(means.size() == vars_inds.size());
-    assert(std_devs.size() == vars_inds.size());
+    assert(means.n_elem == vars_inds.n_elem);
+    assert(std_devs.n_elem == vars_inds.n_elem);
     vec stddevs(std_devs);
-    for (size_t j(0); j < stddevs.size(); ++j) {
+    for (size_t j(0); j < stddevs.n_elem; ++j) {
       if (stddevs[j] < 0)
         assert(false);
       if (stddevs[j] == 0)
         stddevs[j] = 1;
     }
     for (size_t i(0); i < nrecords; ++i) {
-      for (size_t j(0); j < stddevs.size(); ++j) {
+      for (size_t j(0); j < stddevs.n_elem; ++j) {
         size_t j2(vars_inds[j]);
-        vector_data[i](j2) -= means(j);
-        vector_data[i](j2) /= stddevs(j);
+        vector_data[i](j2) -= means[j];
+        vector_data[i](j2) /= stddevs[j];
       }
     }
   }

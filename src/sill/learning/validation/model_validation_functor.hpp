@@ -34,7 +34,7 @@ namespace sill {
 
     typedef typename la_type::vector_type vector_type;
     typedef typename la_type::value_type  value_type;
-    typedef vector<value_type>            dense_vector_type;
+    typedef arma::Col<value_type>         dense_vector_type;
 
     /**
      * Enumeration over common scores.

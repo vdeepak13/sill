@@ -799,9 +799,8 @@ namespace sill {
           ("dataset::covariance() given variable not in dataset");
       Xsize += v->size();
     }
-    if (mu.size() != Xsize)
-      mu.resize(Xsize);
-    mu.zeros();
+    if (mu.n_elem != Xsize)
+      mu.zeros(Xsize);
     if (nrecords == 0)
       return;
     foreach(const record_type& r, records()) {
@@ -1014,7 +1013,7 @@ namespace sill {
     }
     means /= total_ds_weight;
     std_devs /= total_ds_weight;
-    std_devs = sqrt(std_devs - elem_mult(means, means));
+    std_devs = sqrt(std_devs - means % means);
     normalize(means, std_devs);
     return std::make_pair(means, std_devs);
   }
@@ -1033,7 +1032,7 @@ namespace sill {
     value_type total_ds_weight(0);
     uvec vars_inds(vector_indices(vars));
     for (size_t i = 0; i < nrecords; ++i) {
-      for (size_t j = 0; j < vars_inds.size(); ++j) {
+      for (size_t j = 0; j < vars_inds.n_elem; ++j) {
         size_t j2(vars_inds[j]);
         means[j] += weight(i) * vector(i,j2);
         std_devs[j] += weight(i) * vector(i,j2) * vector(i,j2);
@@ -1047,7 +1046,7 @@ namespace sill {
     }
     means /= total_ds_weight;
     std_devs /= total_ds_weight;
-    std_devs = sqrt(std_devs - elem_mult(means, means));
+    std_devs = sqrt(std_devs - means % means);
     normalize(means, std_devs, vars);
     return std::make_pair(means, std_devs);
   }
@@ -1067,7 +1066,7 @@ namespace sill {
   template <typename LA>
   void dataset<LA>::make_weighted(value_type w) {
     assert(weighted == false);
-    weights_.resize(capacity());
+    weights_.set_size(capacity());
     for (size_t i = 0; i < nrecords; ++i)
       weights_[i] = w;
     weighted = true;
@@ -1075,7 +1074,7 @@ namespace sill {
 
   template <typename LA>
   void dataset<LA>::set_weights(const vec& weights_) {
-    assert(weights_.size() == size());
+    assert(weights_.n_elem == size());
     weighted = true;
     this->weights_ = weights_;
   }

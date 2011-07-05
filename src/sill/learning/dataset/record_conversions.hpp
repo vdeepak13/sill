@@ -63,7 +63,7 @@ namespace sill {
     size_t i = 0; // index into x
     vec val;
     foreach(vector_variable* v, X) {
-      val.resize(v->size());
+      val.set_size(v->size());
       if (i + v->size() > x.size()) {
         throw std::invalid_argument
           (std::string("add_vector2vector_assignment(X,x,va)") +

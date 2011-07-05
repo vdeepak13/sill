@@ -16,7 +16,7 @@ namespace sill {
        po::value<size_t>(&(cpl_params.regularization))->default_value(2),
        "Regularization: 0 (none), 2 (L2).")
       ("lambdas",
-       po::value<vec>(&(cpl_params.lambdas))->default_value(vec(1,0)),
+       po::value<vec>(&(cpl_params.lambdas))->default_value(zeros<vec>(1)),
        "Regularization parameters (whose meaning depends on the factor type).")
       ("init_iterations",
        po::value<size_t>(&(cpl_params.init_iterations))->default_value(10000),
@@ -88,4 +88,4 @@ namespace sill {
     }
   }
 
-}; // namespace sill
+} // namespace sill

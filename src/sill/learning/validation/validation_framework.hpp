@@ -131,7 +131,7 @@ namespace sill {
     vec best_lambdas() const {
       if (lambdas_.size() == 0)
         return vec();
-      assert(single_results_.size() == lambdas_.size());
+      assert(single_results_.n_elem == lambdas_.size());
       size_t best_i = max_index(single_results_);
       return lambdas_[best_i];
     }
@@ -144,8 +144,8 @@ namespace sill {
 
     //! Returns standard errors for main result/score type.
     vec stderrs() const {
-      vec v(single_results_.size(), 0);
-      assert(single_results_.size() == results_.size());
+      vec v(single_results_.n_elem, 0);
+      assert(single_results_.n_elem == results_.size());
       for (size_t i = 0; i < results_.size(); ++i) {
         v[i] = generalized_deviation(results_[i], run_combo_type);
       }
@@ -164,7 +164,7 @@ namespace sill {
       foreach(const string_vecvec_pair& svvp, all_results_) {
         vec v(svvp.second.size(), 0);
         assert(single_all_results_.count(svvp.first) &&
-               single_all_results_[svvp.first].size() == svvp.second.size());
+               single_all_results_[svvp.first].n_elem == svvp.second.size());
         for (size_t i = 0; i < svvp.second.size(); ++i) {
           v[i] = generalized_deviation(svvp.second[i], run_combo_type);
         }
@@ -192,7 +192,7 @@ namespace sill {
     void print(std::ostream& out, size_t level) const {
       typedef std::pair<std::string, vec> string_vec_pair;
       if (lambdas_.size() != 0) {
-        assert(single_results_.size() == lambdas_.size());
+        assert(single_results_.n_elem == lambdas_.size());
         size_t best_i = max_index(single_results_);
         out << "Best lambda: " << lambdas_[best_i] << "\n"
             << "  " << statistics::generalized_mean_string(run_combo_type)
@@ -202,7 +202,7 @@ namespace sill {
             <<"\n";
         if (level >= 1) {
           foreach(const string_vec_pair& svp, single_all_results_) {
-            assert(best_i < svp.second.size());
+            assert(best_i < svp.second.n_elem);
             assert(all_results_.count(svp.first) &&
                    best_i < safe_get(all_results_,svp.first).size());
             out << "  " << svp.first << " "
@@ -231,7 +231,7 @@ namespace sill {
           assert(false); // NOT YET IMPLEMENTED
         }
       } else {
-        assert(single_results_.size() == 1 &&
+        assert(single_results_.n_elem == 1 &&
                results_.size() == 1);
         out << statistics::generalized_mean_string(run_combo_type)
             << ": " << single_results_[0] << "\n"
@@ -240,7 +240,7 @@ namespace sill {
             << "\n";
         if (level >= 1) {
           foreach(const string_vec_pair& svp, single_all_results_) {
-            assert(svp.second.size() == 1);
+            assert(svp.second.n_elem == 1);
             assert(all_results_.count(svp.first) &&
                    safe_get(all_results_,svp.first).size() == 1);
             out << svp.first << " "
@@ -318,7 +318,7 @@ namespace sill {
       } else {
         size_t oldsize(lambdas_.size());
         lambdas_.resize(oldsize + lambdas_zoom.size());
-        single_results_.resize(oldsize + lambdas_zoom.size(), true);
+        single_results_.reshape(oldsize + lambdas_zoom.size(), 1);
         assert(lambdas_zoom.size() == val_func.results.size());
         for (size_t j(0); j < lambdas_zoom.size(); ++j) {
           lambdas_[oldsize + j] = lambdas_zoom[j];
@@ -326,9 +326,9 @@ namespace sill {
         }
         typedef std::pair<std::string, vec> string_vec_pair;
         foreach(const string_vec_pair& svp, val_func.all_results) {
-          assert(lambdas_zoom.size() == svp.second.size());
-          single_all_results_[svp.first].resize(oldsize + lambdas_zoom.size(),
-                                                true);
+          assert(lambdas_zoom.size() == svp.second.n_elem);
+          single_all_results_[svp.first].reshape
+            (oldsize + lambdas_zoom.size(), 1);
           for (size_t j(0); j < lambdas_zoom.size(); ++j) {
             single_all_results_[svp.first][oldsize + j] = svp.second[j];
           }
@@ -363,16 +363,14 @@ namespace sill {
         results_.resize(oldsize + lambdas_zoom.size());
         for (size_t i = 0; i < lambdas_zoom.size(); ++i) {
           lambdas_[oldsize + i] = lambdas_zoom[i];
-          results_[oldsize + i].resize(num_runs);
-          results_[oldsize + i].zeros();
+          results_[oldsize + i].zeros(num_runs);
           results_[oldsize + i][run_i] = val_func.results[i];
         }
         foreach(const string_vec_pair& svp, val_func.all_results) {
-          assert(lambdas_zoom.size() == svp.second.size());
+          assert(lambdas_zoom.size() == svp.second.n_elem);
           all_results_[svp.first].resize(oldsize + lambdas_zoom.size());
           for (size_t i = 0; i < lambdas_zoom.size(); ++i) {
-            all_results_[svp.first][oldsize + i].resize(num_runs);
-            all_results_[svp.first][oldsize + i].zeros();
+            all_results_[svp.first][oldsize + i].zeros(num_runs);
             all_results_[svp.first][oldsize + i][run_i] = svp.second[i];
           }
         }
@@ -388,7 +386,7 @@ namespace sill {
           results_[i][run_i] = val_func.results[i];
         }
         foreach(const string_vec_pair& svp, val_func.all_results) {
-          assert(lambdas_zoom.size() == svp.second.size());
+          assert(lambdas_zoom.size() == svp.second.n_elem);
           for (size_t i = lambdas_.size() - lambdas_zoom.size();
                i < lambdas_.size(); ++i) {
             all_results_[svp.first][i][run_i] = svp.second[i];
@@ -406,17 +404,15 @@ namespace sill {
       assert(fold_i < nfolds);
       if (fold_i == 0) {
         results_.resize(1);
-        results_[0].resize(nfolds);
-        results_[0].clear();
+        results_[0].zeros(nfolds);
       } else {
-        assert(results_.size() == 1 && results_[0].size() == nfolds);
+        assert(results_.size() == 1 && results_[0].n_elem == nfolds);
       }
       results_[0][fold_i] = res;
       foreach(const result_value_pair& rvp, mv_func.result_map()) {
         if (fold_i == 0) {
           all_results_[rvp.first].resize(1);
-          all_results_[rvp.first][0].resize(nfolds);
-          all_results_[rvp.first][0].clear();
+          all_results_[rvp.first][0].zeros(nfolds);
         } else {
           assert(all_results_[rvp.first].size() == 1);
           assert(all_results_[rvp.first][0].size() == nfolds);
@@ -429,14 +425,14 @@ namespace sill {
     //!  Combine results_ into single_results_
     //!  and all_results_ into single_all_results_.
     void combine_results() {
-      single_results_.resize(results_.size());
+      single_results_.set_size(results_.size());
       for (size_t i = 0; i < results_.size(); ++i) {
         single_results_[i] =
           generalized_mean(results_[i], run_combo_type);
       }
       single_all_results_.clear();
       foreach(const std::string& s, keys(all_results_)) {
-        single_all_results_[s].resize(results_.size());
+        single_all_results_[s].set_size(results_.size());
         for (size_t i = 0; i < results_.size(); ++i) {
           single_all_results_[s][i] = 
             generalized_mean(all_results_[s][i], run_combo_type);

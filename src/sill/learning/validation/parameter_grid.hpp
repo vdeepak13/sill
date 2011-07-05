@@ -2,7 +2,7 @@
 #ifndef SILL_LEARNING_DISCRIMINATIVE_PARAMETER_GRID_HPP
 #define SILL_LEARNING_DISCRIMINATIVE_PARAMETER_GRID_HPP
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 /**
  * \file parameter_grid.hpp  This contains helper functions for dealing with

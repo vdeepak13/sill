@@ -672,7 +672,7 @@ namespace sill {
       vector_assignment& va = a.vector();
       j2 = 0; // index into vv_vector_var_indices
       for (size_t j(0); j < ds.num_vector(); ++j) {
-        if (j2 < vv_vector_var_indices.size() &&
+        if (j2 < vv_vector_var_indices.n_elem &&
             (size_t)(vv_vector_var_indices[j2]) == j) {
           ++j2;
           continue;
@@ -1083,7 +1083,7 @@ namespace sill {
       std::set<vector_variable*>
         old_vector_class_vars(vector_class_vars.begin(),
                               vector_class_vars.end());
-      vv_vector_var_indices.resize(vector_indices.size());
+      vv_vector_var_indices.set_size(vector_indices.size());
       size_t j2(0); // index into vv_vector_var_indices
       for (size_t j = 0; j < num_vector(); ++j) {
         if (vector_indices.count(j)) {

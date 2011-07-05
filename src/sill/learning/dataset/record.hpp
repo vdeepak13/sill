@@ -6,7 +6,6 @@
 #include <sill/base/variables.hpp>
 #include <sill/learning/dataset/finite_record.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
-#include <sill/math/vector.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -348,7 +347,7 @@ namespace sill {
            it != vector_numbering_ptr->end();
            ++it) {
         this->vector().set_subvector
-          (irange(it->second, it->second + it->first->size()),
+          (span(it->second, it->second + it->first->size() - 1),
            safe_get(a.vector(),
                     (vector_variable*)(safe_get(vmap,(variable*)(it->first)))));
       }

@@ -61,8 +61,7 @@ namespace sill {
       typedef std::pair<std::string, value_type> result_value_pair;
 
       std::vector<size_t> sorted_lambda_indices(sorted_indices(lambdas));
-      results.resize(lambdas.size());
-      results.zeros_memset();
+      results.zeros(lambdas.size());
       all_results.clear();
       boost::mt11213b rng(random_seed);
 
