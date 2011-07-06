@@ -75,14 +75,6 @@ namespace sill {
     return a;
   }
 
-  //! Read vector from string.
-  template <typename T, typename CharT>
-  std::basic_istream<CharT>&
-  operator>>(std::basic_istream<CharT>& in, arma::Col<T>& v) {
-    read_vec(in, v);
-    return in;
-  }
-
   template <typename T>
   arma::Col<T> concat(const forward_range<const arma::Col<T>&> vectors) {
     // compute the size of the resulting vector
@@ -138,6 +130,18 @@ namespace sill {
   }
 
 } // namespace sill
+
+namespace arma {
+
+  //! Read vector from string.
+  template <typename T, typename CharT, typename Traits>
+  std::basic_istream<CharT, Traits>&
+  operator>>(std::basic_istream<CharT, Traits>& in, Col<T>& v) {
+    sill::read_vec(in, v);
+    return in;
+  }
+
+}
 
 #include <sill/macros_undef.hpp>
 
