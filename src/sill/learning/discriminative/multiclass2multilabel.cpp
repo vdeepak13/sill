@@ -92,7 +92,7 @@ namespace sill {
       table_factor probs(probabilities(example));
       std::vector<vec> v(labels_.size());
       for (size_t j(0); j < labels_.size(); ++j) {
-        v[j].resize(labels_[j]->size());
+        v[j].set_size(labels_[j]->size());
         size_t j2(0);
         foreach(double val, probs.marginal(make_domain(labels_[j])).values()) {
           v[j][j2] = val;
@@ -106,7 +106,7 @@ namespace sill {
       table_factor probs(probabilities(example));
       std::vector<vec> v(labels_.size());
       for (size_t j(0); j < labels_.size(); ++j) {
-        v[j].resize(labels_[j]->size());
+        v[j].set_size(labels_[j]->size());
         size_t j2(0);
         foreach(double val, probs.marginal(make_domain(labels_[j])).values()) {
           v[j][j2] = val;

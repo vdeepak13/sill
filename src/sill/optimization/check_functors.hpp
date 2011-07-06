@@ -54,7 +54,7 @@ namespace sill {
     grad_functor.gradient(grad_x, x);
     double grad_x_wrt_eta = grad_x.L2norm();
     grad_x_wrt_eta *= grad_x_wrt_eta;
-    vec errors = zeros(etas.n_elem);
+    vec errors = zeros(etas.size());
     OptVector x_;
     for (size_t i(0); i < k; ++i) {
       x_ = grad_x;

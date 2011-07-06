@@ -799,7 +799,7 @@ namespace sill {
           ("dataset::covariance() given variable not in dataset");
       Xsize += v->size();
     }
-    if (mu.n_elem != Xsize)
+    if (mu.size() != Xsize)
       mu.zeros(Xsize);
     if (nrecords == 0)
       return;
@@ -1032,7 +1032,7 @@ namespace sill {
     value_type total_ds_weight(0);
     uvec vars_inds(vector_indices(vars));
     for (size_t i = 0; i < nrecords; ++i) {
-      for (size_t j = 0; j < vars_inds.n_elem; ++j) {
+      for (size_t j = 0; j < vars_inds.size(); ++j) {
         size_t j2(vars_inds[j]);
         means[j] += weight(i) * vector(i,j2);
         std_devs[j] += weight(i) * vector(i,j2) * vector(i,j2);
@@ -1074,7 +1074,7 @@ namespace sill {
 
   template <typename LA>
   void dataset<LA>::set_weights(const vec& weights_) {
-    assert(weights_.n_elem == size());
+    assert(weights_.size() == size());
     weighted = true;
     this->weights_ = weights_;
   }

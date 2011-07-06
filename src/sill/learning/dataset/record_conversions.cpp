@@ -23,7 +23,7 @@ namespace sill {
   vector_assignment2vector(const vector_assignment& va,
                            const vector_var_vector& vector_seq,
                            vec& vecdata) {
-    vecdata.resize(vector_size(vector_seq));
+    vecdata.set_size(vector_size(vector_seq));
     size_t k(0); // index into vecdata
     vector_assignment::const_iterator va_end = va.end();
     foreach(vector_variable* v, vector_seq) {

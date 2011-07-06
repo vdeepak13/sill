@@ -8,7 +8,7 @@
 #include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/learning/validation/parameter_grid.hpp>
-#include <sill/math/vector.hpp>
+//#include <sill/math/vector.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -50,8 +50,8 @@ namespace sill {
     boost::mt11213b rng(random_seed);
     boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
     lambdas.resize(0);
-    means.resize(0);
-    stderrs.resize(0);
+    means.set_size(0);
+    stderrs.set_size(0);
 
     // These hold values for each round of zooming:
     std::vector<vec>
@@ -67,10 +67,8 @@ namespace sill {
         lambdas_zoom =
           zoom_parameter_grid(lambdas, lambdas[best_i], cv_params.nvals,
                               cv_params.log_scale);
-        means_zoom.resize(lambdas_zoom.size());
-        means_zoom.zeros();
-        stderrs_zoom.resize(lambdas_zoom.size());
-        stderrs_zoom.zeros();
+        means_zoom.zeros(lambdas_zoom.size());
+        stderrs_zoom.zeros(lambdas_zoom.size());
       }
       vec best_lambda(cv_functor(means_zoom, stderrs_zoom, lambdas_zoom,
                                  cv_params.nfolds, unif_int(rng)));
@@ -88,8 +86,8 @@ namespace sill {
       }
       size_t oldsize(lambdas.size());
       lambdas.resize(oldsize + lambdas_zoom.size());
-      means.resize(oldsize + means_zoom.size(), true);
-      stderrs.resize(oldsize + stderrs_zoom.size(), true);
+      means.reshape(oldsize + means_zoom.size(), 1);
+      stderrs.reshape(oldsize + stderrs_zoom.size(), 1);
       for (size_t j(0); j < lambdas_zoom.size(); ++j) {
         lambdas[oldsize + j] = lambdas_zoom[j];
         means[oldsize + j] = means_zoom[j];

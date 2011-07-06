@@ -103,7 +103,7 @@ namespace sill {
       }
       // Load the image
       vec& vecdata = current_rec.vector();
-      vecdata.resize(imgsize + image::NMETADATA);
+      vecdata.set_size(imgsize + image::NMETADATA);
       for (size_t i = 0; i < imgsize; ++i)
         if (!(is >> vecdata[i]))
           assert(false);

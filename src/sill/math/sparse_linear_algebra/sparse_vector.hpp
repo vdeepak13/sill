@@ -186,33 +186,33 @@ namespace sill {
       std::vector<size_type> subinds;
       std::vector<value_type> subvals;
       size_type newi = 0;
-      for (size_type k = 0; k < ind.n_elem; ++k) {
+      for (size_type k = 0; k < ind.size(); ++k) {
         if (this->operator()(ind[k]) != 0) {
           subinds.push_back(newi);
           subvals.push_back(this->operator()(ind[k]));
         }
       }
-      return sparse_vector(ind.n_elem, subinds, subvals);
+      return sparse_vector(ind.size(), subinds, subvals);
     }
 
     //! Return the index for the i^th non-zero element.
     //! WARNING: This is not bound-checked.
-    size_type index(size_type i) const { return indices_._data()[i]; }
+    size_type index(size_type i) const { return indices_[i]; }
 
     //! Return a mutable reference to the index for the i^th non-zero element.
     //! WARNING: This is not bound-checked.
     size_type& index(size_type i) {
       sorted_ = false;
-      return indices_._data()[i];
+      return indices_[i];
     }
 
     //! Return the value for the i^th non-zero element.
     //! WARNING: This is not bound-checked.
-    value_type value(size_type i) const { return values_._data()[i]; }
+    value_type value(size_type i) const { return values_[i]; }
 
     //! Return a mutable reference to the value for the i^th non-zero element.
     //! WARNING: This is not bound-checked.
-    value_type& value(size_type i) { return values_._data()[i]; }
+    value_type& value(size_type i) { return values_[i]; }
 
     //! Indices of non-zeros.
     const arma::Col<size_type>& indices() const { return indices_; }

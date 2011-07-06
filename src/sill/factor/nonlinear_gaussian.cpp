@@ -61,7 +61,7 @@ namespace sill {
 
   vec nonlinear_gaussian::mean(const vec& input) const {
     vec x = fixed_input;
-    for(size_t i = 0; i < input.n_elem; i++)
+    for(size_t i = 0; i < input.size(); i++)
       x[input_map[i]] = input[i];
       return fmean()(x);
   }

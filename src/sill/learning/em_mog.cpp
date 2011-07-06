@@ -1,6 +1,5 @@
 #include <sill/learning/em_mog.hpp>
 #include <sill/learning/parameter/gaussian.hpp>
-#include <sill/math/linear_algebra.hpp>
 
 #include <sill/macros_def.hpp>
 

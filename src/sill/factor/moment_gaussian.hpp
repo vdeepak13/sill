@@ -152,7 +152,7 @@ namespace sill {
 
     //! Returns the total vector size (length) of the head variables
     size_t size_head() const {
-      return cmean.n_elem;
+      return cmean.size();
     }
 
     //! Returns the total vector size (length) of the tail variables
@@ -336,7 +336,7 @@ namespace sill {
       // Sample vals ~ Normal(1's, Identity),
       // i.e., the multivariate standard normal distribution.
       vec vals = zeros(vector_size(head_list));
-      if (vals.n_elem == 0)
+      if (vals.size() == 0)
         return vector_assignment();
       boost::normal_distribution<double> normal_dist(0,1);
       bool use_different_rng(false);

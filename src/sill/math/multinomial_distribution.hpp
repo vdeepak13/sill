@@ -1,8 +1,8 @@
 #ifndef SILL_MULTINOMIAL_DISTRIBUTION_HPP
 #define SILL_MULTINOMIAL_DISTRIBUTION_HPP
 
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/operations.hpp>
-#include <sill/math/vector.hpp>
 
 namespace sill {
   

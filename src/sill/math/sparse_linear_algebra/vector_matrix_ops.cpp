@@ -34,10 +34,10 @@ namespace sill {
   //============================================================================
 
   template <>
-  matrix<double>&
+  arma::Mat<double>&
   operator+=<double,size_t>
-  (matrix<double>& A,
-   const rank_one_matrix<vector<double>,sparse_vector<double,size_t> >& B) {
+  (arma::Mat<double>& A,
+   const rank_one_matrix<arma::Col<double>,sparse_vector<double,size_t> >& B) {
     assert(A.n_rows == B.n_rows && A.n_cols == B.n_cols);
     int n = A.n_rows;
     int inc = 1;

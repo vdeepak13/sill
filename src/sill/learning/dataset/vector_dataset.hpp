@@ -347,7 +347,7 @@ namespace sill {
 //      for (size_t i = n_previous; i < n; ++i)
 //        vector_data[i].resize(dvector);
       if (weighted)
-        weights_.resize(n, true);
+        weights_.set_size(n, true);
     }
   }
 
@@ -392,7 +392,7 @@ namespace sill {
     for (size_t i = 0; i < nrecords; ++i) {
       means += weight(i) * vector_data[i];
       tmpvec = vector_data[i];
-      tmpvec.elem_mult(tmpvec);
+      tmpvec %= tmpvec;
       std_devs += weight(i) * tmpvec;
       total_ds_weight += weight(i);
     }
@@ -407,8 +407,8 @@ namespace sill {
   template <typename LA>
   void vector_dataset<LA>::normalize(const vec& means,
                                      const vec& std_devs) {
-    assert(means.n_elem == dvector);
-    assert(std_devs.n_elem == dvector);
+    assert(means.size() == dvector);
+    assert(std_devs.size() == dvector);
     vec stddevs(std_devs);
     for (size_t j(0); j < dvector; ++j) {
       if (stddevs[j] < 0)
@@ -428,20 +428,20 @@ namespace sill {
     foreach(vector_variable* v, vars)
       assert(this->has_variable(v));
     uvec vars_inds(vector_indices(vars));
-    assert(means.n_elem == vars_inds.n_elem);
-    assert(std_devs.n_elem == vars_inds.n_elem);
+    assert(means.size() == vars_inds.size());
+    assert(std_devs.size() == vars_inds.size());
     vec stddevs(std_devs);
-    for (size_t j(0); j < stddevs.n_elem; ++j) {
+    for (size_t j(0); j < stddevs.size(); ++j) {
       if (stddevs[j] < 0)
         assert(false);
       if (stddevs[j] == 0)
         stddevs[j] = 1;
     }
     for (size_t i(0); i < nrecords; ++i) {
-      for (size_t j(0); j < stddevs.n_elem; ++j) {
+      for (size_t j(0); j < stddevs.size(); ++j) {
         size_t j2(vars_inds[j]);
-        vector_data[i](j2) -= means[j];
-        vector_data[i](j2) /= stddevs[j];
+        vector_data[i][j2] -= means[j];
+        vector_data[i][j2] /= stddevs[j];
       }
     }
   }
@@ -452,21 +452,24 @@ namespace sill {
       assert(this->has_variable(v));
     uvec vars_inds(vector_indices(vars));
     for (size_t i(0); i < nrecords; ++i) {
-      double normalizer(norm_2(vector_data[i](vars_inds)));
+      double normalizer(norm(vector_data[i](vars_inds), 2));
       if (normalizer == 0)
         continue;
       foreach(size_t j2, vars_inds)
-        vector_data[i](j2) /= normalizer;
+        vector_data[i][j2] /= normalizer;
     }
   }
 
   template <typename LA>
   void vector_dataset<LA>::randomize(double random_seed) {
+    // TO DO: FIX SWAP CALLS LATER?
     boost::mt11213b rng(static_cast<unsigned>(random_seed));
     for (size_t i = 0; i < nrecords-1; ++i) {
       size_t j = (size_t)(boost::uniform_int<int>(i,nrecords-1)(rng));
-      finite_data[i].swap(finite_data[j]);
-      vector_data[i].swap(vector_data[j]);
+//      finite_data[i].swap(finite_data[j]);
+//      vector_data[i].swap(vector_data[j]);
+      std::swap(finite_data[i], finite_data[j]);
+      std::swap(vector_data[i], vector_data[j]);
       if (weighted)
         std::swap(weights_[i], weights_[j]);
     }

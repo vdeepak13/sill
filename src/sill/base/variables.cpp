@@ -162,7 +162,7 @@ namespace sill {
           notin_vset_indices[notin++] = n++;
       }
     }
-    assert(n == in_vset_indices.n_elem + notin_vset_indices.n_elem);
+    assert(n == in_vset_indices.size() + notin_vset_indices.size());
   }
 
 }; // namespace sill

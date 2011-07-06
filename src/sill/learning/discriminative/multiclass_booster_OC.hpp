@@ -237,7 +237,7 @@ namespace sill {
     multiclass_booster_OC(const datasource& ds,
                           const multiclass_booster_OC_parameters& params)
       : base(ds, params.weak_learner.get()) {
-      tmp_vector.resize(nclasses_);
+      tmp_vector.set_size(nclasses_);
     }
 
     // Prediction methods
@@ -361,7 +361,7 @@ namespace sill {
       colorings.resize(iteration_);
       for (size_t t = 0; t < iteration_; ++t)
         read_vec(is, colorings[t]);
-      tmp_vector.resize(nclasses_);
+      tmp_vector.set_size(nclasses_);
       return true;
     }
 

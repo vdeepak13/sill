@@ -122,10 +122,8 @@ namespace sill {
     // Getters and setters: dimensions
     //==========================================================================
 
-    using base::n_cols;
-    using base::size1;
-    using base::n_rows;
-    using base::size2;
+    using base::num_cols;
+    using base::num_rows;
     using base::size;
 
     /**
@@ -141,7 +139,7 @@ namespace sill {
      */
     void resize(size_type m, size_type n, size_type k = 0,
                 bool copy_data = false) {
-      if (m == m_ && n == n_ && k == k_)
+      if (m == n_rows && n == n_cols && k == k_)
         return;
       if (k > m * n) {
         throw std::invalid_argument
@@ -153,8 +151,8 @@ namespace sill {
         assert(false); // TO DO
       } else {
         resize_data(k, false);
-        m_ = m;
-        n_ = n;
+        n_rows = m;
+        n_cols = n;
         k_ = k;
       }
     }
@@ -172,7 +170,7 @@ namespace sill {
     void reserve(size_type cap) {
       if (cap <= capacity())
         return;
-      if (cap > m_ * n_)
+      if (cap > n_rows * n_cols)
         throw std::invalid_argument
           ("coo_matrix::reserve() was given capacity > n_rows * n_cols.");
       resize_data(cap, true);
@@ -218,7 +216,7 @@ namespace sill {
     //! matrix by directly inserting elements into row_indices, col_indices,
     //! and values.
     void set_num_non_zeros(size_type new_k) {
-      assert(new_k <= m_ * n_);
+      assert(new_k <= n_rows * n_cols);
       if (k_ > row_indices_.size())
         resize_data(new_k, true);
       k_ = new_k;
@@ -275,7 +273,7 @@ namespace sill {
     //! Sets this matrix to be its own transpose.
     void set_transpose() {
       row_indices().swap(col_indices());
-      std::swap(m_, n_);
+      std::swap(n_rows, n_cols);
     }
 
     //! Returns the transpose of this matrix.
@@ -398,8 +396,8 @@ namespace sill {
           (std::string("coo_matrix<T>::reset_nocopy") +
            " was given arguments with non-matching dimensions.");
       }
-      m_ = m;
-      n_ = n;
+      n_rows = m;
+      n_cols = n;
       row_indices_.reset_nocopy(new_row_indices);
       col_indices_.reset_nocopy(new_col_indices);
       values_.reset_nocopy(new_values);
@@ -409,17 +407,17 @@ namespace sill {
     //! WARNING: Do not use this unless you know what you are doing!
     void
     unsafe_set_mnk(size_type newm, size_type newn, size_type newk) {
-      m_ = newm;
-      n_ = newn;
+      n_rows = newm;
+      n_cols = newn;
       k_ = newk;
     }
+
+    using base::n_rows;
+    using base::n_cols;
 
     // Protected data and methods
     //==========================================================================
   protected:
-
-    using base::m_;
-    using base::n_;
 
     //! Number of non-zero elements.
     size_type k_;

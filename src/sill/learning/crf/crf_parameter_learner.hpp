@@ -701,16 +701,16 @@ namespace sill {
       my_everything_with_hd_count_ = 0;
 
       regularization.regularization = params.regularization;
-      if (crf_factor_reg_type::nlambdas == params.lambdas.n_elem) {
+      if (crf_factor_reg_type::nlambdas == params.lambdas.size()) {
         regularization.lambdas = params.lambdas;
       } else {
-        if (params.lambdas.n_elem == 1) {
+        if (params.lambdas.size() == 1) {
           regularization.lambdas = params.lambdas[0];
         } else {
           throw std::invalid_argument
             (std::string("crf_parameter_learner was given parameters with")
              + " regularization parameters (lambdas) of length "
-             + to_string(params.lambdas.n_elem)
+             + to_string(params.lambdas.size())
              + " but needed lambdas of length "
              + to_string(regularization.lambdas.size()));
         }

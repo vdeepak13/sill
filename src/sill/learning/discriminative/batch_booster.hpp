@@ -315,7 +315,7 @@ namespace sill {
       double edge;
       params.weak_learner->random_seed
         (boost::uniform_int<int>(0, std::numeric_limits<int>::max())(rng));
-      const std::vector<double>& distribution = resampler.distribution();
+      const vec& distribution = resampler.distribution();
       if (BATCH_BOOSTER_DEBUG) {
         double min_dist = 1;
         for (size_t i(0); i < distribution.size(); ++i) {

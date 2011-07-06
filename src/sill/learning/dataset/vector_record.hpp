@@ -354,7 +354,7 @@ namespace sill {
     vector_record& operator=(const vector_record& rec) {
       vector_numbering_ptr = rec.vector_numbering_ptr;
       if (vec_own) {
-        vec_ptr->resize(rec.vec_ptr->size());
+        vec_ptr->set_size(rec.vec_ptr->size());
         for (size_t j(0); j < rec.vec_ptr->size(); ++j)
           vec_ptr->operator[](j) = rec.vec_ptr->operator[](j);
       } else {
@@ -406,7 +406,7 @@ namespace sill {
           size_t vector_dim) {
       this->vector_numbering_ptr = vector_numbering_ptr;
       if (vec_own) {
-        vec_ptr->resize(vector_dim);
+        vec_ptr->set_size(vector_dim);
       } else {
         vec_own = true;
         vec_ptr = new vector_type(vector_dim);
@@ -420,7 +420,7 @@ namespace sill {
                                                    *vector_numbering_ptr);
       size_t vdim = vector_size(ds_info.vector_seq);
       if (vec_own) {
-        vec_ptr->resize(vdim);
+        vec_ptr->set_size(vdim);
       } else {
         vec_own = true;
         vec_ptr = new vector_type(vdim);

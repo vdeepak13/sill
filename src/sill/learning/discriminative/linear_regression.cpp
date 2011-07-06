@@ -45,7 +45,7 @@ namespace sill {
     }
     weights_.b = sum(Ydata_own, 1);
     weights_.b /= Ydata_own.n_rows;
-    Ydata_own -= repmat(weights_.b, Ydata().n_rows, 1, true);
+    Ydata_own -= repmat(trans(weights_.b), Ydat(a).n_rows, 1);
     bool result(false);
     switch(params.regularization) {
     case 0: // none

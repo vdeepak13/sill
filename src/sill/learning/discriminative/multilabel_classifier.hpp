@@ -398,7 +398,8 @@ namespace sill {
     std::vector<dense_vector_type> c(labels_.size());
     std::vector<size_t> preds(predict(example));
     for (size_t j = 0; j < labels_.size(); ++j) {
-      c[j].resize(labels_[j]->size(), -1);
+      c[j].set_size(labels_[j]->size());
+      c[j].fill(-1);
       c[j][preds[j]] = 1;
     }
     return c;
@@ -410,7 +411,8 @@ namespace sill {
     std::vector<dense_vector_type> c(labels_.size());
     std::vector<size_t> preds(predict(example));
     for (size_t j = 0; j < labels_.size(); ++j) {
-      c[j].resize(labels_[j]->size(), -1);
+      c[j].set_size(labels_[j]->size());
+      c[j].fill(-1);
       c[j][preds[j]] = 1;
     }
     return c;
@@ -423,7 +425,7 @@ namespace sill {
     std::vector<dense_vector_type> c(labels_.size());
     std::vector<size_t> preds(predict(example));
     for (size_t j = 0; j < labels_.size(); ++j) {
-      c[j].resize(labels_[j]->size(), 0);
+      c[j].zeros(labels_[j]->size());
       c[j][preds[j]] = 1;
     }
     return c;
@@ -436,7 +438,7 @@ namespace sill {
     std::vector<dense_vector_type> c(labels_.size());
     std::vector<size_t> preds(predict(example));
     for (size_t j = 0; j < labels_.size(); ++j) {
-      c[j].resize(labels_[j]->size(), 0);
+      c[j].zeros(labels_[j]->size());
       c[j][preds[j]] = 1;
     }
     return c;

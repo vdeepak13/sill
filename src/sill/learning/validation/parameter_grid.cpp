@@ -1,5 +1,6 @@
 
 #include <sill/learning/validation/parameter_grid.hpp>
+#include <sill/range/algorithm.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -18,9 +19,9 @@ namespace sill {
     assert(minvals.size() == maxvals.size());
     assert(maxvals.size() == k.size());
     for (size_t i(0); i < k.size(); ++i) {
-      assert(k(i) >= 1);
-      if (k(i) == 1)
-        assert(minvals(i) == maxvals(i));
+      assert(k[i] >= 1);
+      if (k[i] == 1)
+        assert(minvals[i] == maxvals[i]);
     }
     std::vector<size_t> indices(minvals.size(), 0);
     std::vector<size_t> init_indices(minvals.size(), 0);
@@ -40,22 +41,22 @@ namespace sill {
     do {
       vec vals(minvals_.size(), 0.);
       for (size_t j(0); j < minvals_.size(); ++j) {
-        if (k(j) == 1) {
+        if (k[j] == 1) {
           vals[j] = minvals_[j];
         } else {
           if (inclusive)
             vals[j] = minvals_[j]
-              + ((maxvals_[j]-minvals_[j]) * indices[j] / (k(j)-1));
+              + ((maxvals_[j]-minvals_[j]) * indices[j] / (k[j]-1));
           else
             vals[j] = minvals_[j]
-              + ((maxvals_[j]-minvals_[j]) * (indices[j]+1)/(k(j)+1));
+              + ((maxvals_[j]-minvals_[j]) * (indices[j]+1)/(k[j]+1));
         }
       }
       values.push_back(vals);
       for (size_t j(0); j < minvals_.size(); ++j) {
-        if (k(j) == 1)
+        if (k[j] == 1)
           continue;
-        if (indices[j] < static_cast<size_t>(k(j))-1) {
+        if (indices[j] < static_cast<size_t>(k[j])-1) {
           ++indices[j];
           break;
         }
@@ -111,9 +112,9 @@ namespace sill {
     assert(minvals.size() == maxvals.size());
     assert(maxvals.size() == k.size());
     for (size_t i(0); i < k.size(); ++i) {
-      assert(k(i) >= 1);
-      if (k(i) == 1)
-        assert(minvals(i) == maxvals(i));
+      assert(k[i] >= 1);
+      if (k[i] == 1)
+        assert(minvals[i] == maxvals[i]);
     }
     std::vector<vec> values;
     vec vals;
@@ -130,16 +131,16 @@ namespace sill {
       }
     }
     for (size_t j(0); j < minvals_.size(); ++j) {
-      vals.resize(k(j));
-      if (k(j) == 1) {
-        vals(0) = minvals_(j);
+      vals.set_size(k[j]);
+      if (k[j] == 1) {
+        vals[0] = minvals_[j];
       } else {
-        for (size_t i(0); i < static_cast<size_t>(k(j)); ++i) {
+        for (size_t i(0); i < static_cast<size_t>(k[j]); ++i) {
           if (inclusive)
-            vals[i] = minvals_[j] + ((maxvals_[j]-minvals_[j]) * i / (k(j)-1));
+            vals[i] = minvals_[j] + ((maxvals_[j]-minvals_[j]) * i / (k[j]-1));
           else
             vals[i] = minvals_[j]
-              + ((maxvals_[j]-minvals_[j]) * (i+1) / (k(j)+1));
+              + ((maxvals_[j]-minvals_[j]) * (i+1) / (k[j]+1));
         }
       }
       values.push_back(vals);
@@ -165,9 +166,10 @@ namespace sill {
     std::vector<vec> altvals(k);
     size_t total_vals(1);
     for (size_t j(0); j < k; ++j) {
-      std::vector<double> tmpvals(unique_value_sets[j].begin(),
-                                  unique_value_sets[j].end());
-      altvals[j] = tmpvals;
+      altvals[j].set_size(unique_value_sets[j].size());
+      sill::copy(forward_range<double>(unique_value_sets[j].begin(),
+                                 unique_value_sets[j].end()),
+           altvals[j].begin());
       std::sort(altvals[j].begin(), altvals[j].end());
       total_vals *= altvals[j].size();
     }
@@ -215,10 +217,9 @@ namespace sill {
     }
     std::vector<vec>
       tmpgrid(create_parameter_grid(minvals, maxvals, k, log_scale, false));
-    std::set<vec> oldgrid_set(oldgrid.begin(), oldgrid.end());
     std::vector<vec> newgrid;
     foreach(const vec& v, tmpgrid) {
-      if (oldgrid_set.count(v) == 0)
+      if (compare(val,v) != 0) // TO DO: MAKE SURE THIS IS CORRECT
         newgrid.push_back(v);
     }
     return newgrid;
@@ -309,7 +310,7 @@ namespace sill {
         minvals[i] = val[i];
       if (maxvals[i] == std::numeric_limits<double>::max())
         maxvals[i] = val[i];
-      if (k(i) == 1) {
+      if (k[i] == 1) {
         assert(minvals[i] == maxvals[i]);
       } else {
         assert(minvals[i] != maxvals[i]);

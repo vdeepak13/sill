@@ -32,11 +32,11 @@ namespace sill {
     if (nvals.size() != dim)
       return false;
     for (size_t i(0); i < dim; ++i) {
-      if (minvals(i) < 0)
+      if (minvals[i] < 0)
         return false;
-      if (maxvals(i) < minvals(i))
+      if (maxvals[i] < minvals[i])
         return false;
-      if (nvals(i) <= 0)
+      if (nvals[i] <= 0)
         return false;
     }
     return true;

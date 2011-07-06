@@ -3,12 +3,16 @@
 
 #include <armadillo>
 
+#include <sill/base/stl_util.hpp>
 #include <sill/range/forward_range.hpp>
 #include <sill/serialization/iterator.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  // Forward declaration
+  template <typename Ref> class forward_range;
 
   // bring Armadillo's types and functions into the sill namespace
 
@@ -51,7 +55,35 @@ namespace sill {
   using arma::randn;
   using arma::zeros;
   using arma::ones;
+
+  // functions of vectors and matrices
+  using arma::dot;
   
+  // serialization
+  // Joseph B.: I added this since the functions for arma::Mat were not
+  //            identified by the compiler for arma::Col types.
+  template <typename T>
+  oarchive& operator<<(oarchive& a, const arma::Col<T>& m) {
+    a << m.n_elem;
+    const T* it  = m.begin();
+    const T* end = m.end();
+    for(; it != end; ++it)
+      a << *it;
+    return a;
+  }
+
+  template <typename T>
+  iarchive& operator>>(iarchive& a, arma::Col<T>& m) {
+    size_t n_elem;
+    a >> n_elem;
+    m.set_size(n_elem);
+    T* it  = m.begin();
+    T* end = m.end();
+    for(; it != end; ++it)
+      a >> *it;
+    return a;
+  }
+
   // serialization
   template <typename T>
   oarchive& operator<<(oarchive& a, const arma::Mat<T>& m) {
@@ -79,16 +111,16 @@ namespace sill {
   arma::Col<T> concat(const forward_range<const arma::Col<T>&> vectors) {
     // compute the size of the resulting vector
     size_t n = 0;
-    foreach(const arma::Col<T>& v, vectors) n += v.n_elem;
+    foreach(const arma::Col<T>& v, vectors) n += v.size();
     arma::Col<T> result(n);
 
     // assign the vectors to the right indices
     n = 0;
     foreach(const arma::Col<T>& v, vectors) {
       if (!v.is_empty()) {
-        result(span(n, n+v.n_elem-1)) = v;
+        result(span(n, n + v.size() - 1)) = v;
       }
-      n += v.n_elem;
+      n += v.size();
     }
     return result;
   }
@@ -101,7 +133,7 @@ namespace sill {
   void read_vec(std::basic_istream<CharT>& in, arma::Col<T>& v) {
     CharT c;
     T val;
-    v.resize(0);
+    std::vector<T> tmpv;
     in.get(c);
     if (c == ' ')
       in.get(c);
@@ -110,12 +142,46 @@ namespace sill {
       do {
         if (!(in >> val))
           assert(false);
-        v.insert(v.size(),val);
+        tmpv.push_back(val);
         if (in.peek() == ',')
           in.ignore(1);
       } while (in.peek() != ']');
     }
     in.ignore(1);
+    v = arma::conv_to<arma::Col<T> >::from(tmpv);
+  }
+
+  /**
+   * Compare two vectors.
+   * @return -1 if a is smaller or +1 if b is smaller.
+   *         If a,b have the same size, return lexigraphic_compare(a,b).
+   */
+  template <typename T>
+  int compare(const arma::Col<T>& a, const arma::Col<T>& b) {
+    if (a.size() < b.size())
+      return -1;
+    if (a.size() > b.size())
+      return 1;
+    return lexigraphic_compare(a,b);
+  }
+
+  /**
+   * Compare two matrices.
+   * @return -1 if a is smaller in n_rows, then n_cols; +1 if b is smaller.
+   *         If a,b have the same size, return lexigraphic_compare(a,b).
+   */
+  template <typename T>
+  int compare(const arma::Mat<T>& a, const arma::Mat<T>& b) {
+    if (a.n_rows < b.n_rows)
+      return -1;
+    if (a.n_rows > b.n_rows)
+      return 1;
+    if (a.n_cols < b.n_cols)
+      return -1;
+    if (a.n_cols > b.n_cols)
+      return 1;
+    return lexigraphic_compare(forward_range<T>(a.begin(),a.end()),
+                               forward_range<T>(b.begin(),b.end()));
   }
 
   /**
@@ -138,6 +204,14 @@ namespace arma {
   std::basic_istream<CharT, Traits>&
   operator>>(std::basic_istream<CharT, Traits>& in, Col<T>& v) {
     sill::read_vec(in, v);
+    return in;
+  }
+
+  //! Read matrix from string.
+  template <typename T, typename CharT, typename Traits>
+  std::basic_istream<CharT, Traits>&
+  operator>>(std::basic_istream<CharT, Traits>& in, Mat<T>& v) {
+    assert(false); // TO BE IMPLEMENTED
     return in;
   }
 

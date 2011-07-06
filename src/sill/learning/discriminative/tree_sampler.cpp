@@ -12,8 +12,7 @@ namespace sill {
         using std::pow;
         depth = static_cast<size_t>(ceil(std::log(static_cast<double>(n))
                                          /std::log(2.)));
-        tree.clear();
-        tree.resize((size_t)(pow(2.,static_cast<double>(depth))));
+        tree.set_size((size_t)(pow(2.,static_cast<double>(depth))));
         depth_offsets.resize(depth);
         depth_offsets[0] = 0;
         for (size_t i = 1; i < depth; ++i)
@@ -111,12 +110,9 @@ namespace sill {
 
     void tree_sampler::commit_update() {
       // Normalize distribution
-      double dist_norm = 0;
-      for (size_t i = 0; i < n; ++i)
-        dist_norm += distrib[i];
+      double dist_norm = norm(distrib, 1);
       if (dist_norm > 0)
-        for (size_t i = 0; i < n; ++i)
-          distrib[i] /= dist_norm;
+        distrib /= dist_norm;
       else {
         std::cerr << "error: tree_sampler::commit_update() was called when the"
                   << " distribution was 0" << std::endl;

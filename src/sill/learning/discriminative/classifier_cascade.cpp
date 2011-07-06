@@ -49,7 +49,7 @@ namespace sill {
       max_filter_count_ = params.max_filter_count;
       if (base_ds.size() > 0) {
         base_ds.reserve(params.base_dataset_size);
-        base_ds_preds.resize(params.base_dataset_size);
+        base_ds_preds.set_size(params.base_dataset_size);
         for (size_t t(0); t < params.init_base_classifiers; ++t)
           if (!(step()))
             break;

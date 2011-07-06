@@ -11,7 +11,6 @@
 #include <sill/learning/dataset/ds_oracle.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
-#include <sill/math/linear_algebra.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/optimization/real_optimizer_builder.hpp>
 #include <sill/serialization/serialize.hpp>
@@ -1188,7 +1187,7 @@ namespace sill {
 
     typedef LA la_type;
     typedef typename la_type::value_type value_type;
-    typedef vector<value_type>           dense_vector_type;
+    typedef arma::Col<value_type>        dense_vector_type;
 
     // Public data
     // =========================================================================

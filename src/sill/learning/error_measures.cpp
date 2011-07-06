@@ -25,7 +25,8 @@ namespace sill {
       double val(0);
       foreach(vector_variable* v, vars) {
         vec diff(safe_get(a, v) - safe_get(b, v));
-        val += diff.dot(diff);
+        double sdiff = norm(diff,2);
+        val += sdiff * sdiff;
       }
       return val;
     }

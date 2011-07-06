@@ -27,6 +27,7 @@ namespace sill {
     return sum / v.size();
   }
 
+  /*
   //! Return the mean for the given vector of values.
   //! Return 0 for empty vector.
   template <typename T>
@@ -38,6 +39,7 @@ namespace sill {
       sum += v[i];
     return sum / v.size();
   }
+  */
 
   //! Return the median for the given vector of values.
   //! Return 0 for empty vector.
@@ -51,6 +53,7 @@ namespace sill {
     return sorted[median_i];
   }
 
+  /*
   //! Return the median for the given vector of values.
   //! Return 0 for empty vector.
   template <typename T>
@@ -62,6 +65,7 @@ namespace sill {
     size_t median_i(sorted.size() / 2);
     return sorted[median_i];
   }
+  */
 
   //! Return the <mean, std error> for the given vector of values.
   template <typename VectorType>
@@ -230,8 +234,7 @@ namespace sill {
     return extreme_index<T, std::less_equal<T> >(v);
   }
 
-  //! Return the index of the max value in the vector.
-  //! If multiple values are maximal, choose the first one.
+  //! For arma::Col
   template <typename T>
   size_t max_index(const arma::Col<T>& v) {
     return extreme_index<T, std::less_equal<T> >(v);
@@ -247,6 +250,12 @@ namespace sill {
   // For std::vector
   template <typename T>
   size_t min_index(const std::vector<T>& v) {
+    return extreme_index<T, std::greater_equal<T> >(v);
+  }
+
+  // For arma::Col
+  template <typename T>
+  size_t min_index(const arma::Col<T>& v) {
     return extreme_index<T, std::greater_equal<T> >(v);
   }
 
@@ -360,7 +369,7 @@ namespace sill {
   template <typename Engine>
   std::pair<size_t,size_t> max_indices(const mat& m, Engine& rng) {
     boost::uniform_real<double> uniform_prob(0,1);
-    if (m.n_elem() == 0)
+    if (m.size() == 0)
       return std::make_pair(0,0);
     double best(m(0,0));
     size_t nbest(0);
@@ -404,12 +413,12 @@ namespace sill {
     public:
       explicit sorted_indices_comparator2(const std::vector<vec>& v) : v(v) { }
       bool operator()(size_t a, size_t b) const {
-        size_t min_size = std::min<size_t>(v[a].n_elem, v[b].n_elem);
+        size_t min_size = std::min<size_t>(v[a].size(), v[b].size());
         for (size_t i = 0; i < min_size; ++i) {
           if (v[a][i] != v[b][i])
             return (v[a][i] < v[b][i]);
         }
-        return (v[a].n_elem < v[b].n_elem);
+        return (v[a].size() < v[b].size());
       }
     }; // class sorted_indices_comparator2
 

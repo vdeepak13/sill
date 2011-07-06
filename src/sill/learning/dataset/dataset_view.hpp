@@ -124,7 +124,7 @@ namespace sill {
         vv_view(VAR_ALL), binarized_var(NULL), m_new_var(NULL) {
       if (keep_weights && ds.is_weighted()) {
         weighted = true;
-        weights_.resize(nrecords);
+        weights_.set_size(nrecords);
         for (size_t i = 0; i < nrecords; ++i)
           weights_[i] = ds.weight(convert_index(i));
       } else {
@@ -672,7 +672,7 @@ namespace sill {
       vector_assignment& va = a.vector();
       j2 = 0; // index into vv_vector_var_indices
       for (size_t j(0); j < ds.num_vector(); ++j) {
-        if (j2 < vv_vector_var_indices.n_elem &&
+        if (j2 < vv_vector_var_indices.size() &&
             (size_t)(vv_vector_var_indices[j2]) == j) {
           ++j2;
           continue;

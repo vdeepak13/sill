@@ -64,10 +64,8 @@ namespace sill {
     // Getters and setters: dimensions
     //==========================================================================
 
-    using base::n_rows;
-    using base::size1;
-    using base::n_cols;
-    using base::size2;
+    using base::num_rows;
+    using base::num_cols;
     using base::size;
 
     // Getters and setters: values
@@ -91,7 +89,7 @@ namespace sill {
         base::print(out);
         return;
       } else {
-        out << "[" << m_ << " x " << n_ << " rank-1 matrix;\n"
+        out << "[" << n_rows << " x " << n_cols << " rank-1 matrix;\n"
             << " colvec = " << x_ << "\n"
             << " rowvec = " << y_ << "]\n";
       }
@@ -107,18 +105,18 @@ namespace sill {
      * This permits piecemeal construction without unnecessary reallocation.
      */
     void reset_nocopy(XType& x, YType& y) {
-      m_ = x.size();
-      n_ = y.size();
+      n_rows = x.size();
+      n_cols = y.size();
       x_.reset_nocopy(x);
       y_.reset_nocopy(y);
     }
 
+    using base::n_rows;
+    using base::n_cols;
+
     // Protected data and methods
     //==========================================================================
   protected:
-
-    using base::m_;
-    using base::n_;
 
     //! x (column vector in outer product)
     XType x_;

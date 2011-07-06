@@ -39,7 +39,7 @@ namespace sill {
     if (cmean.empty()) {
       cmean = zeros(nhead);
     } else {
-      assert(cmean.n_elem==nhead);
+      assert(cmean.size()==nhead);
     }
 
     if (cov.n_rows==0 && cov.n_cols==0) {
@@ -96,11 +96,11 @@ namespace sill {
 
   moment_gaussian::moment_gaussian(const canonical_gaussian& cg)
     : gaussian_factor(cg.arguments()), head_list(cg.arg_list),
-      coeff(cg.eta.n_elem,0), likelihood(cg.log_multiplier(), log_tag()) {
+      coeff(cg.eta.size(),0), likelihood(cg.log_multiplier(), log_tag()) {
     // TO DO: Is likelihood set correctly?
     if (head_list.size() != 0) {
       this->var_range = cg.var_range;
-      //size_t n = cg.eta.n_elem;
+      //size_t n = cg.eta.size();
       //cov.resize(n, n, false);
       bool result = inv(cg.lambda, cov);
       if (!result) {
@@ -177,10 +177,10 @@ namespace sill {
     if (!marginal())
       throw invalid_operation
         ("moment_gaussian::operator() called on a non-marginal distribution.");
-    assert(y.n_elem == cmean.n_elem);
+    assert(y.size() == cmean.size());
     vec yc(y);
     yc -= cmean;
-    size_t n = cmean.n_elem;
+    size_t n = cmean.size();
     double result = -0.5*(yc*(inv(cov)*yc) + n*log(2*pi())+logdet(cov));
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
@@ -188,12 +188,12 @@ namespace sill {
   logarithmic<double>
   moment_gaussian::operator()(const vec& y, const vec& x) const {
     using std::log;
-    assert(y.n_elem == cmean.n_elem);
-    assert(x.n_elem == coeff.n_cols);
+    assert(y.size() == cmean.size());
+    assert(x.size() == coeff.n_cols);
     vec yc(y);
     yc -= cmean;
     yc += coeff * x;
-    size_t n = cmean.n_elem;
+    size_t n = cmean.size();
     double result = -0.5*(yc*(inv(cov)*yc) + n*log(2*pi())+logdet(cov));
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
@@ -296,7 +296,7 @@ namespace sill {
     }
     double logl = 0;
     logl -= 0.5 * dot(dh, ls_solve_chol(cov(ih,ih), dh));
-    logl -= 0.5 * (dh.n_elem * std::log(2*pi()) + logdet(cov(ih,ih)));
+    logl -= 0.5 * (dh.size() * std::log(2*pi()) + logdet(cov(ih,ih)));
     if (H.size() == 0) {
       return moment_gaussian
         (likelihood * logarithmic<double>(logl, log_tag()));
@@ -384,7 +384,7 @@ namespace sill {
     if (!marginal())
       throw std::runtime_error
         ("moment_gaussian::entropy() called for a conditional Gaussian.");
-    size_t N(cmean.n_elem);
+    size_t N(cmean.size());
     return (N + ((N*std::log(2. * pi()) + logdet(cov)) / std::log(base)))/2.;
   }
 

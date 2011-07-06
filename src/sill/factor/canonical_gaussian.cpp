@@ -30,7 +30,7 @@ namespace sill {
       log_mult = 0;
     } else {
       assert(lambda.n_rows == n && lambda.n_cols == n);
-      assert(eta.n_elem == n);
+      assert(eta.size() == n);
     }
   }
 
@@ -176,7 +176,7 @@ namespace sill {
   }
 
   size_t canonical_gaussian::size() const {
-    return eta.n_elem;
+    return eta.size();
   }
 
   const mat& canonical_gaussian::inf_matrix() const {
@@ -270,7 +270,7 @@ namespace sill {
   double canonical_gaussian::logv(const record_type& r) const {
     if (eta.is_empty())
       return 0; // shouldn't this be log_mult?
-    vec v = zeros(eta.n_elem);
+    vec v = zeros(eta.size());
     r.vector_values(v, arg_list);
     // will assertion if a does not cover the arguments of this
     return - 0.5*as_scalar(trans(v) * lambda * v) + dot(v, eta) + log_mult;
@@ -313,7 +313,7 @@ namespace sill {
     uvec ix = indices(x);
     uvec iy = indices(y);
     vec vy = sill::concat(values(a, y));
-    assert(vy.n_elem == iy.n_elem);
+    assert(vy.size() == iy.size());
 
     if (x.empty()) {
       return canonical_gaussian(log_mult + dot(eta(iy), vy)
@@ -368,7 +368,7 @@ namespace sill {
     uvec iy = indices(y);
     vec vy;
     r.vector_values(vy, y);
-    assert(vy.n_elem == iy.n_elem);
+    assert(vy.size() == iy.size());
 
     if (x.empty()) {
       f = canonical_gaussian(log_mult + dot(eta(iy), vy)
@@ -431,16 +431,16 @@ namespace sill {
     try {
       lambda_inv = inv(lambda);
     } catch(std::runtime_error& e) {
-      if (lambda.n_elem <= 16)
+      if (lambda.size() <= 16)
         std::cerr << "Lambda:\n" << lambda << std::endl;
       throw invalid_operation("Inversion of lambda matrix failed in canonical_gaussian::log_norm_constant.");
     }
-    return (-0.5 * (eta.n_elem * std::log(2*pi())
+    return (-0.5 * (eta.size() * std::log(2*pi())
                     - log_det(lambda)
                     + as_scalar(trans(eta) * trans(lambda_inv) * eta)));
     // why trans(lambda_inv) ?
     /*
-    return (-.5 * (eta.n_elem * std::log(2*pi())
+    return (-.5 * (eta.size() * std::log(2*pi())
                    - logdet(lambda)
                    + dot(eta, lambda * eta)));
     */
@@ -476,7 +476,7 @@ namespace sill {
   }
 
   double canonical_gaussian::entropy(double base) const {
-    size_t N = eta.n_elem;
+    size_t N = eta.size();
     return (N + ((N*std::log(2.0 * pi()) - logdet(lambda)) / std::log(base)))/2.0;
   }
 
@@ -513,7 +513,7 @@ namespace sill {
     check_supported(op, combine_ops);
     double sign = (op == product_op) ? 1 : -1;
     if (!includes(arguments(), x.arguments())) {
-//       size_t n(eta.n_elem);
+//       size_t n(eta.size());
 //       for (vector_domain::const_iterator it(x.args.begin());
 //            it != x.args.end(); ++it) {
 //         vector_variable* v = *it;
@@ -614,8 +614,8 @@ namespace sill {
       bool info = solve(invyy_lamyx, lambda(iy,iy), lambda(iy,ix));
       // 
       if (!info) {
-        if (iy.n_elem * ix.n_elem < 16 &&
-            iy.n_elem * iy.n_elem < 16)
+        if (iy.size() * ix.size() < 16 &&
+            iy.size() * iy.size() < 16)
           std::cerr << "Lambda(iy,iy):\n" << lambda(iy,iy) << "\n"
                     << "Lambda(iy,ix):\n" << lambda(iy,ix) << std::endl;
         throw invalid_operation

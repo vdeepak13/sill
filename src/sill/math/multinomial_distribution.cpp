@@ -2,14 +2,13 @@
 #include <cmath>
 #include <cassert>
 
-#include <sill/math/linear_algebra.hpp>
 #include <sill/math/multinomial_distribution.hpp>
 
 namespace sill {
 
   multinomial_distribution::multinomial_distribution(const vec& p) : p_(p) {
     using std::abs;
-    assert(prod(p >= 0) == 1);
+    assert(as_scalar(prod(p >= 0)) == 1);
     assert(fabs(sum(p) - 1) < 1e-8);
   }
 

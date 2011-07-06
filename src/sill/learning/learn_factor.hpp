@@ -194,7 +194,7 @@ namespace sill {
     mat cov;
     ds.covariance(cov, X);
     if (reg_cov > 0)
-      cov += (reg_cov / ds.size()) * identity(X.size());
+      cov += (reg_cov / ds.size()) * eye(X.size(),X.size());
     return moment_gaussian(X, mu, cov);
   }
 
@@ -221,7 +221,7 @@ namespace sill {
     mat cov;
     ds.mean_covariance(mu, cov, X);
     if (reg_cov > 0)
-      cov += (reg_cov / ds.size()) * identity(X.size());
+      cov += (reg_cov / ds.size()) * eye(X.size(),X.size());
     mat lambda;
     bool result = inv(cov, lambda);
     if (!result)

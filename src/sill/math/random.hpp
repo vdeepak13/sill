@@ -160,7 +160,7 @@ namespace sill {
     //! @param alpha  shape parameters alpha (n-vector) > 0
     explicit dirichlet_distribution(size_t n_, const vec& alpha_)
       : n_(n_), alpha_(alpha_) {
-      assert(n_ == alpha_.n_elem);
+      assert(n_ == alpha_.size());
       for (size_t i = 0; i < n_; ++i)
         gammas_.push_back(gamma_distribution<RealType>(alpha_[i], 1));
     }
@@ -168,7 +168,7 @@ namespace sill {
     size_t n() const { return n_(); }
     //! Shape parameters
     const vec& alpha() const {
-      if (n > alpha_.n_elem)
+      if (n > alpha_.size())
         return vec(n, alpha_[0]);
       else
         return alpha_;
@@ -180,7 +180,7 @@ namespace sill {
     vec operator()(Engine& rng) {
       vec v(n_, 0);
       result_type total(0);
-      if (n_ == alpha_.n_elem)
+      if (n_ == alpha_.size())
         for (size_t i = 0; i < n_; ++i) {
           v[i] = gammas_[i].operator()(rng);
           total += v[i];

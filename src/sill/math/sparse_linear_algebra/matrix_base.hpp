@@ -34,48 +34,42 @@ namespace sill {
 
     //! Default constructor (for an empty matrix).
     matrix_base()
-      : m_(0), n_(0) { }
+      : n_rows(0), n_cols(0) { }
 
     //! Constructor for a matrix with m rows and n columns.
     matrix_base(size_type m, size_type n)
-      : m_(m), n_(n) { }
+      : n_rows(m), n_cols(n) { }
 
     // Serialization
     //==========================================================================
 
     void save(oarchive& ar) const {
-      ar << m_ << n_;
+      ar << n_rows << n_cols;
     }
 
     void load(iarchive& ar) {
-      ar >> m_ >> n_;
+      ar >> n_rows >> n_cols;
     }
 
     // Getters and setters: dimensions
     //==========================================================================
 
     //! Number of rows.
-//    size_type num_rows() const { return m_; }
-
-    //! Number of rows.
-    size_type n_rows() const { return m_; }
+    size_type num_rows() const { return n_rows; }
 
     //! Number of columns.
-//    size_type num_cols() const { return n_; }
-
-    //! Number of columns.
-    size_type n_cols() const { return n_; }
+    size_type num_cols() const { return n_cols; }
 
     //! Total number of elements (rows x columns).
     //! NOTE: This is hard-coded to use size_t to support larger matrices.
-    size_t size() const { return (size_t)m_ * (size_t)n_; }
+    size_t size() const { return (size_t)n_rows * (size_t)n_cols; }
 
     // Utilities
     //==========================================================================
 
     //! Print to the given output stream.
     virtual void print(std::ostream& out) const {
-      out << "[" << m_ << " x " << n_ << " matrix]";
+      out << "[" << n_rows << " x " << n_cols << " matrix]";
     }
 
     // Operators
@@ -83,20 +77,22 @@ namespace sill {
 
     //! Equality operator.
     bool operator==(const matrix_base& other) const {
-      return (m_ == other.m_ && n_ == other.n_);
+      return (n_rows == other.n_rows && n_cols == other.n_cols);
     }
 
-    // Protected types and data
+    // Public data
     //==========================================================================
-  protected:
 
     //! Number of rows.
-    size_type m_;
+    //! This is public to match Armadillo's interface.
+    size_type n_rows;
 
     //! Number of columns.
-    size_type n_;
+    //! This is public to match Armadillo's interface.
+    size_type n_cols;
 
   }; // class matrix_base
+
 
   template <typename T, typename SizeType>
   std::ostream&

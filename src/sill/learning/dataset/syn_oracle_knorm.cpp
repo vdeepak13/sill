@@ -21,7 +21,7 @@ namespace sill {
       // now choose some centers
       centers.resize(nmeans_);
       for (size_t k = 0; k < nmeans_; k++) {
-        centers[k].resize(nfeatures_);
+        centers[k].set_size(nfeatures_);
         for (size_t j = 0; j < nfeatures_; j++)
           centers[k][j] = uniform_dist(rng);
       }

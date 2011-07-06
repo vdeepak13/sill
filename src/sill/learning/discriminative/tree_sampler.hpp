@@ -9,7 +9,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-//#include <sill/learning/discriminative/concepts.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>
@@ -73,14 +73,14 @@ namespace sill {
     mutable boost::uniform_real<double> uniform_prob;
 
     //! Distribution
-    std::vector<double> distrib;
+    vec distrib;
 
     //! Size of distribution
     size_t n;
 
     //! Balanced binary tree over indices
     //! tree[i] = weight of indices in subtree at node i
-    std::vector<double> tree;
+    vec tree;
 
     //! Depth of tree (not including distrib, which isn't stored in tree)
     size_t depth;
@@ -100,31 +100,6 @@ namespace sill {
     //! Recursive sampling function:
     //!  test node i (from left) versus node i+1 at depth d
     size_t sample2(double r, size_t d, size_t i) const;
-
-    //! Read in a vector of values [val1,val2,...], ignoring an initial space
-    //! if necessary.
-    //! \todo Make this more general, and move it to stl_io.hpp
-    template <typename Char, typename Traits, typename U>
-    void read_vec(std::basic_istream<Char,Traits>& in,
-                  std::vector<U>& vec) {
-      char c;
-      U val;
-      vec.clear();
-      in.get(c);
-      if (c == ' ')
-        in.get(c);
-      assert(c == '[');
-      if (in.peek() != ']') {
-        do {
-          if (!(in >> val))
-            assert(false);
-          vec.push_back(val);
-          if (in.peek() == ',')
-            in.ignore(1);
-        } while (in.peek() != ']');
-      }
-      in.ignore(1);
-    }
 
     // Constructors and destructors
     //==========================================================================
@@ -148,7 +123,7 @@ namespace sill {
                  parameters params = parameters())
       : params(params), n(n) {
       assert(n > 0);
-      this->distrib.resize(n);
+      this->distrib.set_size(n);
       for (size_t i = 0; i < n; ++i) {
         assert(distrib[i] >= 0);
         this->distrib[i] = distrib[i];
@@ -165,9 +140,7 @@ namespace sill {
     explicit tree_sampler(size_t n, parameters params = parameters())
       : params(params), n(n) {
       assert(n > 0);
-      this->distrib.resize(n);
-      for (size_t i = 0; i < n; ++i)
-        this->distrib[i] = 0;
+      this->distrib.zeros(n);
       init();
     }
 
@@ -175,7 +148,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns distribution
-    const std::vector<double>& distribution() const {
+    const vec& distribution() const {
       return distrib;
     }
 

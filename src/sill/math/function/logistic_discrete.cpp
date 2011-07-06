@@ -1,8 +1,8 @@
 #include <iostream>
+#include <sstream>
 #include <cmath>
 
 #include <sill/math/function/logistic_discrete.hpp>
-#include <sill/math/linear_algebra.hpp>
 
 namespace sill {
 
@@ -11,7 +11,7 @@ namespace sill {
     assert(x.size() == w.n_rows);
     double arg = b;
     for(size_t i = 0; i < x.size(); i++) {
-      assert(x[i] >= 0 && size_t(x[i]) < w.n_cols);
+      assert(x[i] < w.n_cols);
       arg += w(i, x[i]);
     }
     return 1.0 / (1 + std::exp(-arg));
@@ -21,7 +21,7 @@ namespace sill {
     assert(x.size() == w.n_rows);
     double arg = b;
     for(size_t i = 0; i < x.size(); i++) {
-      assert(x[i] >=0 && size_t(x[i]) < w.n_cols);
+      assert(x[i] < w.n_cols);
       arg += w(i, x[i]) * u[i];
     }
     return 1.0 / (1 + std::exp(-arg));
@@ -30,7 +30,7 @@ namespace sill {
   double logistic_discrete::operator()(const mat& x) const {
     assert(x.n_rows == w.n_rows);
     assert(x.n_cols == w.n_cols);
-    double arg = b + sumsum(elem_mult(w, x));
+    double arg = b + dot(w,x);
     return 1.0 / (1 + std::exp(-arg));
   }  
   
@@ -40,7 +40,9 @@ namespace sill {
   }
 
   std::istream& operator>>(std::istream& in, logistic_discrete& f) {
-    in >> std::ws >> f.w >> std::ws >> f.b;
+    //    in >> std::ws >> f.w >> std::ws >> f.b;
+    in >> std::ws;
+    in >> f.w >> std::ws >> f.b;
     return in;
   }
 

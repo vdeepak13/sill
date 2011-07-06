@@ -7,7 +7,7 @@
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/record_conversions.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/optimization/conjugate_gradient.hpp>
 #include <sill/optimization/gradient_descent.hpp>
@@ -231,7 +231,10 @@ namespace sill {
       opt_vector() { }
 
       opt_vector(size_type s, double default_val)
-        : A(s.ysize, s.xsize, default_val), b(s.ysize, default_val) { }
+        : A(s.ysize, s.xsize), b(s.ysize) {
+        A.fill(default_val);
+        b.fill(default_val);
+      }
 
       opt_vector(const mat& A, const vec& b) : A(A), b(b) { }
 
@@ -240,9 +243,7 @@ namespace sill {
 
       //! Returns true iff this instance equals the other.
       bool operator==(const opt_vector& other) const {
-        if ((A != other.A) || (b != other.b))
-          return false;
-        return true;
+        return (compare(A, other.A) == 0 && compare(b, other.b) == 0);
       }
 
       //! Returns false iff this instance equals the other.
@@ -256,8 +257,8 @@ namespace sill {
 
       //! Resize the data.
       void resize(const size_type& newsize) {
-        A.resize(newsize.ysize, newsize.xsize);
-        b.resize(newsize.ysize);
+        A.set_size(newsize.ysize, newsize.xsize);
+        b.set_size(newsize.ysize);
       }
 
       // Math operations
@@ -326,14 +327,13 @@ namespace sill {
 
       //! Inner product with a value of the same size.
       double dot(const opt_vector& other) const {
-        return (elem_mult_sum(A, other.A)
-                + sill::dot(b, other.b));
+        return (sill::dot(A, other.A) + sill::dot(b, other.b));
       }
 
       //! Element-wise multiplication with another value of the same size.
       opt_vector& elem_mult(const opt_vector& other) {
-        elem_mult_inplace(other.A, A);
-        elem_mult_inplace(other.b, b);
+        A %= other.A;
+        b %= other.b;
         return *this;
       }
 
@@ -347,7 +347,7 @@ namespace sill {
           }
         }
         for (size_t i(0); i < b.size(); ++i) {
-          double& val = b(i);
+          double& val = b[i];
           assert(val != 0);
           val = 1. / val;
         }
@@ -356,12 +356,7 @@ namespace sill {
 
       //! Returns the L1 norm.
       double L1norm() const {
-        double l1val(0);
-        for (size_t i(0); i < A.size(); ++i)
-          l1val += fabs(A(i));
-        foreach(double val, b)
-          l1val += fabs(val);
-        return l1val;
+        return norm(A, 1) + norm(b, 1);
       }
 
       //! Returns the L2 norm.
@@ -413,8 +408,8 @@ namespace sill {
 
     public:
       objective_functor(const linear_regression& lr)
-        : lr(lr), yvec(lr.Yvec_size, 0.),
-          tmpmat(lr.Ydata().n_rows, lr.Ydata().n_cols, 0.) { }
+        : lr(lr), yvec(zeros<vec>(lr.Yvec_size)),
+          tmpmat(zeros<mat>(lr.Ydata().n_rows, lr.Ydata().n_cols)) { }
 
       //! Computes the value of the objective at x.
       double objective(const opt_vector& x) const {
@@ -423,15 +418,16 @@ namespace sill {
         switch(lr.params.objective) {
         case 2: // least-squares
           tmpmat = lr.Ydata();
-          tmpmat -= lr.Xdata() * x.A.transpose();
+          tmpmat -= lr.Xdata() * trans(x.A);
           for (size_t i(0); i < tmpmat.n_rows; ++i)
-            tmpmat.subtract_row(i, x.b);
-          elem_mult_inplace(tmpmat, tmpmat);
+            tmpmat.row(i) -= x.b;
+//            tmpmat.subtract_row(i, x.b);
+          tmpmat %= tmpmat;
           if (lr.data_weights.size() == 0)
-            obj += sumsum(tmpmat);
+            obj += accu(tmpmat);
           else
             obj += dot(lr.data_weights,
-                              tmpmat * vec(lr.data_weights.size(), 1.));
+                       tmpmat * ones<vec>(lr.data_weights.size()));
           break;
         default:
           throw std::invalid_argument
@@ -442,14 +438,14 @@ namespace sill {
         case 0:
           break;
         case 1:
-          obj += lr.params.lambda * x.A.L1norm();
+          obj += lr.params.lambda * norm(x.A,1);
           if (lr.params.regularize_mean)
-            obj += lr.params.lambda * x.b.L1norm();
+            obj += lr.params.lambda * norm(x.b,1);
           break;
         case 2:
-          obj += lr.params.lambda * .5 * x.A.dot(x.A);
+          obj += lr.params.lambda * .5 * sqr(norm(x.A,2));
           if (lr.params.regularize_mean)
-            obj += lr.params.lambda * .5 * x.b.dot(x.b);
+            obj += lr.params.lambda * .5 * sqr(norm(x.b,2));
           break;
         default:
           assert(false);
@@ -472,8 +468,8 @@ namespace sill {
 
     public:
       gradient_functor(const linear_regression& lr)
-        : lr(lr), yvec(lr.Yvec_size, 0.),
-          tmpmat(lr.Ydata().n_rows, lr.Ydata().n_cols, 0.) { }
+        : lr(lr), yvec(zeros<vec>(lr.Yvec_size)),
+          tmpmat(zeros<mat>(lr.Ydata().n_rows, lr.Ydata().n_cols)) { }
 
       //! Computes the gradient of the function at x.
       //! @param grad  Data type in which to store the gradient.
@@ -483,21 +479,25 @@ namespace sill {
 
         switch(lr.params.objective) {
         case 2: // least-squares
-          tmpmat = lr.Xdata() * x.A.transpose();
+          tmpmat = lr.Xdata() * trans(x.A);
           tmpmat -= lr.Ydata();
           if (lr.data_weights.size() == 0) {
             for (size_t i(0); i < tmpmat.n_rows; ++i) {
-              tmpmat.add_row(i, x.b);
-              grad.A += 2. * outer_product(tmpmat.row(i), lr.Xdata().row(i));
+              tmpmat.row(i) += x.b;
+//              tmpmat.add_row(i, x.b);
+              grad.A += 2. * tmpmat.row(i) * trans(lr.Xdata().row(i));
+//              grad.A += 2. * outer_product(tmpmat.row(i), lr.Xdata().row(i));
             }
             grad.b = sum(tmpmat, 1);
           } else {
             for (size_t i(0); i < tmpmat.n_rows; ++i) {
-              tmpmat.add_row(i, x.b);
+              tmpmat.row(i) += x.b;
+//              tmpmat.add_row(i, x.b);
               grad.A += (2. * lr.data_weights[i])
-                * outer_product(tmpmat.row(i), lr.Xdata().row(i));
+                * tmpmat.row(i) * trans(lr.Xdata().row(i));
+//                * outer_product(tmpmat.row(i), lr.Xdata().row(i));
             }
-            grad.b = tmpmat.transpose() * lr.data_weights;
+            grad.b = trans(tmpmat) * lr.data_weights;
           }
           grad.b *= -2.;
           break;
@@ -520,10 +520,10 @@ namespace sill {
           }
           if (lr.params.regularize_mean) {
             for (size_t i(0); i < x.b.size(); ++i) {
-              if (x.b(i) > 0)
-                grad.b(i) += lr.params.lambda;
-              else if (x.b(i) < 0)
-                grad.b(i) -= lr.params.lambda;
+              if (x.b[i] > 0)
+                grad.b[i] += lr.params.lambda;
+              else if (x.b[i] < 0)
+                grad.b[i] -= lr.params.lambda;
             }
           }
           break;
@@ -935,7 +935,7 @@ namespace sill {
     vector_domain get_vector_dependencies() const {
       vector_domain x;
       for (size_t i(0); i < Xvec.size(); ++i) {
-        if (sum(abs(weights_.A.column(i))) > params.convergence_zero)
+        if (norm(weights_.A.col(i),1) > params.convergence_zero)
           x.insert(Xvec[i]);
       }
       return x;
@@ -954,7 +954,7 @@ namespace sill {
         K = std::numeric_limits<size_t>::max();
       mutable_queue<vector_variable*, double> vqueue;
       for (size_t i(0); i < Xvec.size(); ++i) {
-        vqueue.push(Xvec[i], sum(abs(weights_.A.column(i))));
+        vqueue.push(Xvec[i], norm(weights_.A.col(i),1));
       }
       std::vector<std::pair<vector_variable*, double> > x;
       while ((x.size() < K) && (vqueue.size() > 0)) {

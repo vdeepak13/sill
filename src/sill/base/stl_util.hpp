@@ -11,12 +11,13 @@
 #include <sstream>
 #include <stdexcept>
 
-#include <sill/stl_io.hpp>
-#include <sill/serialization/serialize.hpp>
-#include <sill/serialization/set.hpp>
-#include <sill/serialization/map.hpp>
 #include <sill/iterator/counting_output_iterator.hpp>
 #include <sill/iterator/map_value_iterator.hpp>
+#include <sill/range/forward_range.hpp>
+#include <sill/serialization/map.hpp>
+#include <sill/serialization/serialize.hpp>
+#include <sill/serialization/set.hpp>
+#include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -30,6 +31,9 @@
  */
 
 namespace sill {
+
+  // Forward declaration
+  template <typename Ref> class forward_range;
 
   // Functions on sets
   //============================================================================
@@ -401,6 +405,37 @@ namespace sill {
     return vec;
   }
 
+  /**
+   * Lexigraphical comparison of two ranges.
+   * Reading left to right, upon the first element j for which a,b differ,
+   * this function returns -1 if a[j] < b[j] and +1 if a[j] > b[j].
+   * If a is a prefix of b, this returns -1.
+   * If b is a prefix of a, this returns +1.
+   * If a,b are exactly the same, this returns 0.
+   * @todo Test this!
+   */
+  template <typename T>
+  int lexigraphic_compare(const forward_range<T>& a,
+                          const forward_range<T>& b) {
+    const T* a_it = a.begin();
+    const T* a_end = a.end();
+    const T* b_it = b.begin();
+    const T* b_end = b.end();
+    while (a_it != a_end && b_it != b_end) {
+      if (*a_it < *b_it)
+        return -1;
+      if (*a_it > *b_it)
+        return 1;
+      ++a_it;
+      ++b_it;
+    }
+    if (b_it != b_end)
+      return -1;
+    if (a_it != a_end)
+      return 1;
+    return 0;
+  }
+
   //! Returns a subvector of v specified by the complement of the given indices.
   //! @param indices_sorted  Specifies if the given indices are sorted in
   //!                        in increasing order.
@@ -482,7 +517,7 @@ namespace sill {
     return idx;
   }
 
-}; // end of namespace sill
+} // end of namespace sill
 
 #include <sill/macros_undef.hpp>
 

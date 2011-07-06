@@ -116,7 +116,7 @@ namespace sill {
             n += v->size();
         }
       }
-      if (ind.n_elem != n)
+      if (ind.size() != n)
         ind.set_size(n);
       n = 0;
       foreach(vector_variable* v, vars) {
@@ -158,7 +158,7 @@ namespace sill {
             n += v->size();
         }
       }
-      if (ind.n_elem != n)
+      if (ind.size() != n)
         ind.set_size(n);
       n = 0;
       foreach(vector_variable* v, vars) {

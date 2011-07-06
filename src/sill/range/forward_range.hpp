@@ -13,7 +13,12 @@
 #include <boost/range/iterator_range.hpp>
 
 #include <sill/iterator/forward_iterator.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
+// Forward declaration
+namespace arma {
+  template <typename T> class Col;
+}
 
 namespace sill {
 
@@ -84,6 +89,12 @@ namespace sill {
     //! Constructs a forward_range from boost::array
     template <typename T, std::size_t N>
     forward_range(const boost::array<T, N>& range,
+                  typename enable_if< is_compatible_ref<const T&> >::type* = 0)
+      : base(range) { }
+
+    //! Constructs a forward_range from arma::Col
+    template <typename T>
+    forward_range(const arma::Col<T>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
       : base(range) { }
 

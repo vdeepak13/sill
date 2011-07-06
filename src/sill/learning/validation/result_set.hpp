@@ -1,9 +1,8 @@
 #ifndef SILL_RESULT_SET_HPP
 #define SILL_RESULT_SET_HPP
 
-#include <sill/base/stl_util.hpp>
-#include <sill/math/linear_algebra.hpp>
 #include <sill/math/statistics.hpp>
+#include <sill/base/stl_util.hpp>
 
 namespace sill {
 
