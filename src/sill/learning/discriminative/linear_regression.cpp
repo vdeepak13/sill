@@ -45,19 +45,19 @@ namespace sill {
     }
     weights_.b = sum(Ydata_own, 1);
     weights_.b /= Ydata_own.n_rows;
-    Ydata_own -= repmat(trans(weights_.b), Ydat(a).n_rows, 1);
+    Ydata_own -= repmat(trans(weights_.b), Ydata().n_rows, 1);
     bool result(false);
     switch(params.regularization) {
     case 0: // none
       result =
-        ls_solve_chol(Xdata().transpose() * Xdata(),
-                      Xdata().transpose() * Ydata_own, weights_.A);
+        ls_solve_chol(trans(Xdata()) * Xdata(),
+                      trans(Xdata()) * Ydata_own, weights_.A);
       break;
     case 2: // L2
       result =
-        ls_solve_chol(Xdata().transpose() * Xdata()
-                      + (.5 * params.lambda) * identity(Xdata().n_cols),
-                      Xdata().transpose() * Ydata_own, weights_.A);
+        ls_solve_chol(trans(Xdata()) * Xdata()
+                      + (.5 * params.lambda) * eye(Xdata().n_cols,Xdata().n_cols),
+                      trans(Xdata()) * Ydata_own, weights_.A);
       break;
     default:
       assert(false);
@@ -87,14 +87,14 @@ namespace sill {
     switch(params.regularization) {
     case 0: // none
       result =
-        ls_solve_chol(Xdata().transpose() * Xdata(),
-                      Xdata().transpose() * Ydata(), tmpA);
+        ls_solve_chol(trans(Xdata()) * Xdata(),
+                      trans(Xdata()) * Ydata(), tmpA);
       break;
     case 2: // L2
       result =
-        ls_solve_chol(Xdata().transpose() * Xdata()
-                      + (.5 * params.lambda) * identity(Xdata().n_cols),
-                      Xdata().transpose() * Ydata(), tmpA);
+        ls_solve_chol(trans(Xdata()) * Xdata()
+                      + (.5 * params.lambda) * eye(Xdata().n_cols,Xdata().n_cols),
+                      trans(Xdata()) * Ydata(), tmpA);
       break;
     default:
       assert(false);
