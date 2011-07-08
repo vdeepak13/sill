@@ -4,10 +4,8 @@
 #include <sill/factor/approx/hybrid_conditional.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/mixture.hpp>
-#include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/nonlinear_gaussian.hpp>
 #include <sill/factor/operations.hpp>
-#include <sill/math/linear_algebra.hpp>
 
 namespace sill {
 
@@ -32,7 +30,7 @@ namespace sill {
     using std::sqrt;
     assert(prior.arguments().count(split_var));
     double stdev = sqrt(prior.covariance(split_var)(0,0));
-    double mean = prior.mean(split_var)(0);
+    double mean = prior.mean(split_var)[0];
     boost::math::normal normal(mean, stdev);
     if (stdev <= minstdev) {
       //std::cerr << "standard approx" << std::endl;
@@ -62,8 +60,8 @@ namespace sill {
         moment_gaussian fi = approx()(ng.restrict(a), restricted);
         assert(fi.arguments().count(split_var) == 0);
         mix[i] = fi * moment_gaussian(make_vector(split_var),
-                                      vec(1, p[i]),
-                                      mat(1, 1, 1e-8));
+                                      vec_1(p[i]),
+                                      mat_1x1(1e-8));
         //std::cerr << mix[i] << std::endl;
         norm += restricted.norm_constant();
       }

@@ -52,14 +52,24 @@ namespace sill {
 
   //! Convert from one domain type to another.
   //! Assert false if variables are of incompatible types.
-  template <typename FromVar, typename ToVar>
-  void convert_domain(const std::set<FromVar>& from, std::set<ToVar>& to);
+  template <typename FromDomain, typename ToDomain>
+  void convert_domain(const FromDomain& from, ToDomain& to);
 
   template <>
-  void convert_domain(const domain& from, finite_domain& to);
+  void
+  convert_domain<domain,finite_domain>
+  (const domain& from, finite_domain& to);
 
   template <>
-  void convert_domain(const domain& from, vector_domain& to);
+  void
+  convert_domain<domain,vector_domain>
+  (const domain& from, vector_domain& to);
+
+  inline void
+  convert_domain
+  (const std::set<variable*>& from, std::set<vector_variable*>& to) {
+    convert_domain((const domain&)from, (vector_domain&)to);
+  }
 
   // Variable vector conversions
   //============================================================================

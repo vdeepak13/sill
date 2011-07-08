@@ -80,11 +80,11 @@ namespace sill {
         throw std::runtime_error
           ("Cholesky decomposition failed in the construction of a gaussian_crf_factor from a linear_regression.");
       }
-      ds_cov *= ov.A.transpose();
+      ds_cov *= trans(ov.A);
       ov.b = ds_cov * lr.weights().b;
       ov.C = ds_cov * lr.weights().A;
     } else {
-      ov.A = identity(1);
+      ov.A = eye(1,1);
       ov.b = lr.weights().b;
       ov.C = lr.weights().A;
     }
@@ -98,7 +98,7 @@ namespace sill {
       head_(mg.head()), tail_(mg.tail()), fixed_records_(false),
       conditioned_f(head_, 0.), relabeled(false) {
     mat inv_cov;
-    bool result = inv(mg.covariance(), inv_cov);
+    bool result = inv(inv_cov, mg.covariance());
     if (!result) {
       throw inv_error("Matrix inverse failed in the construction of a gaussian_crf_factor from a moment_gaussian.");
     }
@@ -115,14 +115,14 @@ namespace sill {
     : base(cg.arguments(), copy_ptr<vector_domain>(new vector_domain())),
       head_(cg.argument_list()), tail_(), fixed_records_(false),
       conditioned_f(cg), relabeled(false) {
-    bool result = chol(cg.inf_matrix(), ov.A);
+    bool result = chol(ov.A, cg.inf_matrix());
     if (!result) {
       std::cerr << "Could not take Cholesky decomposition of lambda = \n"
                 << cg.inf_matrix() << std::endl;
       throw chol_error("Cholesky decomposition failed in the construction of a gaussian_crf_factor from a canonical_gaussian.");
     }
     mat tmpmat;
-    result = inv(ov.A * ov.A.transpose(), tmpmat);
+    result = inv(tmpmat, ov.A * trans(ov.A));
     if (!result) {
       throw inv_error("Matrix inverse failed in the construction of a gaussian_crf_factor from a canonical_gaussian.");
     }
@@ -333,10 +333,14 @@ namespace sill {
         assert(false);
       }
     }
-    Y_in_head_ov_indices_ = uvec(Y_in_head_ov_indices_tmp);
-    Y_in_tail_ov_indices_ = uvec(Y_in_tail_ov_indices_tmp);
-    X_in_head_ov_indices_ = uvec(X_in_head_ov_indices_tmp);
-    X_in_tail_ov_indices_ = uvec(X_in_tail_ov_indices_tmp);
+    Y_in_head_ov_indices_ =
+      arma::conv_to<uvec>::from(Y_in_head_ov_indices_tmp);
+    Y_in_tail_ov_indices_ =
+      arma::conv_to<uvec>::from(Y_in_tail_ov_indices_tmp);
+    X_in_head_ov_indices_ =
+      arma::conv_to<uvec>::from(X_in_head_ov_indices_tmp);
+    X_in_tail_ov_indices_ =
+      arma::conv_to<uvec>::from(X_in_tail_ov_indices_tmp);
 
     Ydomain_.clear();
     Ydomain_.insert(Y_in_head_.begin(), Y_in_head_.end());
@@ -433,20 +437,20 @@ namespace sill {
     if (head_.size() == 0) // If this is a constant factor
       return conditioned_f;
     if (conditioned_f.argument_list() == head_) { // avoid reallocation
-      conditioned_f.inf_matrix() = ov.A.transpose() * ov.A;
+      conditioned_f.inf_matrix() = trans(ov.A) * ov.A;
       if (x.size() == 0) {
-        conditioned_f.inf_vector() = ov.A.transpose() * ov.b;
+        conditioned_f.inf_vector() = trans(ov.A) * ov.b;
       } else {
-        conditioned_f.inf_vector() = ov.A.transpose() * (ov.b + ov.C * x);
+        conditioned_f.inf_vector() = trans(ov.A) * (ov.b + ov.C * x);
       }
       conditioned_f.log_multiplier() = 0;
     } else {
       if (x.size() == 0) {
-        conditioned_f.reset(head_, ov.A.transpose() * ov.A,
-                            ov.A.transpose() * ov.b);
+        conditioned_f.reset(head_, trans(ov.A) * ov.A,
+                            trans(ov.A) * ov.b);
       } else {
-        conditioned_f.reset(head_, ov.A.transpose() * ov.A,
-                            ov.A.transpose() * (ov.b + ov.C * x));
+        conditioned_f.reset(head_, trans(ov.A) * ov.A,
+                            trans(ov.A) * (ov.b + ov.C * x));
       }
     }
     return conditioned_f;
@@ -501,8 +505,8 @@ namespace sill {
     canonical_gaussian final_cg;
 
     vector_assignment va;
-    mat lambda(cg.inf_matrix().n_rows, cg.inf_matrix().n_cols, 0);
-    vec eta(cg.inf_vector().size(), 0);
+    mat lambda(zeros(cg.inf_matrix().n_rows, cg.inf_matrix().n_cols));
+    vec eta(zeros<vec>(cg.inf_vector().size()));
     foreach(const record_type& r, ds.records()) {
       r.add_to_assignment(Y_part, va);
       canonical_gaussian tmpcg(cg.restrict(va));
@@ -584,11 +588,11 @@ namespace sill {
     }
 
     if (tail_part_values.size() != 0)
-      ov.b += ov.C.columns(tail_part_indices) * tail_part_values;
+      ov.b += columns(ov.C, tail_part_indices) * tail_part_values;
     if (head_part_values.size() != 0)
-      ov.b -= ov.A.columns(head_part_indices) * head_part_values;
-    ov.A = ov.A.columns(head_retain_indices);
-    ov.C = ov.C.columns(tail_retain_indices);
+      ov.b -= columns(ov.A, head_part_indices) * head_part_values;
+    ov.A = columns(ov.A, head_retain_indices);
+    ov.C = columns(ov.C, tail_retain_indices);
 
     head_ = new_head;
     tail_ = new_tail;
@@ -745,17 +749,17 @@ namespace sill {
     if (relabeled) {
       vec mu_x_head(ov.A.n_rows);
       {
-        mu_x_head.set_subvector(Y_in_head_ov_indices_, fy.mean(Y_in_head_));
+        mu_x_head(Y_in_head_ov_indices_) = fy.mean(Y_in_head_);
         vec x_head(X_in_head_ov_indices_.size());
         r.vector_values(x_head, X_in_head_);
-        mu_x_head.set_subvector(X_in_head_ov_indices_, x_head);
+        mu_x_head(X_in_head_ov_indices_) = x_head;
       }
       vec mu_x_tail(ov.C.n_cols);
       {
-        mu_x_tail.set_subvector(Y_in_tail_ov_indices_, fy.mean(Y_in_tail_));
+        mu_x_tail(Y_in_tail_ov_indices_) = fy.mean(Y_in_tail_);
         vec x_tail(X_in_tail_ov_indices_.size());
         r.vector_values(x_tail, X_in_tail_);
-        mu_x_tail.set_subvector(X_in_tail_ov_indices_, x_tail);
+        mu_x_tail(X_in_tail_ov_indices_) = x_tail;
       }
 
       vec tmpvec(ov.b);
@@ -766,16 +770,15 @@ namespace sill {
       tmpvec *= w;
 
       if (Y_in_head_.size() != 0) {
-        grad.A.subtract_submatrix
-          (irange(0,grad.A.n_rows),
-           Y_in_head_ov_indices_,
-           w * ov.A.columns(Y_in_head_ov_indices_) * fy.covariance(Y_in_head_));
+        set_submatrix
+          (grad.A, span(0,grad.A.n_rows-1), Y_in_head_ov_indices_,
+           mat(w * columns(ov.A,Y_in_head_ov_indices_)
+               * fy.covariance(Y_in_head_)));
         if (Y_in_tail_.size() != 0)
-          grad.A.add_submatrix
-            (irange(0,grad.A.n_rows),
-             Y_in_head_ov_indices_,
-             w * ov.C.columns(Y_in_tail_ov_indices_)
-             * fy.covariance(Y_in_tail_, Y_in_head_));
+          set_submatrix
+            (grad.A, span(0,grad.A.n_rows-1), Y_in_head_ov_indices_,
+             mat(w * columns(ov.C,Y_in_tail_ov_indices_)
+                 * fy.covariance(Y_in_tail_, Y_in_head_)));
       }
       if (mu_x_head.size() != 0)
         grad.A += outer_product(tmpvec, mu_x_head);
@@ -783,17 +786,19 @@ namespace sill {
       grad.b -= tmpvec;
 
       if (Y_in_tail_.size() != 0) {
-        grad.C.subtract_submatrix
-          (irange(0,grad.A.n_rows),
+        subtract_submatrix
+          (grad.C,
+           span(0,grad.A.n_rows-1),
            Y_in_tail_ov_indices_,
-           w * ov.C.columns(Y_in_tail_ov_indices_)
-           * fy.covariance(Y_in_tail_));
+           mat(w * columns(ov.C,Y_in_tail_ov_indices_)
+               * fy.covariance(Y_in_tail_)));
         if (Y_in_head_.size() != 0)
-          grad.C.add_submatrix
-            (irange(0,grad.A.n_rows),
+          add_submatrix
+            (grad.C,
+             span(0,grad.A.n_rows-1),
              Y_in_head_ov_indices_,
-             w * ov.A.columns(Y_in_head_ov_indices_)
-             * fy.covariance(Y_in_head_,Y_in_tail_));
+             mat(w * columns(ov.A,Y_in_head_ov_indices_)
+                 * fy.covariance(Y_in_head_,Y_in_tail_)));
       }
       if (mu_x_tail.size() != 0)
         grad.C -= outer_product(tmpvec, mu_x_tail);
@@ -812,8 +817,8 @@ namespace sill {
       if (x.size() != 0)
         tmpvec += ov.C * x;
 
-      grad.A += outer_product(tmpvec, w * mu);
-      grad.A -= w * ov.A * (fy.covariance(head_) + outer_product(mu, mu));
+      grad.A += tmpvec * trans(w * mu);
+      grad.A -= w * ov.A * (fy.covariance(head_) + mu * trans(mu));
       tmpvec -= ov.A * mu;
       tmpvec *= w;
       grad.b -= tmpvec;
@@ -859,7 +864,7 @@ namespace sill {
       grad.A += w * ov.A * fy.covariance(head_);
       grad.b -= tmpvec2;
       if (x.size() != 0)
-        grad.C -= outer_product(tmpvec + tmpvec2, x);
+        grad.C -= (tmpvec + tmpvec2) * trans(x);
     }
   }
 
@@ -874,21 +879,21 @@ namespace sill {
     vec tmpvec(ov.A.n_rows);
     if (tmpvec.size() != 0) {
       get_head_values(r, tmpvec);
-      elem_mult_inplace(tmpvec, tmpvec);
+      tmpvec %= tmpvec;
       if (w != 1)
         tmpvec *= w;
       for (size_t j(0); j < ov.A.n_cols; ++j)
-        hessian.A.set_col(j, hessian.A.get_col(j) - tmpvec[j]);
+        hessian.A.col(j) = hessian.A.col(j) - tmpvec[j];
     }
     hessian.b -= w;
     if (ov.C.n_cols != 0) {
-      tmpvec.resize(ov.C.n_cols);
+      tmpvec.set_size(ov.C.n_cols);
       get_tail_values(r, tmpvec);
-      elem_mult_inplace(tmpvec, tmpvec);
+      tmpvec %= tmpvec;
       if (w != 1)
         tmpvec *= w;
       for (size_t j(0); j < ov.C.n_cols; ++j)
-        hessian.C.set_col(j, hessian.C.get_col(j) - tmpvec[j]);
+        hessian.C.col(j) = hessian.C.col(j) - tmpvec[j];
     }
   }
 
@@ -910,22 +915,22 @@ namespace sill {
     }
     vec tmpvec(fy.mean(head_));
     if (tmpvec.size() != 0) {
-      elem_mult_inplace(tmpvec, tmpvec);
+      tmpvec %= tmpvec;
       tmpvec += fy.covariance_diag(head_);
       if (w != 1)
         tmpvec *= w;
       for (size_t j(0); j < ov.A.n_cols; ++j)
-        hessian.A.set_col(j, hessian.A.get_col(j) - tmpvec[j]);
+        hessian.A.col(j) = hessian.A.col(j) - tmpvec[j];
     }
     hessian.b -= w;
     if (ov.C.n_cols != 0) {
-      tmpvec.resize(ov.C.n_cols);
+      tmpvec.set_size(ov.C.n_cols);
       get_tail_values(r, tmpvec);
-      elem_mult_inplace(tmpvec, tmpvec);
+      tmpvec %= tmpvec;
       if (w != 1)
         tmpvec *= w;
       for (size_t j(0); j < ov.C.n_cols; ++j)
-        hessian.C.set_col(j, hessian.C.get_col(j) - tmpvec[j]);
+        hessian.C.col(j) = hessian.C.col(j) - tmpvec[j];
     }
   }
 
@@ -953,8 +958,8 @@ namespace sill {
     get_tail_values(r, x);
     mat tmpmat(outer_product(mu, mu));
     tmpmat += cov;
-    vec Gdiag(diag(tmpmat));   // Gdiag(j) = G_{jj}
-    tmpmat *= ov.A.transpose();  // (tmpmat = GA' now)
+    vec Gdiag(tmpmat.diag());   // Gdiag(j) = G_{jj}
+    tmpmat *= trans(ov.A);  // (tmpmat = GA' now)
     vec b_Cx(ov.b);
     if (x.size() != 0)
       b_Cx += ov.C * x;        // b_Cx(i) = b_i + C_{i.} \cdot x
@@ -963,24 +968,24 @@ namespace sill {
     tmpvec *= -2.;
     tmpvec += A_mu;
     mat tmpmat2(outer_product(tmpvec, mu));
-    tmpmat2 += tmpmat.transpose();
+    tmpmat2 += trans(tmpmat);
     tmpmat2 *= (2. * w);
     mat A_sigma(ov.A);
     A_sigma *= cov;            // A_sigma(i,j) = A_{i.} \cdot \sigma_{j.}
-    elem_mult_inplace(A_sigma, tmpmat2);
+    tmpmat2 %= A_sigma;
     sqrgrad.A += tmpmat2;
     tmpvec = A_mu;
     tmpvec *= -2.;
     tmpvec += b_Cx;
-    elem_mult_inplace(b_Cx, tmpvec);
-    elem_mult_inplace(ov.A.transpose(), tmpmat);
+    tmpvec %= b_Cx;
+    tmpmat %= trans(ov.A);
     tmpvec += sum(tmpmat, 2);
     if (w != 1)
       tmpvec *= w;
     sqrgrad.A += outer_product(tmpvec, Gdiag);
     sqrgrad.b += tmpvec;
     if (x.size() != 0) {
-      elem_mult_inplace(x, x);
+      x %= x;
       sqrgrad.C += outer_product(tmpvec, x);
     }
   }
@@ -996,31 +1001,31 @@ namespace sill {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -=
-            reg.lambdas[0] * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
+            reg.lambdas[0] * (dot(ov.C, ov.C) + dot(ov.b, ov.b));
         if (reg.lambdas[1] != 0)
-          val -= reg.lambdas[1] * ov.A.dot(ov.A);
+          val -= reg.lambdas[1] * dot(ov.A, ov.A);
         return (.5 * val);
       }
-    case 3: // L2 on b,C and logdet((A'A)^-1)
+    case 3: // L2 on b,C and log_det((A'A)^-1)
       {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -= .5 * reg.lambdas[0]
-            * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
-//        val += (reg.lambdas[1] + 2 * ov.A.n_rows) * logdet(ov.A);
-        val += (.5 * reg.lambdas[1] + ov.A.n_rows) * logdet(ov.A.transpose() * ov.A);
+            * (dot(ov.C, ov.C) + dot(ov.b, ov.b));
+//        val += (reg.lambdas[1] + 2 * ov.A.n_rows) * log_det(ov.A);
+        val += (.5 * reg.lambdas[1] + ov.A.n_rows) * log_det(mat(trans(ov.A) * ov.A));
         return val;
       }
-    case 4: // L2 on b,C and [ logdet((A'A)^-1) + tr(A'A) ]
+    case 4: // L2 on b,C and [ log_det((A'A)^-1) + tr(A'A) ]
       {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -= .5 * reg.lambdas[0]
-            * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
-//        val += (reg.lambdas[1] + 2 * ov.A.n_rows) * logdet(ov.A);
-        val += (.5 * reg.lambdas[1] + ov.A.n_rows) * logdet(ov.A.transpose() * ov.A);
+            * (dot(ov.C, ov.C) + dot(ov.b,ov.b));
+//        val += (reg.lambdas[1] + 2 * ov.A.n_rows) * log_det(ov.A);
+        val += (.5 * reg.lambdas[1] + ov.A.n_rows) * log_det(mat(trans(ov.A) * ov.A));
         if (reg.lambdas[1] != 0)
-          val -= .5 * reg.lambdas[1] * ov.A.dot(ov.A);
+          val -= .5 * reg.lambdas[1] * dot(ov.A,ov.A);
         return val;
       }
     case 5: // L2 on b,C and tr((A'A)^-1)
@@ -1028,32 +1033,32 @@ namespace sill {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -=
-            reg.lambdas[0] * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
+            reg.lambdas[0] * (dot(ov.C, ov.C) + dot(ov.b,ov.b));
         if (reg.lambdas[1] != 0) {
           vec eig_AtA;
-          bool result = eig_sym(ov.A.transpose() * ov.A, eig_AtA);
+          bool result = eig_sym(eig_AtA, trans(ov.A) * ov.A);
           if (!result) {
             throw std::runtime_error("eig_sym failed in gaussian_crf_factor::regularization_penalty().");
           }
-          val -= sum(elem_div(reg.lambdas[1], eig_AtA));
+          val -= accu(reg.lambdas[1] / eig_AtA);
         }
         return (.5 * val);
       }
-    case 6: // L2 on b,C and [ -logdet((A'A)^-1) + tr((A'A)^-1) ]
+    case 6: // L2 on b,C and [ -log_det((A'A)^-1) + tr((A'A)^-1) ]
       {
         double val(0.);
         if (reg.lambdas[0] != 0)
           val -= .5 * reg.lambdas[0]
-            * (ov.C.dot(ov.C) + ov.b.dot(ov.b));
+            * (dot(ov.C, ov.C) + dot(ov.b,ov.b));
         if (reg.lambdas[1] != 0) {
-//          val -= reg.lambdas[1] * logdet(ov.A);
-          val -= (.5 * reg.lambdas[1]) * logdet(ov.A.transpose() * ov.A);
+//          val -= reg.lambdas[1] * log_det(ov.A);
+          val -= (.5 * reg.lambdas[1]) * log_det(mat(trans(ov.A) * ov.A));
           vec eig_AtA;
-          bool result = eig_sym(ov.A.transpose() * ov.A, eig_AtA);
+          bool result = eig_sym(eig_AtA, trans(ov.A) * ov.A);
           if (!result) {
             throw std::runtime_error("eig_sym failed in gaussian_crf_factor::regularization_penalty().");
           }
-          val -= .5 * sum(elem_div(reg.lambdas[1], eig_AtA));
+          val -= .5 * accu(reg.lambdas[1] / eig_AtA);
         }
         return val;
       }
@@ -1076,35 +1081,35 @@ namespace sill {
       if (reg.lambdas[1] != 0)
         grad.A -= w * reg.lambdas[1] * ov.A;
       return;
-    case 3: // L2 on b,C and logdet((A'A)^-1)
+    case 3: // L2 on b,C and log_det((A'A)^-1)
       if (reg.lambdas[0] != 0) {
         grad.C -= w * reg.lambdas[0] * ov.C;
         grad.b -= w * reg.lambdas[0] * ov.b;
       }
       {
         mat AtA_inv_At;
-        bool result = ls_solve_chol(ov.A.transpose() * ov.A, ov.A.transpose(),
-                                    AtA_inv_At);
+        bool result = solve(AtA_inv_At, trans(ov.A) * ov.A, trans(ov.A));
         if (!result) {
-          throw ls_solve_chol_error("ls_solve_chol failed in gaussian_crf_factor::add_regularization_gradient().");
+          throw ls_solve_chol_error("solve failed in gaussian_crf_factor::add_regularization_gradient().");
         }
         grad.A -=
-          w * (reg.lambdas[1] + 2 * ov.A.n_rows) * AtA_inv_At.transpose();
+          w * (reg.lambdas[1] + 2 * ov.A.n_rows) * trans(AtA_inv_At);
       }
       return;
-    case 4: // L2 on b,C and [ logdet((A'A)^-1) + tr(A'A) ]
+    case 4: // L2 on b,C and [ log_det((A'A)^-1) + tr(A'A) ]
       if (reg.lambdas[0] != 0) {
         grad.C -= w * reg.lambdas[0] * ov.C;
         grad.b -= w * reg.lambdas[0] * ov.b;
       }
       {
         mat AtA_inv;
-        bool result = inv(ov.A.transpose() * ov.A, AtA_inv);
+        bool result = inv(AtA_inv, trans(ov.A) * ov.A);
         if (!result) {
           throw inv_error("Matrix inverse failed in gaussian_crf_factor::add_regularization_gradient().");
         }
-        grad.A -= ov.A * w * ((reg.lambdas[1] + 2 * ov.A.n_rows) * AtA_inv
-                              + reg.lambdas[1] * identity(AtA_inv.n_rows));
+        grad.A -=
+          ov.A * w * ((reg.lambdas[1] + 2 * ov.A.n_rows) * AtA_inv
+                      + reg.lambdas[1] * eye(AtA_inv.n_rows,AtA_inv.n_rows));
       }
       return;
     case 5: // L2 on b,C and tr((A'A)^-1)
@@ -1113,28 +1118,28 @@ namespace sill {
         grad.b -= w * reg.lambdas[0] * ov.b;
       }
       if (reg.lambdas[1] != 0) {
-        mat tmpmat(ov.A.transpose());
+        mat tmpmat(trans(ov.A));
         tmpmat *= ov.A;
-        bool result = ls_solve_chol(tmpmat * tmpmat, ov.A.transpose(), tmpmat);
+        bool result = solve(tmpmat, tmpmat * tmpmat, trans(ov.A));
         if (!result) {
-          throw ls_solve_chol_error("ls_solve_chol failed in gaussian_crf_factor::add_regularization_gradient().");
+          throw ls_solve_chol_error("solve failed in gaussian_crf_factor::add_regularization_gradient().");
         }
-        grad.A += w * reg.lambdas[1] * tmpmat.transpose();
+        grad.A += w * reg.lambdas[1] * trans(tmpmat);
       }
       return;
-    case 6: // L2 on b,C and [ -logdet((A'A)^-1) + tr((A'A)^-1) ]
+    case 6: // L2 on b,C and [ -log_det((A'A)^-1) + tr((A'A)^-1) ]
       if (reg.lambdas[0] != 0) {
         grad.C -= w * reg.lambdas[0] * ov.C;
         grad.b -= w * reg.lambdas[0] * ov.b;
       }
       if (reg.lambdas[1] != 0) {
         mat AtA_inv;
-        bool result = inv(ov.A.transpose() * ov.A, AtA_inv);
+        bool result = inv(AtA_inv, trans(ov.A) * ov.A);
         if (!result) {
           throw inv_error("Matrix inverse failed in gaussian_crf_factor::add_regularization_gradient().");
         }
         grad.A += w * reg.lambdas[1]
-          * ov.A * AtA_inv * (AtA_inv - identity(ov.A.n_rows));
+          * ov.A * AtA_inv * (AtA_inv - eye(ov.A.n_rows, ov.A.n_rows));
       }
       return;
     default:
@@ -1159,10 +1164,10 @@ namespace sill {
       if (reg.lambdas[1] != 0)
         hd.A -= w * reg.lambdas[1];
       return;
-    case 3: // L2 on b,C and logdet((A'A)^-1)
-    case 4: // L2 on b,C and [ logdet((A'A)^-1) + tr(A'A) ]
+    case 3: // L2 on b,C and log_det((A'A)^-1)
+    case 4: // L2 on b,C and [ log_det((A'A)^-1) + tr(A'A) ]
     case 5: // L2 on b,C and tr((A'A)^-1)
-    case 6: // L2 on b,C and [ -logdet((A'A)^-1) + tr((A'A)^-1) ]
+    case 6: // L2 on b,C and [ -log_det((A'A)^-1) + tr((A'A)^-1) ]
       std::cerr << "GAUSSIAN_CRF_FACTOR::ADD_REGULARIZATION_HESSIAN_DIAG()"
                 << " NOT YET FULLY IMPLEMENTED!!" << std::endl;
       assert(false);
@@ -1210,13 +1215,13 @@ namespace sill {
     if (head_.size() == 0)
       return moment_gaussian(conditioned_f);
     mat sigma;
-    bool result(ls_solve_chol(ov.A.transpose() * ov.A, identity(ov.A.n_rows),
-                              sigma));
+    bool result =
+      solve(sigma, trans(ov.A) * ov.A, eye(ov.A.n_rows,ov.A.n_rows));
     if (!result) {
       throw std::runtime_error
         ("Cholesky decomposition failed in gaussian_crf_factor::get_gaussian");
     }
-    mat sigma_At(sigma * ov.A.transpose());
+    mat sigma_At(sigma * trans(ov.A));
     mat mg_coeff;
     if (ov.C.size() > 0)
       mg_coeff = sigma_At * ov.C;
@@ -1230,40 +1235,33 @@ namespace sill {
       if (tail_.size() > 0) {
         vector_var_vector YX(sill::concat(head_, tail_));
         size_t YXsize = vector_size(YX);
-        mat AtA(ov.A.transpose() * ov.A);
-        vec btA(ov.A.transpose() * ov.b);
-        mat AtC(ov.A.transpose() * ov.C);
+        mat AtA(trans(ov.A) * ov.A);
+        vec btA(trans(ov.A) * ov.b);
+        mat AtC(trans(ov.A) * ov.C);
         mat AtA_inv_AtC;
-        if (!ls_solve_chol(AtA, AtC, AtA_inv_AtC)) {
+        if (!solve(AtA_inv_AtC, AtA, AtC)) {
           throw std::runtime_error
             (std::string("gaussian_crf_factor::") +
              "get_gaussian<canonical_gaussian>: Cholesky decomposition failed");
         }
         vec eta(YXsize);
-        eta.set_subvector(irange(0,ov.A.n_rows), btA);
-        eta.set_subvector(irange(ov.A.n_rows, YXsize),
-                          AtA_inv_AtC.transpose() * btA);
+        eta(span(0,ov.A.n_rows-1)) = btA;
+        eta(span(ov.A.n_rows, YXsize-1)) = trans(AtA_inv_AtC) * btA;
         mat lambda(YXsize, YXsize);
-        lambda.set_submatrix
-          (irange(0,ov.A.n_rows), irange(0,ov.A.n_rows), AtA);
-        lambda.set_submatrix
-          (irange(0,ov.A.n_rows), irange(ov.A.n_rows, YXsize), - AtC);
-        lambda.set_submatrix
-          (irange(ov.A.n_rows, YXsize), irange(0,ov.A.n_rows),
-           - AtC.transpose());
-        lambda.set_submatrix
-          (irange(ov.A.n_rows, YXsize), irange(ov.A.n_rows, YXsize),
-           AtC.transpose() * AtA_inv_AtC);
+        lambda(span(0,ov.A.n_rows-1), span(0,ov.A.n_rows-1)) = AtA;
+        lambda(span(0,ov.A.n_rows-1), span(ov.A.n_rows, YXsize)) = - AtC;
+        lambda(span(ov.A.n_rows, YXsize), span(0,ov.A.n_rows)) = - trans(AtC);
+        lambda(span(ov.A.n_rows, YXsize), span(ov.A.n_rows, YXsize)) =
+          trans(AtC) * AtA_inv_AtC;
         return canonical_gaussian(YX, lambda, eta);
       } else {
-        return canonical_gaussian(head_, ov.A.transpose() * ov.A,
-                                  ov.A.transpose() * ov.b);
+        return canonical_gaussian(head_, trans(ov.A) * ov.A,
+                                  trans(ov.A) * ov.b);
       }
     } else {
       if (tail_.size() == 0)
         return canonical_gaussian();
-      return canonical_gaussian(tail_, ov.C.transpose() * ov.C,
-                                ov.C.transpose() * ov.b);
+      return canonical_gaussian(tail_, trans(ov.C) * ov.C, trans(ov.C) * ov.b);
     }
   }
 

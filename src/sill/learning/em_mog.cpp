@@ -20,7 +20,7 @@ namespace sill {
         w(i, j) = mixture[j](r.vector());
       double p_i = sum(w.row(i));
       logl += log(p_i);
-      w.divide_row(i++, p_i);
+      w.row(i++) /= p_i;
     }
 
     return logl;
@@ -33,7 +33,7 @@ namespace sill {
 
     for(size_t i = 0; i < k; i++)
       // mle also computes the probability of the component, i.e., sum(w(:,i))
-      mle(*data, w.column(i), regul, mixture[i]);
+      mle(*data, w.col(i), regul, mixture[i]);
 
     // the standard (non-logarithmic) implementation of normalize works
     // since our probabilities are O(data->size())
@@ -46,7 +46,7 @@ namespace sill {
     mixture_gaussian mixture(k, mixturedomain);
 
     for(size_t i = 0; i < k; i++) {
-      mle(*data, w.column(i), 0, mixture[i]);
+      mle(*data, w.col(i), 0, mixture[i]);
       mixture[i].mean() *= mixture[i].norm_constant();
       mixture[i].covariance() *= mixture[i].norm_constant();
     }

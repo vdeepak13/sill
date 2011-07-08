@@ -1133,7 +1133,7 @@ namespace sill {
     vector_class_vars = new_vector_class_vars;
     var_type_order = new_var_type_order;
     tmp_findata.resize(ds.num_finite());
-    tmp_vecdata.resize(ds.vector_dim());
+    tmp_vecdata.set_size(ds.vector_dim());
   }
 
   template <typename LA>

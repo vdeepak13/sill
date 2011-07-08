@@ -2,7 +2,6 @@
 
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/nonlinear_gaussian.hpp>
-#include <sill/math/linear_algebra.hpp>
 
 namespace sill {
 

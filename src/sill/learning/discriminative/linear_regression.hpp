@@ -243,7 +243,7 @@ namespace sill {
 
       //! Returns true iff this instance equals the other.
       bool operator==(const opt_vector& other) const {
-        return (compare(A, other.A) == 0 && compare(b, other.b) == 0);
+        return (equal(A, other.A) && equal(b, other.b));
       }
 
       //! Returns false iff this instance equals the other.

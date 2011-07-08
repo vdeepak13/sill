@@ -99,10 +99,10 @@ namespace sill {
       coeff(cg.eta.size(),0), likelihood(cg.log_multiplier(), log_tag()) {
     // TO DO: Is likelihood set correctly?
     if (head_list.size() != 0) {
-      this->var_range = cg.var_range;
+      this->var_span = cg.var_span;
       //size_t n = cg.eta.size();
       //cov.resize(n, n, false);
-      bool result = inv(cg.lambda, cov);
+      bool result = inv(cov, cg.lambda);
       if (!result) {
         throw invalid_operation
           (std::string("The canonical_gaussian does not represent a valid") +
@@ -134,7 +134,7 @@ namespace sill {
     args.clear();
     args.insert(head_list.begin(), head_list.end());
     args.insert(tail_list.begin(), tail_list.end());
-    var_range.clear();
+    var_span.clear();
     compute_indices(head_list);
     compute_indices(tail_list);
   }
@@ -147,10 +147,10 @@ namespace sill {
     // FIXME: need to check head and tail separately
     uvec indh = other.indices(head_list);
     uvec indt = other.indices(tail_list);
-    return cmean == other.cmean(indh) &&
-      cov == other.cov(indh, indh) &&
-      coeff == other.coeff(indh, indt) &&
-      likelihood == other.likelihood;
+    return (accu(cmean == other.cmean(indh)) == cmean.size() &&
+            accu(cov == other.cov(indh, indh)) == cov.n_elem &&
+            accu(coeff == other.coeff(indh, indt)) == coeff.n_elem &&
+            likelihood == other.likelihood);
   }
 
   bool moment_gaussian::operator!=(const moment_gaussian& other) const {
@@ -181,7 +181,8 @@ namespace sill {
     vec yc(y);
     yc -= cmean;
     size_t n = cmean.size();
-    double result = -0.5*(yc*(inv(cov)*yc) + n*log(2*pi())+logdet(cov));
+    double result =
+      as_scalar(-0.5*(yc*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
 
@@ -194,7 +195,8 @@ namespace sill {
     yc -= cmean;
     yc += coeff * x;
     size_t n = cmean.size();
-    double result = -0.5*(yc*(inv(cov)*yc) + n*log(2*pi())+logdet(cov));
+    double result =
+      as_scalar(-0.5*(yc*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
 
@@ -266,11 +268,11 @@ namespace sill {
         vec v_tail(sill::concat(values(a, tail_list)));
         new_cmean += coeff * v_tail;
       } else {
-        new_coeff = coeff.columns(new_tail_ind);
+        new_coeff = columns(coeff, new_tail_ind);
         uvec r_tail_ind;
         this->indices(r_tail, r_tail_ind, true);
         vec r_tail_vals(sill::concat(values(a, r_tail)));
-        new_cmean += coeff.columns(r_tail_ind) * r_tail_vals;
+        new_cmean += columns(coeff,r_tail_ind) * r_tail_vals;
       }
     }
 
@@ -289,30 +291,30 @@ namespace sill {
     vec dh(sill::concat(values(a, h)));
     dh -= new_cmean(ih);
     mat invhh_covhH;
-    bool result = ls_solve_chol(cov(ih,ih), cov(ih,iH), invhh_covhH);
+    bool result = solve(invhh_covhH, cov(ih,ih), cov(ih,iH));
     if (!result) {
       throw invalid_operation
         ("Cholesky decomposition failed in moment_gaussian::collapse");
     }
     double logl = 0;
-    logl -= 0.5 * dot(dh, ls_solve_chol(cov(ih,ih), dh));
-    logl -= 0.5 * (dh.size() * std::log(2*pi()) + logdet(cov(ih,ih)));
+    logl -= 0.5 * dot(dh, solve(cov(ih,ih), dh));
+    logl -= 0.5 * (dh.size() * std::log(2*pi()) + log_det(cov(ih,ih)));
     if (H.size() == 0) {
       return moment_gaussian
         (likelihood * logarithmic<double>(logl, log_tag()));
     } else if (new_tail.size() == 0) {
       return moment_gaussian
         (H,
-         new_cmean(iH) + invhh_covhH.transpose() * dh,
+         new_cmean(iH) + trans(invhh_covhH) * dh,
          cov(iH, iH) - cov(iH,ih) * invhh_covhH,
          likelihood * logarithmic<double>(logl, log_tag()));
     } else {
       return moment_gaussian
         (H,
-         new_cmean(iH) + invhh_covhH.transpose() * dh,
+         new_cmean(iH) + trans(invhh_covhH) * dh,
          cov(iH, iH) - cov(iH,ih) * invhh_covhH,
          new_tail,
-         coeff.columns(new_tail_ind),
+         columns(coeff,new_tail_ind),
          likelihood * logarithmic<double>(logl, log_tag()));
     }
   } // restrict(a)
@@ -368,12 +370,12 @@ namespace sill {
     uvec ia(indices(new_head));
     uvec ib(indices(new_tail));
     mat cov_ab_cov_b_inv;
-    bool result = ls_solve_chol(cov(ib,ib), cov(ib,ia), cov_ab_cov_b_inv);
+    bool result = solve(cov_ab_cov_b_inv, cov(ib,ib), cov(ib,ia));
     if (!result) {
       throw invalid_operation
         ("Cholesky decomposition failed in moment_gaussian::conditional");
     }
-    cov_ab_cov_b_inv = cov_ab_cov_b_inv.transpose();
+    cov_ab_cov_b_inv = trans(cov_ab_cov_b_inv);
     return moment_gaussian(new_head,
                            cmean(ia) - cov_ab_cov_b_inv * cmean(ib),
                            cov(ia,ia) - cov_ab_cov_b_inv * cov(ib,ia),
@@ -385,7 +387,7 @@ namespace sill {
       throw std::runtime_error
         ("moment_gaussian::entropy() called for a conditional Gaussian.");
     size_t N(cmean.size());
-    return (N + ((N*std::log(2. * pi()) + logdet(cov)) / std::log(base)))/2.;
+    return (N + ((N*std::log(2. * pi()) + log_det(cov)) / std::log(base)))/2.;
   }
 
   double moment_gaussian::entropy() const {
@@ -413,10 +415,10 @@ namespace sill {
     uvec i1(indices(d1));
     uvec i2(indices(d2));
     if (args.size() == d1.size() + d2.size()) {
-      return ((logdet(cov(i1,i1)) + logdet(cov(i2,i2)) - logdet(cov)) / 2.);
+      return ((log_det(cov(i1,i1)) + log_det(cov(i2,i2)) - log_det(cov)) / 2.);
     } else {
       uvec i12(indices(set_union(d1,d2)));
-      return ((logdet(cov(i1,i1)) + logdet(cov(i2,i2)) - logdet(cov(i12,i12)))
+      return ((log_det(cov(i1,i1)) + log_det(cov(i2,i2)) - log_det(cov(i12,i12)))
               /2.);
     }
   }
@@ -434,14 +436,14 @@ namespace sill {
     uvec yh = result.indices(y.head_list);
     uvec x_yt  = x.indices(y.tail_list);
     uvec x_all = x.indices(x.head_list);
-    result.cmean.set_subvector(xh, x.cmean);
-    result.cmean.set_subvector(yh, y.coeff * x.cmean(x_yt) + y.cmean);
+    result.cmean.elem(xh) = x.cmean;
+    result.cmean.elem(yh) = y.coeff * x.cmean(x_yt) + y.cmean;
     mat covyx = y.coeff * x.cov(x_yt, x_all);
-    mat covyy = y.coeff * x.cov(x_yt, x_yt) * y.coeff.transpose() + y.cov;
-    result.cov.set_submatrix(xh, xh, x.cov);
-    result.cov.set_submatrix(yh, xh, covyx);
-    result.cov.set_submatrix(xh, yh, covyx.transpose());
-    result.cov.set_submatrix(yh, yh, covyy);
+    mat covyy = y.coeff * x.cov(x_yt, x_yt) * trans(y.coeff) + y.cov;
+    result.cov(xh, xh) = x.cov;
+    result.cov(yh, xh) = covyx;
+    result.cov(xh, yh) = trans(covyx);
+    result.cov(yh, yh) = covyy;
     return result;
   } // direct_combination
 

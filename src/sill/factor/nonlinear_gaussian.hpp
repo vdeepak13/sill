@@ -7,8 +7,6 @@
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/approx/interfaces.hpp>
 #include <sill/math/function/interfaces.hpp>
-#include <sill/math/matrix.hpp>
-#include <sill/math/vector.hpp>
 
 namespace sill {
 

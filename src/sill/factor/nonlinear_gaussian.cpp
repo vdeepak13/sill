@@ -6,7 +6,6 @@
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/nonlinear_gaussian.hpp>
 #include <sill/factor/operations.hpp>
-#include <sill/math/linear_algebra.hpp>
 
 #include <sill/macros_def.hpp>
 namespace sill {
@@ -33,7 +32,7 @@ namespace sill {
     else
       assert(cov.n_rows == nh && cov.n_cols == nh);
     // Construct the input maps
-    fixed_input.resize(nt);
+    fixed_input.set_size(nt);
     input_map.resize(nt);
     for(size_t i = 0; i < nt; i++) input_map[i] = i;
     // Install the default approximator

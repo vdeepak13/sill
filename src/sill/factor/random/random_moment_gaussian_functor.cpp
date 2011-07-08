@@ -53,7 +53,7 @@ namespace sill {
   random_moment_gaussian_functor::
   choose_mu_sigma(size_t Xsize, vec& mu, mat& sigma) {
     boost::uniform_real<double> unif_real(-params.b, params.b);
-    mu.resize(Xsize);
+    mu.set_size(Xsize);
     foreach(double& val, mu)
       val = unif_real(rng);
     double covariance =
@@ -85,7 +85,7 @@ namespace sill {
   random_moment_gaussian_functor::
   choose_coeff(size_t Ysize, size_t Xsize, mat& coeff) {
     boost::uniform_real<double> unif_real(-params.c, params.c);
-    coeff.resize(Ysize, Xsize);
+    coeff.set_size(Ysize, Xsize);
     foreach(double& val, coeff)
       val = params.c_shift + unif_real(rng);
   } // choose_coeff

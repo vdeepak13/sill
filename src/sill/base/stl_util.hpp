@@ -13,7 +13,6 @@
 
 #include <sill/iterator/counting_output_iterator.hpp>
 #include <sill/iterator/map_value_iterator.hpp>
-#include <sill/range/forward_range.hpp>
 #include <sill/serialization/map.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/set.hpp>
@@ -31,9 +30,6 @@
  */
 
 namespace sill {
-
-  // Forward declaration
-  template <typename Ref> class forward_range;
 
   // Functions on sets
   //============================================================================
@@ -65,17 +61,6 @@ namespace sill {
                           std::inserter(output, output.begin()));
     return output;
   }
-
-// std::set_intersection only works on sorted input ranges
-//   template <typename T>
-//   std::set<T>
-//   set_intersect(const forward_range<T>& a, const forward_range<T>& b) {
-//     std::set<T> output;
-//     std::set_intersection(a.begin(), a.end(), 
-//                           b.begin(), b.end(),
-//                           std::inserter(output, output.begin()));
-//     return output;
-//   }
 
   template <typename T>
   size_t intersection_size(const std::set<T>& a, const std::set<T>& b) {
@@ -414,6 +399,7 @@ namespace sill {
    * If a,b are exactly the same, this returns 0.
    * @todo Test this!
    */
+  /*
   template <typename T>
   int lexigraphic_compare(const forward_range<T>& a,
                           const forward_range<T>& b) {
@@ -435,6 +421,7 @@ namespace sill {
       return 1;
     return 0;
   }
+  */
 
   //! Returns a subvector of v specified by the complement of the given indices.
   //! @param indices_sorted  Specifies if the given indices are sorted in

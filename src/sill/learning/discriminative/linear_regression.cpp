@@ -4,6 +4,7 @@
 #include <sill/learning/discriminative/linear_regression.hpp>
 #include <sill/learning/validation/parameter_grid.hpp>
 #include <sill/math/permutations.hpp>
+#include <sill/math/statistics.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -50,25 +51,31 @@ namespace sill {
     switch(params.regularization) {
     case 0: // none
       result =
-        ls_solve_chol(trans(Xdata()) * Xdata(),
-                      trans(Xdata()) * Ydata_own, weights_.A);
+        solve(weights_.A,
+              trans(Xdata()) * Xdata(), trans(Xdata()) * Ydata_own);
+//        ls_solve_chol(trans(Xdata()) * Xdata(),
+//                      trans(Xdata()) * Ydata_own, weights_.A);
       break;
     case 2: // L2
       result =
-        ls_solve_chol(trans(Xdata()) * Xdata()
-                      + (.5 * params.lambda) * eye(Xdata().n_cols,Xdata().n_cols),
-                      trans(Xdata()) * Ydata_own, weights_.A);
+        solve(weights_.A,
+              trans(Xdata()) * Xdata()
+              + diagmat(.5 * params.lambda * ones<vec>(Xdata().n_cols)),
+              trans(Xdata()) * Ydata_own);
+//        ls_solve_chol(trans(Xdata()) * Xdata()
+//                      + (.5*params.lambda) * eye(Xdata().n_cols,Xdata().n_cols),
+//                      trans(Xdata()) * Ydata_own, weights_.A);
       break;
     default:
       assert(false);
     }
-    weights_.A = weights_.A.transpose();
+    weights_.A = trans(weights_.A);
     if (!result) {
       throw std::runtime_error
         ("Cholesky decomposition failed in linear_regression::train_matrix_inversion");
     }
     if (Ydata_ptr) {
-      Ydata_own.resize(1,1); //set to size 1 instead of 0 since IT++ has issues
+      Ydata_own.set_size(1,1); //set to size 1 instead of 0 since IT++ has issues
       // About these IT++ issues: resize(0,0) will free the internal data in
       // the IT++ matrix, but when the IT++ matrix object is freed, its
       // destructor will try to free the internal data again.
@@ -78,7 +85,7 @@ namespace sill {
   void linear_regression::train_matrix_inversion_with_mean() {
     /*
     if (!Ydata_ptr) {
-      Xdata_own.resize(Xdata_own.n_rows, Xdata_own.n_cols + 1, true);
+      Xdata_own.reshape(Xdata_own.n_rows, Xdata_own.n_cols + 1);
       Xdata_own.set_column(Xdata_own.n_cols - 1, vec(Xdata_own.n_rows, 1.));
     }
     */
@@ -86,15 +93,19 @@ namespace sill {
     bool result(false);
     switch(params.regularization) {
     case 0: // none
-      result =
-        ls_solve_chol(trans(Xdata()) * Xdata(),
-                      trans(Xdata()) * Ydata(), tmpA);
+      result = solve(tmpA, trans(Xdata()) * Xdata(), trans(Xdata()) * Ydata());
+//        ls_solve_chol(trans(Xdata()) * Xdata(),
+//                      trans(Xdata()) * Ydata(), tmpA);
       break;
     case 2: // L2
       result =
-        ls_solve_chol(trans(Xdata()) * Xdata()
-                      + (.5 * params.lambda) * eye(Xdata().n_cols,Xdata().n_cols),
-                      trans(Xdata()) * Ydata(), tmpA);
+        solve(tmpA,
+              trans(Xdata()) * Xdata()
+              + diagmat(.5 * params.lambda * ones<vec>(Xdata().n_cols)),
+              trans(Xdata()) * Ydata());
+//        ls_solve_chol(trans(Xdata()) * Xdata()
+//                      + (.5 * params.lambda) * eye(Xdata().n_cols,Xdata().n_cols),
+//                      trans(Xdata()) * Ydata(), tmpA);
       break;
     default:
       assert(false);
@@ -103,7 +114,7 @@ namespace sill {
       throw std::runtime_error
         ("Cholesky decomposition failed in linear_regression::train_matrix_inversion_with_mean");
     }
-    weights_.A = tmpA.rows(irange(0, tmpA.n_rows - 1)).transpose();
+    weights_.A = trans(tmpA.rows(0, tmpA.n_rows - 2));
     weights_.b = tmpA.row(tmpA.n_rows - 1);
   } // train_matrix_inversion_with_mean()
 
@@ -131,8 +142,11 @@ namespace sill {
       if ((params.opt_method == 0) && params.regularize_mean) {
         if (Xdata().n_cols == Xvec_size) {
           // add ones vector
-          Xdata_own.resize(Xdata().n_rows, Xdata().n_cols + 1);
-          Xdata_own.set_submatrix(0, 0, Xdata());
+          Xdata_own.set_size(Xdata().n_rows, Xdata().n_cols + 1);
+          Xdata_own(span(0,Xdata().n_rows-1), span(0,Xdata().n_cols-1)) =
+            Xdata();
+          Xdata_own.col(Xdata().n_cols).fill(1);
+//          Xdata_own.set_submatrix(0, 0, Xdata());
           Xdata_ptr = NULL;
         } else {
           assert(Xdata().n_cols == Xvec_size + 1);
@@ -144,8 +158,8 @@ namespace sill {
 
     // Initialize weights
     if (params.opt_method != 0) {
-      weights_.A.resize(Yvec_size, Xvec_size);
-      weights_.b.resize(Yvec_size);
+      weights_.A.set_size(Yvec_size, Xvec_size);
+      weights_.b.set_size(Yvec_size);
       if (params.perturb_init > 0) {
         boost::uniform_real<double> uniform_dist;
         uniform_dist = boost::uniform_real<double>
@@ -165,7 +179,7 @@ namespace sill {
         data_weights = ds.weights();
         total_train_weight = sum(data_weights);
       } else {
-        data_weights.resize(0);
+        data_weights.set_size(0);
         total_train_weight = ds.size();
       }
     }
@@ -183,8 +197,8 @@ namespace sill {
       else
         train_matrix_inversion();
       if (own_data) {
-        Ydata_own.resize(0,0);//set to size 1 instead of 0 since IT++ has issues
-        Xdata_own.resize(0,0);//set to size 1 instead of 0 since IT++ has issues
+        Ydata_own.set_size(0,0);
+        Xdata_own.set_size(0,0);
       }
       break;
     case 1: // Batch gradient descent
@@ -217,7 +231,7 @@ namespace sill {
       assert(false);
     }
 
-    tmpx.resize(weights_.A.n_cols);
+    tmpx.set_size(weights_.A.n_cols);
 
     if (params.opt_method != 0) {
       while (iteration_ < params.init_iterations)
@@ -318,7 +332,7 @@ namespace sill {
   linear_regression::get_dependencies<vector_variable>() const {
     vector_domain x;
     for (size_t i(0); i < Xvec.size(); ++i) {
-      if (sum(abs(weights_.A.column(i))) > params.convergence_zero)
+      if (norm(weights_.A.col(i),1) > params.convergence_zero)
         x.insert(Xvec[i]);
     }
     return x;
@@ -331,7 +345,7 @@ namespace sill {
       K = std::numeric_limits<size_t>::max();
     mutable_queue<vector_variable*, double> vqueue;
     for (size_t i(0); i < Xvec.size(); ++i) {
-      vqueue.push(Xvec[i], sum(abs(weights_.A.column(i))));
+      vqueue.push(Xvec[i], norm(weights_.A.col(i),1));
     }
     std::vector<std::pair<vector_variable*, double> > x;
     while ((x.size() < K) && (vqueue.size() > 0)) {
@@ -399,9 +413,9 @@ namespace sill {
     assert((n_folds > 0) && (n_folds <= ds.size()));
     assert(lambdas.size() > 0);
 
-    all_lambdas.resize(0);
-    scores.resize(0);
-    stderrs.resize(0);
+    all_lambdas.set_size(0);
+    scores.set_size(0);
+    stderrs.set_size(0);
     vec lambdas_zoom(lambdas); // These hold values for each round of zooming.
     vec scores_zoom(lambdas.size(), 0);
     vec stderrs_zoom(lambdas.size(), 0);
@@ -419,7 +433,7 @@ namespace sill {
     mat temp_scores_mad;
     for (size_t zoom_i(0); zoom_i <= zoom; ++zoom_i) {
       if (lr_params.cv_score_type == 1)
-        temp_scores_mad.resize(n_folds, lambdas_zoom.size());
+        temp_scores_mad.set_size(n_folds, lambdas_zoom.size());
       for (size_t fold(0); fold < n_folds; ++fold) {
         // Prepare the fold dataset views
         if (fold != 0) {
@@ -448,13 +462,12 @@ namespace sill {
       }
       if (lr_params.cv_score_type == 1) {
         for (size_t k(0); k < lambdas_zoom.size(); ++k) {
-          std::pair<double,double>
-            m_mad(median_MAD(vec(temp_scores_mad.get_col(k))));
+          std::pair<double,double> m_mad(median_MAD(vec(temp_scores_mad.col(k)))); // TO DO: AVOID COPY
           scores_zoom[k] = m_mad.first;
           stderrs_zoom[k] = m_mad.second;
         }
       }
-      size_t tmp_best_i(max_index(-1. * scores_zoom, rng));
+      size_t tmp_best_i(min_index(scores_zoom, rng));
       if (zoom_i == 0) {
         best_i = tmp_best_i;
         all_lambdas = lambdas_zoom;
@@ -464,9 +477,9 @@ namespace sill {
         size_t old_size(all_lambdas.size());
         if (scores_zoom[tmp_best_i] < scores[best_i])
           best_i = old_size + tmp_best_i;
-        all_lambdas.resize(old_size + lambdas_zoom.size(), true);
-        scores.resize(old_size + scores_zoom.size(), true);
-        stderrs.resize(old_size + stderrs_zoom.size(), true);
+        all_lambdas.reshape(old_size + lambdas_zoom.size(), 1);
+        scores.reshape(old_size + scores_zoom.size(), 1);
+        stderrs.reshape(old_size + stderrs_zoom.size(), 1);
         for (size_t k(0); k < lambdas_zoom.size(); ++k) {
           all_lambdas[old_size + k] = lambdas_zoom[k];
           scores[old_size + k] = scores_zoom[k];
@@ -478,8 +491,8 @@ namespace sill {
           zoom_parameter_grid(all_lambdas, all_lambdas[best_i],
                               lambdas.size(), lr_params.cv_log_scale);
         if (scores_zoom.size() != lambdas_zoom.size()) {
-          scores_zoom.resize(lambdas_zoom.size());
-          stderrs_zoom.resize(lambdas_zoom.size());
+          scores_zoom.set_size(lambdas_zoom.size());
+          stderrs_zoom.set_size(lambdas_zoom.size());
         }
         scores_zoom.zeros();
         stderrs_zoom.zeros();
@@ -515,9 +528,9 @@ namespace sill {
     assert(lambdas.size() > 0);
     assert(lr_params.regularization == 2);
 
-    all_lambdas.resize(0);
-    scores.resize(0);
-    stderrs.resize(0);
+    all_lambdas.set_size(0);
+    scores.set_size(0);
+    stderrs.set_size(0);
     vec lambdas_zoom(lambdas); // These hold values for each round of zooming.
     vec scores_zoom(lambdas.size(), 0);
     vec stderrs_zoom(lambdas.size(), 0);
@@ -533,25 +546,25 @@ namespace sill {
     } else {
       mean_b = sum(Ydata, 1);
       mean_b /= Ydata.n_rows;
-      Ydata -= repmat(mean_b, Ydata.n_rows, 1, true);
+      Ydata -= repmat(trans(mean_b), Ydata.n_rows, 1);
       ds.get_value_matrix(Xdata, Xvec, false);
     }
-    mat G0(Xdata.transpose() * Xdata);
+    mat G0(trans(Xdata) * Xdata);
     // Compute G0 = U D V, where diag(D) = s0.
     mat Ut;
     mat Vt;
     vec s0;
-    bool result = svd(G0, Ut, s0, Vt);
+    bool result = svd(Ut, s0, Vt, G0);
     if (!result) {
       // TO DO: I should do inversion with lambda > 0 in this case, rather
       //        than throwing an error.
       throw std::runtime_error("SVD failed in linear_regression_choose_lambda()...but this is fixable.");
     }
-    Ut = Ut.transpose();
+    Ut = trans(Ut);
     bool s0_has_0(min(s0) == 0);
     vec temp_scores_mad; // for computing median/MAD
     if (lr_params.cv_score_type == 1)
-      temp_scores_mad.resize(Xdata.n_rows);
+      temp_scores_mad.set_size(Xdata.n_rows);
     for (size_t zoom_i(0); zoom_i <= zoom; ++zoom_i) {
       for (size_t k(0); k < lambdas_zoom.size(); ++k) {
         if (s0_has_0 && lambdas_zoom[k] == 0.) {
@@ -559,13 +572,14 @@ namespace sill {
           stderrs_zoom[k] = std::numeric_limits<double>::infinity();
           continue;
         }
-        mat X_Glambda_inv_Xt(Xdata * Vt * diag(1. / (s0 + .5 * lambdas_zoom[k]))
-                             * Ut * Xdata.transpose());
+        mat X_Glambda_inv_Xt(Xdata * Vt
+                             * diagmat(1. / (s0 + .5 * lambdas_zoom[k]))
+                             * Ut * trans(Xdata));
         mat Ypred(X_Glambda_inv_Xt * Ydata);
-        vec bottom_weights(1. - diag(X_Glambda_inv_Xt));
-        elem_mult_inplace(bottom_weights, bottom_weights);
+        vec bottom_weights(1. - diagvec(X_Glambda_inv_Xt));
+        bottom_weights %= bottom_weights;
         Ypred -= Ydata;
-        elem_mult_inplace(Ypred, Ypred);
+        Ypred %= Ypred;
         for (size_t i(0); i < bottom_weights.size(); ++i) {
           double val(sum(Ypred.row(i)));
           if (bottom_weights[i] == 0) {
@@ -578,7 +592,7 @@ namespace sill {
             scores_zoom[k] += val;
             stderrs_zoom[k] += val * val;
           } else {
-            temp_scores_mad(i) = val;
+            temp_scores_mad[i] = val;
           }
         }
         if (lr_params.cv_score_type == 1) {
@@ -587,7 +601,7 @@ namespace sill {
           stderrs_zoom[k] = m_mad.second;
         }
       }
-      size_t tmp_best_i(max_index(-1. * scores_zoom, rng));
+      size_t tmp_best_i(min_index(scores_zoom, rng));
       if (zoom_i == 0) {
         best_i = tmp_best_i;
         all_lambdas = lambdas_zoom;
@@ -597,9 +611,9 @@ namespace sill {
         size_t old_size(all_lambdas.size());
         if (scores_zoom[tmp_best_i] < scores[best_i])
           best_i = old_size + tmp_best_i;
-        all_lambdas.resize(old_size + lambdas_zoom.size(), true);
-        scores.resize(old_size + scores_zoom.size(), true);
-        stderrs.resize(old_size + stderrs_zoom.size(), true);
+        all_lambdas.reshape(old_size + lambdas_zoom.size(), 1);
+        scores.reshape(old_size + scores_zoom.size(), 1);
+        stderrs.reshape(old_size + stderrs_zoom.size(), 1);
         for (size_t k(0); k < lambdas_zoom.size(); ++k) {
           all_lambdas[old_size + k] = lambdas_zoom[k];
           scores[old_size + k] = scores_zoom[k];
@@ -611,8 +625,8 @@ namespace sill {
           zoom_parameter_grid(all_lambdas, all_lambdas[best_i],
                               lambdas.size(), lr_params.cv_log_scale);
         if (scores_zoom.size() != lambdas_zoom.size()) {
-          scores_zoom.resize(lambdas_zoom.size());
-          stderrs_zoom.resize(lambdas_zoom.size());
+          scores_zoom.set_size(lambdas_zoom.size());
+          stderrs_zoom.set_size(lambdas_zoom.size());
         }
         scores_zoom.zeros();
         stderrs_zoom.zeros();
@@ -622,7 +636,7 @@ namespace sill {
     if (lr_params.cv_score_type != 1) {
       scores /= ds.size();
       stderrs /= ds.size();
-      stderrs -= elem_mult(scores, scores);
+      stderrs -= scores % scores;
       stderrs /= ds.size();
       stderrs = sqrt(stderrs);
     }
@@ -630,13 +644,13 @@ namespace sill {
     if (return_regressor) {
       linear_regression* lr_ptr = new linear_regression(Yvec, Xvec);
       double best_lambda = all_lambdas[best_i];
-      mat tmpA(Vt * diag(1. / (s0 + .5 * best_lambda)) * Ut
-               * Xdata.transpose() * Ydata);
+      mat tmpA(Vt * diagmat(1. / (s0 + .5 * best_lambda)) * Ut
+               * trans(Xdata) * Ydata);
       if (lr_params.regularize_mean) {
-        lr_ptr->weights_.A = tmpA.rows(irange(0, tmpA.n_rows - 1)).transpose();
+        lr_ptr->weights_.A = trans(tmpA.rows(0, tmpA.n_rows - 2));
         lr_ptr->weights_.b = tmpA.row(tmpA.n_rows - 1);
       } else {
-        lr_ptr->weights_.A = tmpA.transpose();
+        lr_ptr->weights_.A = trans(tmpA);
         lr_ptr->weights_.b = mean_b;
       }
       return std::make_pair(best_lambda, lr_ptr);

@@ -101,7 +101,7 @@ namespace sill {
   median_MAD(const VectorType& vals) {
     typedef typename VectorType::value_type value_type;
     assert(vals.size() != 0);
-    VectorType sorted(vals);
+    std::vector<value_type> sorted(vals.begin(), vals.end());
     std::sort(sorted.begin(), sorted.end());
     size_t median_i(sorted.size() / 2);
     value_type median(sorted[median_i]);

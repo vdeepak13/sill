@@ -195,10 +195,8 @@ namespace sill {
         assert(params_ptr->valid());
         assert(nfolds <= ds.size());
 
-        means.resize(lambdas.size());
-        means.zeros_memset();
-        stderrs.resize(lambdas.size());
-        stderrs.zeros_memset();
+        means.zeros(lambdas.size());
+        stderrs.zeros(lambdas.size());
         boost::mt11213b rng(random_seed);
         boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
         dataset_view<typename F::la_type> permuted_view(ds);

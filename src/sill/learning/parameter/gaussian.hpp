@@ -57,7 +57,7 @@ namespace sill {
     cov /= sumw;
 
     // add regularization
-    if (regul > 0) cov += identity(n) * regul;
+    if (regul > 0) cov += eye(n,n) * regul;
 
     // return the resulting factor
     mg = moment_gaussian(data.vector_list(), ctr, cov, sumw);

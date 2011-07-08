@@ -1,6 +1,5 @@
 #include <sill/factor/mixture.hpp>
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/math/linear_algebra.hpp>
 
 namespace sill {
 

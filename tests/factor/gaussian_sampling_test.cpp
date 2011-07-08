@@ -39,8 +39,9 @@ int main(int argc, char** argv) {
   vec mu(Xsize, 0);
   foreach(double& val, mu)
     val = unif_real(rng);
-  mat sigma(Xsize, Xsize, 1.);
-  sigma += identity(Xsize);
+  mat sigma(Xsize, Xsize);
+  sigma.fill(1.);
+  sigma += eye(Xsize,Xsize);
   canonical_gaussian cg(moment_gaussian(X, mu, sigma));
 
   // Sample

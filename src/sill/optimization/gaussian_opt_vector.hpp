@@ -52,8 +52,11 @@ namespace sill {
     gaussian_opt_vector() { }
 
     gaussian_opt_vector(size_type s, double default_val)
-      : A(s.n, s.n, default_val), b(s.n, default_val),
-        C(s.n, s.m, default_val) { }
+      : A(s.n, s.n), b(s.n), C(s.n, s.m) {
+      A.fill(default_val);
+      b.fill(default_val);
+      C.fill(default_val);
+    }
 
     gaussian_opt_vector(const mat& A, const vec& b, const mat& C)
       : A(A), b(b), C(C) {
@@ -78,9 +81,7 @@ namespace sill {
 
     //! Returns true iff this instance equals the other.
     bool operator==(const gaussian_opt_vector& other) const {
-      if ((A != other.A) || (b != other.b) || (C != other.C))
-        return false;
-      return true;
+      return (equal(A, other.A) && equal(b, other.b) && equal(C, other.C));
     }
 
     //! Returns false iff this instance equals the other.
@@ -103,9 +104,9 @@ namespace sill {
 
     //! Resize the data.
     void resize(const size_type& newsize) {
-      A.resize(newsize.n, newsize.n);
-      b.resize(newsize.n);
-      C.resize(newsize.n, newsize.m);
+      A.set_size(newsize.n, newsize.n);
+      b.set_size(newsize.n);
+      C.set_size(newsize.n, newsize.m);
     }
 
     // Math operations
@@ -181,16 +182,16 @@ namespace sill {
 
     //! Inner product with a value of the same size.
     double dot(const gaussian_opt_vector& other) const {
-      return (elem_mult_sum(A, other.A)
+      return (sill::dot(A, other.A)
               + sill::dot(b, other.b)
-              + elem_mult_sum(C, other.C));
+              + sill::dot(C, other.C));
     }
 
     //! Element-wise multiplication with another value of the same size.
     gaussian_opt_vector& elem_mult(const gaussian_opt_vector& other) {
-      elem_mult_inplace(other.A, A);
-      elem_mult_inplace(other.b, b);
-      elem_mult_inplace(other.C, C);
+      A %= other.A;
+      b %= other.b;
+      C %= other.C;
       return *this;
     }
 
@@ -204,7 +205,7 @@ namespace sill {
         }
       }
       for (size_t i(0); i < b.size(); ++i) {
-        double& val = b(i);
+        double& val = b[i];
         assert(val != 0);
         val = 1. / val;
       }
@@ -262,7 +263,7 @@ namespace sill {
      *                (default = 1)
      */
     void zeros(double zero_A = 1.) {
-      A = zero_A * identity(A.n_rows);
+      A = zero_A * eye(A.n_rows, A.n_rows);
       b = 0.;
       C = 0.;
     }

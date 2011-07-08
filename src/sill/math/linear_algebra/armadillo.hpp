@@ -14,7 +14,8 @@ namespace sill {
   // Forward declaration
   template <typename Ref> class forward_range;
 
-  // bring Armadillo's types and functions into the sill namespace
+  // Bring Armadillo's types and functions into the sill namespace
+  //============================================================================
 
   // matrix and vector types
   using arma::imat;
@@ -58,53 +59,18 @@ namespace sill {
 
   // functions of vectors and matrices
   using arma::dot;
-  
-  // serialization
-  // Joseph B.: I added this since the functions for arma::Mat were not
-  //            identified by the compiler for arma::Col types.
-  template <typename T>
-  oarchive& operator<<(oarchive& a, const arma::Col<T>& m) {
-    a << m.n_elem;
-    const T* it  = m.begin();
-    const T* end = m.end();
-    for(; it != end; ++it)
-      a << *it;
-    return a;
-  }
 
-  template <typename T>
-  iarchive& operator>>(iarchive& a, arma::Col<T>& m) {
-    size_t n_elem;
-    a >> n_elem;
-    m.set_size(n_elem);
-    T* it  = m.begin();
-    T* end = m.end();
-    for(; it != end; ++it)
-      a >> *it;
-    return a;
-  }
+  // (temporary) Functions which would be nice to have in Armadillo
+  //============================================================================
 
-  // serialization
-  template <typename T>
-  oarchive& operator<<(oarchive& a, const arma::Mat<T>& m) {
-    a << m.n_rows << m.n_cols;
-    const T* it  = m.begin();
-    const T* end = m.end();
-    for(; it != end; ++it)
-      a << *it;
-    return a;
-  }
-
-  template <typename T>
-  iarchive& operator>>(iarchive& a, arma::Mat<T>& m) {
-    size_t n_rows, n_cols;
-    a >> n_rows >> n_cols;
-    m.set_size(n_rows, n_cols);
-    T* it  = m.begin();
-    T* end = m.end();
-    for(; it != end; ++it)
-      a >> *it;
-    return a;
+  //! Simpler log_det function for matrices with positive determinants.
+  template <typename MatType>
+  typename MatType::value_type log_det(const MatType& m) {
+    typename MatType::value_type val;
+    typename MatType::value_type s;
+    arma::log_det(val, s, m);
+    assert(s > 0);
+    return val;
   }
 
   template <typename T>
@@ -124,6 +90,184 @@ namespace sill {
     }
     return result;
   }
+
+  template <typename T>
+  arma::Col<T> concat(const std::vector<arma::Col<T> >& vectors) {
+    return concat(forward_range<const arma::Col<T>&>(vectors));
+  }
+
+  /**
+   * Compare two matrices.
+   * @return true iff exactly equal
+   */
+  template <typename T>
+  bool equal(const arma::Mat<T>& a, const arma::Mat<T>& b) {
+    if (a.n_rows != b.n_rows || a.n_cols != b.n_cols)
+      return false;
+    const T* a_it = a.begin();
+    const T* a_end = a.end();
+    const T* b_it = b.begin();
+    while (a_it != a_end) {
+      if (*a_it != *b_it)
+        return false;
+      ++a_it;
+      ++b_it;
+    }
+    return true;
+  }
+
+  /**
+   * Compare two matrices.
+   * @todo If this is as fast as the above implementation for Mat,
+   *       then get rid of the above one.
+   * @return true iff exactly equal
+   */
+  template <typename MatrixType>
+  bool equal(const MatrixType& a, const MatrixType& b) {
+    if (a.n_rows != b.n_rows || a.n_cols != b.n_cols)
+      return false;
+    return (accu(a == b) == a.n_elem);
+  }
+
+  /**
+   * Outer product free function.
+   * @todo (Joseph B.) I added this to maintain compatability with my sparse
+   *       linear algebra code.  This could be removed in the future once the
+   *       sparse LA code distinguishes between column/row vectors.
+   */
+  template <typename T>
+  arma::Mat<T> outer_product(const arma::Col<T>& a, const arma::Col<T>& b) {
+    return a * trans(b);
+  }
+
+  //! Return a matrix with the selected columns from A.
+  template <typename T>
+  arma::Mat<T> columns(const arma::Mat<T>& A, const uvec& col_indices) {
+    arma::Mat<T> m(A.n_rows, col_indices.size());
+    for (size_t i = 0; i < col_indices.size(); ++i) {
+      assert(col_indices[i] < A.n_cols);
+      m.col(i) = A.col(col_indices[i]);
+    }
+    return m;
+  }
+
+  //! Set a submatrix: A(rows,cols) = B.
+  template <typename T>
+  void set_submatrix(arma::Mat<T>& A, const span& rows, const uvec& cols,
+                     const arma::Mat<T>& B) {
+    assert((rows.b+1 - rows.a) == B.n_rows && cols.size() == B.n_cols);
+    for (size_t j = 0; j < cols.size(); ++j) {
+      assert(cols[j] < A.n_cols);
+      A(rows, cols[j]) = B.col(j);
+    }
+  }
+
+  //! Set a submatrix: A(rows,cols) = B.
+  template <typename T>
+  void set_submatrix(arma::Mat<T>& A, const uvec& rows, const span& cols,
+                     const arma::Mat<T>& B) {
+    assert(rows.size() == B.n_rows && (cols.b+1 - cols.a) == B.n_cols);
+    assert(cols.b < A.n_cols);
+    for (size_t i = 0; i < rows.size(); ++i) {
+      A(rows[i], cols) = B.row(i);
+    }
+  }
+
+  //! Add a submatrix: A(rows,cols) += B.
+  template <typename T>
+  void add_submatrix(arma::Mat<T>& A, const span& rows, const uvec& cols,
+                     const arma::Mat<T>& B) {
+    assert((rows.b+1 - rows.a) == B.n_rows && cols.size() == B.n_cols);
+    for (size_t j = 0; j < cols.size(); ++j) {
+      assert(cols[j] < A.n_cols);
+      A(rows, cols[j]) += B.col(j);
+    }
+  }
+
+  //! Add a submatrix: A(rows,cols) += B.
+  template <typename T>
+  void add_submatrix(arma::Mat<T>& A, const uvec& rows, const span& cols,
+                     const arma::Mat<T>& B) {
+    assert(rows.size() == B.n_rows && (cols.b+1 - cols.a) == B.n_cols);
+    assert(cols.b < A.n_cols);
+    for (size_t i = 0; i < rows.size(); ++i) {
+      A(rows[i], cols) += B.row(i);
+    }
+  }
+
+  //! Subtract a submatrix: A(rows,cols) += B.
+  template <typename T>
+  void subtract_submatrix(arma::Mat<T>& A, const span& rows, const uvec& cols,
+                     const arma::Mat<T>& B) {
+    assert((rows.b+1 - rows.a) == B.n_rows && cols.size() == B.n_cols);
+    for (size_t j = 0; j < cols.size(); ++j) {
+      assert(cols[j] < A.n_cols);
+      A(rows, cols[j]) -= B.col(j);
+    }
+  }
+
+  //! Subtract a submatrix: A(rows,cols) += B.
+  template <typename T>
+  void subtract_submatrix(arma::Mat<T>& A, const uvec& rows, const span& cols,
+                     const arma::Mat<T>& B) {
+    assert(rows.size() == B.n_rows && (cols.b+1 - cols.a) == B.n_cols);
+    assert(cols.b < A.n_cols);
+    for (size_t i = 0; i < rows.size(); ++i) {
+      A(rows[i], cols) -= B.row(i);
+    }
+  }
+
+  /*
+  //! Set the submatrix A(rows,cols) = B.
+  template <typename T>
+  void set_submatrix(arma::Mat<T>& A, const uvec& rows, const uvec& cols,
+                     const arma::Mat<T>& B) {
+    assert(rows.size() == B.n_rows && cols.size() == B.n_cols);
+    for (size_t j = 0; j < cols.size(); ++j) {
+      assert(cols[j] < A.n_cols);
+      A.col(cols[j]).elem(rows) = B.col(j);
+    }
+  }
+  */
+
+  //! Constructs a 1x1 matrix [a].
+  template <typename T>
+  arma::Mat<T> mat_1x1(T a) {
+    arma::Mat<T> m(1,1);
+    m(0,0) = a;
+    return m;
+  }
+
+  //! Constructs a 2x2 matrix [a b; c d].
+  template <typename T>
+  arma::Mat<T> mat_2x2(T a, T b, T c, T d) {
+    arma::Mat<T> m(2,2);
+    m(0,0) = a;
+    m(0,1) = b;
+    m(1,0) = c;
+    m(1,1) = d;
+    return m;
+  }
+
+  //! Constructs a length-1 vector [a].
+  template <typename T>
+  arma::Col<T> vec_1(T a) {
+    arma::Col<T> v(1);
+    v[0] = a;
+    return v;
+  }
+
+  //! Constructs a length-2 vector [a b].
+  template <typename T>
+  arma::Col<T> vec_2(T a, T b) {
+    arma::Col<T> v(2);
+    v[0] = a;
+    v[1] = b;
+    return v;
+  }
+
+  // Serialization
+  //============================================================================
 
   //! Read in a vector of values [val1,val2,...], ignoring an initial space
   //! if necessary.
@@ -151,48 +295,50 @@ namespace sill {
     v = arma::conv_to<arma::Col<T> >::from(tmpv);
   }
 
-  /**
-   * Compare two vectors.
-   * @return -1 if a is smaller or +1 if b is smaller.
-   *         If a,b have the same size, return lexigraphic_compare(a,b).
-   */
+  // Joseph B.: I added this since the functions for arma::Mat were not
+  //            identified by the compiler for arma::Col types.
   template <typename T>
-  int compare(const arma::Col<T>& a, const arma::Col<T>& b) {
-    if (a.size() < b.size())
-      return -1;
-    if (a.size() > b.size())
-      return 1;
-    return lexigraphic_compare(a,b);
+  oarchive& operator<<(oarchive& a, const arma::Col<T>& m) {
+    a << m.n_elem;
+    const T* it  = m.begin();
+    const T* end = m.end();
+    for(; it != end; ++it)
+      a << *it;
+    return a;
   }
 
-  /**
-   * Compare two matrices.
-   * @return -1 if a is smaller in n_rows, then n_cols; +1 if b is smaller.
-   *         If a,b have the same size, return lexigraphic_compare(a,b).
-   */
   template <typename T>
-  int compare(const arma::Mat<T>& a, const arma::Mat<T>& b) {
-    if (a.n_rows < b.n_rows)
-      return -1;
-    if (a.n_rows > b.n_rows)
-      return 1;
-    if (a.n_cols < b.n_cols)
-      return -1;
-    if (a.n_cols > b.n_cols)
-      return 1;
-    return lexigraphic_compare(forward_range<T>(a.begin(),a.end()),
-                               forward_range<T>(b.begin(),b.end()));
+  iarchive& operator>>(iarchive& a, arma::Col<T>& m) {
+    size_t n_elem;
+    a >> n_elem;
+    m.set_size(n_elem);
+    T* it  = m.begin();
+    T* end = m.end();
+    for(; it != end; ++it)
+      a >> *it;
+    return a;
   }
 
-  /**
-   * Outer product free function.
-   * @todo (Joseph B.) I added this to maintain compatability with my sparse
-   *       linear algebra code.  This could be removed in the future once the
-   *       sparse LA code distinguishes between column/row vectors.
-   */
   template <typename T>
-  arma::Mat<T> outer_product(const arma::Col<T>& a, const arma::Col<T>& b) {
-    return a * trans(b);
+  oarchive& operator<<(oarchive& a, const arma::Mat<T>& m) {
+    a << m.n_rows << m.n_cols;
+    const T* it  = m.begin();
+    const T* end = m.end();
+    for(; it != end; ++it)
+      a << *it;
+    return a;
+  }
+
+  template <typename T>
+  iarchive& operator>>(iarchive& a, arma::Mat<T>& m) {
+    size_t n_rows, n_cols;
+    a >> n_rows >> n_cols;
+    m.set_size(n_rows, n_cols);
+    T* it  = m.begin();
+    T* end = m.end();
+    for(; it != end; ++it)
+      a >> *it;
+    return a;
   }
 
 } // namespace sill

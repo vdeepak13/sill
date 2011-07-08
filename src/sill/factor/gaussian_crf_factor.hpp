@@ -760,7 +760,7 @@ namespace sill {
           cg.indices(head_, head_ind);
           uvec tail_ind; // indices in cg for tail
           cg.indices(tail_, tail_ind);
-          bool result = chol(cg.inf_matrix()(head_ind, head_ind), ov.A);
+          bool result = chol(ov.A, cg.inf_matrix()(head_ind, head_ind));
           if (!result) {
             std::cerr << "Could not take Cholesky decomposition of lambda = \n"
                       << cg.inf_matrix()(head_ind, head_ind) << std::endl;
@@ -769,7 +769,7 @@ namespace sill {
                "(cg,head_vars,tail_vars,Y,X): Cholesky decomposition failed.");
           }
           mat AAt_inv;
-          result = inv(ov.A * ov.A.transpose(), AAt_inv);
+          result = inv(AAt_inv, ov.A * trans(ov.A));
           if (!result) {
             throw inv_error
               (std::string("gaussian_crf_factor::gaussian_crf_factor") +
@@ -778,7 +778,7 @@ namespace sill {
           ov.b = AAt_inv * (ov.A * cg.inf_vector()(head_ind));
           ov.C = AAt_inv * (ov.A * (- cg.inf_matrix()(head_ind, tail_ind)));
         } else {
-          bool result = chol(cg.inf_matrix(), ov.A);
+          bool result = chol(ov.A, cg.inf_matrix());
           if (!result) {
             std::cerr << "Could not take Cholesky decomposition of lambda = \n"
                       << cg.inf_matrix() << std::endl;
@@ -787,7 +787,7 @@ namespace sill {
                "(cg,head_vars,tail_vars,Y,X): Cholesky decomposition failed.");
           }
           mat AAt_inv;
-          result = inv(ov.A * ov.A.transpose(), AAt_inv);
+          result = inv(AAt_inv, ov.A * trans(ov.A));
           if (!result) {
             throw inv_error
               (std::string("gaussian_crf_factor::gaussian_crf_factor") +
@@ -799,7 +799,7 @@ namespace sill {
       } else {
         if (tail_.size() > 0) {
           // ov.A is empty
-          bool result = chol(cg.inf_matrix(), ov.C);
+          bool result = chol(ov.C, cg.inf_matrix());
           if (!result) {
             std::cerr << "Could not take Cholesky decomposition of lambda = \n"
                       << cg.inf_matrix() << std::endl;
@@ -808,7 +808,7 @@ namespace sill {
                "(cg,head_vars,tail_vars,Y,X): Cholesky decomposition failed.");
           }
           mat CCt_inv;
-          result = inv(ov.C * ov.C.transpose(), CCt_inv);
+          result = inv(CCt_inv, ov.C * trans(ov.C));
           if (!result) {
             throw inv_error
               (std::string("gaussian_crf_factor::gaussian_crf_factor") +

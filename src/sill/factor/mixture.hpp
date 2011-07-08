@@ -9,6 +9,7 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/constant_factor.hpp>
 #include <sill/factor/factor.hpp>
+#include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
 #include <sill/global.hpp>
 #include <sill/serialization/serialize.hpp>

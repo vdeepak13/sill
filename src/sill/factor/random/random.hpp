@@ -186,7 +186,8 @@ namespace sill {
     vec mu(2, 0);
     foreach(double& val, mu)
       val = unif_real(rng);
-    mat sigma(2, 2, variance);
+    mat sigma(2, 2);
+    sigma.fill(variance);
     double covariance = correlation * variance * variance;
     if (covariance == variance) {
       throw std::invalid_argument
@@ -221,7 +222,8 @@ namespace sill {
     vec mu(Xsize, 0);
     foreach(double& val, mu)
       val = unif_real(rng);
-    mat sigma(Xsize, Xsize, cov_strength);
+    mat sigma(Xsize, Xsize);
+    sigma.fill(cov_strength);
     sigma += spread * eye(Xsize,Xsize);
     return moment_gaussian(X, mu, sigma);
   }
@@ -346,10 +348,11 @@ namespace sill {
     foreach(double& val, mu)
       val = unif_real(rng);
     unif_real = boost::uniform_real<double>(-c_max, c_max);
-    mat coeff(Ysize, Xsize, 0.);
+    mat coeff(zeros(Ysize, Xsize));
     for (size_t j(0); j < coeff.size(); ++j)
       coeff(j) = unif_real(rng);
-    mat sigma(Ysize, Ysize, 1.);
+    mat sigma(Ysize, Ysize);
+    sigma.fill(1);
     return moment_gaussian(vector_var_vector(1,Y), mu, sigma,
                            vector_var_vector(1,X), coeff);
   }

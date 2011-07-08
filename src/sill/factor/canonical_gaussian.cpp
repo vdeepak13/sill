@@ -1,10 +1,11 @@
 #include <algorithm>
 
 #include <sill/base/universe.hpp>
-#include <sill/math/constants.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
+#include <sill/math/constants.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/vector.hpp>
 
@@ -107,7 +108,7 @@ namespace sill {
     }
 
     if (ntail > 0) {
-      mat Atinvcov = mg.coeff.transpose()*invcov;
+      mat Atinvcov = trans(mg.coeff) * invcov;
       lambda(it, it) = Atinvcov*mg.coeff;
       lambda(ih, it) = -trans(Atinvcov);
       lambda(it, ih) = -Atinvcov;
@@ -116,13 +117,13 @@ namespace sill {
 
     log_mult = mg.likelihood.log_value()
       - .5 * (mg.cmean.size() * std::log(2*pi()) + log_det(mg.cov)
-              + as_scalar(trans(mg.cmean) * invcov * mg.cmean);
+              + as_scalar(trans(mg.cmean) * invcov * mg.cmean));
   }
 
   /*
   canonical_gaussian&
   canonical_gaussian::operator=(const canonical_gaussian& other) {
-    var_range = other.var_range;
+    var_span = other.var_span;
     args = other.args;
     arg_list = other.arg_list;
     lambda = other.lambda;
@@ -150,7 +151,7 @@ namespace sill {
     this->eta = eta;
     this->log_mult = log_mult;
     // assert(symmetric(lambda));
-    var_range.clear();
+    var_span.clear();
     initialize(args, false);
   }
 
@@ -164,7 +165,7 @@ namespace sill {
   void canonical_gaussian::load(iarchive& ar) {
     ar >> arg_list >> lambda >> eta >> log_mult;
     args = vector_domain(arg_list.begin(), arg_list.end());
-    var_range.clear();
+    var_span.clear();
     compute_indices(arg_list);
   }
 
@@ -216,9 +217,9 @@ namespace sill {
   // Comparison operators
   //============================================================================
   bool canonical_gaussian::operator==(const canonical_gaussian& other) const {
-    return arguments() == other.arguments() &&
-      inf_vector() == other.inf_vector(arg_list) &&
-      inf_matrix() == other.inf_matrix(arg_list);
+    return (arguments() == other.arguments() &&
+            equal(inf_vector(), other.inf_vector(arg_list)) &&
+            equal(inf_matrix(), other.inf_matrix(arg_list)));
   }
 
   bool canonical_gaussian::operator!=(const canonical_gaussian& other) const {
@@ -233,7 +234,7 @@ namespace sill {
       if (sill::lexicographical_compare(inf_vector(), other_vector))
         return true; // inf_vector() < other_vector
 
-      if (inf_vector() == other_vector) {
+      if (equal(inf_vector(), other_vector)) {
         mat other_matrix = other.inf_matrix(arg_list);
         for(size_t i = 0; i<lambda.n_rows; i++) {
           for(size_t j = 0; j<lambda.n_cols; j++) {
@@ -416,7 +417,7 @@ namespace sill {
     if (lambda.size() == 0)
       return true;
     mat lambda_inv;
-    bool result = inv(lambda, lambda_inv);
+    bool result = inv(lambda_inv, lambda);
     return result;
   }
 
@@ -465,7 +466,7 @@ namespace sill {
     mat cov;
     if (lambda.size() == 0)
       return vector_assignment();
-    bool result = inv(lambda, cov);
+    bool result = inv(cov, lambda);
     if (!result) {
       std::cerr << "In canonical_gaussian::arg_max, could not invert lambda =\n"
                 << lambda << std::endl;
@@ -477,7 +478,7 @@ namespace sill {
 
   double canonical_gaussian::entropy(double base) const {
     size_t N = eta.size();
-    return (N + ((N*std::log(2.0 * pi()) - logdet(lambda)) / std::log(base)))/2.0;
+    return (N + ((N*std::log(2.0 * pi()) - log_det(lambda)) / std::log(base)))/2.0;
   }
 
   double canonical_gaussian::entropy() const {
@@ -518,7 +519,7 @@ namespace sill {
 //            it != x.args.end(); ++it) {
 //         vector_variable* v = *it;
 //         if (args.insert(v).second) { // then variable was not yet in args
-//           var_range[v] = irange(n, n + v->size());
+//           var_span[v] = span(n, n + v->size() - 1);
 //           n += v->size();
 //           arg_list.push_back(v);
 //         }
@@ -548,7 +549,7 @@ namespace sill {
     assert(mean.size() == size());
     vec d;
     mat v;
-    bool result = eig_sym(lambda, d, v);
+    bool result = eig_sym(d, v, lambda);
     if (!result) {
       using namespace std;
       cerr << lambda << endl;
@@ -559,7 +560,7 @@ namespace sill {
 //       std::cerr << "Information matrix not PSD (min eigenvalue " << mine
 //                 << "); adjusting." << std::endl;
       for(size_t i = 0; i < d.size(); i++) 
-        d(i) = std::max(0.0, d(i));
+        d[i] = std::max(0.0, d[i]);
       mat new_lambda = v * diagmat(d) * trans(v);
       eta += (new_lambda - lambda) * mean;
       lambda = new_lambda;
@@ -576,7 +577,7 @@ namespace sill {
     check_supported(op, collapse_ops);
 
     if (retain.empty()) {
-      cg.var_range.clear();
+      cg.var_span.clear();
       cg.args.clear();
       cg.arg_list.clear();
       cg.lambda.reset();
@@ -625,11 +626,11 @@ namespace sill {
       double old_log_norm_constant = (renormalize ? log_norm_constant() : 0);
       if (cg.arg_list == x) {
         cg.lambda = lambda(ix,ix) - lambda(ix,iy) * invyy_lamyx;
-        cg.eta = eta(ix) - invyy_lamyx.transpose() * eta(iy);
+        cg.eta = eta(ix) - trans(invyy_lamyx) * eta(iy);
       } else {
         cg.reset(x,
                  lambda(ix,ix) - lambda(ix,iy) * invyy_lamyx,
-                 eta(ix) - invyy_lamyx.transpose() * eta(iy));
+                 eta(ix) - trans(invyy_lamyx) * eta(iy));
       }
       if (renormalize) {
         cg.log_mult = log_mult - old_log_norm_constant + cg.log_norm_constant();
@@ -662,9 +663,9 @@ namespace sill {
   double norm_inf(const canonical_gaussian& x, const canonical_gaussian& y) {
     assert(x.arguments() == y.arguments());
     double vec_norm =
-      max(abs(x.inf_vector() - y.inf_vector(x.argument_list())));
+      norm(x.inf_vector() - y.inf_vector(x.argument_list()), "inf");
     double mat_norm =
-      mat(abs(x.inf_matrix() - y.inf_matrix(x.argument_list()))).max();
+      norm(x.inf_matrix() - y.inf_matrix(x.argument_list()), "inf");
     return std::max(vec_norm, mat_norm);
   }
 

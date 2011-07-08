@@ -219,7 +219,7 @@ namespace sill {
       tmpgrid(create_parameter_grid(minvals, maxvals, k, log_scale, false));
     std::vector<vec> newgrid;
     foreach(const vec& v, tmpgrid) {
-      if (compare(val,v) != 0) // TO DO: MAKE SURE THIS IS CORRECT
+      if (!equal(val,v)) // TO DO: MAKE SURE THIS IS CORRECT
         newgrid.push_back(v);
     }
     return newgrid;

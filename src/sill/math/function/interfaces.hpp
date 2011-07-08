@@ -4,8 +4,7 @@
 #include <functional>
 #include <string>
 
-#include <sill/math/vector.hpp>
-#include <sill/math/matrix.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 namespace sill {
 

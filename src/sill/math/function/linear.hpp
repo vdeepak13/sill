@@ -2,9 +2,7 @@
 #define SILL_MATH_LINEAR_FUNCTION_HPP
 
 #include <sill/math/function/interfaces.hpp>
-#include <sill/math/matrix.hpp>
-#include <sill/math/vector.hpp>
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 namespace sill {
   

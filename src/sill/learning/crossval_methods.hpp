@@ -74,7 +74,7 @@ namespace sill {
                                  cv_params.nfolds, unif_int(rng)));
       size_t best_zoom_i(0);
       for (size_t j(0); j < lambdas_zoom.size(); ++j) {
-        if (lambdas_zoom[j] == best_lambda) {
+        if (equal(lambdas_zoom[j], best_lambda)) {
           best_zoom_i = j;
           break;
         }

@@ -4,8 +4,7 @@
 #include <utility> // for std::pair
 
 #include <sill/factor/approx/interfaces.hpp>
-#include <sill/math/matrix.hpp>
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 namespace sill {
 

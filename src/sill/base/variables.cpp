@@ -90,7 +90,9 @@ namespace sill {
   //============================================================================
 
   template <>
-  void convert_domain(const domain& from, finite_domain& to) {
+  void
+  convert_domain<domain,finite_domain>
+  (const domain& from, finite_domain& to) {
     to.clear();
     foreach(variable* v, from) {
       if (v->get_variable_type() == variable::FINITE_VARIABLE)
@@ -101,7 +103,9 @@ namespace sill {
   }
 
   template <>
-  void convert_domain(const domain& from, vector_domain& to) {
+  void
+  convert_domain<domain,vector_domain>
+  (const domain& from, vector_domain& to) {
     to.clear();
     foreach(variable* v, from) {
       if (v->get_variable_type() == variable::VECTOR_VARIABLE)

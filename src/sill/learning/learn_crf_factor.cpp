@@ -31,10 +31,11 @@
       x2_multipliers(hybrid_crf_factor<F>::compute_multipliers(x2_vec)); \
     copy_ptr<sub_input_domain_type>                                     \
       sub_X_ptr_(new sub_input_domain_type());                          \
-    convert_domain<variable,F::input_variable_type>                     \
-      (set_difference                                                   \
-       (*X_ptr_, domain(params.hcf_x2.begin(), params.hcf_x2.end())),           \
-       *sub_X_ptr_);                                                    \
+    foreach(hybrid_crf_factor<F>::input_variable_type* v, *X_ptr_) {    \
+      if (v->get_variable_type() == variable::FINITE_VARIABLE &&        \
+          params.hcf_x2.count((finite_variable*)v) == 0)                \
+        sub_X_ptr_->insert((F::input_variable_type*)v);                 \
+    }                                                                   \
                                                                         \
     foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {  \
       dataset_view<hybrid_crf_factor<F>::la_type> sub_ds(ds);           \
@@ -77,14 +78,14 @@
       sub_input_domain_type;                                            \
     assert(params.valid());                                             \
     assert(X_ptr_);                                                     \
-    assert(includes(*X_ptr_,params.hcf_x2));                                \
+    assert(includes(*X_ptr_,params.hcf_x2));                            \
                                                                         \
     boost::mt11213b rng(random_seed);                                   \
     boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max()); \
                                                                         \
     reg_params.resize(0);                                               \
-    means.resize(0);                                                    \
-    stderrs.resize(0);                                                  \
+    means.set_size(0);                                                  \
+    stderrs.set_size(0);                                                \
     std::vector<F::regularization_type> sub_reg_params;                 \
     vec sub_means, sub_stderrs;                                         \
                                                                         \
@@ -94,10 +95,11 @@
       x2_multipliers(hybrid_crf_factor<F>::compute_multipliers(x2_vec)); \
     copy_ptr<sub_input_domain_type>                                     \
       sub_X_ptr_(new sub_input_domain_type());                          \
-    convert_domain<variable,F::input_variable_type>                     \
-      (set_difference                                                   \
-       (*X_ptr_, domain(params.hcf_x2.begin(), params.hcf_x2.end())),           \
-       *sub_X_ptr_);                                                    \
+    foreach(hybrid_crf_factor<F>::input_variable_type* v, *X_ptr_) {    \
+      if (v->get_variable_type() == variable::FINITE_VARIABLE &&        \
+          params.hcf_x2.count((finite_variable*)v) == 0)                \
+        sub_X_ptr_->insert((F::input_variable_type*)v);                 \
+    }                                                                   \
                                                                         \
     size_t return_j(0);                                                 \
     foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {  \
@@ -114,8 +116,8 @@
         assert(sub_means.size() == sub_stderrs.size() &&                \
                sub_means.size() == sub_reg_params.size());              \
         reg_params.resize(num_assignments(params.hcf_x2) * sub_reg_params.size()); \
-        means.resize(reg_params.size());                                \
-        stderrs.resize(reg_params.size());                              \
+        means.set_size(reg_params.size());                              \
+        stderrs.set_size(reg_params.size());                            \
       }                                                                 \
       for (size_t j(0); j < sub_reg_params.size(); ++j) {               \
         reg_params[return_j] = sub_reg_params[j];                       \
@@ -238,30 +240,36 @@ namespace sill {
     // Compute mean, and center Y values.
     vec mu(sum(Ydata,1));
     mu /= Ydata.n_rows;
-    Ydata -= repmat(mu, Ydata.n_rows, 1, true);
+    Ydata -= repmat(trans(mu), Ydata.n_rows, 1);
 
     // Compute X'Y
-    mat XtY(Xdata.transpose() * Ydata);
+    mat XtY(trans(Xdata) * Ydata);
     // Compute coefficients
     mat Ct;
     bool result;
     if (params.reg.lambdas[0] > 0)
-      result = ls_solve_chol(Xdata.transpose() * Xdata
-                             + params.reg.lambdas[0] * identity(Xdata.n_cols),
-                             XtY, Ct);
+      result =
+        solve(Ct,
+              trans(Xdata) * Xdata
+              + params.reg.lambdas[0] * eye(Xdata.n_cols,Xdata.n_cols),
+              XtY);
+//        ls_solve_chol(trans(Xdata) * Xdata
+//                      + params.reg.lambdas[0] * eye(Xdata.n_cols,Xdata.n_cols),
+//                      XtY, Ct);
     else
-      result = ls_solve_chol(Xdata.transpose() * Xdata, XtY, Ct);
+      result = solve(Ct, trans(Xdata) * Xdata, XtY);
+//      result = ls_solve_chol(trans(Xdata) * Xdata, XtY, Ct);
     if (!result) {
       throw std::runtime_error("Cholesky decomposition failed in gaussian_crf_factor::learn_crf_factor().  Try using more regularization.");
     }
     // Compute covariance matrix
-    mat cov(Ydata.transpose() * Ydata);
+    mat cov(trans(Ydata) * Ydata);
     if (params.reg.lambdas[1] > 0) {
-      cov += params.reg.lambdas[1] * identity(cov.n_rows);
+      cov += params.reg.lambdas[1] * eye(cov.n_rows,cov.n_rows);
     }
-    cov -= XtY.transpose() * Ct;
+    cov -= trans(XtY) * Ct;
     cov /= ds.size();
-    moment_gaussian mg(Yvec, mu, cov, Xvec, Ct.transpose());
+    moment_gaussian mg(Yvec, mu, cov, Xvec, trans(Ct));
     gaussian_crf_factor* gcf_ptr = NULL;
     try {
       gcf_ptr = new gaussian_crf_factor(mg);
@@ -287,7 +295,7 @@ namespace sill {
                       / params.lambda_cov_increments)
             + params.reg.lambdas[1];
           cov += ((new_lambda_cov - old_lambda_cov) / ds.size())
-            * identity(cov.n_rows);
+            * eye(cov.n_rows,cov.n_rows);
           // FINISH THIS IF NECESSARY
         }
       */
@@ -371,10 +379,8 @@ namespace sill {
       vector_var_vector Yvec(Y_ptr->begin(), Y_ptr->end());
       vector_var_vector Xvec(X_ptr->begin(), X_ptr->end());
 
-      means.resize(lambdas.size());
-      means.zeros_memset();
-      stderrs.resize(lambdas.size());
-      stderrs.zeros_memset();
+      means.zeros(lambdas.size());
+      stderrs.zeros(lambdas.size());
 
       double ll_constant = -.5 * vector_size(Yvec) * std::log(2. * pi());
 
@@ -405,30 +411,32 @@ namespace sill {
         // Compute mean, and center Y values.
         vec mu(sum(Ydata,1));
         mu /= Ydata.n_rows;
-        Ydata -= repmat(mu, Ydata.n_rows, 1, true);
-        testYdata -= repmat(mu, testYdata.n_rows, 1, true);
+        Ydata -= repmat(trans(mu), Ydata.n_rows, 1);
+        testYdata -= repmat(trans(mu), testYdata.n_rows, 1);
         // If (# examples) >= |X|, then do SVD of X' X.
         // Otherwise, do SVD of X X'.
         bool num_exs_bigger = (Xdata.n_rows >= Xdata.n_cols);
         // Compute X' * X = U D0 V, where diag(D0) = s0.
-        mat tmpmat(num_exs_bigger ?
-                   Xdata.transpose() * Xdata :
-                   Xdata * Xdata.transpose());
+        mat tmpmat;
+        if (num_exs_bigger)
+          tmpmat = trans(Xdata) * Xdata;
+        else
+          tmpmat = Xdata * trans(Xdata);
         mat Ut;
         mat Vt;
         vec s0;
-        bool result = svd(tmpmat, Ut, s0, Vt);
+        bool result = svd(Ut, s0, Vt, tmpmat);
         if (!result) {
           // TO DO: I should do inversion with lambda > 0 in this case, rather
           //        than throwing an error.
           throw std::runtime_error("SVD failed in gaussian_crf_factor::learn_crf_factor_cv()...but this is fixable.");
         }
-        Ut = Ut.transpose();
-        mat YtX_n(Ydata.transpose() * Xdata);
+        Ut = trans(Ut);
+        mat YtX_n(trans(Ydata) * Xdata);
         if (num_exs_bigger) {
           Vt = YtX_n * Vt;
         } else {
-          Vt = Xdata.transpose() * Vt;
+          Vt = trans(Xdata) * Vt;
           Ut *= Ydata;
         }
         YtX_n /= fold_train_view.size();
@@ -436,7 +444,7 @@ namespace sill {
         bool s0_has_0(min(s0) == 0);
 
         // Pre-compute Y' * Y / (# training exs)
-        mat YtY_n(Ydata.transpose() * Ydata);
+        mat YtY_n(trans(Ydata) * Ydata);
         YtY_n /= fold_train_view.size();
 
         vec tmpvec;
@@ -454,7 +462,7 @@ namespace sill {
             continue;
           }
 
-          mat Amat(Vt * diag(1. / (s0 + lambda_bC)) * Ut);
+          mat Amat(Vt * diagmat(1. / (s0 + lambda_bC)) * Ut);
 
           // Compute: (Y' Y - Coeff * X'Y) / (# training exs) = yU yD0 yV,
           // where diag(yD0) = ys0.
@@ -463,22 +471,22 @@ namespace sill {
           vec ys0;
           tmpmat = YtY_n;
           if (num_exs_bigger) {
-            tmpmat -= Amat * YtX_n.transpose();
+            tmpmat -= Amat * trans(YtX_n);
           } else {
             tmpmat -= YtX_n * Amat;
           }
-          bool result = svd(tmpmat, yUt, ys0, yVt);
+          bool result = svd(yUt, ys0, yVt, tmpmat);
           if (!result) {
             // TO DO: I should do inversion with lambda > 0 in this case,
             //        rather than throwing an error.
             throw std::runtime_error("SVD failed in gaussian_crf_factor::learn_crf_factor_cv()...but this is fixable too.");
           }
-          yUt = yUt.transpose();
+          yUt = trans(yUt);
 
           bool ys0_has_0(min(ys0) == 0);
-          double logdet_sigma0 = sum(log(ys0));
+          double logdet_sigma0 = accu(log(ys0));
           if (num_exs_bigger)
-            tmpmat = testXdata * Amat.transpose();
+            tmpmat = testXdata * trans(Amat);
           else
             tmpmat = testXdata * Amat;
           tmpmat -= testYdata; // tmpmat = Z A' - Y (for test data)
@@ -493,7 +501,7 @@ namespace sill {
               stderrs[reg_params_i]= std::numeric_limits<double>::infinity();
               continue;
             }
-            mat sigma_inv(yVt * diag(1. / (ys0 + lambda_cov)) * yUt);
+            mat sigma_inv(yVt * diagmat(1. / (ys0 + lambda_cov)) * yUt);
             double ll(0.);
             for (size_t i(0); i < fold_test_view.size(); ++i) {
               tmpvec = tmpmat.row(i);
@@ -592,6 +600,6 @@ namespace sill {
 
   GEN_LEARN_CRF_FACTOR_CV_HYBRID_DEF(gaussian_crf_factor)
 
-}; // namespace sill
+} // namespace sill
 
 #include <sill/macros_undef.hpp>

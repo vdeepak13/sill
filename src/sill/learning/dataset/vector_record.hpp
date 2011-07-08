@@ -281,7 +281,7 @@ namespace sill {
     void vector_values(VecType& vals, const vector_var_vector& vars) const {
       size_t vars_size(vector_size(vars));
       if (vars_size != vals.size())
-        vals.resize(vars_size);
+        vals.set_size(vars_size);
       size_t i(0); // index into vals
       foreach(vector_variable* v, vars) {
         size_t j(safe_get(*vector_numbering_ptr, v));
@@ -299,7 +299,7 @@ namespace sill {
     vector_indices(IVecType& indices, const vector_var_vector& vars) const {
       size_t vars_size(vector_size(vars));
       if (indices.size() != vars_size)
-        indices.resize(vars_size);
+        indices.set_size(vars_size);
       size_t i(0); // index into indices
       foreach(vector_variable* v, vars) {
         size_t j(safe_get(*vector_numbering_ptr, v));

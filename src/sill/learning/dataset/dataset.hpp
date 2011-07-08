@@ -772,11 +772,11 @@ namespace sill {
     size_t vars_size(vector_size(vars));
     if (add_ones) {
       if (X.n_rows != nrecords || X.n_cols != vars_size + 1)
-        X.resize(nrecords, vars_size + 1);
-      X.set_col(vars_size, vec(nrecords, 1.));
+        X.set_size(nrecords, vars_size + 1);
+      X.col(vars_size).fill(1);
     } else {
       if (X.n_rows != nrecords || X.n_cols != vars_size)
-        X.resize(nrecords, vars_size);
+        X.set_size(nrecords, vars_size);
     }
     for (size_t i(0); i < nrecords; ++i) {
       size_t l2(0); // index into a row in X
@@ -832,9 +832,7 @@ namespace sill {
           ("dataset::covariance() given variable not in dataset");
       Xsize += v->size();
     }
-    if ((cov.n_rows != Xsize) || (cov.n_cols != Xsize))
-      cov.resize(Xsize, Xsize);
-    cov.zeros();
+    cov.zeros(Xsize, Xsize);
     if (nrecords <= 1)
       return;
     mean(mu, X);

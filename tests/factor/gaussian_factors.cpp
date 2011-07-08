@@ -6,7 +6,6 @@
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
-#include <sill/math/linear_algebra.hpp>
 
 #define VERBOSE_ASSERT(X)                       \
   if (X) {                                      \
@@ -125,7 +124,7 @@ int main()
   cout << "mg.restrict(z=1,q=1)(" << val << ") = " << mg(val) << endl;
 
   canonical_gaussian cg =   //(make_domain(dom_xy), 1);
-    moment_gaussian(make_vector(x), zeros(1), identity(1), 
+    moment_gaussian(make_vector(x), zeros(1), eye(1,1), 
                     make_vector(y), ones(1,1));
   cout << "cg = " << cg << endl;
 

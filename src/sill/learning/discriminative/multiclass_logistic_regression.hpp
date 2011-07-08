@@ -195,9 +195,11 @@ namespace sill {
       opt_variables() { }
 
       opt_variables(size_type s, double default_val = 0)
-        : f(s.f_rows, s.f_cols, default_val),
-          v(s.v_rows, s.v_cols, default_val),
-          b(s.b_size, default_val) { }
+        : f(s.f_rows, s.f_cols), v(s.v_rows, s.v_cols), b(s.b_size) {
+        f.fill(default_val);
+        v.fill(default_val);
+        b.fill(default_val);
+      }
 
       opt_variables(const dense_matrix_type& f, const dense_matrix_type& v,
                     const dense_vector_type& b)
@@ -224,9 +226,9 @@ namespace sill {
 
       //! Resize the data.
       void resize(const size_type& newsize) {
-        f.resize(newsize.f_rows, newsize.f_cols);
-        v.resize(newsize.v_rows, newsize.v_cols);
-        b.resize(newsize.b_size);
+        f.set_size(newsize.f_rows, newsize.f_cols);
+        v.set_size(newsize.v_rows, newsize.v_cols);
+        b.set_size(newsize.b_size);
       }
 
       // Math operations
@@ -309,16 +311,16 @@ namespace sill {
 
       //! Inner product with a value of the same size.
       double dot(const opt_variables& other) const {
-        return (elem_mult_sum(f, other.f)
-                + elem_mult_sum(v, other.v)
+        return (sill::dot(f, other.f)
+                + sill::dot(v, other.v)
                 + sill::dot(b, other.b));
       }
 
       //! Element-wise multiplication with another value of the same size.
       opt_variables& elem_mult(const opt_variables& other) {
-        elem_mult_inplace(other.f, f);
-        elem_mult_inplace(other.v, v);
-        elem_mult_inplace(other.b, b);
+        f %= other.f;
+        v %= other.v;
+        b %= other.b;
         return *this;
       }
 
@@ -339,7 +341,7 @@ namespace sill {
           }
         }
         for (size_t i(0); i < b.size(); ++i) {
-          double& val = b(i);
+          double& val = b[i];
           assert(val != 0);
           val = 1. / val;
         }
@@ -350,9 +352,9 @@ namespace sill {
       double L1norm() const {
         double l1val(0);
         for (size_t i(0); i < f.size(); ++i)
-          l1val += fabs(f(i));
+          l1val += fabs(f[i]);
         for (size_t i(0); i < v.size(); ++i)
-          l1val += fabs(v(i));
+          l1val += fabs(v[i]);
         foreach(double val, b)
           l1val += fabs(val);
         return l1val;
@@ -368,9 +370,9 @@ namespace sill {
       opt_variables sign() const {
         opt_variables ov(*this);
         for (size_t i(0); i < f.size(); ++i)
-          ov.f(i) = (f(i) > 0 ? 1 : (f(i) == 0 ? 0 : -1) );
+          ov.f[i] = (f[i] > 0 ? 1 : (f[i] == 0 ? 0 : -1) );
         for (size_t i(0); i < v.size(); ++i)
-          ov.v(i) = (v(i) > 0 ? 1 : (v(i) == 0 ? 0 : -1) );
+          ov.v[i] = (v[i] > 0 ? 1 : (v[i] == 0 ? 0 : -1) );
         foreach(double& val, ov.b)
           val = (val > 0 ? 1 : (val == 0 ? 0 : -1) );
         return ov;
@@ -378,10 +380,9 @@ namespace sill {
 
       //! Sets all values to 0.
       void zeros() {
-//        this->operator=(0.);
-        f.zeros_memset();
-        v.zeros_memset();
-        b.zeros_memset();
+        f.zeros();
+        v.zeros();
+        b.zeros();
       }
 
       //! Print info about this vector (for debugging).
@@ -1442,7 +1443,7 @@ namespace sill {
     train_obj = std::numeric_limits<double>::max();
     if (label_) {
       nclasses_ = label_->size();
-      tmpvec.resize(label_->size());
+      tmpvec.set_size(label_->size());
     }
     if (nclasses_ != 0)
       log_max_double = std::log(std::numeric_limits<double>::max()/nclasses_);
@@ -1630,20 +1631,20 @@ namespace sill {
   finish_probabilities(dense_vector_type& v) const {
     if (params.resolve_numerical_problems) {
       for (size_t k(0); k < nclasses_; ++k) {
-        if (v(k) > log_max_double) {
-          double maxval(v(max_index(v, rng)));
+        if (v[k] > log_max_double) {
+          double maxval(v[max_index(v, rng)]);
           for (size_t k(0); k < nclasses_; ++k) {
-            if (v(k) == maxval)
-              v(k) = 1;
+            if (v[k] == maxval)
+              v[k] = 1;
             else
-              v(k) = 0;
+              v[k] = 0;
           }
           v /= sum(v);
           return;
         }
       }
       for (size_t k(0); k < nclasses_; ++k)
-        v(k) = exp(v(k));
+        v[k] = exp(v[k]);
       double tmpsum(sum(v));
       if (tmpsum == 0) {
         v.ones();
@@ -1653,14 +1654,14 @@ namespace sill {
       v /= tmpsum;
     } else {
       for (size_t k(0); k < nclasses_; ++k) {
-        if (v(k) > log_max_double) {
+        if (v[k] > log_max_double) {
           throw std::runtime_error
             (std::string("multiclass_logistic_regression") +
              " had overflow when computing probabilities.  To deal with such" +
              " overflows in a hacky (but reasonable) way, use the parameter" +
              " resolve_numerical_problems.");
         }
-        v(k) = exp(v(k));
+        v[k] = exp(v[k]);
       }
       if (sum(v) == 0)
         throw std::runtime_error
@@ -1684,11 +1685,11 @@ namespace sill {
     for (size_t k(0); k < nclasses_; ++k) {
       for (size_t j(0); j < finite_indices.size(); ++j) {
         size_t val(findata[finite_indices[j]]);
-        v(k) += w_fin_(k, finite_offset[j] + val);
+        v[k] += w_fin_(k, finite_offset[j] + val);
       }
     }
     if (w_vec_.size() != 0)
-      gemv(w_vec_, example.vector(), v);
+      sill::gemv(w_vec_, example.vector(), v);
 //      v += w_vec_ * example.vector();
     finish_probabilities(v);
   }
@@ -1706,13 +1707,13 @@ namespace sill {
     for (size_t k(0); k < nclasses_; ++k) {
       for (size_t j(0); j < finite_indices.size(); ++j) {
         size_t val(safe_get(fa, finite_seq[finite_indices[j]]));
-        v(k) += w_fin_(k, finite_offset[j] + val);
+        v[k] += w_fin_(k, finite_offset[j] + val);
       }
       for (size_t j(0); j < vector_seq.size(); ++j) {
         const vec& vecdata = safe_get(va, vector_seq[j]);
         for (size_t j2(0); j2 < vector_seq[j]->size(); ++j2) {
           size_t ind(vector_offset[j] + j2);
-          v(k) += w_vec_(k,ind) * vecdata[j2];
+          v[k] += w_vec_(k,ind) * vecdata[j2];
         }
       }
     }
@@ -1756,12 +1757,12 @@ namespace sill {
       acc += weight;
     ll += weight * std::log(v[label_val]);
     // Update gradients
-    v(label_val) -= 1;
+    v[label_val] -= 1;
     v *= weight * alt_weight;
     for (size_t j(0); j < finite_indices.size(); ++j) {
       size_t val(finite_offset[j] + findata[finite_indices[j]]);
       for (size_t k(0); k < nclasses_; ++k) {
-        gradient.f(k, val) += v(k);
+        gradient.f(k, val) += v[k];
       }
     }
     if (example.vector().size() != 0)
@@ -1794,10 +1795,10 @@ namespace sill {
           else if (x.v(i,j) < 0)
             gradient.v(i,j) -= w;
         }
-        if (x.b(i) > 0)
-          gradient.b(i) += w;
-        else if (x.b(i) < 0)
-          gradient.b(i) -= w;
+        if (x.b[i] > 0)
+          gradient.b[i] += w;
+        else if (x.b[i] < 0)
+          gradient.b[i] -= w;
       }
       break;
     case 2: // L-2
@@ -1875,14 +1876,14 @@ namespace sill {
     for (typename dataset<la_type>::record_iterator_type it(ds_ptr->begin());
          it != it_end; ++it) {
       my_probabilities(*it, v, x.f, x.v, x.b);
-      v -= elem_mult(v, v);
+      v -= v % v;
       v *= ds_ptr->weight(i);
       const std::vector<size_t>& findata = (*it).finite();
       for (size_t j(0); j < finite_indices.size(); ++j) {
 	size_t val(findata[finite_indices[j]]);
-	hd.f.add_column(finite_offset[j] + val, v);
+	hd.f.col(finite_offset[j] + val) += v;
       }
-      elem_mult_out((*it).vector(), (*it).vector(), vecdata);
+      vecdata = (*it).vector() % (*it).vector();
       hd.v += outer_product(v, vecdata);
       hd.b += v;
       ++i;
@@ -2005,7 +2006,7 @@ namespace sill {
         grad.v(label_val, ind) -= vecdata[j2] * w;
       }
     }
-    grad.b(label_val) -= w;
+    grad.b[label_val] -= w;
   }
 
   template <typename LA>
@@ -2024,8 +2025,8 @@ namespace sill {
         size_t val(findata[finite_indices[j]]);
         grad.f(label_val, finite_offset[j] + val) -= w;
       }
-      grad.v.subtract_row(label_val, r.vector() * w);
-      grad.b(label_val) -= w;
+      grad.v.row(label_val) -= r.vector() * w;
+      grad.b[label_val] -= w;
     }
   }
 
@@ -2046,8 +2047,8 @@ namespace sill {
       if (label_prob == 0)
         continue;
       label_prob *= w;
-      grad.v.subtract_row(label_val, label_prob * r_vector);
-      grad.b(label_val) -= label_prob;
+      grad.v.row(label_val) -= label_prob * r_vector;
+      grad.b[label_val] -= label_prob;
     }
     tmpa = a.finite();
     foreach(const finite_assignment& fa, assignments(fy.arguments())) {
@@ -2084,8 +2085,8 @@ namespace sill {
         if (label_prob == 0)
           continue;
         label_prob *= w;
-        grad.v.subtract_row(label_val, label_prob * r.vector());
-        grad.b(label_val) -= label_prob;
+        grad.v.row(label_val) -= label_prob * r.vector();
+        grad.b[label_val] -= label_prob;
       }
       tmpa = r.finite_assignment();
       foreach(const finite_assignment& fa, assignments(fy.arguments())) {
@@ -2128,8 +2129,8 @@ namespace sill {
         if (label_val == findata[label_index_])
           label_prob -= 1.;
         label_prob *= -w;
-        grad.v.subtract_row(label_val, label_prob * r.vector());
-        grad.b(label_val) -= label_prob;
+        grad.v.row(label_val) -= label_prob * r.vector();
+        grad.b[label_val] -= label_prob;
       }
       for (size_t j(0); j < finite_indices.size(); ++j) {
         size_t val(findata[finite_indices[j]]);
@@ -2177,9 +2178,8 @@ namespace sill {
         if (label_prob == 0)
           continue;
         label_prob *= w;
-        hd.v.subtract_row(label_val,
-                          label_prob * elem_mult(r.vector(),r.vector()));
-        hd.b(label_val) -= label_prob;
+        hd.v.row(label_val) -= label_prob * (r.vector() % r.vector());
+        hd.b[label_val] -= label_prob;
       }
       tmpa = r.finite_assignment();
       foreach(const finite_assignment& fa, assignments(fy.arguments())) {
@@ -2307,18 +2307,18 @@ namespace sill {
     getline(in, line);
     is.clear();
     is.str(line);
-    weights_.f.resize(nclasses_, ds.finite_dim() - nclasses_);
-    weights_.v.resize(nclasses_, ds.vector_dim());
+    weights_.f.set_size(nclasses_, ds.finite_dim() - nclasses_);
+    weights_.v.set_size(nclasses_, ds.vector_dim());
     for (size_t j = 0; j < nclasses_; ++j) {
       read_vec(is, tmpvec);
-      weights_.f.set_row(j, tmpvec);
+      weights_.f.row(j) = tmpvec;
     }
     getline(in, line);
     is.clear();
     is.str(line);
     for (size_t j = 0; j < nclasses_; ++j) {
       read_vec(is, tmpvec);
-      weights_.v.set_row(j, tmpvec);
+      weights_.v.row(j) = tmpvec;
     }
     getline(in, line);
     is.clear();
