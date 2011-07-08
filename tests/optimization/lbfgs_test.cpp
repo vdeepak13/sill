@@ -1,13 +1,13 @@
 
 #include <iostream>
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/optimization/lbfgs.hpp>
 
 struct obj_functor {
   double objective(sill::vec val) const {
     sill::vec tmpval(2,1.);
-    return -5. + sill::inner_prod<double>(val - tmpval, val - tmpval);
+    return -5. + dot(val - tmpval, val - tmpval);
   }
 };
 

@@ -1,8 +1,6 @@
 #include <iostream>
 
-#include <sill/math/matrix.hpp>
-#include <sill/math/vector.hpp>
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 // test invert
 
@@ -17,14 +15,14 @@ int main() {
   uvec i01 = "0 1";
   uvec i02 = "0 2";
   
-  assert(a(i01, i02) == b);
-  a.set_submatrix(i01, i02, b2);
-  assert(a == a2);
+  assert(accu(a(i01, i02) == b) == b.n_elem);
+  a(i01, i02) = b2;
+  assert(equal(a, a2));
   
   cout << a(i01, i02) << endl;
-  a.add_submatrix(i01, i02, b2);
+  a(i01, i02) += b2;
   cout << a(i01, i02) << endl;
-  cout << a(irange(0,1), irange(0,2)) << endl;
+  cout << a(span(0,0), span(0,1)) << endl;
 
   mat m = zeros(2,2);
   mat minv;

@@ -319,7 +319,7 @@ namespace sill {
     if (n > capacity()) {
       data_vector.resize(n);
       if (weighted)
-        weights_.resize(n, true);
+        weights_.reshape(n,1);
     }
   }
 
@@ -410,7 +410,7 @@ namespace sill {
       double normalizer(0);
       foreach(vector_variable* v, vars) {
         const vector_type& tmpval = data_vector[i].vector()[v];
-        normalizer += tmpval.dot(tmpval);
+        normalizer += dot(tmpval, tmpval);
       }
       if (normalizer == 0)
         continue;

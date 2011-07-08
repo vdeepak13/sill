@@ -307,10 +307,10 @@ namespace sill {
         finite_data[i].resize(num_finite());
       vector_data.resize(n);
       for (size_t i = n_previous; i < n; ++i)
-        vector_data[i].resize(dvector);
+        vector_data[i].set_size(dvector);
       data_vector.resize(n);
       if (weighted)
-        weights_.resize(n, true);
+        weights_.reshape(n,1);
     }
   }
 
@@ -415,8 +415,8 @@ namespace sill {
     for (size_t i(0); i < nrecords; ++i) {
       for (size_t j(0); j < stddevs.size(); ++j) {
         size_t j2(vars_inds[j]);
-        vector_data[i](j2) -= means(j);
-        vector_data[i](j2) /= stddevs(j);
+        vector_data[i][j2] -= means[j];
+        vector_data[i][j2] /= stddevs[j];
       }
       convert_vector_record2assignment(vector_data[i], data_vector[i].vector());
     }
@@ -429,11 +429,11 @@ namespace sill {
       assert(this->has_variable(v));
     uvec vars_inds(vector_indices(vars));
     for (size_t i(0); i < nrecords; ++i) {
-      double normalizer(norm_2(vector_data[i](vars_inds)));
+      double normalizer = norm(vector_data[i](vars_inds),2);
       if (normalizer == 0)
         continue;
       foreach(size_t j2, vars_inds)
-        vector_data[i](j2) /= normalizer;
+        vector_data[i][j2] /= normalizer;
       convert_vector_record2assignment(vector_data[i], data_vector[i].vector());
     }
   }
@@ -443,7 +443,7 @@ namespace sill {
     boost::mt11213b rng(static_cast<unsigned>(random_seed));
     std::vector<size_t> fin_tmp(finite_seq.size());
     vec vec_tmp;
-    vec_tmp.resize(dvector);
+    vec_tmp.set_size(dvector);
     assignment tmpa;
     double weight_tmp;
     for (size_t i = 0; i < nrecords-1; ++i) {
@@ -503,7 +503,7 @@ namespace sill {
       finite_data[i].resize(num_finite());
     vector_data.resize(nreserved);
       for (size_t i = 0; i < nreserved; ++i)
-        vector_data[i].resize(dvector);
+        vector_data[i].set_size(dvector);
     data_vector.resize(nreserved);
   }
 

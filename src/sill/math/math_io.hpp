@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include <sill/math/matrix.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 /**
  * \file math_io.hpp  Functions for reading and writing matrices and vectors
@@ -21,25 +21,25 @@ namespace sill {
    * has 0 elements, in which case this method returns immediately).
    */
   template <typename T>
-  matrix<T> load_matrix(std::istream& in) {
+  arma::Mat<T> load_matrix(std::istream& in) {
     std::vector<T> elements;
     size_t ncols;
     size_t nrows = 0;
     std::string line;
     getline(in, line);
-    vector<T> v(line);
+    arma::Vec<T> v(line);
     ncols = v.size();
     if (ncols == 0)
-      return matrix<T>();
+      return arma::Mat<T>();
     elements.insert(elements.end(), v.begin(), v.end());
     ++nrows;
     while (in.good()) {
       std::streampos where = in.tellg();
       getline(in, line);
-      v = vector<T>(line);
+      v = arma::Vec<T>(line);
       if (v.size() != ncols) {
         in.seekg(where);
-        matrix<T> m(nrows, ncols);
+        arma::Mat<T> m(nrows, ncols);
         for (size_t i = 0; i < nrows; ++i)
           for (size_t j = 0; j < ncols; ++j)
             m(i,j) = elements[ncols * i + j];
@@ -49,8 +49,8 @@ namespace sill {
       ++nrows;
     }
     assert(false); // Bad input stream
-    return matrix<T>();
-  } // matrix<T> load_matrix(std::istream& in)
+    return arma::Mat<T>();
+  } // load_matrix
 
 } // namespace sill
 

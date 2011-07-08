@@ -332,7 +332,7 @@ namespace sill {
       if (params.weight_m_t > 0)
         ds.make_weighted();
       filter_limit = std::numeric_limits<size_t>::max();
-      filter_distribution.resize(nclasses_);
+      filter_distribution.set_size(nclasses_);
     }
 
     // Public methods
@@ -710,7 +710,7 @@ namespace sill {
       std::istringstream is(line);
       read_vec(is, p_ts);
       rng.seed(static_cast<unsigned>(params.random_seed));
-      filter_distribution.resize(nclasses_);
+      filter_distribution.set_size(nclasses_);
       return true;
     }
 

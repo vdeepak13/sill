@@ -7,6 +7,7 @@ set(PRL_MATH_SOURCES
 #  matrix
 #  vector
   linear_algebra
+  operations
   statistics
   function/logistic_discrete
   multinomial_distribution

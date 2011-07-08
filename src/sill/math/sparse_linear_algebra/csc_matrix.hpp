@@ -46,8 +46,8 @@ namespace sill {
   void
   convert_matrix(const arma::Mat<Tfrom>& densemat,
                  csc_matrix<Tto, Idxto>& cscmat) {
-    Idxto m = densemat.n_rows();
-    Idxto n = densemat.n_cols();
+    Idxto m = densemat.num_rows();
+    Idxto n = densemat.num_cols();
     arma::Col<Idxto> new_col_offsets(n + 1, 0);
     arma::Col<Idxto> new_row_indices;
     arma::Col<Tto> new_values;
@@ -81,7 +81,7 @@ namespace sill {
     std::vector<std::vector<std::pair<Idxto, Tto> > > i_val_per_column;
     impl::coo2csc_helper1(coomat, i_val_per_column);
     impl::coo2csc_helper2
-      (coomat.n_rows(), coomat.n_cols(), coomat.num_non_zeros(),
+      (coomat.num_rows(), coomat.num_cols(), coomat.num_non_zeros(),
        i_val_per_column, cscmat);
   }
 
@@ -104,9 +104,9 @@ namespace sill {
    *  - This view type is most useful for working with constant matrices.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam SizeType    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., arma::u32).
    */
-  template <typename T, typename SizeType = size_t>
+  template <typename T, typename SizeType = arma::u32>
   class csc_matrix
     : public matrix_base<T,SizeType> {
 
@@ -141,8 +141,8 @@ namespace sill {
     //! Assignment operator.
     template <typename OtherT, typename OtherSizeType>
     csc_matrix& operator=(const csc_matrix<OtherT,OtherSizeType>& other) {
-      m_ = other.n_rows();
-      n_ = other.n_cols();
+      n_rows = other.num_rows();
+      n_cols = other.num_cols();
       col_offsets_ = other.col_offsets();
       row_indices_ = other.row_indices();
       values_ = other.values();
@@ -152,7 +152,7 @@ namespace sill {
     //! Constructor from a matrix in coordinate (COO) format.
     template <typename OtherT, typename OtherSizeType>
     explicit csc_matrix(const coo_matrix<OtherT, OtherSizeType>& other)
-      : base(other.n_rows(), other.n_cols()) {
+      : base(other.num_rows(), other.num_cols()) {
       convert_matrix(other, *this);
     }
 
@@ -166,7 +166,7 @@ namespace sill {
     //! Constructor from a matrix in dense format.
     template <typename OtherT, typename OtherSizeType>
     explicit csc_matrix(const arma::Mat<OtherT>& other)
-      : base(other.n_rows(), other.n_cols()) {
+      : base(other.num_rows(), other.num_cols()) {
       convert_matrix(other, *this);
     }
 
@@ -193,10 +193,8 @@ namespace sill {
     // Getters and setters: dimensions
     //==========================================================================
 
-    using base::n_rows;
-    using base::size1;
-    using base::n_cols;
-    using base::size2;
+    using base::num_rows;
+    using base::num_cols;
     using base::size;
 
     //! Number of non-zero elements.
@@ -215,8 +213,8 @@ namespace sill {
       if (copy_data)
         assert(false); // TO DO
       assert(k <= m * n);
-      m_ = m;
-      n_ = n;
+      n_rows = m;
+      n_cols = n;
       col_offsets_.resize(k);
       row_indices_.resize(k);
       values_.resize(k);
@@ -232,11 +230,11 @@ namespace sill {
 
     //! Return a const view of column j of the matrix.
     sparse_vector_view<value_type,size_type> column(size_type j) const {
-      if (j < n_cols()) {
+      if (j < num_cols()) {
         size_type co_j = col_offsets_[j];
         size_type co_jp1 = col_offsets_[j+1];
         return sparse_vector_view<value_type,size_type>
-          (n_rows(), co_jp1 - co_j, row_indices_.begin() + co_j,
+          (num_rows(), co_jp1 - co_j, row_indices_.begin() + co_j,
            values_.begin() + co_j);
       } else {
         return sparse_vector_view<value_type,size_type>();
@@ -254,7 +252,7 @@ namespace sill {
 
     //! Look for element A(i,j).  Return <found, pointer to value>.
     std::pair<bool, const value_type*> find(size_type i, size_type j) const {
-      assert(i < n_rows() && j < n_cols());
+      assert(i < num_rows() && j < num_cols());
       size_type from(col_offsets_[j]);
       size_type to(col_offsets_[j+1]);
       while (from < to) {
@@ -272,7 +270,7 @@ namespace sill {
 
     //! Look for element A(i,j).  Return <found, pointer to value>.
     std::pair<bool, value_type*> find(size_type i, size_type j) {
-      assert(i < n_rows() && j < n_cols());
+      assert(i < num_rows() && j < num_cols());
       size_type from(col_offsets_[j]);
       size_type to(col_offsets_[j+1]);
       while (from < to) {
@@ -291,7 +289,7 @@ namespace sill {
     //! Return a const view of the row indices for column j.
     const dense_vector_view<size_type,size_type>
     row_indices(size_type j) const {
-      assert(j < n_cols());
+      assert(j < num_cols());
       return dense_vector_view<size_type,size_type>
         (col_offsets_[j+1] - col_offsets_[j],
          row_indices_.begin() + col_offsets_[j]);
@@ -299,7 +297,7 @@ namespace sill {
 
     //! Return a const view of the values for column j.
     const dense_vector_view<value_type,size_type> values(size_type j) const {
-      assert(j < n_cols());
+      assert(j < num_cols());
       return dense_vector_view<value_type,size_type>
         (col_offsets_[j+1] - col_offsets_[j],
          values_.begin() + col_offsets_[j]);
@@ -307,7 +305,7 @@ namespace sill {
 
     //! Return a mutable view of the values for column j.
     dense_vector_view<value_type,size_type> values(size_type j) {
-      assert(j < n_cols());
+      assert(j < num_cols());
       return dense_vector_view<value_type,size_type>
         (col_offsets_[j+1] - col_offsets_[j],
          values_.begin() + col_offsets_[j]);
@@ -343,7 +341,7 @@ namespace sill {
     //! Return the maximum number of non-zeros in any column.
     size_type max_non_zeros_per_column() const {
       size_type k(0);
-      for (size_type j(0); j < n_cols(); ++j) {
+      for (size_type j(0); j < num_cols(); ++j) {
         k = max(k, col_offsets_[j+1] - col_offsets_[j]);
       }
       return k;
@@ -354,7 +352,7 @@ namespace sill {
       if (col_offsets_.size() <= 1)
         return arma::Col<size_type>();
       arma::Col<size_type> sizes(col_offsets_.size() - 1);
-      for (size_type j(0); j < n_cols(); ++j) {
+      for (size_type j(0); j < num_cols(); ++j) {
         sizes[j] = col_offsets_[j+1] - col_offsets_[j];
       }
       return sizes;
@@ -389,10 +387,10 @@ namespace sill {
                          Op op) {
       switch (trans) {
       case 'n': case 'N':
-        if (v.size() != n_cols()) {
+        if (v.size() != num_cols()) {
           throw std::invalid_argument("csc_matrix::vector_ew_apply given vector not matching matrix dimensions");
         }
-        for (size_type j(0); j < n_cols(); ++j) {
+        for (size_type j(0); j < num_cols(); ++j) {
           size_type co_j = col_offsets_[j];
           size_type co_jp1 = col_offsets_[j+1];
           while (co_j < co_jp1) {
@@ -419,7 +417,7 @@ namespace sill {
         out << "[]";
         return;
       } else {
-        for (size_type j(0); j < n_cols(); ++j) {
+        for (size_type j(0); j < num_cols(); ++j) {
           const dense_vector_view<size_type,size_type>
             col_j_indices(row_indices(j));
           const dense_vector_view<value_type,size_type>
@@ -434,7 +432,7 @@ namespace sill {
             if (i+1 != col_j_indices.size())
               out << ", ";
           }
-          if (j + 1 != n_cols())
+          if (j + 1 != num_cols())
             out << "\n";
           else
             out << "]\n";
@@ -464,11 +462,12 @@ namespace sill {
       if (new_row_indices.size() != 0)
         assert(new_row_indices[new_row_indices.size()-1] < m);
       // TO DO: More validity checks.
-      m_ = m;
-      n_ = n;
-      col_offsets_.swap(new_col_offsets);
-      row_indices_.swap(new_row_indices);
-      values_.swap(new_values);
+      n_rows = m;
+      n_cols = n;
+      // TO DO: USE ARMA SWAP METHODS ONCE IMPLEMENTED
+      std::swap(col_offsets_, new_col_offsets);
+      std::swap(row_indices_, new_row_indices);
+      std::swap(values_, new_values);
     }
 
     //! Number of bytes to represent this matrix.
@@ -477,12 +476,12 @@ namespace sill {
         + n_non_zeros * (2 * sizeof(size_type) + sizeof(value_type));
     }
 
+    using base::n_rows;
+    using base::n_cols;
+
     // Protected data and methods
     //==========================================================================
   protected:
-
-    using base::m_;
-    using base::n_;
 
     //! Column offsets (length n+1)
     //!  col_offsets_[i] = offset in row_indices_ and values_ for column i
@@ -514,13 +513,13 @@ namespace sill {
       const_index_iterator row_it, col_it, row_end;
       const_iterator val_it;
       if (trans) {
-        i_val_per_column.resize(coomat.n_rows());
+        i_val_per_column.resize(coomat.num_rows());
         row_it = coomat.col_indices().begin();
         col_it = coomat.row_indices().begin();
         val_it = coomat.values().begin();
         row_end = coomat.col_indices().end();
       } else {
-        i_val_per_column.resize(coomat.n_cols());
+        i_val_per_column.resize(coomat.num_cols());
         row_it = coomat.row_indices().begin();
         col_it = coomat.col_indices().begin();
         val_it = coomat.values().begin();

@@ -5,7 +5,7 @@
 #include <cmath>
 #include <iostream>
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 namespace sill {
 

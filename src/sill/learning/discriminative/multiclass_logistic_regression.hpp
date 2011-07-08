@@ -210,9 +210,7 @@ namespace sill {
 
       //! Returns true iff this instance equals the other.
       bool operator==(const opt_variables& other) const {
-        if ((f != other.f) || (v != other.v) || (b != other.b))
-          return false;
-        return true;
+        return (equal(f, other.f) && equal(v, other.v) && equal(b, other.b));
       }
 
       //! Returns false iff this instance equals the other.

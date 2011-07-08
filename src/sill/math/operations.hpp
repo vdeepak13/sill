@@ -3,10 +3,16 @@
 
 #include <cmath>
 
+#include <sill/global.hpp>
+
 namespace sill {
 
   //! \addtogroup math_operations
   //! @{
+
+  //! Return true iff the values are equal.
+  //! This is analogous to the equal() method for Armadillo vectors.
+  bool equal(size_t a, size_t b);
 
   //! Square a value.
   template <typename T> 

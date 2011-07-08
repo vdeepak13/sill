@@ -1224,6 +1224,7 @@ namespace sill {
   std::vector<std::pair<vector_variable*, double> >
   linear_regression::get_dependencies<vector_variable>(size_t K) const;
 
+
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

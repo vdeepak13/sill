@@ -11,7 +11,7 @@ namespace sill {
    * Matrix base class
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam SizeType    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., arma::u32).
    */
   template <typename T, typename SizeType>
   class matrix_base {

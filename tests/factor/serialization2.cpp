@@ -6,7 +6,7 @@
 
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/base/named_universe.hpp>
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 #include <sill/process.hpp>
 

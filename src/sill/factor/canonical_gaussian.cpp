@@ -104,7 +104,7 @@ namespace sill {
 
     if (nhead > 0) {
       lambda(ih, ih) = invcov;
-      eta(ih) = invcov * mg.cmean;
+      eta.subvec(ih) = invcov * mg.cmean;
     }
 
     if (ntail > 0) {
@@ -112,7 +112,7 @@ namespace sill {
       lambda(it, it) = Atinvcov*mg.coeff;
       lambda(ih, it) = -trans(Atinvcov);
       lambda(it, ih) = -Atinvcov;
-      eta(it) = -Atinvcov * mg.cmean;
+      eta.subvec(it) = -Atinvcov * mg.cmean;
     }
 
     log_mult = mg.likelihood.log_value()

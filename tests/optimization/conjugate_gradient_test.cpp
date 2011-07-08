@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/optimization/conjugate_gradient.hpp>
 
 static const double CGT_OBJ_CONST = 1;
@@ -10,7 +10,7 @@ struct obj_functor {
   double objective(sill::vec val) const {
     sill::vec tmpval(2,1.);
     return -5. +
-      CGT_OBJ_CONST * sill::inner_prod<double>(val - tmpval, val - tmpval);
+      CGT_OBJ_CONST * dot(val - tmpval, val - tmpval);
   }
 };
 

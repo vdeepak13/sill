@@ -516,12 +516,9 @@ int main(int argc, char** argv) {
       canonical_gaussian cg1(truth_YX);
       canonical_gaussian cg2(truth_YX);
       cg2.enforce_psd(truth_YX.mean());
-      if (cg1.inf_matrix() != cg2.inf_matrix())
-        assert(false);
-      if (cg1.inf_vector() != cg2.inf_vector())
-        assert(false);
-      if (cg1.log_multiplier() != cg2.log_multiplier())
-        assert(false);
+      assert(equal(cg1.inf_matrix(), cg2.inf_matrix()));
+      assert(equal(cg1.inf_vector(), cg2.inf_vector()));
+      assert(cg1.log_multiplier() == cg2.log_multiplier());
     }
     moment_gaussian
       truth_Y_given_X(truth_YX.conditional(make_domain<vector_variable>(X)));

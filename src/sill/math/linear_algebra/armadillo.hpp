@@ -74,6 +74,16 @@ namespace sill {
   }
 
   template <typename T>
+  arma::Col<T> concat(const arma::Col<T>& v1, const arma::Col<T>& v2) {
+    arma::Col<T> result(v1.size() + v2.size());
+    if (!v1.is_empty())
+      result.subvec(span(0,v1.size()-1)) = v1;
+    if (!v2.is_empty())
+      result.subvec(span(v1.size(),result.size()-1)) = v2;
+    return result;
+  }
+
+  template <typename T>
   arma::Col<T> concat(const forward_range<const arma::Col<T>&> vectors) {
     // compute the size of the resulting vector
     size_t n = 0;
@@ -84,7 +94,7 @@ namespace sill {
     n = 0;
     foreach(const arma::Col<T>& v, vectors) {
       if (!v.is_empty()) {
-        result(span(n, n + v.size() - 1)) = v;
+        result.subvec(span(n, n + v.size() - 1)) = v;
       }
       n += v.size();
     }
@@ -266,8 +276,71 @@ namespace sill {
     return v;
   }
 
+  //! Constructs a length-3 vector [a b c].
+  template <typename T>
+  arma::Col<T> vec_3(T a, T b, T c) {
+    arma::Col<T> v(3);
+    v[0] = a;
+    v[1] = b;
+    v[2] = c;
+    return v;
+  }
+
   // Serialization
   //============================================================================
+
+  namespace impl {
+
+    //! Read in a vector of values [val1,val2,...], ignoring an initial space
+    //! if necessary.
+    template <typename VecType, typename CharT>
+    void read_vec_(std::basic_istream<CharT>& in, VecType& v) {
+      CharT c;
+      typedef typename VecType::value_type value_type;
+      value_type val;
+      std::vector<value_type> tmpv;
+      in.get(c);
+      if (c == ' ')
+        in.get(c);
+      assert(c == '[');
+      if (in.peek() != ']') {
+        do {
+          if (!(in >> val))
+            assert(false);
+          tmpv.push_back(val);
+          if (in.peek() == ',')
+            in.ignore(1);
+        } while (in.peek() != ']');
+      }
+      in.ignore(1);
+      v = arma::conv_to<arma::Col<value_type> >::from(tmpv);
+    }
+
+    template <typename ArmaType>
+    oarchive& operator_ll_(oarchive& a, const ArmaType& m) {
+      a << m.n_rows << m.n_cols;
+      typedef typename ArmaType::value_type value_type;
+      const value_type* it  = m.begin();
+      const value_type* end = m.end();
+      for(; it != end; ++it)
+        a << *it;
+      return a;
+    }
+
+    template <typename VecType>
+    iarchive& operator_gg_(iarchive& a, VecType& m) {
+      size_t n_rows, n_cols;
+      a >> n_rows >> n_cols;
+      m.set_size(n_rows, n_cols);
+      typedef typename VecType::value_type value_type;
+      value_type* it  = m.begin();
+      value_type* end = m.end();
+      for(; it != end; ++it)
+        a >> *it;
+      return a;
+    }
+
+  } // namespace impl
 
   //! Read in a vector of values [val1,val2,...], ignoring an initial space
   //! if necessary.
@@ -275,70 +348,46 @@ namespace sill {
   //!       work.
   template <typename T, typename CharT>
   void read_vec(std::basic_istream<CharT>& in, arma::Col<T>& v) {
-    CharT c;
-    T val;
-    std::vector<T> tmpv;
-    in.get(c);
-    if (c == ' ')
-      in.get(c);
-    assert(c == '[');
-    if (in.peek() != ']') {
-      do {
-        if (!(in >> val))
-          assert(false);
-        tmpv.push_back(val);
-        if (in.peek() == ',')
-          in.ignore(1);
-      } while (in.peek() != ']');
-    }
-    in.ignore(1);
-    v = arma::conv_to<arma::Col<T> >::from(tmpv);
+    impl::read_vec_(in, v);
+  }
+
+  //! Read in a vector of values [val1,val2,...], ignoring an initial space
+  //! if necessary.
+  template <typename T, typename CharT>
+  void read_vec(std::basic_istream<CharT>& in, arma::Row<T>& v) {
+    impl::read_vec_(in, v);
   }
 
   // Joseph B.: I added this since the functions for arma::Mat were not
   //            identified by the compiler for arma::Col types.
   template <typename T>
   oarchive& operator<<(oarchive& a, const arma::Col<T>& m) {
-    a << m.n_elem;
-    const T* it  = m.begin();
-    const T* end = m.end();
-    for(; it != end; ++it)
-      a << *it;
-    return a;
+    return impl::operator_ll_(a,m);
   }
 
   template <typename T>
   iarchive& operator>>(iarchive& a, arma::Col<T>& m) {
-    size_t n_elem;
-    a >> n_elem;
-    m.set_size(n_elem);
-    T* it  = m.begin();
-    T* end = m.end();
-    for(; it != end; ++it)
-      a >> *it;
-    return a;
+    return impl::operator_gg_(a,m);
+  }
+
+  template <typename T>
+  oarchive& operator<<(oarchive& a, const arma::Row<T>& m) {
+    return impl::operator_ll_(a,m);
+  }
+
+  template <typename T>
+  iarchive& operator>>(iarchive& a, arma::Row<T>& m) {
+    return impl::operator_gg_(a,m);
   }
 
   template <typename T>
   oarchive& operator<<(oarchive& a, const arma::Mat<T>& m) {
-    a << m.n_rows << m.n_cols;
-    const T* it  = m.begin();
-    const T* end = m.end();
-    for(; it != end; ++it)
-      a << *it;
-    return a;
+    return impl::operator_ll_(a,m);
   }
 
   template <typename T>
   iarchive& operator>>(iarchive& a, arma::Mat<T>& m) {
-    size_t n_rows, n_cols;
-    a >> n_rows >> n_cols;
-    m.set_size(n_rows, n_cols);
-    T* it  = m.begin();
-    T* end = m.end();
-    for(; it != end; ++it)
-      a >> *it;
-    return a;
+    return impl::operator_gg_(a,m);
   }
 
 } // namespace sill

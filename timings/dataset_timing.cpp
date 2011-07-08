@@ -219,7 +219,7 @@ int main(int argc, char* argv[]) {
   ds_view_view2.set_record_range(0, 500);
   // Check that the two views of views are the same
   for (size_t i = 0; i < 500; i++)
-    assert(ds_view_view1[i].vector() == ds_view_view2[i].vector());
+    assert(equal(ds_view_view1[i].vector(), ds_view_view2[i].vector()));
   cout << "\nTested creating views of views--it worked." << endl;
 
   ////////////////////////////////////////

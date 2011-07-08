@@ -29,7 +29,7 @@ namespace sill {
    *     - extracting views of rows or columns of matrices.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam SizeType    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., arma::u32).
    */
   template <typename T, typename SizeType>
   class sparse_vector_view

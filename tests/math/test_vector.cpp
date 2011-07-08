@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 int main() {
   using namespace sill;
@@ -12,12 +12,12 @@ int main() {
   vec a2 = "1 -1 3 -3 5";
   uvec i = "1 3";
   
-  assert(a(i) == b);
-  a.set_subvector(i, b2);
-  assert(a == a2);
+  assert(accu(a(i) == b) == b.size());
+  a.subvec(i) = b2;
+  assert(accu(a == a2) == a.size());
   
   cout << a(i) << endl;
-  a.add_subvector(i, b2);
+  a.subvec(i) += b2;
   cout << a(i) << endl;
-  cout << a(irange(0,2)) << endl;
+  cout << a.subvec(span(0,1)) << endl;
 }

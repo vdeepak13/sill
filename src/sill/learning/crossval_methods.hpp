@@ -8,7 +8,6 @@
 #include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/learning/validation/parameter_grid.hpp>
-//#include <sill/math/vector.hpp>
 
 #include <sill/macros_def.hpp>
 

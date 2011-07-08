@@ -4,7 +4,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/optimization/stochastic_gradient.hpp>
 
 // minimize -5 + (val - <1,1>)^2
@@ -13,7 +13,7 @@ struct obj_grad_functor1 {
     : unif_real(0,range), rng(time(NULL)) { }
   double objective(sill::vec val) const {
     const sill::vec v1("1 1");
-    return -5. + sill::inner_prod<double>(val - v1, val - v1);
+    return -5. + dot(val - v1, val - v1);
   }
   void gradient(sill::vec& grad, const sill::vec& val) const {
     const sill::vec v1("1 1");

@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
   boost::normal_distribution<double> normal_dist(0, 1);
   boost::lagged_fibonacci607 rng;
   rng.seed(time(NULL));
-  mat A(nY, nX, 0);
+  mat A(zeros(nY, nX));
   for (size_t j(0); j < A.size(); ++j)
     A(j) = unif_real(rng);
   cout << "True A matrix:\n" << A << endl;
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
     vec vvals(nY+nX, 0);
     for (size_t j(0); j < nX; ++j)
       vvals[j] = unif_real(rng);
-    vec tmpvec(A * vvals(irange(0,nX)));
+    vec tmpvec(A * vvals.subvec(span(0,nX-1)));
     for (size_t j(0); j < nY; ++j)
       vvals[j + nX] = tmpvec[j] + normal_dist(rng);
     if (i < ntrain)

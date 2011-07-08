@@ -60,7 +60,7 @@ namespace sill{
     size_t  numvars = bis.read<int32_t>();
     size_t  numedges = bis.read<int32_t>();
     if (bis.fail()) return false;
-    vector<variable_type*> idtovar;
+    std::vector<variable_type*> idtovar;
     idtovar.resize(numvars);
     // ignore the next 2 * num_edges * int32_t bytes
     // this will contain the list of edges which we do not need

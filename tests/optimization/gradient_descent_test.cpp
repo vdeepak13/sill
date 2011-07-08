@@ -1,14 +1,14 @@
 
 #include <iostream>
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/optimization/gradient_descent.hpp>
 
 // minimize -5 + (val - <1,1>)^2
 struct obj_grad_functor1 {
   double objective(sill::vec val) const {
     const sill::vec v1("1 1");
-    return -5. + sill::inner_prod<double>(val - v1, val - v1);
+    return -5. + dot(val - v1, val - v1);
   }
   void gradient(sill::vec& grad, const sill::vec& val) const {
     const sill::vec v1("1 1");

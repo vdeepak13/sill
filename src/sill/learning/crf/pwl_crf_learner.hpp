@@ -457,10 +457,8 @@ namespace sill {
 
       assert((n_folds > 0) && (n_folds <= ds.size()));
       assert(reg_params.size() > 0);
-      means.resize(reg_params.size());
-      means.zeros();
-      stderrs.resize(reg_params.size());
-      stderrs.zeros();
+      means.zeros(reg_params.size());
+      stderrs.zeros(reg_params.size());
       boost::mt11213b rng(random_seed);
       std::vector<output_variable_type*> Yvector(Yvars.begin(), Yvars.end());
       dataset_view<> permuted_view(ds);
@@ -583,19 +581,9 @@ namespace sill {
           break;
         }
       }
-      reg_params.resize(reg_params1.size() + reg_params2.size());
-      means.resize(means1.size() + means2.size());
-      stderrs.resize(stderrs1.size() + stderrs2.size());
-      for (size_t i(0); i < reg_params1.size(); ++i) {
-        reg_params[i] = reg_params1[i];
-        means[i] = means1[i];
-        stderrs[i] = stderrs1[i];
-      }
-      for (size_t i(0); i < reg_params2.size(); ++i) {
-        reg_params[reg_params1.size() + i] = reg_params2[i];
-        means[reg_params1.size() + i] = means2[i];
-        stderrs[reg_params1.size() + i] = stderrs2[i];
-      }
+      reg_params = concat(reg_params1, reg_params2);
+      means = concat(means1, means2);
+      stderrs = concat(stderrs1, stderrs2);
       if (means1[best_i1] >= means2[best_i2])
         return best_reg_param1;
       else

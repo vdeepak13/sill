@@ -105,7 +105,7 @@ namespace sill {
       if(a.count(v)) { // v is now fixed
         // TODO: check if this correct
         span s(input_map[k], input_map[k] + v->size() - 1); 
-        result.fixed_input(s) = safe_get(a, v);
+        result.fixed_input.subvec(s) = safe_get(a, v);
         k += v->size();
       } else {
         result.tail.push_back(v);

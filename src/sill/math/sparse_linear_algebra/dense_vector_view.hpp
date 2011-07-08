@@ -17,7 +17,7 @@ namespace sill {
    * E.g., a view of [1 2 3 4 5 6] with size 2 and pitch 3 would be [1 4].
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam SizeType    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., arma::u32).
    */
   template <typename T, typename SizeType>
   class dense_vector_view

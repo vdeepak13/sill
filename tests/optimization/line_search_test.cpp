@@ -1,7 +1,7 @@
 
 #include <iostream>
 
-#include <sill/math/vector.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/optimization/line_search_with_grad.hpp>
 
 // minimize -5 + (val - 1)^2

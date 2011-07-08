@@ -147,7 +147,7 @@ namespace sill {
    */
   template <typename T, typename SizeType>
   arma::Col<T>
-  sum(const csc_matrix<T,SizeType>& m, size_t dim = 0);
+  sum(const csc_matrix<T,SizeType>& m, arma::u32 dim = 0);
 
   /**
    * Column-wise or row-wise summation of a matrix.
@@ -161,7 +161,7 @@ namespace sill {
    */
   template <typename T, typename SizeType, typename MFunctor>
   arma::Col<T>
-  sum(const csc_matrix<T,SizeType>& m, size_t dim, MFunctor mfunc);
+  sum(const csc_matrix<T,SizeType>& m, arma::u32 dim, MFunctor mfunc);
 
   /*****************************************************************************
    * Matrix-Vector operations
@@ -298,7 +298,7 @@ namespace sill {
     assert(x.size() == y.size());
     T r = 0;
     for (SizeType i = 0; i < y.num_non_zeros(); ++i)
-      r += x._data()[y.index(i)] * y.value(i);
+      r += x[y.index(i)] * y.value(i);
     return r;
   }
 
@@ -307,7 +307,7 @@ namespace sill {
     assert(x.size() == y.size());
     T r = 0;
     for (SizeType i = 0; i < y.num_non_zeros(); ++i)
-      r += x._data()[y.index(i)] * y.value(i);
+      r += x[y.index(i)] * y.value(i);
     return r;
   }
 
@@ -400,7 +400,9 @@ namespace sill {
   void elem_square_out(const sparse_vector<T,SizeType>& a,
                        sparse_vector<T,SizeType>& b) {
     b.resize(a.size(), a.num_non_zeros());
-    elem_mult_out(a.values(), a.values(), b.values());
+    b.indices() = a.indices();
+    b.sorted_mutable() = a.sorted();
+    b.values() = square(a.values());
   }
 
   //============================================================================
@@ -409,14 +411,14 @@ namespace sill {
 
   template <typename T, typename SizeType>
   arma::Col<T>
-  sum(const csc_matrix<T,SizeType>& m, size_t dim) {
+  sum(const csc_matrix<T,SizeType>& m, arma::u32 dim) {
     if (dim == 0) {
-      arma::Col<T> v(m.n_cols());
+      arma::Col<T> v(m.num_cols());
       for (SizeType i = 0; i < v.size(); ++i)
         v[i] = sum(m.column(i));
       return v;
     } else if (dim == 1) {
-      arma::Col<T> v(m.n_rows(),0);
+      arma::Col<T> v(m.num_rows(),0);
       for (SizeType k = 0; k < m.num_non_zeros(); ++k)
         v[m.row_index(k)] += m.value(k);
       return v;
@@ -428,14 +430,14 @@ namespace sill {
 
   template <typename T, typename SizeType, typename MFunctor>
   arma::Col<T>
-  sum(const csc_matrix<T,SizeType>& m, size_t dim, MFunctor mfunc) {
+  sum(const csc_matrix<T,SizeType>& m, arma::u32 dim, MFunctor mfunc) {
     if (dim == 0) {
-      arma::Col<T> v(m.n_cols());
+      arma::Col<T> v(m.num_cols());
       for (SizeType i = 0; i < v.size(); ++i)
         v[i] = sum(m.column(i), mfunc);
       return v;
     } else if (dim == 1) {
-      arma::Col<T> v(m.n_rows(),0);
+      arma::Col<T> v(m.num_rows(),0);
       for (SizeType k = 0; k < m.num_non_zeros(); ++k)
         v[m.row_index(k)] += mfunc(m.value(k));
       return v;
@@ -478,13 +480,13 @@ namespace sill {
     // TO DO: Use this when y is reasonably long and x is reasonably sparse.
     template <>
     inline arma::Col<double>
-    mult_densemat_sparsevec_<sparse_vector<double,size_t>,double,size_t>
-    (const arma::Mat<double>& A, const sparse_vector<double,size_t>& x) {
+    mult_densemat_sparsevec_<sparse_vector<double,arma::u32>,double,arma::u32>
+    (const arma::Mat<double>& A, const sparse_vector<double,arma::u32>& x) {
       assert(A.n_cols == x.size());
       arma::Col<double> y(A.n_rows,0);
       int n = A.n_rows;
       int inc = 1;
-      for (size_t k = 0; k < x.num_non_zeros(); ++k) {
+      for (arma::u32 k = 0; k < x.num_non_zeros(); ++k) {
         double alpha = x.value(k);
         blas::daxpy_(&n, &alpha, A.begin() + A.n_rows * x.index(k), &inc,
                      y.begin(), &inc);
@@ -571,9 +573,9 @@ namespace sill {
   // Specialization
   template <>
   arma::Mat<double>&
-  operator+=<double,size_t>
+  operator+=<double,arma::u32>
   (arma::Mat<double>& A,
-   const rank_one_matrix<arma::Col<double>,sparse_vector<double,size_t> >& B);
+   const rank_one_matrix<arma::Col<double>,sparse_vector<double,arma::u32> >& B);
 
 } // namespace sill
 

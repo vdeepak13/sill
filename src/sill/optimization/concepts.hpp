@@ -57,7 +57,8 @@ namespace sill {
     size_type size() const;
 
     //! Resize the data.
-    void resize(const size_type& newsize);
+    // TO DO: ADD THIS BACK IN ONCE ARMADILLO TYPES SUPPORT IT
+//    void resize(const size_type& newsize);
 
     // Math operations
     //--------------------------------------------------------------------------
@@ -123,7 +124,8 @@ namespace sill {
       V v2(const_vref.size(), 0.);
       sill::same_type(vref, vref = d);
       sill::same_type(const_vref.size(), s);
-      vref.resize(s);
+    // TO DO: ADD THIS BACK IN ONCE ARMADILLO TYPES SUPPORT IT
+      //      vref.resize(s);
       sill::same_type(const_vref + const_vref, v);
       sill::same_type(v += const_vref, vref);
       sill::same_type(const_vref - const_vref, v);

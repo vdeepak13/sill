@@ -1,4 +1,4 @@
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/multinomial_distribution.hpp>
 
 #include <boost/random/mersenne_twister.hpp>

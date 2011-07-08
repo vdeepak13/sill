@@ -4,7 +4,7 @@
 #include <iostream>
 #include <functional>
 
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 namespace sill {
 

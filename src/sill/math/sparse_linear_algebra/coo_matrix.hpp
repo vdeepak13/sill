@@ -32,9 +32,9 @@ namespace sill {
    *  - The matrix can be built incrementally in an efficient way.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam SizeType    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., arma::u32).
    */
-  template <typename T, typename SizeType = size_t>
+  template <typename T, typename SizeType = arma::u32>
   class coo_matrix
     : public matrix_base<T,SizeType> {
 
@@ -430,9 +430,15 @@ namespace sill {
 
     //! Resize all vectors, copying the data.
     void resize_data(size_type cap, bool copy_data) {
-      row_indices_.resize(cap, copy_data);
-      col_indices_.resize(cap, copy_data);
-      values_.resize(cap, copy_data);
+      if (copy_data) {
+        row_indices_.reshape(cap, 1);
+        col_indices_.reshape(cap, 1);
+        values_.reshape(cap, 1);
+      } else {
+        row_indices_.set_size(cap);
+        col_indices_.set_size(cap);
+        values_.set_size(cap);
+      }
     }
 
     //! Look for element A(i,j).  Return <found, pointer to value>.

@@ -19,9 +19,9 @@ namespace sill {
    * Sparse host/device vector class.
    *
    * @tparam T        Type of data element (e.g., float).
-   * @tparam SizeType    Type of index (e.g., size_t).
+   * @tparam SizeType    Type of index (e.g., arma::u32).
    */
-  template <typename T, typename SizeType = size_t>
+  template <typename T, typename SizeType = arma::u32>
   class sparse_vector
     : public vector_base<T,SizeType> {
 
@@ -49,7 +49,8 @@ namespace sill {
 
     //! Constructs a vector with n elements but NO non-zero elements.
     explicit sparse_vector(size_type n)
-      : base(n), indices_((size_t)0), values_((size_t)0), sorted_(true) { }
+      : base(n), indices_((size_type)0), values_((size_type)0), sorted_(true) {
+    }
 
     //! Constructs a vector with n elements and k non-zero elements,
     //! but does not initialize them.
@@ -69,7 +70,10 @@ namespace sill {
     template <typename SizeTypeVecType, typename ValueVecType>
     sparse_vector(size_type n, const SizeTypeVecType& indices_,
                   const ValueVecType& values_)
-      : base(n), indices_(indices_), values_(values_), sorted_(false) {
+      : base(n),
+        indices_(arma::conv_to<arma::Col<size_type> >::from(indices_)),
+        values_(arma::conv_to<arma::Col<value_type> >::from(values_)),
+        sorted_(false) {
       sort_indices();
     }
 
@@ -83,8 +87,8 @@ namespace sill {
     void reset(size_type n, const SizeTypeVecType& indices_,
                const ValueVecType& values_) {
       n_ = n;
-      this->indices_ = indices_;
-      this->values_ = values_;
+      this->indices_ = arma::conv_to<arma::Col<size_type> >::from(indices_);
+      this->values_ = arma::conv_to<arma::Col<value_type> >::from(values_);
       sorted_ = false;
       sort_indices();
     }
@@ -118,8 +122,8 @@ namespace sill {
     //! NOTE: This does NOT currently retain old values.
     void resize(size_type n, size_type k) {
       this->n_ = n;
-      indices_.resize(k);
-      values_.resize(k);
+      indices_.set_size(k);
+      values_.set_size(k);
       sorted_ = false;
     }
 
@@ -161,8 +165,8 @@ namespace sill {
       // Insert new non-zero element.
       sorted_ = false;
       size_type oldsize = indices_.size();
-      indices_.resize(oldsize+1, true);
-      values_.resize(oldsize+1, true);
+      indices_.reshape(oldsize+1, 1);
+      values_.reshape(oldsize+1, 1);
       indices_[oldsize] = i;
       values_[oldsize] = 0;
       return values_[oldsize];
@@ -217,6 +221,9 @@ namespace sill {
     //! Indices of non-zeros.
     const arma::Col<size_type>& indices() const { return indices_; }
 
+    //! Indices of non-zeros.
+    arma::Col<size_type>& indices() { return indices_; }
+
     //! Values of non-zeros.
     const arma::Col<value_type>& values() const { return values_; }
 
@@ -234,6 +241,13 @@ namespace sill {
 
     //! Get a const iterator to the end of the values.
     const_iterator end_values() const { return values_.end(); }
+
+    //! Indicates whether the indices are sorted.
+    bool sorted() const { return sorted_; }
+
+    //! Indicates whether the indices are sorted.
+    //! WARNING: Modify this bit with caution!
+    bool& sorted_mutable() { return sorted_; }
 
     // Utilities
     //==========================================================================
@@ -293,11 +307,8 @@ namespace sill {
         return false;
       sort_indices();
       other.sort_indices();
-      if (indices_ == other.indices_ &&
-          values_ == other.values_)
-        return true;
-      else
-        return false;
+      return (equal(indices_, other.indices_) &&
+              equal(values_, other.values_));
     }
 
     //! Comparison
@@ -368,12 +379,12 @@ namespace sill {
 
     //! Returns the L1 norm.
     T L1norm() const {
-      return values_.L1norm();
+      return norm(values_,1);
     }
 
     //! Returns the L2 norm.
     T L2norm() const {
-      return values_.L2norm();
+      return norm(values_,2);
     }
 
     // Protected data and methods

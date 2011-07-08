@@ -216,7 +216,7 @@ namespace sill {
 
     //! Returns the mean for a single variable
     vec mean(vector_variable* v) const {
-      return cmean(safe_get(var_span,v));
+      return cmean.subvec(safe_get(var_span,v));
     }
 
     //! Returns the covariance of a subset of variables in the given order
@@ -365,7 +365,7 @@ namespace sill {
       vector_assignment a;
       size_t k = 0; // index into vals
       foreach(vector_variable* v, head_list) {
-        a[v] = vals(span(k, k + v->size() - 1));
+        a[v] = vals.subvec(span(k, k + v->size() - 1));
         k += v->size();
       }
       return a;

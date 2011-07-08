@@ -1245,8 +1245,8 @@ namespace sill {
              "get_gaussian<canonical_gaussian>: Cholesky decomposition failed");
         }
         vec eta(YXsize);
-        eta(span(0,ov.A.n_rows-1)) = btA;
-        eta(span(ov.A.n_rows, YXsize-1)) = trans(AtA_inv_AtC) * btA;
+        eta.subvec(span(0,ov.A.n_rows-1)) = btA;
+        eta.subvec(span(ov.A.n_rows, YXsize-1)) = trans(AtA_inv_AtC) * btA;
         mat lambda(YXsize, YXsize);
         lambda(span(0,ov.A.n_rows-1), span(0,ov.A.n_rows-1)) = AtA;
         lambda(span(0,ov.A.n_rows-1), span(ov.A.n_rows, YXsize)) = - AtC;

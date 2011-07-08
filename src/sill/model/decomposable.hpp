@@ -970,7 +970,7 @@ namespace sill {
       double acc(0);
       assignment_type pred(max_prob_assignment());
       foreach(variable_type* v, args)
-        if (pred[v] == safe_get(a, v))
+        if (equal(pred[v], safe_get(a, v)))
           ++acc;
       return (acc / args.size());
     }

@@ -38,7 +38,7 @@ namespace sill {
         ("make_assignment() given vars, values which did not match.");
     size_t k = 0; // index into values
     foreach(vector_variable* var, vars) {
-      a[var] = values(span(k, k + var->size() - 1));
+      a[var] = values.subvec(k, k + var->size() - 1);
       k += var->size();
     }
     return a;

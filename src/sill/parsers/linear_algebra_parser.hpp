@@ -3,7 +3,7 @@
 
 #include <algorithm>
 
-#include <sill/math/linear_algebra.hpp>
+#include <sill/math/linear_algebra/armadillo.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -205,7 +205,7 @@ namespace sill {
      * @param filepath  File location.
      */
     template <typename T>
-    static void read_dense_matrix(matrix<T>& A, const std::string& filepath) {
+    static void read_dense_matrix(arma::Mat<T>& A, const std::string& filepath){
       FILE* f = fopen(filepath.c_str(), "r");
       assert(f);
 
@@ -244,7 +244,7 @@ namespace sill {
      * @param filepath  File location.
      */
     template <typename T>
-    static void read_dense_vector(vector<T>& v, const std::string& filepath) {
+    static void read_dense_vector(arma::Vec<T>& v, const std::string& filepath){
       FILE* f = fopen(filepath.c_str(), "r");
       if (!f) {
         throw std::invalid_argument

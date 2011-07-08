@@ -25,14 +25,14 @@ int main(int argc, char** argv) {
   sparse_vector<double> sv(n, indices, values);
   std::cout << "sv: " << sv << std::endl;
 
-  vector<double> dv(n);
+  vec dv(n);
   for (size_t j = 0; j < n / 2; ++j) {
     dv[2 * j] = 2 * j + 2;
   }
   std::cout << "dv: " << dv << std::endl;
 
   size_t m = 3;
-  matrix<double> dm(m,n);
+  arma::Mat<double> dm(m,n);
   for (size_t i = 0; i < m; ++i) {
     for (size_t j = 0; j < n; ++j) {
       dm(i,j) = i * m + j + 1;
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 
   // Vector-vector ops
   {
-    vector<double> tmp_dv(dv);
+    vec tmp_dv(dv);
     tmp_dv += sv;
     std::cout << "dv += sv --> " << tmp_dv << std::endl;
 
@@ -102,17 +102,17 @@ int main(int argc, char** argv) {
 
   // Matrix-vector ops
   {
-    vector<double> tmp_dv(dm * sv);
+    vec tmp_dv(dm * sv);
     std::cout << "dm * sv = " << tmp_dv << std::endl;
     tmp_dv.zeros();
-    gemv(dm, sv, tmp_dv);
+    sill::gemv(dm, sv, tmp_dv);
     std::cout << "tmp_dv from gemv(dm, sv, tmp_dv) = " << tmp_dv << std::endl;
   }
 
   // Matrix-matrix ops
   {
-    matrix<double> tmp_dm(dm);
-    vector<double> tmp_dv(dv(irange(0,dm.n_rows)));
+    arma::Mat<double> tmp_dm(dm);
+    vec tmp_dv(dv.subvec(span(0,dm.n_rows-1)));
     tmp_dm += outer_product(tmp_dv,sv);
     std::cout << "dm += outer_product(" << tmp_dv << ",sv) -->\n" << tmp_dm
               << std::endl;

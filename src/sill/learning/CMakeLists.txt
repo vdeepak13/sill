@@ -23,5 +23,4 @@ set(PRL_LEARNING_SOURCES
   em_mog
   error_measures
   learn_crf_factor
-#  learn_factor
   PARENT_SCOPE)
