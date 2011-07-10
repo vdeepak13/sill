@@ -14,7 +14,6 @@
 #include <sill/base/assignment.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/dataset/dataset.hpp>
-#include <sill/math/norms.hpp>
 #include <sill/range/forward_range.hpp>
 
 #include <sill/macros_def.hpp>

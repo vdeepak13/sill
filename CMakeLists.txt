@@ -127,7 +127,8 @@ if(MPI_FOUND)
 endif(MPI_FOUND)
 
 if (${CMAKE_SYSTEM} MATCHES Darwin)
-  link_libraries(blas)
+#  link_libraries(blas)
+  set(CMAKE_EXE_LINKER_FLAGS "-framework Accelerate")
 endif (${CMAKE_SYSTEM} MATCHES Darwin)
 
 # Add posix threads on non-windows sytems
