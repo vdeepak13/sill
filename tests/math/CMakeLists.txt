@@ -1,6 +1,6 @@
 link_libraries(itpp)
 
-subdirs(function sparse_linear_algebra)
+subdirs(function linear_algebra)
 
 add_executable(geometry geometry.cpp)
 

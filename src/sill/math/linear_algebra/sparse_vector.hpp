@@ -3,7 +3,7 @@
 #define _SILL_SPARSE_VECTOR_HPP_
 
 #include <sill/math/linear_algebra/armadillo.hpp>
-#include <sill/math/sparse_linear_algebra/sparse_vector_view.hpp>
+#include <sill/math/linear_algebra/sparse_vector_view.hpp>
 #include <sill/math/statistics.hpp>
 
 namespace sill {

@@ -3,7 +3,7 @@
 #define _SILL_DENSE_VECTOR_VIEW_HPP_
 
 #include <sill/math/linear_algebra/armadillo.hpp>
-#include <sill/math/sparse_linear_algebra/vector_base.hpp>
+#include <sill/math/linear_algebra/vector_base.hpp>
 
 namespace sill {
 

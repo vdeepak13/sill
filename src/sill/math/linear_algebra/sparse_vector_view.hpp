@@ -2,8 +2,8 @@
 #ifndef _SILL_SPARSE_VECTOR_VIEW_HPP_
 #define _SILL_SPARSE_VECTOR_VIEW_HPP_
 
-#include <sill/math/sparse_linear_algebra/dense_vector_view.hpp>
-#include <sill/math/sparse_linear_algebra/sparse_vector.hpp>
+#include <sill/math/linear_algebra/dense_vector_view.hpp>
+#include <sill/math/linear_algebra/sparse_vector.hpp>
 
 namespace sill {
 

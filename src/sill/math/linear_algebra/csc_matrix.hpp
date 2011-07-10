@@ -5,9 +5,9 @@
 #include <algorithm>
 
 #include <sill/math/linear_algebra/armadillo.hpp>
-#include <sill/math/sparse_linear_algebra/coo_matrix.hpp>
-#include <sill/math/sparse_linear_algebra/csc_matrix_view.hpp>
-#include <sill/math/sparse_linear_algebra/sparse_vector.hpp>
+#include <sill/math/linear_algebra/coo_matrix.hpp>
+#include <sill/math/linear_algebra/csc_matrix_view.hpp>
+#include <sill/math/linear_algebra/sparse_vector.hpp>
 
 namespace sill {
 

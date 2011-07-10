@@ -2,7 +2,7 @@
 #ifndef _SILL_COO_MATRIX_VIEW_HPP_
 #define _SILL_COO_MATRIX_VIEW_HPP_
 
-#include <sill/math/sparse_linear_algebra/matrix_base.hpp>
+#include <sill/math/linear_algebra/matrix_base.hpp>
 
 namespace sill {
 

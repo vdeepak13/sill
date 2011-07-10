@@ -3,11 +3,11 @@
 #define _SILL_VECTOR_MATRIX_OPS_HPP_
 
 #include <sill/math/linear_algebra/armadillo.hpp>
-#include <sill/math/sparse_linear_algebra/blas.hpp>
-#include <sill/math/sparse_linear_algebra/coo_matrix.hpp>
-#include <sill/math/sparse_linear_algebra/csc_matrix.hpp>
-#include <sill/math/sparse_linear_algebra/rank_one_matrix.hpp>
-#include <sill/math/sparse_linear_algebra/sparse_vector.hpp>
+#include <sill/math/linear_algebra/blas.hpp>
+#include <sill/math/linear_algebra/coo_matrix.hpp>
+#include <sill/math/linear_algebra/csc_matrix.hpp>
+#include <sill/math/linear_algebra/rank_one_matrix.hpp>
+#include <sill/math/linear_algebra/sparse_vector.hpp>
 
 /**
  * \file vector_matrix_ops.hpp  Free functions for vectors and matrices.

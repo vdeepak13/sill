@@ -1,7 +1,7 @@
 
 #include <boost/timer.hpp>
 
-#include <sill/math/sparse_linear_algebra/sparse_linear_algebra.hpp>
+#include <sill/math/linear_algebra/sparse_linear_algebra.hpp>
 
 #include <sill/macros_def.hpp>
 

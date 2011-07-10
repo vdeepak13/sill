@@ -1,6 +1,6 @@
 
-#include <sill/math/sparse_linear_algebra/blas.hpp>
-#include <sill/math/sparse_linear_algebra/vector_matrix_ops.hpp>
+#include <sill/math/linear_algebra/blas.hpp>
+#include <sill/math/linear_algebra/vector_matrix_ops.hpp>
 
 namespace sill {
 

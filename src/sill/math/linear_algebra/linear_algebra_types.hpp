@@ -2,7 +2,7 @@
 #ifndef _SILL_LINEAR_ALGEBRA_TYPES_HPP_
 #define _SILL_LINEAR_ALGEBRA_TYPES_HPP_
 
-#include <sill/math/sparse_linear_algebra/sparse_linear_algebra.hpp>
+#include <sill/math/linear_algebra/sparse_linear_algebra.hpp>
 
 /**
  * \file linear_algebra_types.hpp  Dense/sparse linear algebra specifications.

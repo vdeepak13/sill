@@ -1,9 +1,9 @@
 
-#ifndef _SILL_SPARSE_LINEAR_ALGEBRA_NORMS_HPP_
-#define _SILL_SPARSE_LINEAR_ALGEBRA_NORMS_HPP_
+#ifndef _SILL_LINEAR_ALGEBRA_NORMS_HPP_
+#define _SILL_LINEAR_ALGEBRA_NORMS_HPP_
 
 #include <sill/math/linear_algebra/armadillo.hpp>
-#include <sill/math/sparse_linear_algebra/sparse_vector.hpp>
+#include <sill/math/linear_algebra/sparse_vector.hpp>
 
 namespace sill {
 
@@ -37,4 +37,4 @@ namespace sill {
   
 } // namespace sill
 
-#endif // #ifndef _SILL_SPARSE_LINEAR_ALGEBRA_NORMS_HPP_
+#endif // #ifndef _SILL_LINEAR_ALGEBRA_NORMS_HPP_

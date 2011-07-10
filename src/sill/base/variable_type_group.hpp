@@ -3,7 +3,7 @@
 #define SILL_VARIABLE_TYPE_GROUP_HPP
 
 #include <sill/base/assignment.hpp>
-#include <sill/math/linear_algebra_types.hpp>
+#include <sill/math/linear_algebra/linear_algebra_types.hpp>
 
 namespace sill {
 
