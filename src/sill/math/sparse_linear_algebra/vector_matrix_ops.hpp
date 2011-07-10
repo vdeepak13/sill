@@ -79,6 +79,8 @@ namespace sill {
    *  - operator+=
    *  - operator-=
    *  - operator/=
+   *  - operator%
+   *  - operator%=
    *  - dot
    *  - outer_product
    *  - elem_mult_out
@@ -100,6 +102,17 @@ namespace sill {
   template <typename T, typename SizeType>
   sparse_vector<T,SizeType>&
   operator/=(sparse_vector<T,SizeType>& x, const arma::Col<T>& y);
+
+  //! Element-wise multiplication
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType>
+  operator%(const sparse_vector<T,SizeType>& x,
+            const sparse_vector<T,SizeType>& y);
+
+  //! Element-wise multiplication
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType>&
+  operator%=(sparse_vector<T,SizeType>& x, const sparse_vector<T,SizeType>& y);
 
   //! Dot product.
   template <typename T, typename SizeType>
@@ -290,6 +303,22 @@ namespace sill {
   operator/=(sparse_vector<T,SizeType>& x, const arma::Col<T>& y) {
     for (SizeType k = 0; k < x.num_non_zeros(); ++k)
       x.value(k) /= y[x.index(k)];
+    return x;
+  }
+
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType>
+  operator%(const sparse_vector<T,SizeType>& x,
+            const sparse_vector<T,SizeType>& y) {
+    sparse_vector<T,SizeType> out(x);
+    out %= y;
+    return out;
+  }
+
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType>&
+  operator%=(sparse_vector<T,SizeType>& x, const sparse_vector<T,SizeType>& y) {
+    x.elem_mult(y);
     return x;
   }
 

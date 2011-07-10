@@ -12,9 +12,9 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/exponential_distribution.hpp>
 
-#include <sill/global.hpp>
 #include <sill/factor/norms.hpp>
 #include <sill/factor/random/random.hpp>
+#include <sill/global.hpp>
 
 #include <sill/datastructure/mutable_queue.hpp>
 
@@ -410,6 +410,7 @@ namespace sill {
     using base::pass_flow;
     using base::gm;
     using base::message;
+    using base::norm;
 
     mutable_queue<vertex_pair, double> q; //< The queue of weights
 

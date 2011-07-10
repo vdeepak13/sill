@@ -341,9 +341,9 @@ namespace sill {
       std::map<variable_type*, size_t> vertex_map;
 
       // Compute *_scores
-      pwl_scores.resize(n-1, n);
-      cmi_scores.resize(n-1, n);
-      dci_scores.resize(n-1, n);
+      pwl_scores.set_size(n-1, n);
+      cmi_scores.set_size(n-1, n);
+      dci_scores.set_size(n-1, n);
       vec H_Yi_xi(n); // H(Yi | Xi)
       for (size_t i(0); i < Yvars.size(); ++i) {
         H_Yi_xi[i] =

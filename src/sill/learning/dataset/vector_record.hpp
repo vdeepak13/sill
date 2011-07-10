@@ -144,7 +144,7 @@ namespace sill {
 
     bool operator==(const vector_record& other) const {
       if (*vector_numbering_ptr == *(other.vector_numbering_ptr) &&
-          vector() == other.vector())
+          equal(vector(), other.vector()))
         return true;
       else
         return false;
@@ -378,7 +378,7 @@ namespace sill {
         vec_ptr = new vector_type(a_vars_size, 0.);
         vec_own = true;
       } else {
-        vec_ptr->resize(a_vars_size);
+        vec_ptr->set_size(a_vars_size);
       }
       foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
         const vector_type& v = safe_get(a, p.first);
@@ -452,9 +452,8 @@ namespace sill {
              ++it) {
           sill::vector_assignment::const_iterator a_it(a.find(it->first));
           if (a_it != a.end())
-            vec_ptr->set_subvector
-              (span(it->second, it->second + it->first->size() - 1),
-               a_it->second);
+            vec_ptr->subvec(it->second, it->second + it->first->size() - 1) =
+              a_it->second;
         }
       } else {
         for (sill::vector_assignment::const_iterator a_it(a.begin());
@@ -462,9 +461,8 @@ namespace sill {
           std::map<vector_variable*, size_t>::const_iterator
             it(vector_numbering_ptr->find(a_it->first));
           if (it != vector_numbering_ptr->end())
-            vec_ptr->set_subvector
-              (span(it->second, it->second + it->first->size() - 1),
-               a_it->second);
+            vec_ptr->subvec(it->second, it->second + it->first->size() - 1) =
+              a_it->second;
         }
       }
     } // copy_from_assignment(a)
@@ -484,9 +482,8 @@ namespace sill {
              vector_numbering_ptr->begin();
            it != vector_numbering_ptr->end();
            ++it) {
-        vec_ptr->set_subvector
-          (span(it->second, it->second + it->first->size() - 1),
-           safe_get(a, safe_get(vmap, it->first)));
+        vec_ptr->subvec(it->second, it->second + it->first->size() - 1) =
+          safe_get(a, safe_get(vmap, it->first));
       }
     }
 

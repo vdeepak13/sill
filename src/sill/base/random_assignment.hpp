@@ -31,7 +31,7 @@ namespace sill {
     if (vars.size() == 0)
       return a;
     vector_variable* u = *(vars.begin());
-    moment_gaussian mg(make_vector(u), vec(1,0), mat(1,1,1), 1);
+    moment_gaussian mg(make_vector(u), zeros<vec>(1), mat_1x1(1.), 1);
     foreach(vector_variable* v, vars) {
       a[v] = mg.sample(rng)[u];
     }

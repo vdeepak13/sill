@@ -27,7 +27,7 @@ namespace sill {
     size_t nrows = 0;
     std::string line;
     getline(in, line);
-    arma::Vec<T> v(line);
+    arma::Col<T> v(line);
     ncols = v.size();
     if (ncols == 0)
       return arma::Mat<T>();
@@ -36,7 +36,7 @@ namespace sill {
     while (in.good()) {
       std::streampos where = in.tellg();
       getline(in, line);
-      v = arma::Vec<T>(line);
+      v = arma::Col<T>(line);
       if (v.size() != ncols) {
         in.seekg(where);
         arma::Mat<T> m(nrows, ncols);

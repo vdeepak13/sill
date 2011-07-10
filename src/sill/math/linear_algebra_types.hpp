@@ -20,7 +20,7 @@
 namespace sill {
 
   //! Dense linear algebra specification.
-  template <typename T = double, typename SizeType = size_t>
+  template <typename T = double, typename SizeType = arma::u32>
   struct dense_linear_algebra {
 
     typedef arma::Col<T>  vector_type;
@@ -36,7 +36,7 @@ namespace sill {
   };
 
   //! Dense linear algebra specification.
-  template <typename T = double, typename SizeType = size_t>
+  template <typename T = double, typename SizeType = arma::u32>
   struct sparse_linear_algebra {
 
     typedef sparse_vector<T,SizeType>  vector_type;

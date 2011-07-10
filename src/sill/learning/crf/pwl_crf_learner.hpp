@@ -568,7 +568,7 @@ namespace sill {
       size_t best_i1(0);
       for (size_t i(0); i < reg_params1.size(); ++i) {
         if ((reg_params1[i].regularization == best_reg_param1.regularization)
-            && (reg_params1[i].lambdas == best_reg_param1.lambdas)) {
+            && equal(reg_params1[i].lambdas, best_reg_param1.lambdas)) {
           best_i1 = i;
           break;
         }
@@ -576,7 +576,7 @@ namespace sill {
       size_t best_i2(0);
       for (size_t i(0); i < reg_params2.size(); ++i) {
         if ((reg_params2[i].regularization == best_reg_param2.regularization)
-            && (reg_params2[i].lambdas == best_reg_param2.lambdas)) {
+            && equal(reg_params2[i].lambdas, best_reg_param2.lambdas)) {
           best_i2 = i;
           break;
         }

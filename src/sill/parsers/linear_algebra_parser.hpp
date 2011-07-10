@@ -221,9 +221,9 @@ namespace sill {
       assert(rc == 1);
 
       assert(m > 0 && n > 0);
-      A.resize(m, n);
+      A.set_size(m, n);
 
-      T* data_ptr = A._data();
+      T* data_ptr = A.begin();
       read_binary_vec(f, m * n, data_ptr, (matlab_type_code)value_type_code);
 
       fclose(f);
@@ -244,7 +244,7 @@ namespace sill {
      * @param filepath  File location.
      */
     template <typename T>
-    static void read_dense_vector(arma::Vec<T>& v, const std::string& filepath){
+    static void read_dense_vector(arma::Col<T>& v, const std::string& filepath){
       FILE* f = fopen(filepath.c_str(), "r");
       if (!f) {
         throw std::invalid_argument
@@ -261,9 +261,9 @@ namespace sill {
       assert(rc == 1);
 
       assert(n > 0);
-      v.resize(n);
+      v.set_size(n);
 
-      T* data_ptr = v._data();
+      T* data_ptr = v.begin();
       read_binary_vec(f, n, data_ptr, (matlab_type_code)value_type_code);
 
       fclose(f);

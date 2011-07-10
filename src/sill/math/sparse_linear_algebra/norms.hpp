@@ -21,6 +21,19 @@ namespace sill {
   double norm_2(const sparse_vector<T,Index>& v) {
     return v.L2norm();
   }
+
+  template <typename T, typename Index>
+  double norm(const sparse_vector<T,Index>& v, arma::u32 l) {
+    switch (l) {
+    case 1:
+      return v.L1norm();
+    case 2:
+      return v.L2norm();
+    default:
+      assert(false);
+      return -1;
+    }
+  }
   
 } // namespace sill
 
