@@ -106,6 +106,18 @@ namespace sill {
     return concat(forward_range<const arma::Col<T>&>(vectors));
   }
 
+  template <typename T>
+  arma::Mat<T>
+  concat_horizontal(const arma::Mat<T>& left, const arma::Mat<T>& right) {
+    assert(left.n_rows == right.n_rows);
+    arma::Mat<T> out(left.n_rows, left.n_cols + right.n_cols);
+    if (left.n_cols != 0)
+      out.submat(span::all, span(0,left.n_cols-1)) = left;
+    if (right.n_cols != 0)
+      out.submat(span::all, span(left.n_cols, out.n_cols-1)) = right;
+    return out;
+  }
+
   /**
    * Compare two matrices.
    * @return true iff exactly equal
