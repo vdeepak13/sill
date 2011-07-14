@@ -229,15 +229,14 @@ namespace sill {
     //! map: vertex pair <y1,y2> --> regressor for edge part of score
     //! Vertex pairs are stored s.t. y1 < y2.
     mutable std::map<std::pair<output_variable_type*,output_variable_type*>,
-                     boost::shared_ptr<crf_factor> >
+                     crf_factor>
       edge_part_map_;
 
     //! (For templated learning mode, or when saved b/c of parameter setting)
     //! map: vertex pair <y1,y2> --> regressors for vertex parts of score
     //! Vertex pairs are stored s.t. y1 < y2.
     mutable std::map<std::pair<output_variable_type*,output_variable_type*>,
-                     std::pair<boost::shared_ptr<crf_factor>,
-                               boost::shared_ptr<crf_factor> > >
+                     std::pair<crf_factor, crf_factor> >
       vertex_part_map_;
 
     //! Map: vertex pair <y1,y2> --> lambdas chosen for edge part of score.
@@ -263,19 +262,18 @@ namespace sill {
     //==========================================================================
 
     //! Compute regressor P(Yvars | X_Yvars)
-    boost::shared_ptr<crf_factor>
-    compute_regressor(const output_domain_type& Y) const {
+    crf_factor compute_regressor(const output_domain_type& Y) const {
       if (params.crf_factor_cv) {
-        return boost::shared_ptr<crf_factor>
-          (learn_crf_factor_cv<crf_factor>
-           (reg_params, means, stderrs,
-            params.cv_params, ds, Y, X_mapping_[Y],
-            *(params.crf_factor_params_ptr), unif_int(rng)));
+        return
+          learn_crf_factor<crf_factor>::train_cv
+          (reg_params, means, stderrs,
+           params.cv_params, ds, Y, X_mapping_[Y],
+           *(params.crf_factor_params_ptr), unif_int(rng));
       } else {
-        return boost::shared_ptr<crf_factor>
-          (learn_crf_factor<crf_factor>
-           (ds, Y, X_mapping_[Y], *(params.crf_factor_params_ptr),
-            unif_int(rng)));
+        return
+          learn_crf_factor<crf_factor>::train
+          (ds, Y, X_mapping_[Y], *(params.crf_factor_params_ptr),
+           unif_int(rng));
       }
     }
 
@@ -317,11 +315,9 @@ namespace sill {
               break;
             case 1: // DCI
               {
-                boost::shared_ptr<crf_factor>
-                  f1(compute_regressor(make_domain(y1)));
+                crf_factor f1(compute_regressor(make_domain(y1)));
                 vec f1_lambda(reg_params[max_index(means)].lambdas);
-                boost::shared_ptr<crf_factor>
-                  f2(compute_regressor(make_domain(y2)));
+                crf_factor f2(compute_regressor(make_domain(y2)));
                 if (params.retain_lambda_maps) {
                   vec f2_lambda(reg_params[max_index(means)].lambdas);
                   vertex_part_lambda_map_[y12pair] =
@@ -398,7 +394,7 @@ namespace sill {
      * (You must set a parameter to retain this mapping.)
      */
     const std::map<std::pair<output_variable_type*,output_variable_type*>,
-                   boost::shared_ptr<crf_factor> >&
+                   crf_factor>&
     edge_part_map() const {
       return edge_part_map_;
     }
@@ -410,8 +406,7 @@ namespace sill {
      * (You must set a parameter to retain this mapping.)
      */
     const std::map<std::pair<output_variable_type*,output_variable_type*>,
-                   std::pair<boost::shared_ptr<crf_factor>,
-                             boost::shared_ptr<crf_factor> > >&
+                   std::pair<crf_factor,crf_factor> >&
     vertex_part_map() const {
       return vertex_part_map_;
     }
@@ -475,7 +470,7 @@ namespace sill {
      *
      * @return <edge score, P(Y1,Y2 | X_{12})>
      */
-    std::pair<double, boost::shared_ptr<crf_factor> >
+    std::pair<double, crf_factor>
     pwl(output_variable_type* y1, output_variable_type* y2) const {
       assert(learning_mode_ == 0);
       vec edge_score(3,0.);
@@ -486,14 +481,14 @@ namespace sill {
       output_domain_type Y(make_domain(y1,y2));
       std::pair<output_variable_type*, output_variable_type*>
         y12pair(std::make_pair(y1,y2));
-      boost::shared_ptr<crf_factor> r_ptr(compute_regressor(Y));
-      edge_part_map_[y12pair] = r_ptr;
+      crf_factor f(compute_regressor(Y));
+      edge_part_map_[y12pair] = f;
       if (params.retain_lambda_maps)
         edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       double total_ds_weight(0);
       size_t i(0);
       foreach(const record_type& r, ds.records()) {
-        tmp_fctr = r_ptr->condition(r);
+        tmp_fctr = f.condition(r);
         tmp_fctr.normalize();
         edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);
         total_ds_weight += ds.weight(i);
@@ -503,7 +498,7 @@ namespace sill {
       if (params.retain_edge_score_info) {
         edge_score_info_[y12pair] = edge_score;
       }
-      return std::make_pair(sum(edge_score) / total_ds_weight, r_ptr);
+      return std::make_pair(sum(edge_score) / total_ds_weight, f);
     }
 
     /**
@@ -512,7 +507,7 @@ namespace sill {
      *
      * @return <edge score, P(Y1,Y2 | X_{12})>
      */
-    std::pair<double, boost::shared_ptr<crf_factor> >
+    std::pair<double, crf_factor>
     dci(output_variable_type* y1, output_variable_type* y2) const {
       assert(learning_mode_ == 0);
       vec edge_score(3,0.);
@@ -525,29 +520,29 @@ namespace sill {
       output_domain_type Y2(make_domain(y2));
       std::pair<output_variable_type*, output_variable_type*>
         y12pair(std::make_pair(y1,y2));
-      boost::shared_ptr<crf_factor> r_ptr(compute_regressor(Y));
+      crf_factor f(compute_regressor(Y));
       if (params.retain_lambda_maps)
         edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
-      boost::shared_ptr<crf_factor> r1_ptr(compute_regressor(Y1));
+      crf_factor f1(compute_regressor(Y1));
       vec r1_lambdas(reg_params[max_index(means)].lambdas);
-      boost::shared_ptr<crf_factor> r2_ptr(compute_regressor(Y2));
+      crf_factor f2(compute_regressor(Y2));
       if (params.retain_lambda_maps) {
         vec r2_lambdas(reg_params[max_index(means)].lambdas);
         vertex_part_lambda_map_[y12pair]=std::make_pair(r1_lambdas,r2_lambdas);
       }
-      edge_part_map_[y12pair] = r_ptr;
+      edge_part_map_[y12pair] = f;
       if (params.retain_vertex_part_map)
-        vertex_part_map_[y12pair] = std::make_pair(r1_ptr, r2_ptr);
+        vertex_part_map_[y12pair] = std::make_pair(f1, f2);
       double total_ds_weight(0);
       size_t i(0);
       foreach(const record_type& r, ds.records()) {
-        tmp_fctr = r_ptr->condition(r);
+        tmp_fctr = f.condition(r);
         tmp_fctr.normalize();
         edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);
-        tmp_fctr = r1_ptr->condition(r);
+        tmp_fctr = f1.condition(r);
         tmp_fctr.normalize();
         edge_score[1] -= ds.weight(i) * tmp_fctr.logv(r);
-        tmp_fctr = r2_ptr->condition(r);
+        tmp_fctr = f2.condition(r);
         tmp_fctr.normalize();
         edge_score[2] -= ds.weight(i) * tmp_fctr.logv(r);
         total_ds_weight += ds.weight(i);
@@ -557,7 +552,7 @@ namespace sill {
       if (params.retain_edge_score_info) {
         edge_score_info_[y12pair] = edge_score;
       }
-      return std::make_pair(sum(edge_score) / total_ds_weight, r_ptr);
+      return std::make_pair(sum(edge_score) / total_ds_weight, f);
     }
 
     /**
@@ -566,7 +561,7 @@ namespace sill {
      *
      * @return <edge score, P(Y1,Y2 | X_{12})>
      */
-    std::pair<double, boost::shared_ptr<crf_factor> >
+    std::pair<double, crf_factor>
     cmi(output_variable_type* y1, output_variable_type* y2) const {
       assert(learning_mode_ == 0);
       vec edge_score(3,0.);
@@ -579,14 +574,14 @@ namespace sill {
       output_domain_type Y2(make_domain(y2));
       std::pair<output_variable_type*, output_variable_type*>
         y12pair(std::make_pair(y1,y2));
-      boost::shared_ptr<crf_factor> r_ptr(compute_regressor(Y));
-      edge_part_map_[y12pair] = r_ptr;
+      crf_factor f(compute_regressor(Y));
+      edge_part_map_[y12pair] = f;
       if (params.retain_lambda_maps)
         edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       double total_ds_weight(0);
       size_t i(0);
       foreach(const record_type& r, ds.records()) {
-        tmp_fctr = r_ptr->condition(r);
+        tmp_fctr = f.condition(r);
         tmp_fctr.normalize();
         edge_score[0] += ds.weight(i) * tmp_fctr.logv(r);
         edge_score[1] -= ds.weight(i) * tmp_fctr.marginal(Y1).logv(r);
@@ -598,7 +593,7 @@ namespace sill {
       if (params.retain_edge_score_info) {
         edge_score_info_[y12pair] = edge_score;
       }
-      return std::make_pair(sum(edge_score) / total_ds_weight, r_ptr);
+      return std::make_pair(sum(edge_score) / total_ds_weight, f);
     }
 
     /**
@@ -607,7 +602,7 @@ namespace sill {
      *
      * @return <edge score, P(Y1,Y2 | X_{12})>
      */
-    std::pair<double, boost::shared_ptr<crf_factor> >
+    std::pair<double, crf_factor>
     operator()(output_variable_type* y1, output_variable_type* y2) const {
       switch(params.score_type) {
       case 0:
@@ -622,7 +617,7 @@ namespace sill {
       default:
         assert(false);
         return std::make_pair(- std::numeric_limits<double>::infinity(),
-                              boost::shared_ptr<crf_factor>());
+                              crf_factor());
       }
     }
 
@@ -654,7 +649,7 @@ namespace sill {
       switch(params.score_type) {
       case 0:
         {
-          const crf_factor& f = *(safe_get(edge_part_map_, y12pair));
+          const crf_factor& f = safe_get(edge_part_map_, y12pair);
           tmp_fctr = f.condition(x);
           tmp_fctr.normalize();
           double score = tmp_fctr.logv(x);
@@ -669,17 +664,15 @@ namespace sill {
       case 1:
         {
           vec edge_score(3,0.);
-          const std::pair<boost::shared_ptr<crf_factor>,
-                          boost::shared_ptr<crf_factor> >&
+          const std::pair<crf_factor, crf_factor>&
             f2 = safe_get(vertex_part_map_, y12pair);
-          assert(f2.first && f2.second);
-          tmp_fctr = f2.first->condition(x);
+          tmp_fctr = f2.first.condition(x);
           tmp_fctr.normalize();
           edge_score[1] = -tmp_fctr.logv(x);
-          tmp_fctr = f2.second->condition(x);
+          tmp_fctr = f2.second.condition(x);
           tmp_fctr.normalize();
           edge_score[2] = -tmp_fctr.logv(x);
-          const crf_factor& f = *(safe_get(edge_part_map_, y12pair));
+          const crf_factor& f = safe_get(edge_part_map_, y12pair);
           tmp_fctr = f.condition(x);
           tmp_fctr.normalize();
           edge_score[0] = tmp_fctr.logv(x);
@@ -692,7 +685,7 @@ namespace sill {
       case 2:
         {
           vec edge_score(3,0.);
-          const crf_factor& f = *(safe_get(edge_part_map_, y12pair));
+          const crf_factor& f = safe_get(edge_part_map_, y12pair);
           tmp_fctr = f.condition(x);
           tmp_fctr.normalize();
           edge_score[0] = tmp_fctr.logv(x);

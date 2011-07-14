@@ -215,7 +215,7 @@ namespace sill {
                 std::make_pair(e.source(), e.target()) :
                 std::make_pair(e.target(), e.source()));
         g->add_factor
-          (*(safe_get(crf_learner_ptr->weight_functor_.edge_part_map(),Ypair)));
+          (safe_get(crf_learner_ptr->weight_functor_.edge_part_map(),Ypair));
         total_score -= ig_graph->operator[](e);
         return *this;
       }
@@ -314,23 +314,22 @@ namespace sill {
         vec means, stderrs;
         foreach(output_variable_type* fv, Yvars) {
           output_domain_type tmpdom(make_domain<output_variable_type>(fv));
-          crf_factor* cf_ptr;
+          crf_factor f;
           if (params.crf_factor_cv) {
-            cf_ptr =
-              learn_crf_factor_cv<crf_factor>
+            f =
+              learn_crf_factor<crf_factor>::train_cv
               (reg_params, means, stderrs, params.cv_params,
                ds, tmpdom, weight_functor_.X_mapping()[tmpdom],
                *(params.crf_factor_params_ptr),
                boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
           } else {
-            cf_ptr =
-              learn_crf_factor<crf_factor>
+            f =
+              learn_crf_factor<crf_factor>::train
               (ds, tmpdom, weight_functor_.X_mapping()[tmpdom],
                *(params.crf_factor_params_ptr),
                boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
           }
-          model_.add_factor(*cf_ptr);
-          delete(cf_ptr);
+          model_.add_factor(f);
         }
         // Compute edge scores and factors.
         double total_time(0);
@@ -417,9 +416,8 @@ namespace sill {
       if (params.learn_tree || factor_queue.empty())
         return output_domain_type();
       std::pair<output_domain_type, double> top_factor(factor_queue.pop());
-      boost::shared_ptr<crf_factor>
-        cf_ptr(safe_get(weight_functor_.edge_part_map(), top_factor.first));
-      model_.add_factor(*cf_ptr);
+      model_.add_factor(safe_get(weight_functor_.edge_part_map(),
+                                 top_factor.first));
       total_score_ += top_factor.second;
       model_.simplify_unary(top_factor.first);
       return top_factor.first;
@@ -484,12 +482,11 @@ namespace sill {
           tmpYset.insert(Yvector[i]);
         for (size_t k(0); k < reg_params.size(); ++k) {
           tmp_params.reg = reg_params[k];
-          crf_factor* tmpf_ptr =
-            learn_crf_factor<crf_factor>
+          crf_factor tmpf =
+            learn_crf_factor<crf_factor>::train
             (fold_train_view, tmpYset, X_mapping[tmpYset], tmp_params,
              boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
-          double tmpval(tmpf_ptr->log_expected_value(fold_test_view));
-          delete(tmpf_ptr);
+          double tmpval(tmpf.log_expected_value(fold_test_view));
           means[k] += tmpval;
           stderrs[k] += tmpval * tmpval;
         }

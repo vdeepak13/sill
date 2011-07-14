@@ -26,6 +26,8 @@ int main(int argc, char** argv) {
   using namespace sill;
   using namespace std;
 
+  typedef dense_linear_algebra<> la_type;
+
   // Dataset parameters
   size_t nsamples = 500;
   size_t n = 5; // length of chains P(X) and P(Y|X)
@@ -137,12 +139,12 @@ int main(int argc, char** argv) {
       cout << "Learned CRF model's average data log likelihood: " << ll << endl;
     }
   } else {
-    pwl_crf_learner<log_reg_crf_factor>::parameters pwlcl_params;
+    pwl_crf_learner<log_reg_crf_factor<la_type> >::parameters pwlcl_params;
     pwlcl_params.score_type = score_type;
     pwlcl_params.learn_tree = learn_tree;
     pwlcl_params.edge_reg = edge_reg;
-    boost::shared_ptr<log_reg_crf_factor::parameters>
-      lrcf_params_ptr(new log_reg_crf_factor::parameters(mlr_params, u));
+    boost::shared_ptr<log_reg_crf_factor<la_type>::parameters>
+      lrcf_params_ptr(new log_reg_crf_factor<la_type>::parameters(mlr_params, u));
     pwlcl_params.crf_factor_params_ptr = lrcf_params_ptr;
     pwlcl_params.DEBUG = debug_mode;
 
@@ -154,11 +156,11 @@ int main(int argc, char** argv) {
           tmpdom->insert(tmpfv);
         Y2X_finite_map[fv] = tmpdom;
       }
-      pwl_crf_learner<log_reg_crf_factor>
+      pwl_crf_learner<log_reg_crf_factor<la_type> >
         pwlcl_learner(ds, Yset, Y2X_finite_map, pwlcl_params);
       cout << "Learned CRF structure:\n" << pwlcl_learner.current_graph()
            << endl;
-      crf_model<log_reg_crf_factor> model(pwlcl_learner.current_model());
+      crf_model<log_reg_crf_factor<la_type> > model(pwlcl_learner.current_model());
       double ll(0);
       foreach(const assignment& a, ds.assignments())
         ll += model.log_likelihood(a.finite());
@@ -179,7 +181,7 @@ int main(int argc, char** argv) {
         tmpdom->insert(Y2X_map[Y[i]]->begin(), Y2X_map[Y[i]]->end());
         pwlcl_X_map[make_domain<finite_variable>(Y[i])] = tmpdom;
       }
-      pwl_crf_learner<log_reg_crf_factor>
+      pwl_crf_learner<log_reg_crf_factor<la_type> >
         pwlcl_learner(ds, Yset, pwlcl_X_map, pwlcl_params);
       cout << "Learned CRF structure:\n" << pwlcl_learner.current_graph()
            << endl;
@@ -187,7 +189,7 @@ int main(int argc, char** argv) {
         if (print_true_scores)
         pwlcl_learner.debug_truth(YXmodel, YgivenXmodel);
       */
-      crf_model<log_reg_crf_factor> model(pwlcl_learner.current_model());
+      crf_model<log_reg_crf_factor<la_type> > model(pwlcl_learner.current_model());
       double ll(0);
       foreach(const assignment& a, ds.assignments())
         ll += model.log_likelihood(a.finite());

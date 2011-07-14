@@ -67,9 +67,9 @@ namespace sill {
     typedef typename base::optimization_vector  optimization_vector;
     typedef typename base::regularization_type  regularization_type;
 
-    typedef typename base::la_type la_type;
+    typedef typename F::la_type la_type;
 
-    //! Parameters used for learn_crf_factor().
+    //! Parameters used for learn_crf_factor.
     typedef typename F::parameters parameters;
 
   private:

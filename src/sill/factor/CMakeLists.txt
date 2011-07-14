@@ -3,7 +3,7 @@ set(PRL_FACTOR_SOURCES
   approx/hybrid_conditional
   canonical_gaussian
   gaussian_crf_factor
-  log_reg_crf_factor
+#  log_reg_crf_factor
   log_table_factor
   moment_gaussian
   mixture

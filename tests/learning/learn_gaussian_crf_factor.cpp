@@ -96,7 +96,7 @@ int main(int argc, char** argv) {
     test_ds.insert(assignment(fa));
   }
 
-  // Learn P(Y|X) via gaussian_crf_factor::learn_crf_factor.
+  // Learn P(Y|X) via learn_crf_factor<gaussian_crf_factor>.
   //  (Linear regression + empirical covariance matrix.)
   gaussian_crf_factor::parameters gcf_params;
   gcf_params.reg.lambdas[0] = .1;
@@ -111,8 +111,8 @@ int main(int argc, char** argv) {
   cv_params.nvals = 7;
   cv_params.zoom = 0;
   cv_params.log_scale = true;
-  gaussian_crf_factor* f1 =
-    learn_crf_factor_cv<gaussian_crf_factor>
+  gaussian_crf_factor f1 =
+    learn_crf_factor<gaussian_crf_factor>::train_cv
     (reg_params, means, stderrs, cv_params, ds,
      make_domain<vector_variable>(Y),
      copy_ptr<vector_domain>(new vector_domain(X.begin(), X.end())),
@@ -122,7 +122,7 @@ int main(int argc, char** argv) {
 
   // Learn via crf_parameter_learner.
   crf_model<gaussian_crf_factor> tmp_true_model;
-  tmp_true_model.add_factor(*f1);
+  tmp_true_model.add_factor(f1);
   crf_parameter_learner<gaussian_crf_factor>::parameters cpl_params;
   cpl_params.init_iterations = 100;
   cpl_params.gm_params.convergence_zero = .00001;
@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
   true_ll /= ds.size();
   double gcf_ll(0);
   foreach(const record<>& r, ds.records()) {
-    canonical_gaussian cg(f1->condition(r));
+    canonical_gaussian cg(f1.condition(r));
     cg.normalize();
     gcf_ll += cg.logv(r);
   }
@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
   true_test_ll /= test_ds.size();
   double gcf_test_ll(0);
   foreach(const record<>& r, test_ds.records()) {
-    canonical_gaussian cg(f1->condition(r));
+    canonical_gaussian cg(f1.condition(r));
     cg.normalize();
     gcf_test_ll += cg.logv(r);
   }
@@ -190,9 +190,9 @@ int main(int argc, char** argv) {
   cout << "True conditional:\n" << true_conditional << endl;
   cout << endl;
   cout << "Learned via gaussian_crf_factor::learn_crf_factor:\n"
-       << (*f1) << endl;
+       << f1 << endl;
   cout << "... and as a moment Gaussian:\n"
-       << f1->get_gaussian<moment_gaussian>() << "\n" << endl;
+       << f1.get_gaussian<moment_gaussian>() << "\n" << endl;
   cout << "Learned via CRF parameter learner:\n" << cpl.model() << endl;
   cout << "... and as a moment Gaussian:\n"
        << cpl.model().factors().front().get_gaussian<moment_gaussian>()
@@ -209,9 +209,6 @@ int main(int argc, char** argv) {
        << "Gaussian CRF factor's test log likelihood: " << gcf_test_ll << "\n"
        << "CRF parameter learner's test log likelihood: " << cpl_test_ll << "\n"
        << endl;
-
-  delete(f1);
-  f1 = NULL;
 
   /*
     TEST:

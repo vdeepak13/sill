@@ -161,27 +161,27 @@ namespace sill {
 
     //! Returns the score for the factor Phi(Yvars, X_Yvars),
     //! plus the trained factor.
-    std::pair<double, crf_factor*>
+    std::pair<double, crf_factor>
     factor_score(const dataset<>& ds,
                  const output_domain_type& Yvars,
                  copy_ptr<input_domain_type> Xvars_ptr,
                  boost::mt11213b& rng) const {
-      crf_factor* r_ptr = NULL;
+      crf_factor f;
       if (params.crf_factor_cv) {
         std::vector<typename crf_factor::regularization_type> reg_params;
         vec means, stderrs;
-        r_ptr =
-          learn_crf_factor_cv<crf_factor>
+        f =
+          learn_crf_factor<crf_factor>::train_cv
           (reg_params, means, stderrs, params.cv_params,
            ds, Yvars, Xvars_ptr, *(params.crf_factor_params_ptr),
            boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
       } else {
-        r_ptr =
-          learn_crf_factor<crf_factor>
+        f =
+          learn_crf_factor<crf_factor>::train
           (ds, Yvars, Xvars_ptr, *(params.crf_factor_params_ptr),
            boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
       }
-      return std::make_pair(r_ptr->log_expected_value(ds), r_ptr);
+      return std::make_pair(f.log_expected_value(ds), f);
     } // factor_score()
 
     void build(const dataset<>& ds, const crf_graph_type& graph) {
@@ -198,15 +198,14 @@ namespace sill {
       }
       foreach(const typename crf_graph_type::vertex& v,
               graph.factor_vertices()) {
-        std::pair<double, crf_factor*>
+        std::pair<double, crf_factor>
           score_f(factor_score(ds, graph.output_arguments(v),
                                graph.input_arguments_ptr(v), rng));
         if (params.DEBUG > 1)
           std::cerr << "  Computed factor; PWL = " << score_f.first
                     << std::endl;
-        model_.add_factor(*(score_f.second));
+        model_.add_factor(score_f.second);
         total_score_ += score_f.first;
-        delete(score_f.second);
       }
     } // build()
 

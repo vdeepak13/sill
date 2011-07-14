@@ -78,8 +78,6 @@ namespace sill {
     //! Base class
     typedef crf_factor<InputVar, OutputFactor, OptVector> base;
 
-    typedef dense_linear_algebra<> la_type;
-
     // Import types from base.
     typedef typename base::input_variable_type   input_variable_type;
     typedef typename base::input_domain_type     input_domain_type;

@@ -82,12 +82,12 @@ create_finite_var_data
   }
 } // create_finite_var_data
 
-//! Learn P(Y|X) via learn_crf_factor<F>().
+//! Learn P(Y|X) via learn_crf_factor<F>.
 //! @return <training log likelihood, test log likelihood>
 template <typename F>
 static std::pair<double,double>
 test_learn_crf_factor
-(double& learn_crf_factor_time, F* & f1,
+(double& learn_crf_factor_time, F& f1,
  const typename sill::variable_type_group<typename F::output_variable_type>::var_vector_type& Y,
  const typename sill::variable_type_group<typename F::input_variable_type>::var_vector_type& X,
  const sill::vector_assignment_dataset<>& train_ds,
@@ -108,16 +108,15 @@ test_learn_crf_factor
 
   std::vector<typename F::regularization_type> reg_params;
   vec means, stderrs;
-  assert(f1 == NULL);
   boost::timer timer;
   if (do_cv) {
-    f1 = learn_crf_factor_cv<F>
+    f1 = learn_crf_factor<F>::train_cv
       (reg_params, means, stderrs, cv_params, train_ds,
        make_domain<output_variable_type>(Y),
        copy_ptr<input_domain_type>(new input_domain_type(X.begin(), X.end())),
        f_params, unif_int(rng));
   } else {
-    f1 = learn_crf_factor<F>
+    f1 = learn_crf_factor<F>::train
       (train_ds, make_domain<output_variable_type>(Y),
        copy_ptr<input_domain_type>(new input_domain_type(X.begin(), X.end())),
        f_params, unif_int(rng));
@@ -138,19 +137,18 @@ test_learn_crf_factor
     cout << "Chose lambda = " << reg_params[max_i].lambdas
          << ", with score = " << means[max_i] << "\n";
   }
-  cout << "Learned factor:\n"
-       << (*f1) << endl;
+  cout << "Learned factor:\n" << f1 << endl;
 
   double f_ll(0);
   foreach(const record<>& r, train_ds.records()) {
-    typename F::output_factor_type f(f1->condition(r));
+    typename F::output_factor_type f(f1.condition(r));
     f.normalize();
     f_ll += f.logv(r);
   }
   f_ll /= train_ds.size();
   double f_test_ll(0);
   foreach(const record<>& r, test_ds.records()) {
-    typename F::output_factor_type f(f1->condition(r));
+    typename F::output_factor_type f(f1.condition(r));
     f.normalize();
     f_test_ll += f.logv(r);
   }
@@ -379,6 +377,8 @@ int main(int argc, char** argv) {
     return 1;
   }
 
+  typedef dense_linear_algebra<> la_type;
+
   //==========================================================
 
   // Fixed learning parameters
@@ -416,17 +416,15 @@ int main(int argc, char** argv) {
 
     // Run tests
     double learn_crf_factor_time, cpl_time;
-    table_crf_factor* f1 = NULL;
+    table_crf_factor f1;
     std::pair<double,double> tcf_train_test_ll =
       test_learn_crf_factor<table_crf_factor>
       (learn_crf_factor_time, f1, Y, X, train_ds, test_ds,
        do_cv, cv_params, tcf_params, rng);
     std::pair<double,double> cpl_train_test_ll =
       test_crf_parameter_learner<table_crf_factor>
-      (cpl_time, *f1, Y, X, train_ds, test_ds,
+      (cpl_time, f1, Y, X, train_ds, test_ds,
        do_cv, cpl_method, line_search_type, cv_params, rng);
-    delete(f1);
-    f1 = NULL;
 
     print_results<table_crf_factor>
       (train_ds, test_ds, train_ds, test_ds,
@@ -450,7 +448,7 @@ int main(int argc, char** argv) {
 
     // CRF factor cross validation parameters
     crossval_parameters
-      cv_params(log_reg_crf_factor::regularization_type::nlambdas);
+      cv_params(log_reg_crf_factor<la_type>::regularization_type::nlambdas);
     cv_params.nfolds = 2;
     cv_params.minvals = .001;
     cv_params.maxvals = 20.;
@@ -458,26 +456,24 @@ int main(int argc, char** argv) {
     cv_params.zoom = 1;
     cv_params.log_scale = true;
     // CRF factor learning parameters
-    log_reg_crf_factor::parameters lrcf_params(u);
+    log_reg_crf_factor<la_type>::parameters lrcf_params(u);
     lrcf_params.reg.lambdas = .01;
 
     var_vector Xalt(X.begin(), X.end());
 
     // Run tests
     double learn_crf_factor_time, cpl_time;
-    log_reg_crf_factor* f1 = NULL;
+    log_reg_crf_factor<la_type> f1;
     std::pair<double,double> tcf_train_test_ll =
-      test_learn_crf_factor<log_reg_crf_factor>
+      test_learn_crf_factor<log_reg_crf_factor<la_type> >
       (learn_crf_factor_time, f1, Y, Xalt, train_ds, test_ds,
        do_cv, cv_params, lrcf_params, rng);
     std::pair<double,double> cpl_train_test_ll =
-      test_crf_parameter_learner<log_reg_crf_factor>
-      (cpl_time, *f1, Y, Xalt, train_ds, test_ds,
+      test_crf_parameter_learner<log_reg_crf_factor<la_type> >
+      (cpl_time, f1, Y, Xalt, train_ds, test_ds,
        do_cv, cpl_method, line_search_type, cv_params, rng);
-    delete(f1);
-    f1 = NULL;
 
-    print_results<log_reg_crf_factor>
+    print_results<log_reg_crf_factor<la_type> >
       (train_ds, test_ds, train_ds, test_ds,
        Xalt, truth_YX, truth_Y_given_X, learn_crf_factor_time, cpl_time,
        tcf_train_test_ll, cpl_train_test_ll);
@@ -559,17 +555,15 @@ int main(int argc, char** argv) {
 
     // Run tests
     double learn_crf_factor_time, cpl_time;
-    gaussian_crf_factor* f1 = NULL;
+    gaussian_crf_factor f1;
     std::pair<double,double> gcf_train_test_ll =
       test_learn_crf_factor<gaussian_crf_factor>
       (learn_crf_factor_time, f1, Y, X, train_ds, test_ds,
        do_cv, cv_params, gcf_params, rng);
     std::pair<double,double> cpl_train_test_ll =
       test_crf_parameter_learner<gaussian_crf_factor>
-      (cpl_time, *f1, Y, X, train_ds, test_ds,
+      (cpl_time, f1, Y, X, train_ds, test_ds,
        do_cv, cpl_method, line_search_type, cv_params, rng);
-    delete(f1);
-    f1 = NULL;
 
     print_results<gaussian_crf_factor>
       (train_ds, test_ds, orig_ds, orig_test_ds,

@@ -73,9 +73,9 @@ namespace sill {
     typedef typename base::optimization_vector optimization_vector;
     typedef typename base::regularization_type regularization_type;
 
-    typedef typename base::la_type la_type;
+    typedef typename F::la_type la_type;
 
-    //! Parameters used for learn_crf_factor().
+    //! Parameters used for learn_crf_factor.
     struct parameters
       : public F::parameters {
 
@@ -107,17 +107,15 @@ namespace sill {
 
     /**
      * Constructor used by learn_crf_factor.
-     * WARNING: This class owns subfactor_ptrs_ from here on.
-     *          Do not free them outside of this class.
      */
     hybrid_crf_factor
     (const output_domain_type& Y_, copy_ptr<input_domain_type> X_ptr_,
-     const std::vector<F*> subfactor_ptrs_,
+     const std::vector<F>& subfactors_,
      const finite_var_vector& x2_vec, const std::vector<size_t> x2_multipliers)
-      : base(Y_, X_ptr_), subfactor_ptrs_(subfactor_ptrs_), x2_vec(x2_vec),
+      : base(Y_, X_ptr_), subfactors_(subfactors_), x2_vec(x2_vec),
         x2_multipliers(x2_multipliers), fixed_records_(false) {
       assert(x2_vec.size() == x2_multipliers.size());
-      assert(subfactor_ptrs_.size() == num_assignments(make_domain(x2_vec)));
+      assert(subfactors_.size() == num_assignments(make_domain(x2_vec)));
       set_ov();
     }
 
@@ -131,7 +129,7 @@ namespace sill {
                       copy_ptr<input_domain_type>& X_ptr_,
                       const finite_domain& X2_)
       : base(Y_, X_ptr_),
-        subfactor_ptrs_(num_assignments(X2_), NULL),
+        subfactors_(num_assignments(X2_)),
         x2_vec(X2_.begin(), X2_.end()),
         x2_multipliers(compute_multipliers(x2_vec)),
         fixed_records_(false) {
@@ -142,21 +140,21 @@ namespace sill {
       convert_domain<input_variable_type, typename F::input_variable_type>
         (set_difference(*X_ptr_, X2_), *sub_X_ptr);
       for (size_t i(0); i < num_assignments(X2_); ++i)
-        subfactor_ptrs_[i] = new F(Y_, sub_X_ptr);
+        subfactors_[i] = F(Y_, sub_X_ptr);
       set_ov();
     }
 
     //! Copy constructor.
     hybrid_crf_factor(const hybrid_crf_factor& other)
-      : base(other), subfactor_ptrs_(other.subfactor_ptrs_.size(), NULL),
+      : base(other), subfactors_(other.subfactors_.size()),
         x2_vec(other.x2_vec), x2_multipliers(other.x2_multipliers),
         fixed_records_(other.fixed_records_),
         x2_fixed_indices(other.x2_fixed_indices) {
       std::vector<typename F::optimization_vector*>
-        sub_ov_ptrs(subfactor_ptrs_.size(), NULL);
-      for (size_t i(0); i < subfactor_ptrs_.size(); ++i) {
-        subfactor_ptrs_[i] = new F(*(other.subfactor_ptrs_[i]));
-        sub_ov_ptrs[i] = &(subfactor_ptrs_[i]->weights());
+        sub_ov_ptrs(subfactors_.size(), NULL);
+      for (size_t i(0); i < subfactors_.size(); ++i) {
+        subfactors_[i] = F(other.subfactors_[i]);
+        sub_ov_ptrs[i] = &(subfactors_[i].weights());
       }
       ov = optimization_vector(sub_ov_ptrs);
     }
@@ -166,28 +164,19 @@ namespace sill {
       Ydomain_ = other.Ydomain_;
       Xdomain_ptr_ = other.Xdomain_ptr_;
       fixed_value_ = other.fixed_value_;
-      // Free old data
-      foreach(F* subfptr, subfactor_ptrs_)
-        delete subfptr;
       // Copy new data
-      subfactor_ptrs_.resize(other.subfactor_ptrs_.size());
+      subfactors_ = other.subfactors_;
       x2_vec = other.x2_vec;
       x2_multipliers = other.x2_multipliers;
       std::vector<typename F::optimization_vector*>
-        sub_ov_ptrs(subfactor_ptrs_.size(), NULL);
-      for (size_t i(0); i < subfactor_ptrs_.size(); ++i) {
-        subfactor_ptrs_[i] = new F(*(other.subfactor_ptrs_[i]));
-        sub_ov_ptrs[i] = &(subfactor_ptrs_[i]->weights());
+        sub_ov_ptrs(subfactors_.size(), NULL);
+      for (size_t i(0); i < subfactors_.size(); ++i) {
+        sub_ov_ptrs[i] = &(subfactors_[i].weights());
       }
       ov = optimization_vector(sub_ov_ptrs);
       fixed_records_ = other.fixed_records_;
       x2_fixed_indices = other.x2_fixed_indices;
       return *this;
-    }
-
-    ~hybrid_crf_factor() {
-      foreach(F* subfptr, subfactor_ptrs_)
-        delete subfptr;
     }
 
     // Getters and helpers
@@ -300,20 +289,20 @@ namespace sill {
 
     //! @return  true iff the data is stored in log-space
     bool log_space() const {
-      if (subfactor_ptrs_.size() == 0)
+      if (subfactors_.size() == 0)
         return true;
-      return subfactor_ptrs_[0]->log_space();
+      return subfactors_[0].log_space();
     }
 
     //! Tries to change this factor's internal representation to log-space.
     //! This is not guaranteed to work.
     //! @return  true if successful or if the format was already log-space
     bool convert_to_log_space() {
-      if (subfactor_ptrs_.size() == 0)
+      if (subfactors_.size() == 0)
         return true;
-      bool b(subfactor(0).convert_to_log_space());
-      for (size_t i(1); i < subfactor_ptrs_.size(); ++i) {
-        if (subfactor(i).convert_to_log_space() != b)
+      bool b(subfactors_[0].convert_to_log_space());
+      for (size_t i(1); i < subfactors_.size(); ++i) {
+        if (subfactors_[i].convert_to_log_space() != b)
           assert(false);
       }
       return b;
@@ -323,11 +312,11 @@ namespace sill {
     //! This is not guaranteed to work.
     //! @return  true if successful or if the format was already real-space
     bool convert_to_real_space() {
-      if (subfactor_ptrs_.size() == 0)
+      if (subfactors_.size() == 0)
         return true;
-      bool b(subfactor(0).convert_to_real_space());
-      for (size_t i(1); i < subfactor_ptrs_.size(); ++i) {
-        if (subfactor(i).convert_to_real_space() != b)
+      bool b(subfactors_[0].convert_to_real_space());
+      for (size_t i(1); i < subfactors_.size(); ++i) {
+        if (subfactors_[i].convert_to_real_space() != b)
           assert(false);
       }
       return b;
@@ -377,7 +366,7 @@ namespace sill {
     void add_gradient(optimization_vector& grad, const record_type& r,
                       double w) const {
       size_t i(my_subfactor_index(r));
-      subfactor(i).add_gradient(grad.subvector(i), r, w);
+      subfactors_[i].add_gradient(grad.subvector(i), r, w);
     }
 
     /**
@@ -397,7 +386,7 @@ namespace sill {
                                const output_factor_type& fy,
                                double w = 1) const {
       size_t i(my_subfactor_index(r));
-      subfactor(i).add_expected_gradient(grad.subvector(i), r, fy, w);
+      subfactors_[i].add_expected_gradient(grad.subvector(i), r, fy, w);
     }
 
     /**
@@ -409,7 +398,7 @@ namespace sill {
     add_combined_gradient(optimization_vector& grad, const record_type& r,
                           const output_factor_type& fy, double w = 1.) const {
       size_t i(my_subfactor_index(r));
-      subfactor(i).add_combined_gradient(grad.subvector(i), r, fy, w);
+      subfactors_[i].add_combined_gradient(grad.subvector(i), r, fy, w);
     }
 
     /**
@@ -423,7 +412,7 @@ namespace sill {
     add_hessian_diag(optimization_vector& hessian, const record_type& r,
                      double w) const {
       size_t i(my_subfactor_index(r));
-      subfactor(i).add_hessian_diag(hessian.subvector(i), r, w);
+      subfactors_[i].add_hessian_diag(hessian.subvector(i), r, w);
     }
 
     /**
@@ -442,7 +431,7 @@ namespace sill {
                               const input_record_type& r,
                               const output_factor_type& fy, double w) const {
       size_t i(my_subfactor_index(r));
-      subfactor(i).add_expected_hessian_diag(hessian.subvector(i), r, fy, w);
+      subfactors_[i].add_expected_hessian_diag(hessian.subvector(i), r, fy, w);
     }
 
     /**
@@ -461,7 +450,7 @@ namespace sill {
     (optimization_vector& sqrgrad, const input_record_type& r,
      const output_factor_type& fy, double w) const {
       size_t i(my_subfactor_index(r));
-      subfactor(i).add_expected_squared_gradient(sqrgrad.subvector(i), r, fy,w);
+      subfactors_[i].add_expected_squared_gradient(sqrgrad.subvector(i), r, fy,w);
     }
 
     /**
@@ -471,8 +460,8 @@ namespace sill {
     double regularization_penalty(const regularization_type& reg) const {
       assert(false); // This should depend on the values of X2.
       double val(0);
-      foreach(const F* subfptr, subfactor_ptrs_)
-        val += subfptr->regularization_penalty(reg);
+      foreach(const F& subf, subfactors_)
+        val += subf.regularization_penalty(reg);
       return val;
     }
 
@@ -546,8 +535,7 @@ namespace sill {
     // =========================================================================
   private:
 
-    //! This class owns this data.
-    std::vector<F*> subfactor_ptrs_;
+    std::vector<F> subfactors_;
 
     //! Vector of variables in x2
     finite_var_vector x2_vec;
@@ -570,7 +558,7 @@ namespace sill {
     //! Given an assignment over x2, return the corresponding subfactor's index.
     inline size_t my_subfactor_index(const finite_assignment& a) const {
       size_t i(subfactor_index(a, x2_vec, x2_multipliers));
-      assert(i < subfactor_ptrs_.size());
+      assert(i < subfactors_.size());
       return i;
     }
 
@@ -583,31 +571,26 @@ namespace sill {
       } else {
         i = subfactor_index(r, x2_vec, x2_multipliers);
       }
-      assert(i < subfactor_ptrs_.size());
+      assert(i < subfactors_.size());
       return i;
     }
 
-    const F& subfactor(size_t i) const { return *(subfactor_ptrs_[i]); }
-
-    F& subfactor(size_t i) { return *(subfactor_ptrs_[i]); }
-
     //! Given an assignment over x2, return the corresponding subfactor.
     const F& subfactor(const finite_assignment& a) const {
-      return subfactor(my_subfactor_index(a));
+      return subfactors_[my_subfactor_index(a)];
     }
 
     //! Given a record over x2, return the corresponding subfactor.
     const F& subfactor(const finite_record& r) const {
-      return subfactor(my_subfactor_index(r));
+      return subfactors_[my_subfactor_index(r)];
     }
 
-    // Set ov using the current subfactor_ptrs_.
+    // Set ov using the current subfactors_.
     void set_ov() {
       std::vector<typename F::optimization_vector*>
-        sub_ov_ptrs(subfactor_ptrs_.size(), NULL);
-      for (size_t i(0); i < subfactor_ptrs_.size(); ++i) {
-        assert(subfactor_ptrs_[i]);
-        sub_ov_ptrs[i] = &(subfactor_ptrs_[i]->weights());
+        sub_ov_ptrs(subfactors_.size(), NULL);
+      for (size_t i(0); i < subfactors_.size(); ++i) {
+        sub_ov_ptrs[i] = &(subfactors_[i].weights());
       }
       ov = optimization_vector(sub_ov_ptrs);
     }

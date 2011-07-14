@@ -39,13 +39,13 @@ namespace sill {
     learnable_crf_factor<finite_variable,table_factor,table_factor_opt_vector,1>
     base;
 
-    typedef base::la_type la_type;
+    typedef dense_linear_algebra<> la_type;
 
     //! Parameters used for learn_crf_factor methods.
     struct parameters {
 
       /**
-       * Regularization parameters used for learn_crf_factor().
+       * Regularization parameters used for learn_crf_factor.
        * This is interpreted as an amount of smoothing to add to counts.
        * E.g., 1/ntrain = pretend we saw 1 extra training example with each
        * possible assignment.

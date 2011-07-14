@@ -88,20 +88,20 @@ namespace sill {
     typedef learnable_crf_factor<vector_variable, canonical_gaussian,
                                  gaussian_opt_vector, 2> base;
 
-    typedef base::la_type la_type;
+    typedef dense_linear_algebra<> la_type;
     typedef vector_record<la_type> record_type;
 
-    //! Parameters used for learn_crf_factor().
+    //! Parameters used for learn_crf_factor.
     struct parameters {
 
       /**
-       * Regularization parameters used for learn_crf_factor().
+       * Regularization parameters used for learn_crf_factor.
        *  (defaults = regularization_type defaults)
        */
       regularization_type reg;
 
       /**
-       * This permits learn_crf_factor() to increase the regularization
+       * This permits learn_crf_factor to increase the regularization
        * parameters as necessary to deal with numerical issues.
        * The parameters may be increased up to this value (>= 0).
        *  (default = 0)

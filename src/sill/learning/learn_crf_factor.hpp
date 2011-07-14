@@ -28,8 +28,8 @@
 // (Specialization declaration)
 #define GEN_LEARN_CRF_FACTOR_HYBRID_DECL(F)                             \
   template <>                                                           \
-  hybrid_crf_factor<F>*                                                 \
-  learn_crf_factor<hybrid_crf_factor<F> >                               \
+  hybrid_crf_factor<F>                                                  \
+  learn_crf_factor<hybrid_crf_factor<F> >::train                        \
   (const dataset<F::la_type>& ds,                                       \
    const hybrid_crf_factor<F>::output_domain_type& Y_,                  \
    copy_ptr<hybrid_crf_factor<F>::input_domain_type> X_ptr_,            \
@@ -38,103 +38,159 @@
 
 namespace sill {
 
-  // Declarations: Learning CRF Factors with Fixed Regularization
+  //============================================================================
+  // Learning generic factors
   //============================================================================
 
+  // Forward declaration
+  namespace impl {
+    template <typename F>
+    F
+    learn_crf_factor_cv_generic
+    (std::vector<typename F::regularization_type>& reg_params,
+     vec& means, vec& stderrs,
+     const crossval_parameters& cv_params,
+     const dataset<typename F::la_type>& ds,
+     const typename F::output_domain_type& Y_,
+     copy_ptr<typename F::input_domain_type> X_ptr_,
+     const typename F::parameters& params,
+     unsigned random_seed);
+  }
+
   /**
-   * Returns a newly allocated factor which represents P(Y, X) or P(Y | X),
-   * learned from data;
-   * the main guarantee is that conditioning the factor on X=x AND normalizing
-   * it will produce an estimate of P(Y | X=x).
-   *
-   * @param ds       Training data.
-   * @param Y        Output variables Y.
-   * @param X_ptr    Input variables X.
-   * @param params   CRF factor parameters used for training options.
-   *
-   * @tparam F  CRF factor type
+   * Struct for learning CRF factors from data.
+   * This is a struct to permit partial specialization for, e.g.,
+   * supporting factors which can use multiple linear algebra types.
    */
   template <typename F>
-  F*
-  learn_crf_factor(const dataset<typename F::la_type>& ds,
-                   const typename F::output_domain_type& Y_,
-                   copy_ptr<typename F::input_domain_type> X_ptr_,
-                   const typename F::parameters& params,
-                   unsigned random_seed = time(NULL));
+  struct learn_crf_factor {
 
-  //! Specialization: table_crf_factor
+    /**
+     * Returns a newly allocated factor which represents P(Y, X) or P(Y | X),
+     * learned from data;
+     * the main guarantee is that conditioning the factor on X=x AND normalizing
+     * it will produce an estimate of P(Y | X=x).
+     *
+     * @param ds       Training data.
+     * @param Y        Output variables Y.
+     * @param X_ptr    Input variables X.
+     * @param params   CRF factor parameters used for training options.
+     *
+     * @tparam F  CRF factor type
+     */
+    static F
+    train(const dataset<typename F::la_type>& ds,
+          const typename F::output_domain_type& Y_,
+          copy_ptr<typename F::input_domain_type> X_ptr_,
+          const typename F::parameters& params,
+          unsigned random_seed = time(NULL));
+
+    /**
+     * Returns a newly allocated factor which represents P(Y, X) or P(Y | X),
+     * learned from data;
+     * the main guarantee is that conditioning the factor on X=x AND normalizing
+     * it will produce an estimate of P(Y | X=x).
+     *
+     * This does cross validation to choose regularization.
+     * (See crossval_parameters for more info.)
+     *
+     * This is a generic version of learn_crf_factor::train_cv;
+     * for some types of factors, it is more efficient to do a specialized
+     * implementation.
+     * This relies on an implementation of learn_crf_factor::train.
+     *
+     * @param reg_params (Return value.) Parameters which were tried.
+     * @param means      (Return value.) Means of scores for the given lambdas.
+     * @param stderrs    (Return value.) Std errors of scores for the lambdas.
+     * @param cv_params  Parameters specifying how to do cross validation.
+     */
+    static F
+    train_cv
+    (std::vector<typename F::regularization_type>& reg_params,
+     vec& means, vec& stderrs,
+     const crossval_parameters& cv_params,
+     const dataset<typename F::la_type>& ds,
+     const typename F::output_domain_type& Y_,
+     copy_ptr<typename F::input_domain_type> X_ptr_,
+     const typename F::parameters& params,
+     unsigned random_seed = time(NULL)) {
+      return impl::learn_crf_factor_cv_generic<F>
+        (reg_params, means, stderrs,
+         cv_params, ds, Y_, X_ptr_, params, random_seed);
+    }
+
+  }; // struct learn_crf_factor
+
+  //============================================================================
+  // Specialization: table_crf_factor
+  //============================================================================
+
   template <>
-  table_crf_factor*
-  learn_crf_factor<table_crf_factor>
+  table_crf_factor
+  learn_crf_factor<table_crf_factor>::train
   (const dataset<table_crf_factor::la_type>& ds,
    const finite_domain& Y_,
    copy_ptr<finite_domain> X_ptr_,
    const table_crf_factor::parameters& params,
    unsigned random_seed);
 
-  //! Specialization: log_reg_crf_factor
-  template <>
-  log_reg_crf_factor*
-  learn_crf_factor<log_reg_crf_factor>
-  (const dataset<log_reg_crf_factor::la_type>& ds,
-   const finite_domain& Y_, copy_ptr<domain> X_ptr_,
-   const log_reg_crf_factor::parameters& params, unsigned random_seed);
+  //============================================================================
+  // Specialization: log_reg_crf_factor
+  //============================================================================
 
-  //! Specialization: gaussian_crf_factor
+  template <typename LA>
+  struct learn_crf_factor<log_reg_crf_factor<LA> > {
+
+    static log_reg_crf_factor<LA>
+    train
+    (const dataset<LA>& ds,
+     const finite_domain& Y_, copy_ptr<domain> X_ptr_,
+     const typename log_reg_crf_factor<LA>::parameters& params,
+     unsigned random_seed);
+
+    static log_reg_crf_factor<LA>
+    train_cv
+    (std::vector<typename log_reg_crf_factor<LA>::regularization_type>&
+     reg_params,
+     vec& means, vec& stderrs,
+     const crossval_parameters& cv_params,
+     const dataset<typename log_reg_crf_factor<LA>::la_type>& ds,
+     const finite_domain& Y_, copy_ptr<domain> X_ptr_,
+     const typename log_reg_crf_factor<LA>::parameters& params,
+     unsigned random_seed) {
+      return impl::learn_crf_factor_cv_generic<log_reg_crf_factor<LA> >
+        (reg_params, means, stderrs,
+         cv_params, ds, Y_, X_ptr_, params, random_seed);
+    }
+
+  };
+
+  //============================================================================
+  // Specialization: gaussian_crf_factor
+  //============================================================================
+
   template <>
-  gaussian_crf_factor*
-  learn_crf_factor<gaussian_crf_factor>
+  gaussian_crf_factor
+  learn_crf_factor<gaussian_crf_factor>::train
   (const dataset<gaussian_crf_factor::la_type>& ds,
    const vector_domain& Y_, copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
 
-  //! Specialization: hybrid_crf_factor<gaussian_crf_factor>
-  GEN_LEARN_CRF_FACTOR_HYBRID_DECL(gaussian_crf_factor)
-
-  // Declarations: Learning CRF Factors with Regularization Chosen via CV
-  //============================================================================
-
-  /**
-   * Returns a newly allocated factor which represents P(Y, X) or P(Y | X),
-   * learned from data;
-   * the main guarantee is that conditioning the factor on X=x AND normalizing
-   * it will produce an estimate of P(Y | X=x).
-   *
-   * This does cross validation to choose regularization.
-   * (See crossval_parameters for more info.)
-   *
-   * This is a generic version of learn_crf_factor_cv();
-   * for some types of factors, it is more efficient to do a specialized
-   * implementation.
-   * This relies on the factor having an implementation of learn_crf_factor().
-   *
-   * @param reg_params (Return value.) Parameters which were tried.
-   * @param means      (Return value.) Means of scores for the given lambdas.
-   * @param stderrs    (Return value.) Std errors of scores for the lambdas.
-   * @param cv_params  Parameters specifying how to do cross validation.
-   */
-  template <typename F>
-  F*
-  learn_crf_factor_cv
-  (std::vector<typename F::regularization_type>& reg_params,
-   vec& means, vec& stderrs,
-   const crossval_parameters& cv_params,
-   const dataset<typename F::la_type>& ds,
-   const typename F::output_domain_type& Y_,
-   copy_ptr<typename F::input_domain_type> X_ptr_,
-   const typename F::parameters& params,
-   unsigned random_seed = time(NULL));
-
-  //! Specialization: gaussian_crf_factor
   template <>
-  gaussian_crf_factor*
-  learn_crf_factor_cv<gaussian_crf_factor>
+  gaussian_crf_factor
+  learn_crf_factor<gaussian_crf_factor>::train_cv
   (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
    vec& means, vec& stderrs,
    const crossval_parameters& cv_params,
    const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
+
+  //============================================================================
+  // Specialization: hybrid_crf_factor<gaussian_crf_factor>
+  //============================================================================
+
+  GEN_LEARN_CRF_FACTOR_HYBRID_DECL(gaussian_crf_factor)
 
 
   //============================================================================
@@ -144,30 +200,7 @@ namespace sill {
 
   namespace impl {
 
-    /**
-     * CrossvalFunctor used by the generic learn_crf_factor_cv() below
-     * when it calls crossval_zoom().
-     *
-     * @see learn_crf_factor_cv, crossval_zoom
-     */
-    template <typename F>
-    class learn_crf_factor_cv_functor;
-
-    /**
-     * CrossvalFunctor used by learn_crf_factor_cv<gaussian_crf_factor>() below
-     * when it calls crossval_zoom().
-     *
-     * @see learn_crf_factor_cv, crossval_zoom
-     */
-    class gcf_learn_crf_factor_cv_functor;
-
-  }; // namespace impl
-
-  // Definitions: Learning CRF Factors with Regularization Chosen via CV
-  //============================================================================
-
-  namespace impl {
-
+    //! Functor for default train_cv implementation
     template <typename F>
     class learn_crf_factor_cv_functor {
 
@@ -220,10 +253,10 @@ namespace sill {
               continue;
             tmp_params.reg.lambdas = lambdas[k];
             try {
-              F* tmpf = learn_crf_factor<F>(fold_train_view, *Y_ptr, X_ptr_,
+              F tmpf =
+                learn_crf_factor<F>::train(fold_train_view, *Y_ptr, X_ptr_,
                                            tmp_params, unif_int(rng));
-              double tmpval(tmpf->log_expected_value(fold_test_view));
-              delete(tmpf);
+              double tmpval(tmpf.log_expected_value(fold_test_view));
               if (is_finite(means[k])) {
                 means[k] -= tmpval;
                 stderrs[k] += tmpval * tmpval;
@@ -246,78 +279,119 @@ namespace sill {
 
     }; // class learn_crf_factor_cv_functor
 
-    class gcf_learn_crf_factor_cv_functor {
+    //! Default train_cv implementation
+    template <typename F>
+    F
+    learn_crf_factor_cv_generic
+    (std::vector<typename F::regularization_type>& reg_params,
+     vec& means, vec& stderrs,
+     const crossval_parameters& cv_params,
+     const dataset<typename F::la_type>& ds,
+     const typename F::output_domain_type& Y_,
+     copy_ptr<typename F::input_domain_type> X_ptr_,
+     const typename F::parameters& params,
+     unsigned random_seed) {
 
-      typedef gaussian_crf_factor::la_type la_type;
+      assert(params.valid());
+      assert(cv_params.valid());
 
-      const dataset<la_type>& ds;
+      boost::mt11213b rng(random_seed);
+      boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
 
-      const vector_domain* Y_ptr;
+      std::vector<vec> lambdas;
+      impl::learn_crf_factor_cv_functor<F> cvfunctor(ds, Y_, X_ptr_, params);
+      vec best_lambda =
+        crossval_zoom<impl::learn_crf_factor_cv_functor<F> >
+        (lambdas, means, stderrs, cv_params, cvfunctor, unif_int(rng));
+      assert(best_lambda.size() == F::regularization_type::nlambdas);
 
-      copy_ptr<vector_domain> X_ptr;
+      reg_params.clear();
+      typename F::regularization_type reg;
+      reg.regularization = params.reg.regularization;
+      foreach(const vec& v, lambdas) {
+        reg.lambdas = v;
+        reg_params.push_back(reg);
+      }
+      typename F::parameters tmp_params(params);
+      tmp_params.reg.lambdas = best_lambda;
+      return
+        learn_crf_factor<F>::train(ds, Y_, X_ptr_, tmp_params, unif_int(rng));
+    } // learn_crf_factor_cv_generic
 
-      const gaussian_crf_factor::parameters* params_ptr;
+  } // namespace impl
 
-    public:
 
-      //! Constructor.
-      gcf_learn_crf_factor_cv_functor
-      (const dataset<la_type>& ds,
-       const vector_domain& Y_, copy_ptr<vector_domain> X_ptr,
-       const gaussian_crf_factor::parameters& params);
+  //! Specialization: log_reg_crf_factor
+  template <typename LA>
+  log_reg_crf_factor<LA>
+  learn_crf_factor<log_reg_crf_factor<LA> >::train
+  (const dataset<LA>& ds,
+   const finite_domain& Y_, copy_ptr<domain> X_ptr_,
+   const typename log_reg_crf_factor<LA>::parameters& params,
+   unsigned random_seed) {
 
-      /**
-       * Try the given lambdas, and returns means,stderrs of results.
-       */
-      vec operator()(vec& means, vec& stderrs, const std::vector<vec>& lambdas,
-                     size_t nfolds, unsigned random_seed) const;
-
-    }; // class gcf_learn_crf_factor_cv_functor
-
-  }; // namespace impl
-
-  template <typename F>
-  F*
-  learn_crf_factor_cv
-  (std::vector<typename F::regularization_type>& reg_params,
-   vec& means, vec& stderrs,
-   const crossval_parameters& cv_params,
-   const dataset<typename F::la_type>& ds,
-   const typename F::output_domain_type& Y_,
-   copy_ptr<typename F::input_domain_type> X_ptr_,
-   const typename F::parameters& params,
-   unsigned random_seed = time(NULL)) {
-
-    assert(params.valid());
-    assert(cv_params.valid());
-
-    boost::mt11213b rng(random_seed);
-    boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
-
-    std::vector<vec> lambdas;
-    impl::learn_crf_factor_cv_functor<F> cvfunctor(ds, Y_, X_ptr_, params);
-    vec best_lambda =
-      crossval_zoom<impl::learn_crf_factor_cv_functor<F> >
-      (lambdas, means, stderrs, cv_params, cvfunctor, unif_int(rng));
-    assert(best_lambda.size() == F::regularization_type::nlambdas);
-
-    reg_params.clear();
-    typename F::regularization_type reg;
-    reg.regularization = params.reg.regularization;
-    foreach(const vec& v, lambdas) {
-      reg.lambdas = v;
-      reg_params.push_back(reg);
+    if (!ds.has_variables(Y_)) {
+      std::cerr << "learn_crf_factor given Y_ = " << Y_
+                << ", but the dataset only contains finite variables: "
+                << finite_domain(ds.finite_variables().first,
+                                 ds.finite_variables().second)
+                << std::endl;
+      assert(false);
     }
-    typename F::parameters tmp_params(params);
-    tmp_params.reg.lambdas = best_lambda;
-    return learn_crf_factor<F>(ds, Y_, X_ptr_, tmp_params, unif_int(rng));
+    assert(X_ptr_);
 
-  } // learn_crf_factor_cv()
+    assert(includes(ds.variables(), *X_ptr_));
+    assert(params.valid());
+    // Set up dataset view
+    dataset_view<LA> ds_view(ds);
+    std::set<size_t> finite_indices;
+    size_t new_class_var_size(1);
+    foreach(finite_variable* v, Y_) {
+      finite_indices.insert(ds_view.record_index(v));
+      new_class_var_size *= v->size();
+    }
+    std::set<size_t> vector_indices;
+    foreach(variable* v, *X_ptr_) {
+      switch(v->get_variable_type()) {
+      case variable::FINITE_VARIABLE:
+        finite_indices.insert
+          (ds_view.record_index(dynamic_cast<finite_variable*>(v)));
+        break;
+      case variable::VECTOR_VARIABLE:
+        vector_indices.insert
+          (ds_view.record_index(dynamic_cast<vector_variable*>(v)));
+        break;
+      default:
+        assert(false);
+      }
+    }
+    ds_view.set_variable_indices(finite_indices, vector_indices);
+    ds_view.set_finite_class_variables(Y_);
+    dataset_statistics<LA> stats(ds_view);
+    // Train multilabel logistic regressor
+    multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
+    mlr_params.regularization = params.reg.regularization;
+    mlr_params.lambda = params.reg.lambdas[0];
+    finite_variable* new_merged_var
+      = params.u.new_finite_variable(new_class_var_size);
+    multiclass2multilabel_parameters m2m_params;
+    m2m_params.base_learner =
+      boost::shared_ptr<multiclass_classifier<> >
+      (new multiclass_logistic_regression<>(mlr_params));
+    m2m_params.random_seed = random_seed;
+    m2m_params.new_label = new_merged_var;
+    return
+      log_reg_crf_factor<LA>
+      (boost::shared_ptr<multiclass2multilabel>(new multiclass2multilabel
+                                                (stats, m2m_params)),
+       params.smoothing / ds.size(), Y_, X_ptr_);
+  } // learn_crf_factor<log_reg_crf_factor<LA> >::train
+
 
   //! Specialization: gaussian_crf_factor
   template <>
-  gaussian_crf_factor*
-  learn_crf_factor_cv<gaussian_crf_factor>
+  gaussian_crf_factor
+  learn_crf_factor<gaussian_crf_factor>::train_cv
   (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
    vec& means, vec& stderrs,
    const crossval_parameters& cv_params,
@@ -325,7 +399,7 @@ namespace sill {
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
 
-};  // namespace sill
+}  // namespace sill
 
 #include <sill/macros_undef.hpp>
 
