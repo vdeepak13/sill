@@ -183,7 +183,7 @@ namespace sill {
     vector_var_vector X;
     X.push_back(A);
     X.push_back(B);
-    vec mu(2, 0);
+    vec mu(zeros<vec>(2));
     foreach(double& val, mu)
       val = unif_real(rng);
     mat sigma(2, 2);
@@ -219,7 +219,7 @@ namespace sill {
         ("make_marginal_gaussian_factor() given invalid argument.");
     boost::uniform_real<double> unif_real(-b_max, b_max);
     size_t Xsize(vector_size(X));
-    vec mu(Xsize, 0);
+    vec mu(zeros<vec>(Xsize));
     foreach(double& val, mu)
       val = unif_real(rng);
     mat sigma(Xsize, Xsize);
@@ -310,14 +310,15 @@ namespace sill {
     boost::uniform_real<double> unif_real(-b_max, b_max);
     size_t Ysize(vector_size(Y));
     size_t Xsize(vector_size(X));
-    vec mu(Ysize, 0);
+    vec mu(zeros<vec>(Ysize));
     foreach(double& val, mu)
       val = unif_real(rng);
     unif_real = boost::uniform_real<double>(-c_max, c_max);
-    mat coeff(Ysize, Xsize, 0.);
+    mat coeff(zeros<mat>(Ysize, Xsize));
     for (size_t j(0); j < coeff.size(); ++j)
       coeff(j) = unif_real(rng);
-    mat sigma(Ysize, Ysize, cov_strength);
+    mat sigma(Ysize, Ysize);
+    sigma.fill(cov_strength);
     sigma += spread * eye(Ysize,Ysize);
     return moment_gaussian(Y, mu, sigma, X, coeff);
   }
@@ -344,7 +345,7 @@ namespace sill {
     size_t Xsize(X->size());
     assert(Ysize == 1);
     assert(Xsize == 1);
-    vec mu(Ysize, 0);
+    vec mu(zeros<vec>(Ysize));
     foreach(double& val, mu)
       val = unif_real(rng);
     unif_real = boost::uniform_real<double>(-c_max, c_max);

@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
   typedef stump<> wl_type;
   boost::shared_ptr<wl_type> wl_ptr(new wl_type());
   typedef batch_booster_OC<boosting::adaboost> batch_booster_type;
-  batch_booster_OC_parameters batch_booster_params;
+  batch_booster_OC_parameters<> batch_booster_params;
   batch_booster_params.init_iterations = niterations;
   batch_booster_params.random_seed = random_seed;
   batch_booster_params.binary_label = binary_var;

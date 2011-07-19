@@ -38,6 +38,11 @@ namespace sill {
     vector_base(size_type n)
       : n_(n) { }
 
+    //! Copy constructor.
+    template <typename OtherT, typename OtherSizeType>
+    vector_base(const vector_base<OtherT, OtherSizeType>& other)
+      : n_(static_cast<SizeType>(other.size())) { }
+
     // Serialization
     //==========================================================================
 

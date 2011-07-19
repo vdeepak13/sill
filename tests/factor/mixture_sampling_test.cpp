@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
   for (size_t j(0); j < 5; ++j)
     X.push_back(u.new_vector_variable(1));
   size_t Xsize(vector_size(X));
-  vec mu(Xsize, 0);
+  vec mu(Xsize);
   foreach(double& val, mu)
     val = unif_real(rng);
   mat sigma(Xsize, Xsize, 1.);

@@ -15,11 +15,17 @@
 #include <sill/learning/discriminative/booster.hpp>
 //#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/discriminative.hpp>
-#include <sill/learning/discriminative/load_functions.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  // Forward declarations
+  /*
+  template <typename LA>
+  boost::shared_ptr<binary_classifier<LA> >
+  load_binary_classifier(std::ifstream& in, const datasource& ds);
+  */
 
   /**
    * BINARY BOOSTER PARAMETERS
@@ -28,12 +34,15 @@ namespace sill {
    *  - RANDOM_SEED
    *  - INIT_ITERATIONS
    *  - CONVERGENCE_ZERO
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
+  template <typename LA>
   struct binary_booster_parameters : public booster_parameters {
 
     //! Specifies weak learner type
     //!  (required)
-    boost::shared_ptr<binary_classifier<> > weak_learner;
+    boost::shared_ptr<binary_classifier<LA> > weak_learner;
 
     binary_booster_parameters() { }
 
@@ -58,7 +67,8 @@ namespace sill {
 
     void load(std::ifstream& in, const datasource& ds) {
       booster_parameters::load(in);
-      weak_learner = load_binary_classifier(in, ds);
+      assert(false); // TO BE FIXED
+//      weak_learner = load_binary_classifier<LA>(in, ds);
     }
 
   };  // struct binary_booster_parameters
@@ -66,21 +76,25 @@ namespace sill {
   /**
    * Binary batch boosting algorithm.
    *
-   * @param Objective      optimization objective defining the booster
+   * @tparam Objective      optimization objective defining the booster
+   * @tparam LA  Linear algebra type specifier
    *
    * \author Joseph Bradley
    * \ingroup learning_discriminative
    * @todo serialization
    */
-  template <typename Objective>
-  class binary_booster : public binary_classifier<>, public booster {
+  template <typename Objective, typename LA>
+  class binary_booster : public binary_classifier<LA>, public booster {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef binary_classifier<>::la_type la_type;
-    typedef binary_classifier<>::record_type record_type;
+    typedef LA la_type;
+
+    typedef typename binary_classifier<la_type>::record_type record_type;
+
+    typedef binary_booster_parameters<la_type> parameters;
 
     // Protected data members
     //==========================================================================
@@ -110,7 +124,7 @@ namespace sill {
     size_t iteration_;
 
     //! Base hypotheses
-    std::vector<boost::shared_ptr<binary_classifier<> > > base_hypotheses;
+    std::vector<boost::shared_ptr<binary_classifier<la_type> > > base_hypotheses;
 
     //! Weights for base hypotheses
     std::vector<double> alphas;
@@ -155,8 +169,8 @@ namespace sill {
     // Constructors
     //==========================================================================
 
-    explicit binary_booster(const binary_booster_parameters& params)
-      : binary_classifier<>(),
+    explicit binary_booster(const parameters& params)
+      : binary_classifier<la_type>(),
         uniform_prob(boost::uniform_real<double>(0,1)), smoothing(0),
         iteration_(0) {
       if (params.weak_learner.get() != NULL)
@@ -171,8 +185,8 @@ namespace sill {
     }
 
     binary_booster(const datasource& ds,
-                   const binary_booster_parameters& params)
-      : binary_classifier<>(ds),
+                   const parameters& params)
+      : binary_classifier<la_type>(ds),
         uniform_prob(boost::uniform_real<double>(0,1)), smoothing(0),
         iteration_(0) {
       if (params.weak_learner.get() != NULL)
@@ -188,6 +202,8 @@ namespace sill {
 
     // Getters and helpers
     //==========================================================================
+
+    using binary_classifier<la_type>::label;
 
     //! Returns the current iteration number (from 0)
     //!  (i.e., the number of learning iterations completed).
@@ -309,15 +325,15 @@ namespace sill {
     // Save and load methods
     //==========================================================================
 
-    using binary_classifier<>::save;
-    using binary_classifier<>::load;
+    using binary_classifier<la_type>::save;
+    using binary_classifier<la_type>::load;
 
     //! Output the learner to a human-readable file which can be reloaded.
     //! @param save_part  0: save function (default), 1: engine, 2: shell
     //! @param save_name  If true, this saves the name of the learner.
     virtual void save(std::ofstream& out, size_t save_part = 0,
                       bool save_name = true) const {
-      binary_classifier<>::save(out, save_part, save_name);
+      binary_classifier<la_type>::save(out, save_part, save_name);
       out << (wl_confidence_rated ?"1":"0") << " " << smoothing << " "
           << iteration_ << " " << alphas << " " << timing << "\n";
       for (size_t t = 0; t < iteration_; ++t)
@@ -334,7 +350,7 @@ namespace sill {
      */
     virtual bool
     load(std::ifstream& in, const datasource& ds, size_t load_part) {
-      if (!(base::load(in, ds, load_part)))
+      if (!(binary_classifier<la_type>::load(in, ds, load_part)))
         return false;
       std::string line;
       getline(in, line);
@@ -348,8 +364,9 @@ namespace sill {
       read_vec(is, alphas);
       read_vec(is, timing);
       base_hypotheses.resize(iteration_);
-      for (size_t t = 0; t < iteration_; ++t)
-        base_hypotheses[t] = load_binary_classifier(in, ds);
+      assert(false); // TO BE FIXED
+//      for (size_t t = 0; t < iteration_; ++t)
+//        base_hypotheses[t] = load_binary_classifier<LA>(in, ds);
       uniform_prob = boost::uniform_real<double>(0,1);
       return true;
     }

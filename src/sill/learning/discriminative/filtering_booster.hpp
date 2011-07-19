@@ -19,8 +19,13 @@ namespace sill {
    *  - RANDOM_SEED
    *  - INIT_ITERATIONS
    *  - CONVERGENCE_ZERO
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
-  struct filtering_booster_parameters : public binary_booster_parameters {
+  template <typename LA = dense_linear_algebra<> >
+  struct filtering_booster_parameters : public binary_booster_parameters<LA> {
+
+    typedef binary_booster_parameters<LA> base;
 
     //! Train WL with this many examples (> 0)
     //!  (default = 100)
@@ -72,7 +77,7 @@ namespace sill {
     }
 
     bool valid() const {
-      if (!binary_booster_parameters::valid())
+      if (!base::valid())
         return false;
       if (m_t <= 0)
         return false;
@@ -86,14 +91,14 @@ namespace sill {
     }
 
     void save(std::ofstream& out) const {
-      binary_booster_parameters::save(out);
+      base::save(out);
       out << m_t << " " << (scale_m_t ? "1" : "0") << " " << weight_m_t << " "
           << n_t << " " << (scale_n_t ? "1" : "0") << " " << weight_n_t
           << " " << delta << " " << target_acc << "\n";
     }
 
     void load(std::ifstream& in, const datasource& ds) {
-      binary_booster_parameters::load(in, ds);
+      base::load(in, ds);
       std::string line;
       getline(in, line);
       std::istringstream is(line);
@@ -125,7 +130,9 @@ namespace sill {
    * filtering_booster<dataset, boosting::filterboost,
    *                   decision_tree<discriminative::objective_information> >
    *
-   * @param Objective      optimization objective defining the booster
+   * @tparam Objective      optimization objective defining the booster
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    *
    * \author Joseph Bradley
    * \ingroup learning_discriminative
@@ -137,17 +144,20 @@ namespace sill {
    *       weighting = 1).
    * @todo Fix confidence-rated predictions.
    */
-  template <typename Objective>
-  class filtering_booster : public binary_booster<Objective> {
+  template <typename Objective, typename LA = dense_linear_algebra<> >
+  class filtering_booster : public binary_booster<Objective,LA> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef binary_booster<Objective> base;
+    typedef LA la_type;
 
-    typedef typename base::la_type la_type;
+    typedef binary_booster<Objective,LA> base;
+
     typedef typename base::record_type record_type;
+
+    typedef filtering_booster_parameters<la_type> parameters;
 
     // Protected data members
     //==========================================================================
@@ -163,30 +173,7 @@ namespace sill {
     using base::base_hypotheses;
     using base::alphas;
 
-    /*
-    // Import stuff from booster
-    using base::wl_ptr;
-    using base::rng;
-    using base::uniform_prob;
-    using base::smoothing;
-    using base::iter;
-    using base::base_hypotheses;
-    using base::alphas;
-    using base::wl_confidence_rated;
-    using base::timing;
-    // Import stuff from binary_classifier
-    using base::confidence_rated_;
-    // Import stuff from multiclass_classifier
-    using base::label_;
-    using base::label_index_;
-    using base::finite_seq;
-    using base::vector_seq;
-    using base::train_acc;
-    using base::label;
-    using base::predict_raw;
-    */
-
-    filtering_booster_parameters params;
+    parameters params;
 
     //! random number generator
     boost::mt11213b rng;
@@ -337,10 +324,10 @@ namespace sill {
      *  - loading a saved booster
      * @param params        algorithm parameters
      */
-    explicit filtering_booster(filtering_booster_parameters params
-                               = filtering_booster_parameters())
+    explicit filtering_booster(parameters params = parameters())
       : base(params),
-        params(params), ds(), ds_o_ptr(new ds_oracle<la_type>(ds)), o(*ds_o_ptr) {
+        params(params), ds(), ds_o_ptr(new ds_oracle<la_type>(ds)),
+        o(*ds_o_ptr) {
     }
 
     /**
@@ -350,8 +337,7 @@ namespace sill {
      * @param params    algorithm parameters
      */
     filtering_booster(oracle<la_type>& o, size_t n,
-                      filtering_booster_parameters params
-                      = filtering_booster_parameters())
+                      parameters params = parameters())
       : base(o, params), params(params),
         ds(o.datasource_info()), ds_o_ptr(NULL), o(o) {
       init();
@@ -366,8 +352,7 @@ namespace sill {
      * @param params    algorithm parameters
      */
     explicit filtering_booster(dataset_statistics<la_type>& stats,
-                               filtering_booster_parameters params
-                               = filtering_booster_parameters())
+                               parameters params = parameters())
       : base(stats.get_dataset(), params),
         params(params), ds(stats.get_dataset().datasource_info()),
         ds_o_ptr(new ds_oracle<la_type>(stats.get_dataset())), o(*ds_o_ptr) {
@@ -384,17 +369,19 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
-      boost::shared_ptr<binary_classifier<> >
-        bptr(new filtering_booster<Objective>(stats, this->params));
+    boost::shared_ptr<binary_classifier<la_type> >
+    create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<la_type> >
+        bptr(new filtering_booster<Objective,la_type>(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
-      boost::shared_ptr<binary_classifier<> >
-        bptr(new filtering_booster<Objective>(o, n, this->params));
+    boost::shared_ptr<binary_classifier<la_type> >
+    create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<la_type> >
+        bptr(new filtering_booster<Objective,la_type>(o, n, this->params));
       return bptr;
     }
 
@@ -436,9 +423,10 @@ namespace sill {
       sum_filter_weights = 0; // Estimate p_t using examples from filter.
       size_t n_examples_used = 0; // For estimating p_t
       double delta = params.delta / (3 * (iteration_ + 1) * (iteration_ + 2));
-      filter_limit = (params.target_acc < 1
-                      ? (size_t)((-2. / (1.-params.target_acc)) * std::log(delta))
-                      : std::numeric_limits<size_t>::max());
+      filter_limit =
+        (params.target_acc < 1
+         ? (size_t)((-2. / (1.-params.target_acc)) * std::log(delta))
+         : std::numeric_limits<size_t>::max());
       if (params.weight_m_t == 2) {
         // Draw m weighted examples to make a dataset
         for (size_t i = 0; i < m; i++) {
@@ -489,7 +477,7 @@ namespace sill {
 
       // Compute the weak learner's edge (by n_t or adaptive sampling)
       double edge = 0;
-      binary_classifier<>& base_hypothesis = *(base_hypotheses.back());
+      binary_classifier<la_type>& base_hypothesis = *(base_hypotheses.back());
       if (params.n_t > 0) {
         // Use n examples
         size_t n = (params.scale_n_t
@@ -655,5 +643,7 @@ namespace sill {
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
+
+#include <sill/learning/discriminative/load_functions.hpp>
 
 #endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_FILTERING_BOOSTER_HPP

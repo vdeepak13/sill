@@ -223,7 +223,7 @@ namespace sill {
     if (reg_cov > 0)
       cov += (reg_cov / ds.size()) * eye(X.size(),X.size());
     mat lambda;
-    bool result = inv(cov, lambda);
+    bool result = inv(lambda, cov);
     if (!result)
       throw std::runtime_error
         ("Matrix inverse failed in canonical_gaussian::learn_marginal().");

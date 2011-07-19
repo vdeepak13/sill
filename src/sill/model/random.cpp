@@ -219,7 +219,9 @@ namespace sill {
     return create_fancy_random_crf
       (Xmodel, YgivenXmodel, n, arity, u, model_structure, true, factor_choice,
        YYstrength, YXstrength, XXstrength, strength_base, 0, 0, 0, 0,
-       uvec(3,std::numeric_limits<int>::max()-10),
+       vec_3<arma::u32>(std::numeric_limits<int>::max()-10,
+                        std::numeric_limits<int>::max()-10,
+                        std::numeric_limits<int>::max()-10),
        add_cross_factors, random_seed);
   } // end of create_random_crf()
 

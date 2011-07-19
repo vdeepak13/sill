@@ -91,13 +91,14 @@ namespace sill {
    *
    * This class also has functions useful for re-featurizing datasets.
    *
-   * @param Objective  class defining the optimization objective
+   * @tparam Objective  class defining the optimization objective
+   *
    * \author Joseph Bradley
    * @see image.hpp
    * @todo Change this to choose randomly to break ties between classifiers.
    */
   template <typename Objective = discriminative::objective_accuracy>
-  class haar : public binary_classifier<> {
+  class haar : public binary_classifier<dense_linear_algebra<> > {
 
     //    concept_assert((sill::DomainPartitioningObjective<Objective>));
 
@@ -105,9 +106,10 @@ namespace sill {
     //==========================================================================
   public:
 
-    typedef binary_classifier<> base;
+    typedef dense_linear_algebra<> la_type;
 
-    typedef base::la_type la_type;
+    typedef binary_classifier<la_type> base;
+
     typedef base::record_type record_type;
 
     /////////////////////// PROTECTED DATA AND METHODS ////////////////////
@@ -115,8 +117,8 @@ namespace sill {
   protected:
 
     // Data from base class:
-    //  finite_variable* label_
-    //  size_t label_index_
+    using base::label_;
+    using base::label_index_;
 
     haar_parameters params;
 
@@ -554,7 +556,8 @@ namespace sill {
      * @param stats         a statistics class for the training dataset
      * @param parameters    algorithm parameters
      */
-    explicit haar(dataset_statistics<la_type>& stats, haar_parameters params = haar_parameters())
+    explicit haar(dataset_statistics<la_type>& stats,
+                  haar_parameters params = haar_parameters())
       : base(stats.get_dataset()), params(params) {
       build(stats.get_dataset(), make_constant<double>(1));
     }
@@ -564,7 +567,8 @@ namespace sill {
      * @param n    max number of examples which should be drawn from the oracle
      * @param parameters    algorithm parameters
      */
-    haar(oracle<la_type>& o, size_t n, haar_parameters params = haar_parameters())
+    haar(oracle<la_type>& o, size_t n,
+         haar_parameters params = haar_parameters())
       : base(o), params(params) {
       vector_dataset<la_type> ds;
       oracle2dataset(o, n, ds);
@@ -572,15 +576,17 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
-      boost::shared_ptr<binary_classifier<> >
+    boost::shared_ptr<binary_classifier<la_type> >
+    create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<la_type> >
         bptr(new haar<Objective>(stats, this->params));
       return bptr;
     }
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
-      boost::shared_ptr<binary_classifier<> >
+    boost::shared_ptr<binary_classifier<la_type> >
+    create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<la_type> >
         bptr(new haar<Objective>(o, n, this->params));
       return bptr;
     }

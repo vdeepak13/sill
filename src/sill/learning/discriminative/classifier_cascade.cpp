@@ -31,8 +31,9 @@ namespace sill {
       if (!(is >> max_filter_count))
         assert(false);
       base_classifiers.resize(nclassifiers);
-      for (size_t t = 0; t < nclassifiers; ++t)
-        base_classifiers[t] = load_binary_classifier(in, ds);
+      assert(false); // TO BE FIXED
+//      for (size_t t = 0; t < nclassifiers; ++t)
+//        base_classifiers[t] = load_binary_classifier<la_type>(in, ds);
     }
 
     // Protected methods
@@ -254,8 +255,9 @@ namespace sill {
       if (!(is >> tmpsize))
         assert(false);
       base_classifiers.resize(tmpsize);
-      for (size_t t = 0; t < base_classifiers.size(); ++t)
-        base_classifiers[t] = load_binary_classifier(in, ds);
+      assert(false); // TO BE FIXED
+//      for (size_t t = 0; t < base_classifiers.size(); ++t)
+//        base_classifiers[t] = load_binary_classifier<la_type>(in, ds);
       rng.seed(static_cast<unsigned>(params.random_seed));
     }
 

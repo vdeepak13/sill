@@ -98,6 +98,10 @@ int main(int argc, char** argv) {
   {
     std::cout << "sum(cscmat,0) = " << sum(cscmat,0) << std::endl;
     std::cout << "sum(cscmat,1) = " << sum(cscmat,1) << std::endl;
+
+    mat tmp_dm(dm);
+    tmp_dm.row(0) -= sv;
+    std::cout << "(dm.row(0) -= sv) = " << tmp_dm.row(0) << std::endl;
   }
 
   // Matrix-vector ops

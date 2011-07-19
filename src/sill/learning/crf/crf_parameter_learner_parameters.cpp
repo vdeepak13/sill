@@ -6,7 +6,7 @@
 namespace sill {
 
   crf_parameter_learner_parameters::crf_parameter_learner_parameters()
-    : regularization(2), lambdas(1,0), init_iterations(10000),
+    : regularization(2), lambdas(zeros<vec>(1)), init_iterations(10000),
       init_time_limit(0), learning_objective(MLE), perturb(0),
       random_seed(time(NULL)), keep_fixed_records(false), debug(0),
       no_shared_computation(false),

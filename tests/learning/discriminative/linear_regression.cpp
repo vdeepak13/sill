@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
   vector_dataset<> ds_test(ds_info);
   for (size_t i(0); i < ntrain + ntest; ++i) {
     std::vector<size_t> fvals;
-    vec vvals(nY+nX, 0);
+    vec vvals(zeros<vec>(nY+nX));
     for (size_t j(0); j < nX; ++j)
       vvals[j] = unif_real(rng);
     vec tmpvec(A * vvals.subvec(span(0,nX-1)));

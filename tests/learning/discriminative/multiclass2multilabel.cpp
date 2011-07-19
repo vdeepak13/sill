@@ -64,13 +64,13 @@ int main(int argc, char* argv[]) {
   mlr_params.regularization = 2;
   mlr_params.lambda = .5;
   mlr_params.opt_method = real_optimizer_builder::CONJUGATE_GRADIENT;
-  multiclass2multilabel_parameters baseparams;
+  multiclass2multilabel_parameters<> baseparams;
   baseparams.base_learner =
     boost::shared_ptr<multiclass_classifier<> >
     (new multiclass_logistic_regression<>(mlr_params));
   baseparams.random_seed = 68739024;
   baseparams.new_label = new_merged_var;
-  multiclass2multilabel mlr(stats, baseparams);
+  multiclass2multilabel<> mlr(stats, baseparams);
 
   cout << "Trained multilabel logistic regression via batch gradient descent"
        << " on " << ntrain << " examples.\n"

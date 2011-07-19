@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
   boost::shared_ptr<stump_type> wl_ptr(new stump_type());
   typedef batch_booster<boosting::adaboost>
     batch_booster_type;
-  batch_booster_parameters batch_booster_params;
+  batch_booster_parameters<> batch_booster_params;
   batch_booster_params.init_iterations = niterations;
   batch_booster_params.weak_learner = wl_ptr;
   boost::shared_ptr<batch_booster_type> bb_ptr

@@ -234,9 +234,9 @@ namespace sill {
 
       //! Sets all elements to this value.
       opt_variables& operator=(double d) {
-        f = d;
-        v = d;
-        b = d;
+        f.fill(d);
+        v.fill(d);
+        b.fill(d);
         return *this;        
       }
 
@@ -2015,15 +2015,32 @@ namespace sill {
          r.finite_numbering_ptr->size() != finite_offset.size()) ||
         (vector_offset.size() != 0 &&
          r.vector_numbering_ptr->size() != vector_offset.size())) {
-      add_gradient(grad, r.assignment(), w);
+      assert(false); // TO DO
+      /*
+//      add_gradient(grad, r.assignment(), w);
+
+      size_t label_val = r.finite(label_);
+      for (size_t j = 0; j < finite_indices.size(); ++j) {
+        size_t val = r.finite(finite_seq[finite_indices[j]]);
+        grad.f(label_val, finite_offset[j] + val) -= w;
+      }
+
+      grad.v.row(label_val) -= r.vector_values(vector_seq) * w;
+
+      grad.b[label_val] -= w;
+      */
+
     } else {
       const std::vector<size_t>& findata = r.finite();
       size_t label_val(findata[label_index_]);
-      for (size_t j(0); j < finite_indices.size(); ++j) {
-        size_t val(findata[finite_indices[j]]);
+      for (size_t j = 0; j < finite_indices.size(); ++j) {
+        size_t val = findata[finite_indices[j]];
         grad.f(label_val, finite_offset[j] + val) -= w;
       }
-      grad.v.row(label_val) -= r.vector() * w;
+//      grad.v.row(label_val) -= r.vector() * w;
+      vector_type rvec(r.vector() * w);
+      grad.v.row(label_val) -= rvec;
+
       grad.b[label_val] -= w;
     }
   }
@@ -2071,7 +2088,8 @@ namespace sill {
          r.finite_numbering_ptr->size() != finite_offset.size()) ||
         (vector_offset.size() != 0 &&
          r.vector_numbering_ptr->size() != vector_offset.size())) {
-      add_expected_gradient(grad, r.assignment(), fy, w);
+      assert(false); // TO DO
+//      add_expected_gradient(grad, r.assignment(), fy, w);
     } else {
       // Get marginal over label variable.
       table_factor
@@ -2110,9 +2128,8 @@ namespace sill {
          r.finite_numbering_ptr->size() != finite_offset.size()) ||
         (vector_offset.size() != 0 &&
          r.vector_numbering_ptr->size() != vector_offset.size())) {
-      assignment tmpa(r.assignment());
-      add_gradient(grad, tmpa, w);
-      add_expected_gradient(grad, tmpa, fy, -w);
+      add_gradient(grad, r, w);
+      add_expected_gradient(grad, r, fy, -w);
     } else {
       // Get marginal over label variable.
       table_factor

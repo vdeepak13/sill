@@ -4,27 +4,27 @@
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/optimization/lbfgs.hpp>
 
+using namespace sill;
+
 struct obj_functor {
-  double objective(sill::vec val) const {
-    sill::vec tmpval(2,1.);
+  double objective(vec val) const {
+    vec tmpval = vec_2(1.,1.);
     return -5. + dot(val - tmpval, val - tmpval);
   }
 };
 
 struct grad_functor {
-  void gradient(sill::vec& grad, const sill::vec& val) const {
-    sill::vec tmpval(2,1.);
+  void gradient(vec& grad, const vec& val) const {
+    vec tmpval = vec_2(1.,1.);
     grad = 2. * (val - tmpval);
   }
 };
 
 int main(int argc, char* argv[]) {
 
-  using namespace sill;
-
   size_t niter = 5;
 
-  vec val(2, 0);
+  vec val = vec_2(0.,0.);
   lbfgs_parameters lbfgs_params;
   lbfgs_params.debug = 2;
   obj_functor obj;

@@ -166,7 +166,7 @@ namespace sill {
     sill::vector_assignment vector_assignment() const {
       sill::vector_assignment a;
       foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
-        vec v(p.first->size(), 0);
+        vec v(zeros<vec>(p.first->size()));
         for(size_t j = 0; j < p.first->size(); ++j)
           v[j] = vec_ptr->operator[](j+p.second);
         a[p.first] = v;
@@ -290,6 +290,15 @@ namespace sill {
           ++i;
         }
       }
+    }
+
+    //! Returns a vector of values of vars from this record.
+    //! @param vars  All of these variables must have values in this record.
+    template <typename VecType>
+    VecType vector_values(const vector_var_vector& vars) const {
+      VecType vals;
+      vector_values(vals, vars);
+      return vals;
     }
 
     //! Sets the given vector to the indices of the given variables' values
@@ -522,6 +531,33 @@ namespace sill {
     r.write(out);
     return out;
   }
+
+  // Specializations for sparse_linear_algebra
+  //============================================================================
+
+  /*
+  // TO DO
+  template <typename T, typename SizeType>
+  template <typename VecType>
+  void
+  vector_record<sparse_linear_algebra<T,SizeType> >::
+  vector_values(VecType& vals, const vector_var_vector& vars) const {
+    size_t vars_size = vector_size(vars);
+    // Collect the non-zero values.
+    std::vector<SizeType> indices;
+    std::vector<T> values;
+
+
+    size_t i = 0; // index into vals
+    foreach(vector_variable* v, vars) {
+      size_t j = safe_get(*vector_numbering_ptr, v);
+      for (size_t k = 0; k < v->size(); ++k) {
+        vals[i] = vec_ptr->operator[](j + k);
+        ++i;
+      }
+    }
+  }
+  */
 
 } // namespace sill
 

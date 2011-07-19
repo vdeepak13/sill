@@ -118,9 +118,11 @@ namespace sill {
      */
     templated_crf_factor
     (boost::shared_ptr<F> factor_ptr_,
-     const typename variable_type_group<output_variable_type>::var_map_type&
+     const
+     typename variable_type_group<output_variable_type,la_type>::var_map_type&
      Yvarmap,
-     const typename variable_type_group<input_variable_type>::var_map_type&
+     const
+     typename variable_type_group<input_variable_type,la_type>::var_map_type&
      Xvarmap)
       : base(), factor_ptr_(factor_ptr_), fixed_records_(false) {
       init(Yvarmap,Xvarmap);
@@ -504,10 +506,12 @@ namespace sill {
     mutable record_type base_input_record;
 
     //! Mapping: Vars in the base factor --> Vars in this factor instance
-    typename variable_type_group<variable_type>::var_map_type vmap_base2this;
+    typename variable_type_group<variable_type,la_type>::var_map_type
+    vmap_base2this;
 
     //! Mapping: Vars in this factor instance --> Vars in the base factor
-    typename variable_type_group<variable_type>::var_map_type vmap_this2base;
+    typename variable_type_group<variable_type,la_type>::var_map_type
+    vmap_this2base;
 
     //! Temp used to hold factors returned by the base,
     //! but with variables mapped to this instance's variables.
@@ -545,10 +549,14 @@ namespace sill {
     //! Given: factor_ptr_ is set
     //! Init: vmap_base2this, base_record, base_input_record
     void
-    init(const typename variable_type_group<output_variable_type>::var_map_type&
-         Yvarmap,
-         const typename variable_type_group<input_variable_type>::var_map_type&
-         Xvarmap) {
+    init
+    (const
+     typename variable_type_group<output_variable_type,la_type>::var_map_type&
+     Yvarmap,
+     const
+     typename variable_type_group<input_variable_type,la_type>::var_map_type&
+     Xvarmap) {
+
       assert(factor_ptr_);
       var_vector_type base_vars;
       input_var_vector_type base_input_vars;

@@ -182,7 +182,7 @@ namespace sill {
     mat Xdata; // X data matrix (nrecords x |X|)
     ds.get_value_matrix(Xdata, Xvec, false);
     // Compute mean, and center Y values.
-    vec mu(sum(Ydata,1));
+    vec mu(trans(sum(Ydata,0)));
     mu /= Ydata.n_rows;
     Ydata -= repmat(trans(mu), Ydata.n_rows, 1);
 
@@ -363,7 +363,7 @@ namespace sill {
           fold_test_view.get_value_matrix(testXdata, Xvec, false);
           fold_test_view.get_value_matrix(testYdata, Yvec);
           // Compute mean, and center Y values.
-          vec mu(sum(Ydata,1));
+          vec mu(trans(sum(Ydata,0)));
           mu /= Ydata.n_rows;
           Ydata -= repmat(trans(mu), Ydata.n_rows, 1);
           testYdata -= repmat(trans(mu), testYdata.n_rows, 1);
@@ -401,7 +401,6 @@ namespace sill {
           mat YtY_n(trans(Ydata) * Ydata);
           YtY_n /= fold_train_view.size();
 
-          vec tmpvec;
           // For each lambda_bC
           for (size_t i_bC(0); i_bC < alt_lambdas[0].size(); ++i_bC) {
             double lambda_bC(alt_lambdas[0][i_bC]);
@@ -458,8 +457,7 @@ namespace sill {
               mat sigma_inv(yVt * diagmat(1. / (ys0 + lambda_cov)) * yUt);
               double ll(0.);
               for (size_t i(0); i < fold_test_view.size(); ++i) {
-                tmpvec = tmpmat.row(i);
-                ll += dot(tmpvec, sigma_inv * tmpvec);
+                ll += dot(tmpmat.row(i), tmpmat.row(i) * sigma_inv);
               }
               ll *= (-.5 / fold_test_view.size());
               if (lambda_cov == 0)
@@ -551,6 +549,21 @@ namespace sill {
       learn_crf_factor<gaussian_crf_factor>::train(ds, Y_, X_ptr_,
                                                    tmp_params, unif_int(rng));
 
+  } // learn_crf_factor<gaussian_crf_factor>::train_cv
+
+  template <>
+  gaussian_crf_factor
+  learn_crf_factor<gaussian_crf_factor>::train_cv
+  (const crossval_parameters& cv_params,
+   const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
+   copy_ptr<vector_domain> X_ptr_,
+   const gaussian_crf_factor::parameters& params, unsigned random_seed) {
+    std::vector<gaussian_crf_factor::regularization_type> reg_params;
+    vec means;
+    vec stderrs;
+    return learn_crf_factor<gaussian_crf_factor>::train_cv
+      (reg_params, means, stderrs, cv_params, ds, Y_, X_ptr_, params,
+       random_seed);
   } // learn_crf_factor<gaussian_crf_factor>::train_cv
 
   //============================================================================

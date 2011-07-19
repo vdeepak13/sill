@@ -28,9 +28,9 @@ int main()
   vector_var_vector dom_yx = make_vector(y, x);
   vector_var_vector dom_yz  = make_vector(y, z);
 
-  mat ma  = mat_2x2(1.0, 2.0, 2.0, 3.0);
-  mat ma_ = mat_2x2(3.0, 2.0, 2.0, 1.0);
-  mat mb  = mat_2x2(2.0, 3.0, 3.0, 4.0);
+  mat ma  = mat_2x2(2.0, 1.0, 1.0, 3.0);
+  mat ma_ = mat_2x2(3.0, 1.0, 1.0, 2.0);
+  mat mb  = mat_2x2(3.0, 2.0, 2.0, 4.0);
   vec va  = vec_2(1.0, 2.0);
   vec va_ = vec_2(2.0, 1.0);
   vec vb  = vec_2(3.0, 4.0);

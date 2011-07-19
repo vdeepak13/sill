@@ -94,6 +94,16 @@ namespace sill {
       init(nreserved);
     }
 
+    //! This method is like a constructor.
+    //! @param info    info from calling datasource_info()
+    void reset(const datasource_info_type& info) {
+      base::reset(info);
+      finite_data.clear();
+      vector_data.clear();
+      data_vector.clear();
+      init(0);
+    }
+
     // Getters and helpers
     //==========================================================================
 
@@ -201,7 +211,7 @@ namespace sill {
     //! Randomly reorders the dataset (this is a mutable operation)
     void randomize(double random_seed);
 
-    // Protected data members
+    // Protected types
     //==========================================================================
   protected:
 
@@ -224,6 +234,9 @@ namespace sill {
     using base::nrecords;
     using base::weighted;
     using base::weights_;
+
+    // Protected data members
+    //==========================================================================
 
     //! Table of finite values.
     //! (# data points x # finite variables)
@@ -357,10 +370,10 @@ namespace sill {
 
   template <typename LA>
   std::pair<vec, vec> vector_assignment_dataset<LA>::normalize() {
-    vec means(dvector,0);
-    vec std_devs(dvector,0);
-    double total_ds_weight(0);
-    vec tmpvec(dvector,0);
+    vec means(zeros<vec>(dvector));
+    vec std_devs(zeros<vec>(dvector));
+    double total_ds_weight = 0;
+    vec tmpvec(zeros<vec>(dvector));
     for (size_t i = 0; i < nrecords; ++i) {
       means += weight(i) * vector_data[i];
       tmpvec = vector_data[i];

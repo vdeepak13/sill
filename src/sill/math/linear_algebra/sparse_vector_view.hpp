@@ -22,7 +22,7 @@ namespace sill {
    *  - a vector of values corresponding to the indices
    *
    * Design: Efficient access, slow construction.
-   *  - The indices are kept sorted for efficient access.
+   *  - The indices are kept sorted for efficient access. (TO DO: IS THIS TRUE?)
    *  - The vector cannot be built incrementally in an efficient way.
    *  - This view type is most useful for
    *     - working with constant vectors, and

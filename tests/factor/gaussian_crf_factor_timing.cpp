@@ -91,9 +91,9 @@ int main(int argc, char** argv) {
   bool do_cv = true;
   crossval_params<gaussian_crf_factor::regularization_type::nlambdas> cv_params;
   cv_params.nfolds = 2;
-  cv_params.minvals = .001;
-  cv_params.maxvals = 20.;
-  cv_params.nvals = 2;
+  cv_params.minvals.fill(.001);
+  cv_params.maxvals.fill(20.);
+  cv_params.nvals.fill(2);
   cv_params.zoom = 1;
   cv_params.log_scale = true;
 

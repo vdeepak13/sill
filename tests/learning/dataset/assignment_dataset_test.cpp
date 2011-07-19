@@ -34,7 +34,7 @@ int main(int argc, char* argv[]) {
     cout << rec.assignment() << endl;
 
   // Iterate over the data, computing the mean of the vector data
-  vec v(data_ptr->vector_dim(), 0);
+  vec v(zeros<vec>(data_ptr->vector_dim()));
   foreach(const record<>& record, data_ptr->records())
     v += record.vector();
 

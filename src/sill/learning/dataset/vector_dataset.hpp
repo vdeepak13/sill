@@ -94,6 +94,15 @@ namespace sill {
 
     void load(iarchive& a);
 
+    //! This method is like a constructor.
+    //! @param info    info from calling datasource_info()
+    void reset(const datasource_info_type& info) {
+      base::reset(info);
+      finite_data.clear();
+      vector_data.clear();
+      reserve(1);
+    }
+
     // Getters and helpers
     //==========================================================================
 
@@ -175,7 +184,7 @@ namespace sill {
     //! Randomly reorders the dataset (this is a mutable operation)
     void randomize(double random_seed);
 
-    // Protected data members
+    // Protected types
     //==========================================================================
   protected:
 
@@ -206,6 +215,9 @@ namespace sill {
     using base::nrecords;
     using base::weighted;
     using base::weights_;
+
+    // Protected data
+    //==========================================================================
 
     //! Table of finite values.
     //! Note: This must be mutable for record_iterator to be efficient.
@@ -385,10 +397,10 @@ namespace sill {
 
   template <typename LA>
   std::pair<vec, vec> vector_dataset<LA>::normalize() {
-    vec means(dvector,0);
-    vec std_devs(dvector,0);
-    double total_ds_weight(0);
-    vector_type tmpvec(dvector,0);
+    vec means(zeros<vec>(dvector));
+    vec std_devs(zeros<vec>(dvector));
+    double total_ds_weight = 0;
+    vector_type tmpvec(zeros<vector_type>(dvector));
     for (size_t i = 0; i < nrecords; ++i) {
       means += weight(i) * vector_data[i];
       tmpvec = vector_data[i];

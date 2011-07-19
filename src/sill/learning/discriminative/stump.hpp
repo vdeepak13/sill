@@ -83,7 +83,9 @@ namespace sill {
    * If some decision rules score equally well, this chooses each with equal
    * probability.
    *
-   * @param Objective  class defining the optimization objective
+   * @tparam Objective  class defining the optimization objective
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    *
    * \author Joseph Bradley
    * \ingroup learning_discriminative
@@ -92,8 +94,9 @@ namespace sill {
    * @todo The build() function could be made more efficient by using
    *       record_iterator instead of finite(,) and vector(,).
    */
-  template <typename Objective = discriminative::objective_accuracy>
-  class stump : public binary_classifier<> {
+  template <typename Objective = discriminative::objective_accuracy,
+            typename LA = dense_linear_algebra<> >
+  class stump : public binary_classifier<LA> {
 
     //    concept_assert((sill::DomainPartitioningObjective<Objective>));
 
@@ -101,18 +104,19 @@ namespace sill {
     //==========================================================================
   public:
 
-    typedef binary_classifier<> base;
+    typedef LA la_type;
 
-    typedef base::la_type la_type;
-    typedef base::record_type record_type;
+    typedef binary_classifier<la_type> base;
+
+    typedef typename base::record_type record_type;
 
     // Protected data members
     //==========================================================================
   protected:
 
     // Data from base class:
-    //  finite_variable* label_
-    //  size_t label_index_
+    using base::label_;
+    using base::label_index_;
 
     stump_parameters params;
 
@@ -387,16 +391,16 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
-      boost::shared_ptr<binary_classifier<> >
+    boost::shared_ptr<binary_classifier<la_type> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<la_type> >
         bptr(new stump<Objective>(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
-      boost::shared_ptr<binary_classifier<> >
+    boost::shared_ptr<binary_classifier<la_type> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<la_type> >
         bptr(new stump<Objective>(o, n, this->params));
       return bptr;
     }

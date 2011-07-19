@@ -2,7 +2,6 @@
 #ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_BOOSTER_OC_HPP
 #define SILL_LEARNING_DISCRIMINATIVE_MULTICLASS_BOOSTER_OC_HPP
 
-#include <sill/learning/discriminative/load_functions.hpp>
 #include <sill/learning/discriminative/multiclass_booster.hpp>
 #include <sill/math/permutations.hpp>
 #include <sill/math/statistics.hpp>
@@ -10,6 +9,13 @@
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  /*
+  // Forward declaration
+  template <typename LA>
+  boost::shared_ptr<binary_classifier<LA> >
+  load_binary_classifier(std::ifstream& in, const datasource& ds);
+  */
 
   /**
    * MULTICLASS BOOSTER OC PARAMETERS
@@ -19,15 +25,18 @@ namespace sill {
    *  - INIT_ITERATIONS
    *  - CONVERGENCE_ZERO
    */
+  template <typename LA>
   struct multiclass_booster_OC_parameters : public booster_parameters {
 
+    typedef LA la_type;
+ 
     //! New variable used to create binary views of the class variable
     //!  (required)
     finite_variable* binary_label;
 
     //! Specifies weak learner type
     //!  (required)
-    boost::shared_ptr<binary_classifier<> > weak_learner;
+    boost::shared_ptr<binary_classifier<la_type> > weak_learner;
 
     multiclass_booster_OC_parameters() : binary_label(NULL) { }
 
@@ -56,7 +65,8 @@ namespace sill {
     //!       afterwards by the user.
     void load(std::ifstream& in, const datasource& ds) {
       booster_parameters::load(in);
-      weak_learner = load_binary_classifier(in, ds);
+      assert(false); // TO BE FIXED
+//      weak_learner = load_binary_classifier<la_type>(in, ds);
     }
 
   };  // struct multiclass_booster_OC_parameters
@@ -64,7 +74,8 @@ namespace sill {
   /**
    * Multiclass boosting algorithm interface for Output Coding (.OC) boosters.
    *
-   * @param Objective      optimization objective defining the booster
+   * @tparam Objective      optimization objective defining the booster
+   * @tparam LA  Linear algebra type specifier
    *
    * \author Joseph Bradley
    * \ingroup learning_discriminative
@@ -76,17 +87,21 @@ namespace sill {
    *       They are talking about this w.r.t. the proto_knn learner,
    *       but perhaps it would apply to others as well.
    */
-  template <typename Objective>
-  class multiclass_booster_OC : public multiclass_booster<Objective> {
+  template <typename Objective, typename LA>
+  class multiclass_booster_OC
+    : public multiclass_booster<Objective,LA> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef multiclass_booster<Objective> base;
+    typedef LA la_type;
 
-    typedef typename base::la_type la_type;
+    typedef multiclass_booster<Objective,la_type> base;
+
     typedef typename base::record_type record_type;
+
+    typedef multiclass_booster_OC_parameters<la_type> parameters;
 
     // Protected data members
     //==========================================================================
@@ -149,7 +164,9 @@ namespace sill {
     mutable boost::mt11213b rng;
 
     //! Base hypotheses
-    std::vector<boost::shared_ptr<binary_classifier<> > > base_hypotheses;
+    std::vector<boost::shared_ptr<binary_classifier<la_type> > >
+    base_hypotheses;
+
     //! Colorings for labels: colorings[t][l] = 0/1 for label l on round t
     std::vector<std::vector<size_t> > colorings;
 
@@ -231,11 +248,11 @@ namespace sill {
     //==========================================================================
 
     explicit
-    multiclass_booster_OC(const multiclass_booster_OC_parameters& params)
+    multiclass_booster_OC(const parameters& params)
       : base(params.weak_learner.get()) { }
 
     multiclass_booster_OC(const datasource& ds,
-                          const multiclass_booster_OC_parameters& params)
+                          const parameters& params)
       : base(ds, params.weak_learner.get()) {
       tmp_vector.set_size(nclasses_);
     }
@@ -353,8 +370,9 @@ namespace sill {
       if (!(base::load(in, ds, load_part)))
         return false;
       base_hypotheses.resize(iteration_);
-      for (size_t t = 0; t < iteration_; ++t)
-        base_hypotheses[t] = load_binary_classifier(in, ds);
+      assert(false); // TO BE FIXED
+//      for (size_t t = 0; t < iteration_; ++t)
+//        base_hypotheses[t] = load_binary_classifier<la_type>(in, ds);
       std::string line;
       getline(in, line);
       std::istringstream is(line);

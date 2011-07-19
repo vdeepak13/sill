@@ -9,7 +9,6 @@
 //#include <sill/datastructure/concepts.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
 //#include <sill/learning/discriminative/concepts.hpp>
-#include <sill/learning/discriminative/load_functions.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 //#include <sill/learning/dataset/oracle.hpp>
@@ -23,12 +22,23 @@
 
 namespace sill {
 
-  //! @todo Add parameter NO_TRAIN_ACCURACY (for faster training).
+  // Forward declarations
+  /*
+  template <typename LA>
+  boost::shared_ptr<binary_classifier<LA> >
+  load_binary_classifier(std::ifstream& in, const datasource& ds);
+  */
+
+  /**
+   * @todo Add parameter NO_TRAIN_ACCURACY (for faster training).
+   */
   struct all_pairs_batch_parameters {
+
+    typedef dense_linear_algebra<> la_type;
 
     //! Specifies base learner type.
     //!  (required)
-    boost::shared_ptr<binary_classifier<> > base_learner;
+    boost::shared_ptr<binary_classifier<la_type> > base_learner;
 
     //! New variable used to create binary views of the class variable
     //!  (required)
@@ -62,7 +72,8 @@ namespace sill {
     }
 
     void load(std::ifstream& in, const datasource& ds) {
-      base_learner = load_binary_classifier(in, ds);
+      assert(false); // TO BE FIXED
+//      base_learner = load_binary_classifier<la_type>(in, ds);
       std::string line;
       getline(in, line);
       std::istringstream is(line);
@@ -87,16 +98,20 @@ namespace sill {
    * @see BatchMulticlassClassifier
    * @todo Make a copy constructor and assignment operator which copy WLs.
    */
-  class all_pairs_batch : public multiclass_classifier<> {
+  class all_pairs_batch
+    : public multiclass_classifier<dense_linear_algebra<> > {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef multiclass_classifier<> base;
+    typedef dense_linear_algebra<> la_type;
 
-    typedef base::la_type la_type;
+    typedef multiclass_classifier<la_type> base;
+
     typedef base::record_type record_type;
+
+    typedef all_pairs_batch_parameters parameters;
 
     // Constructors
     //==========================================================================
@@ -108,8 +123,7 @@ namespace sill {
      *  - loading a saved booster
      * @param params        algorithm parameters
      */
-    explicit all_pairs_batch(all_pairs_batch_parameters params
-                             = all_pairs_batch_parameters())
+    explicit all_pairs_batch(parameters params = parameters())
       : params(params) {
     }
 
@@ -119,8 +133,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     explicit all_pairs_batch(dataset_statistics<la_type>& stats,
-                             all_pairs_batch_parameters params
-                             = all_pairs_batch_parameters())
+                             parameters params = parameters())
       : base(stats.get_dataset()), params(params) {
       build(stats);
     }
@@ -132,8 +145,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     all_pairs_batch(oracle<la_type>& o, size_t n,
-                    all_pairs_batch_parameters params
-                    = all_pairs_batch_parameters())
+                    parameters params = parameters())
     : base(o), params(params) {
       boost::shared_ptr<vector_dataset<la_type> >
         ds_ptr(new vector_dataset<la_type>());
@@ -143,24 +155,26 @@ namespace sill {
     }
 
     //! Train a new multiclass classifier of this type with the given data.
-    boost::shared_ptr<multiclass_classifier<> >
+    boost::shared_ptr<multiclass_classifier<la_type> >
     create(dataset_statistics<la_type>& stats) const {
-      boost::shared_ptr<multiclass_classifier<> >
+      boost::shared_ptr<multiclass_classifier<la_type> >
         bptr(new all_pairs_batch(stats, this->params));
       return bptr;
     }
 
     //! Train a new multiclass classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<multiclass_classifier<> >
+    boost::shared_ptr<multiclass_classifier<la_type> >
     create(oracle<la_type>& o, size_t n) const {
-      boost::shared_ptr<multiclass_classifier<> >
+      boost::shared_ptr<multiclass_classifier<la_type> >
         bptr(new all_pairs_batch(o, n, this->params));
       return bptr;
     }
 
     // Getters and helpers
     //==========================================================================
+
+    using base::nclasses;
 
     //! Return a name for the algorithm without template parameters.
     std::string name() const {
@@ -179,7 +193,7 @@ namespace sill {
     }
 
     //! Get the parameters of the algorithm
-    all_pairs_batch_parameters& get_parameters() {
+    parameters& get_parameters() {
       return params;
     }
 
@@ -229,10 +243,10 @@ namespace sill {
   protected:
 
     // Data from base class:
-    //  finite_variable* label_
-    //  size_t label_index_
+    using base::label_;
+    using base::label_index_;
 
-    all_pairs_batch_parameters params;
+    parameters params;
 
     //! random number generator
     mutable boost::mt11213b rng;
@@ -249,7 +263,7 @@ namespace sill {
      * Note: i ranges from 0 to nclasses_-2;
      *       j ranges from 0 to nclasses_-i-2
      */
-    std::vector<std::vector<boost::shared_ptr<binary_classifier<> > > >
+    std::vector<std::vector<boost::shared_ptr<binary_classifier<la_type> > > >
       base_classifiers;
 
     //! Training accuracies of base classifiers
@@ -273,5 +287,7 @@ namespace sill {
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
+
+#include <sill/learning/discriminative/load_functions.hpp>
 
 #endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_ALL_PAIRS_BATCH_HPP

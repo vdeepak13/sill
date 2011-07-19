@@ -7,16 +7,18 @@
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/optimization/stochastic_gradient.hpp>
 
+using namespace sill;
+
 // minimize -5 + (val - <1,1>)^2
 struct obj_grad_functor1 {
   explicit obj_grad_functor1(double range = 1)
     : unif_real(0,range), rng(time(NULL)) { }
-  double objective(sill::vec val) const {
-    const sill::vec v1("1 1");
+  double objective(vec val) const {
+    const vec v1("1 1");
     return -5. + dot(val - v1, val - v1);
   }
-  void gradient(sill::vec& grad, const sill::vec& val) const {
-    const sill::vec v1("1 1");
+  void gradient(vec& grad, const vec& val) const {
+    const vec v1("1 1");
     grad = 2. * (val - v1);
     double gradL2 = grad.L2norm();
     for (size_t i = 0; i < v1.size(); ++i) {
@@ -29,8 +31,6 @@ struct obj_grad_functor1 {
 
 int main(int argc, char* argv[]) {
 
-  using namespace sill;
-
   size_t niter = 100;
   double range = 1; // controls amount of noise added to the gradient
 
@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
   std::cerr << "sg_params:\n" << sg_params << std::endl;
 
   obj_grad_functor1 og1(range);
-  vec val1(2, 0);
+  vec val1(zeros<vec>(2));
   stochastic_gradient<vec, obj_grad_functor1>
     sg1(og1, val1, sg_params);
   double last_obj = og1.objective(sg1.x());

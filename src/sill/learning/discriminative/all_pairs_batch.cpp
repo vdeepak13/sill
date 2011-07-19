@@ -187,8 +187,9 @@ namespace sill {
     base_classifiers.resize(nclasses_-1);
     for (size_t i = 0; i < nclasses_-1; ++i) {
       base_classifiers[i].resize(nclasses_-i-1);
-      for (size_t j = 0; j < nclasses_-i-1; ++i)
-        base_classifiers[i][j] = load_binary_classifier(in, ds);
+      assert(false); // TO BE FIXED
+//      for (size_t j = 0; j < nclasses_-i-1; ++i)
+//        base_classifiers[i][j] = load_binary_classifier<la_type>(in, ds);
     }
     std::string line;
     getline(in, line);

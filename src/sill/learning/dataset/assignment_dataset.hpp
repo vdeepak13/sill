@@ -89,6 +89,15 @@ namespace sill {
       init(nreserved);
     }
 
+    //! This method is like a constructor.
+    //! @param info    info from calling datasource_info()
+    void reset(const datasource_info_type& info) {
+      base::reset(info);
+      data_vector.clear();
+      vector_i2pair.clear();
+      init(1);
+    }
+
     // Getters and helpers
     //==========================================================================
 
@@ -187,7 +196,7 @@ namespace sill {
     //! Randomly reorders the dataset (this is a mutable operation)
     void randomize(double random_seed);
 
-    // Protected data members
+    // Protected types
     //==========================================================================
   protected:
 
@@ -210,6 +219,9 @@ namespace sill {
     using base::nrecords;
     using base::weighted;
     using base::weights_;
+
+    // Protected data
+    //==========================================================================
 
     //! Data
     mutable std::vector<sill::assignment> data_vector;

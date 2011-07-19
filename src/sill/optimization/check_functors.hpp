@@ -118,7 +118,7 @@ namespace sill {
     OptVector hd_x_grad_x;
     hd_functor.hessian_diag(hd_x_grad_x, x);
     hd_x_grad_x.elem_mult(grad_x);
-    vec errors(etas.size(), 0);
+    vec errors(zeros<vec>(etas.size()));
     OptVector tmpoptvec;
     for (size_t i(0); i < k; ++i) {
       grad_functor(tmpoptvec, x + grad_x * etas[i]);

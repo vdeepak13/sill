@@ -32,6 +32,10 @@ namespace sill {
   template <typename T, typename SizeType>
   sparse_vector<T,SizeType> operator*(T c, const sparse_vector<T,SizeType>& v);
 
+  //! const * sparse vector --> sparse vector
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType> operator*(const sparse_vector<T,SizeType>& v, T c);
+
   //! Vector summation.
   template <typename T, typename SizeType>
   T sum(const dense_vector_view<T,SizeType>& v);
@@ -95,6 +99,17 @@ namespace sill {
   template <typename T, typename SizeType>
   sparse_vector<T,SizeType>&
   operator-=(sparse_vector<T,SizeType>& x, const arma::Col<T>& y);
+
+  //! Subtraction
+  template <typename T, typename SizeType>
+  arma::Col<T>&
+  operator-=(arma::Col<T>& x, const sparse_vector<T,SizeType>& y);
+
+  //! Subtraction
+  //! (Return void as in Armadillo)
+  template <typename T, typename SizeType>
+  void
+  operator-=(arma::subview<T> x, const sparse_vector<T,SizeType>& y);
 
   //! Division
   //! WARNING: This ignores zero elements of x. If y has zeros,
@@ -233,6 +248,13 @@ namespace sill {
   }
 
   template <typename T, typename SizeType>
+  sparse_vector<T,SizeType> operator*(const sparse_vector<T,SizeType>& v, T c) {
+    sparse_vector<T,SizeType> r(v);
+    r *= c;
+    return r;
+  }
+
+  template <typename T, typename SizeType>
   T sum(const dense_vector_view<T,SizeType>& v) {
     T val = 0;
     for (SizeType i = 0; i < v.size(); ++i)
@@ -273,7 +295,8 @@ namespace sill {
   //============================================================================
 
   template <typename T, typename SizeType>
-  arma::Col<T>& operator+=(arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
+  arma::Col<T>&
+  operator+=(arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
     assert(x.size() == y.size());
     for (SizeType k = 0; k < y.num_non_zeros(); ++k)
       x[y.index(k)] += y.value(k);
@@ -296,6 +319,25 @@ namespace sill {
     }
     x = sparse_vector<T,SizeType>(y.size(), inds, vals);
     return x;
+  }
+
+  template <typename T, typename SizeType>
+  arma::Col<T>&
+  operator-=(arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
+    assert(x.size() == y.size());
+    for (SizeType i = 0; i < y.num_non_zeros(); ++i) {
+      x[y.index(i)] -= y.value(i);
+    }
+    return x;
+  }
+
+  template <typename T, typename SizeType>
+  void
+  operator-=(arma::subview<T> x, const sparse_vector<T,SizeType>& y) {
+    assert(x.size() == y.size());
+    for (SizeType i = 0; i < y.num_non_zeros(); ++i) {
+      x[y.index(i)] -= y.value(i);
+    }
   }
 
   template <typename T, typename SizeType>
@@ -447,7 +489,7 @@ namespace sill {
         v[i] = sum(m.column(i));
       return v;
     } else if (dim == 1) {
-      arma::Col<T> v(m.num_rows(),0);
+      arma::Col<T> v(zeros<arma::Col<T> >(m.num_rows()));
       for (SizeType k = 0; k < m.num_non_zeros(); ++k)
         v[m.row_index(k)] += m.value(k);
       return v;
@@ -466,7 +508,7 @@ namespace sill {
         v[i] = sum(m.column(i), mfunc);
       return v;
     } else if (dim == 1) {
-      arma::Col<T> v(m.num_rows(),0);
+      arma::Col<T> v(zeros<arma::Col<T> >(m.num_rows()));
       for (SizeType k = 0; k < m.num_non_zeros(); ++k)
         v[m.row_index(k)] += mfunc(m.value(k));
       return v;
@@ -494,7 +536,7 @@ namespace sill {
     inline arma::Col<T>
     mult_densemat_sparsevec_(const arma::Mat<T>& A, const InVecType& x) {
       assert(A.n_cols == x.size());
-      arma::Col<T> y(A.n_rows,0);
+      arma::Col<T> y(zeros<arma::Col<T> >(A.n_rows));
       const T* A_it = A.begin();
       for (SizeType i = 0; i < y.size(); ++i) {
         y[i] = dot(dense_vector_view<T,SizeType>(A.n_cols, A_it, A.n_rows),
@@ -591,8 +633,9 @@ namespace sill {
 
   template <typename T, typename SizeType>
   arma::Mat<T>&
-  operator+=(arma::Mat<T>& A,
-             const rank_one_matrix<arma::Col<T>,sparse_vector<T,SizeType> >& B) {
+  operator+=
+  (arma::Mat<T>& A,
+   const rank_one_matrix<arma::Col<T>,sparse_vector<T,SizeType> >& B) {
     assert(A.n_rows == B.n_rows && A.n_cols == B.n_cols);
     for (SizeType k = 0; k < B.y().num_non_zeros(); ++k)
       A.add_column(B.y().index(k), B.x() * B.y().value(k));
@@ -604,7 +647,8 @@ namespace sill {
   arma::Mat<double>&
   operator+=<double,arma::u32>
   (arma::Mat<double>& A,
-   const rank_one_matrix<arma::Col<double>,sparse_vector<double,arma::u32> >& B);
+   const rank_one_matrix<arma::Col<double>,sparse_vector<double,arma::u32> >&
+   B);
 
 } // namespace sill
 

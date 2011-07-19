@@ -30,7 +30,8 @@ namespace sill {
     //!  (default = 0)
     vec lambdas;
 
-    crf_regularization_type() : regularization(2), lambdas(NLambdas,0.) { }
+    crf_regularization_type()
+      : regularization(2), lambdas(zeros<vec>(NLambdas)) { }
 
   }; // struct crf_regularization_type
 
@@ -62,21 +63,25 @@ namespace sill {
    *                      for crf_parameter_learner).
    * @tparam NLambdas     Dimensionality of the vector of regularization
    *                      parameters used in learning.
+   * @tparam LA           Linear algebra type specifier
+   *                       (default = dense_linear_algebra<>)
    *
    * \ingroup factor
    * @author Joseph Bradley
    */
   template <typename InputVar, typename OutputFactor, typename OptVector,
-            size_t NLambdas>
+            size_t NLambdas, typename LA = dense_linear_algebra<> >
   class learnable_crf_factor
-    : public crf_factor<InputVar, OutputFactor, OptVector> {
+    : public crf_factor<InputVar, OutputFactor, OptVector, LA> {
 
     // Public types
     // =========================================================================
   public:
 
+    typedef LA la_type;
+
     //! Base class
-    typedef crf_factor<InputVar, OutputFactor, OptVector> base;
+    typedef crf_factor<InputVar, OutputFactor, OptVector, LA> base;
 
     // Import types from base.
     typedef typename base::input_variable_type   input_variable_type;

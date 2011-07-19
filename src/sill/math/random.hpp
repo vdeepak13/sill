@@ -150,12 +150,15 @@ namespace sill {
   public:
     typedef RealType input_type;
     typedef RealType result_type;
+
     //! @param n      dimensionality of random vectors generated
     //! @param alpha  fixed alpha (for all n shape parameters) > 0
     explicit dirichlet_distribution(size_t n_, const result_type& alpha_)
-      : n_(n_), alpha_(1, alpha_),
+      : n_(n_), alpha_(1),
         gammas_(1, gamma_distribution<RealType>(alpha_, 1)) {
+      this->alpha_[0] = alpha_;
     }
+
     //! @param n      dimensionality of random vectors generated
     //! @param alpha  shape parameters alpha (n-vector) > 0
     explicit dirichlet_distribution(size_t n_, const vec& alpha_)
@@ -164,8 +167,10 @@ namespace sill {
       for (size_t i = 0; i < n_; ++i)
         gammas_.push_back(gamma_distribution<RealType>(alpha_[i], 1));
     }
+
     //! dimensionality of random vector
     size_t n() const { return n_(); }
+
     //! Shape parameters
     const vec& alpha() const {
       if (n > alpha_.size())
@@ -173,13 +178,15 @@ namespace sill {
       else
         return alpha_;
     }
+
     //! (models Boost Random Distribution; does nothing here)
     void reset() { }
+
     //! Generates a random vector distributed as Dirichlet(alpha)
     template<typename Engine>
     vec operator()(Engine& rng) {
-      vec v(n_, 0);
-      result_type total(0);
+      vec v(zeros<vec>(n_));
+      result_type total = 0;
       if (n_ == alpha_.size())
         for (size_t i = 0; i < n_; ++i) {
           v[i] = gammas_[i].operator()(rng);
@@ -194,9 +201,10 @@ namespace sill {
         v[i] /= total;
       return v;
     }
+
   }; // class dirichlet distribution
 
-}
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 

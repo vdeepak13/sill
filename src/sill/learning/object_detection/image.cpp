@@ -69,7 +69,7 @@ namespace sill {
                  new_image_size + extra_vecs_size);
 
       // prepare finite and vector values
-      vec vec_val(new_image_size + extra_vecs_size, 0);
+      vec vec_val(zeros<vec>(new_image_size + extra_vecs_size));
       if (view_scaleh(vecdata) == 1 && view_scalew(vecdata) == 1) {
         // no scaling required
         for (size_t h = 0; h < view_height(vecdata); ++h) {

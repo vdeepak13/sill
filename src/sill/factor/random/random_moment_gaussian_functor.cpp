@@ -71,7 +71,7 @@ namespace sill {
     if (Xsize > 2) {
       if (covariance < 0 || covariance < params.variance) {
         mat tmpmat;
-        bool result = chol(sigma, tmpmat);
+        bool result = chol(tmpmat, sigma);
         if (!result) {
           throw std::invalid_argument
             (std::string("random_moment_gaussian_functor has variance") +

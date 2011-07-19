@@ -9,6 +9,7 @@
 namespace sill {
 
   // Forward declarations
+  template <typename T, typename SizeType> class sparse_vector_view;
   /*
   template <typename T> class vector;
   template <typename T> void vector<T>::save(oarchive& ar) const;
@@ -77,6 +78,19 @@ namespace sill {
       sort_indices();
     }
 
+    //! Constructor from a view of another type.
+    template <typename OtherT, typename OtherSizeType>
+    sparse_vector(const sparse_vector_view<OtherT, OtherSizeType>& other)
+      : base(other),
+        indices_(other.num_non_zeros()), values_(other.num_non_zeros()),
+        sorted_(false) {
+      for (size_type i = 0; i < other.num_non_zeros(); ++i) {
+        indices_[i] = static_cast<size_type>(other.index(i));
+        values_[i] = static_cast<value_type>(other.value(i));
+      }
+      sort_indices();
+    }
+
     /**
      * Reset this vector to have the given non-zero elements.
      * @param n         Size of vector.
@@ -125,6 +139,15 @@ namespace sill {
       indices_.set_size(k);
       values_.set_size(k);
       sorted_ = false;
+    }
+
+    //! Sets the size of the vector to n, with no non-zeros.
+    //! Note: This clears all data from this vector.
+    void set_size(size_type n) {
+      this->n_ = n;
+      indices_.set_size(0);
+      values_.set_size(0);
+      sorted_ = true;
     }
 
     // Getters and setters: values

@@ -85,6 +85,22 @@ namespace sill {
           const typename F::parameters& params,
           unsigned random_seed = time(NULL));
 
+    //! @deprecated
+    static F
+    train_cv
+    (std::vector<typename F::regularization_type>& reg_params,
+     vec& means, vec& stderrs,
+     const crossval_parameters& cv_params,
+     const dataset<typename F::la_type>& ds,
+     const typename F::output_domain_type& Y_,
+     copy_ptr<typename F::input_domain_type> X_ptr_,
+     const typename F::parameters& params,
+     unsigned random_seed = time(NULL)) {
+      return impl::learn_crf_factor_cv_generic<F>
+        (reg_params, means, stderrs,
+         cv_params, ds, Y_, X_ptr_, params, random_seed);
+    }
+
     /**
      * Returns a newly allocated factor which represents P(Y, X) or P(Y | X),
      * learned from data;
@@ -106,17 +122,17 @@ namespace sill {
      */
     static F
     train_cv
-    (std::vector<typename F::regularization_type>& reg_params,
-     vec& means, vec& stderrs,
-     const crossval_parameters& cv_params,
+    (const crossval_parameters& cv_params,
      const dataset<typename F::la_type>& ds,
      const typename F::output_domain_type& Y_,
      copy_ptr<typename F::input_domain_type> X_ptr_,
      const typename F::parameters& params,
      unsigned random_seed = time(NULL)) {
-      return impl::learn_crf_factor_cv_generic<F>
-        (reg_params, means, stderrs,
-         cv_params, ds, Y_, X_ptr_, params, random_seed);
+      std::vector<typename F::regularization_type> reg_params;
+      vec means;
+      vec stderrs;
+      return train_cv(reg_params, means, stderrs,
+                      cv_params, ds, Y_, X_ptr_, params, random_seed);
     }
 
   }; // struct learn_crf_factor
@@ -148,6 +164,7 @@ namespace sill {
      const typename log_reg_crf_factor<LA>::parameters& params,
      unsigned random_seed);
 
+    //! @deprecated
     static log_reg_crf_factor<LA>
     train_cv
     (std::vector<typename log_reg_crf_factor<LA>::regularization_type>&
@@ -161,6 +178,21 @@ namespace sill {
       return impl::learn_crf_factor_cv_generic<log_reg_crf_factor<LA> >
         (reg_params, means, stderrs,
          cv_params, ds, Y_, X_ptr_, params, random_seed);
+    }
+
+    static log_reg_crf_factor<LA>
+    train_cv
+    (const crossval_parameters& cv_params,
+     const dataset<typename log_reg_crf_factor<LA>::la_type>& ds,
+     const finite_domain& Y_, copy_ptr<domain> X_ptr_,
+     const typename log_reg_crf_factor<LA>::parameters& params,
+     unsigned random_seed) {
+      std::vector<typename log_reg_crf_factor<LA>::regularization_type>
+        reg_params;
+      vec means;
+      vec stderrs;
+      return train_cv(reg_params, means, stderrs,
+                      cv_params, ds, Y_, X_ptr_, params, random_seed);
     }
 
   };
@@ -182,6 +214,14 @@ namespace sill {
   (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
    vec& means, vec& stderrs,
    const crossval_parameters& cv_params,
+   const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
+   copy_ptr<vector_domain> X_ptr_,
+   const gaussian_crf_factor::parameters& params, unsigned random_seed);
+
+  template <>
+  gaussian_crf_factor
+  learn_crf_factor<gaussian_crf_factor>::train_cv
+  (const crossval_parameters& cv_params,
    const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
@@ -374,30 +414,19 @@ namespace sill {
     mlr_params.lambda = params.reg.lambdas[0];
     finite_variable* new_merged_var
       = params.u.new_finite_variable(new_class_var_size);
-    multiclass2multilabel_parameters m2m_params;
+    multiclass2multilabel_parameters<LA> m2m_params;
     m2m_params.base_learner =
-      boost::shared_ptr<multiclass_classifier<> >
-      (new multiclass_logistic_regression<>(mlr_params));
+      boost::shared_ptr<multiclass_classifier<LA> >
+      (new multiclass_logistic_regression<LA>(mlr_params));
     m2m_params.random_seed = random_seed;
     m2m_params.new_label = new_merged_var;
     return
       log_reg_crf_factor<LA>
-      (boost::shared_ptr<multiclass2multilabel>(new multiclass2multilabel
-                                                (stats, m2m_params)),
+      (boost::shared_ptr<multiclass2multilabel<LA> >
+       (new multiclass2multilabel<LA>(stats, m2m_params)),
        params.smoothing / ds.size(), Y_, X_ptr_);
+    // RIGHT HERE NOW: TEMPLATIZE multiclass2multilabel by la_type
   } // learn_crf_factor<log_reg_crf_factor<LA> >::train
-
-
-  //! Specialization: gaussian_crf_factor
-  template <>
-  gaussian_crf_factor
-  learn_crf_factor<gaussian_crf_factor>::train_cv
-  (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
-   vec& means, vec& stderrs,
-   const crossval_parameters& cv_params,
-   const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
-   copy_ptr<vector_domain> X_ptr_,
-   const gaussian_crf_factor::parameters& params, unsigned random_seed);
 
 }  // namespace sill
 

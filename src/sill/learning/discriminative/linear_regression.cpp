@@ -44,7 +44,7 @@ namespace sill {
     if (Ydata_ptr) {
       Ydata_own = *Ydata_ptr;
     }
-    weights_.b = sum(Ydata_own, 1);
+    weights_.b = sum(Ydata_own, 0);
     weights_.b /= Ydata_own.n_rows;
     Ydata_own -= repmat(trans(weights_.b), Ydata().n_rows, 1);
     bool result(false);
@@ -417,8 +417,8 @@ namespace sill {
     scores.set_size(0);
     stderrs.set_size(0);
     vec lambdas_zoom(lambdas); // These hold values for each round of zooming.
-    vec scores_zoom(lambdas.size(), 0);
-    vec stderrs_zoom(lambdas.size(), 0);
+    vec scores_zoom(zeros<vec>(lambdas.size()));
+    vec stderrs_zoom(zeros<vec>(lambdas.size()));
     boost::mt11213b rng(random_seed);
     size_t best_i(0); // This indexes the current best value in all_lambdas.
 
@@ -532,8 +532,8 @@ namespace sill {
     scores.set_size(0);
     stderrs.set_size(0);
     vec lambdas_zoom(lambdas); // These hold values for each round of zooming.
-    vec scores_zoom(lambdas.size(), 0);
-    vec stderrs_zoom(lambdas.size(), 0);
+    vec scores_zoom(zeros<vec>(lambdas.size()));
+    vec stderrs_zoom(zeros<vec>(lambdas.size()));
     boost::mt11213b rng(random_seed);
     size_t best_i(0); // This indexes the current best value in all_lambdas.
 
@@ -544,7 +544,7 @@ namespace sill {
     if (lr_params.regularize_mean) {
       ds.get_value_matrix(Xdata, Xvec, true);
     } else {
-      mean_b = sum(Ydata, 1);
+      mean_b = sum(Ydata, 0);
       mean_b /= Ydata.n_rows;
       Ydata -= repmat(trans(mean_b), Ydata.n_rows, 1);
       ds.get_value_matrix(Xdata, Xvec, false);

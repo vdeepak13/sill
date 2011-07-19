@@ -71,7 +71,7 @@ namespace sill {
           results[i] = mv_func.train(train_ds, test_ds, lambdas[i], false,
                                      unif_int(rng));
           foreach(const result_value_pair& rvp, mv_func.result_map()) {
-            all_results[rvp.first] = vec(lambdas.size(), 0);
+            all_results[rvp.first] = zeros<vec>(lambdas.size());
             all_results[rvp.first][i] = rvp.second;
           }
         } else {

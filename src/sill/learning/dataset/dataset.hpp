@@ -263,6 +263,15 @@ namespace sill {
 
     virtual void load(iarchive& a);
 
+    //! This method is like a constructor but is virtualized.
+    //! @param info    info from calling datasource_info()
+    //! @todo This method should really be a pure virtual function.
+    virtual void reset(const datasource_info_type& info) {
+      base::reset(info);
+      nrecords = 0;
+      weighted = false;
+    }
+
     // Getters and queries
     //==========================================================================
 
@@ -836,7 +845,7 @@ namespace sill {
     if (nrecords <= 1)
       return;
     mean(mu, X);
-    vec tmpvec(Xsize, 0.);
+    vec tmpvec(zeros<vec>(Xsize));
     foreach(const record_type& r, records()) {
       r.vector_values(tmpvec, X);
       tmpvec -= mu;
@@ -989,14 +998,15 @@ namespace sill {
       reserve(std::max<size_t>(1, 2*nrecords));
     size_t i(nrecords);
     ++nrecords;
-    set_record(i, std::vector<size_t>(num_finite(),0), vec(vector_dim(),0), w);
+    set_record
+      (i, std::vector<size_t>(num_finite(),0), zeros<vec>(vector_dim()), w);
   }
 
   template <typename LA>
   std::pair<vec, vec> dataset<LA>::normalize() {
-    vec means(dvector, 0);
-    vec std_devs(dvector, 0);
-    value_type total_ds_weight(0);
+    vec means(zeros<vec>(dvector));
+    vec std_devs(zeros<vec>(dvector));
+    value_type total_ds_weight = 0;
     for (size_t i = 0; i < nrecords; ++i) {
       for (size_t j = 0; j < dvector; ++j) {
         means[j] += weight(i) * vector(i,j);
@@ -1025,9 +1035,9 @@ namespace sill {
   std::pair<vec, vec> dataset<LA>::normalize(const vector_var_vector& vars) {
     foreach(vector_variable* v, vars)
       assert(this->has_variable(v));
-    vec means(vector_size(vars), 0);
-    vec std_devs(vector_size(vars), 0);
-    value_type total_ds_weight(0);
+    vec means(zeros<vec>(vector_size(vars)));
+    vec std_devs(zeros<vec>(vector_size(vars)));
+    value_type total_ds_weight = 0;
     uvec vars_inds(vector_indices(vars));
     for (size_t i = 0; i < nrecords; ++i) {
       for (size_t j = 0; j < vars_inds.size(); ++j) {

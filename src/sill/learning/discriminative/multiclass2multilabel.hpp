@@ -17,11 +17,21 @@
 
 namespace sill {
 
+  // Forward declaration
+  template <typename LA>
+  boost::shared_ptr<multiclass_classifier<LA> >
+  load_multiclass_classifier(std::ifstream& in, const datasource& ds);
+
+
+  //! Parameters for multiclass2multilabel.
+  template <typename LA = dense_linear_algebra<> >
   struct multiclass2multilabel_parameters {
+
+    typedef LA la_type;
 
     //! Specifies base learner type
     //!  (required)
-    boost::shared_ptr<multiclass_classifier<> > base_learner;
+    boost::shared_ptr<multiclass_classifier<la_type> > base_learner;
 
     //! New variable used to create a merged view of the class variables
     //!  (required)
@@ -56,7 +66,14 @@ namespace sill {
       out << random_seed << "\n";
     }
 
-    void load(std::ifstream& in, const datasource& ds);
+    void load(std::ifstream& in, const datasource& ds) {
+      base_learner = load_multiclass_classifier<la_type>(in, ds);
+      std::string line;
+      getline(in, line);
+      std::istringstream is(line);
+      if (!(is >> random_seed))
+        assert(false);
+    }
 
   }; // class multiclass2multilabel_parameters
 
@@ -66,51 +83,25 @@ namespace sill {
    * Warning: This should only be used with small numbers of labels since its
    * time and space requirements grow exponentially with the number of labels!
    *
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
+   *
    * \author Joseph Bradley
    * \ingroup learning_discriminative
    */
-  class multiclass2multilabel : public multilabel_classifier<> {
+  template <typename LA = dense_linear_algebra<> >
+  class multiclass2multilabel : public multilabel_classifier<LA> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef multilabel_classifier<> base;
+    typedef multilabel_classifier<LA> base;
 
-    typedef base::la_type la_type;
-    typedef base::record_type record_type;
+    typedef typename base::la_type la_type;
+    typedef typename base::record_type record_type;
 
-    // Protected data members
-    //==========================================================================
-  protected:
-
-    // Data from base class:
-    //  finite_var_vector labels_
-    //  std::vector<size_t> label_indices_
-
-    multiclass2multilabel_parameters params;
-
-    //! Dataset view for converting records
-    boost::shared_ptr<dataset_view<la_type> > ds_light_view;
-
-    //! Base classifier
-    boost::shared_ptr<multiclass_classifier<> > base_learner;
-
-    //! Dataset structure for records which this classifier takes.
-    datasource_info_type datasource_info_;
-
-    //! Temp record for avoiding reallocation.
-    mutable record_type tmp_rec;
-
-    //! Temp assignment for avoiding reallocation.
-    mutable assignment tmp_assign;
-
-    // Protected methods
-    //==========================================================================
-
-    void init_only(const datasource& ds);
-
-    void build(const dataset<la_type>& orig_ds);
+    typedef multiclass2multilabel_parameters<la_type> parameters;
 
     // Public methods
     //==========================================================================
@@ -145,8 +136,7 @@ namespace sill {
      *  - loading a saved booster
      * @param params        algorithm parameters
      */
-    explicit multiclass2multilabel(multiclass2multilabel_parameters params
-                                   = multiclass2multilabel_parameters())
+    explicit multiclass2multilabel(parameters params = parameters())
       : base(), params(params) { }
 
     /**
@@ -155,8 +145,7 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     explicit multiclass2multilabel(dataset_statistics<la_type>& stats,
-                                   multiclass2multilabel_parameters params
-                                   = multiclass2multilabel_parameters())
+                                   parameters params = parameters())
       : base(stats.get_dataset()), params(params),
         datasource_info_(stats.get_dataset().datasource_info()) {
       build(stats.get_dataset());
@@ -169,10 +158,11 @@ namespace sill {
      * @param parameters    algorithm parameters
      */
     multiclass2multilabel(oracle<la_type>& o, size_t n,
-                          multiclass2multilabel_parameters params
-                          = multiclass2multilabel_parameters())
+                          parameters params = parameters())
     : base(o), params(params), datasource_info_(o.datasource_info()) {
-      boost::shared_ptr<vector_dataset<la_type> > ds_ptr(new vector_dataset<la_type>());
+
+      boost::shared_ptr<vector_dataset<la_type> >
+        ds_ptr(new vector_dataset<la_type>());
       oracle2dataset(o, n, *ds_ptr);
       build(*ds_ptr);
     }
@@ -181,28 +171,28 @@ namespace sill {
      * Constructor which uses a pre-learned classifier.
      * @param ds  Datasource used for training.
      */
-    multiclass2multilabel(boost::shared_ptr<multiclass_classifier<> > base_learner,
-                          const datasource& ds,
-                          multiclass2multilabel_parameters params
-                          = multiclass2multilabel_parameters())
+    multiclass2multilabel
+    (boost::shared_ptr<multiclass_classifier<la_type> > base_learner,
+     const datasource& ds,
+     parameters params = parameters())
       : base(ds), params(params), base_learner(base_learner),
         datasource_info_(ds.datasource_info()) {
       init_only(ds);
     }
 
     //! Train a new multilabel classifier of this type with the given data.
-    boost::shared_ptr<multilabel_classifier<> >
+    boost::shared_ptr<multilabel_classifier<la_type> >
     create(dataset_statistics<la_type>& stats) const {
-      boost::shared_ptr<multilabel_classifier<> >
+      boost::shared_ptr<multilabel_classifier<la_type> >
         bptr(new multiclass2multilabel(stats, this->params));
       return bptr;
     }
 
     //! Train a new multilabel classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<multilabel_classifier<> >
+    boost::shared_ptr<multilabel_classifier<la_type> >
     create(oracle<la_type>& o, size_t n) const {
-      boost::shared_ptr<multilabel_classifier<> >
+      boost::shared_ptr<multilabel_classifier<la_type> >
         bptr(new multiclass2multilabel(o, n, this->params));
       return bptr;
     }
@@ -302,7 +292,8 @@ namespace sill {
     // UNSAFE METHODS TO BE CHANGED LATER
     // =========================================================================
 
-    boost::shared_ptr<multiclass_classifier<> > get_base_learner_ptr() const {
+    boost::shared_ptr<multiclass_classifier<la_type> >
+    get_base_learner_ptr() const {
       return base_learner;
     }
 
@@ -316,14 +307,211 @@ namespace sill {
     //! to a new one (in the data format used by this class' base learner.
     //! @todo Figure out a better way to do this; this is needed by
     //!       log_reg_crf_factor.
-    void convert_record_for_base(const record_type& orig_r, record_type& new_r) const {
+    void convert_record_for_base(const record_type& orig_r,
+                                 record_type& new_r) const {
       ds_light_view->convert_record(orig_r, new_r);
     }
 
+    // Protected data members
+    //==========================================================================
+  protected:
+
+    // Import from base class:
+    using base::labels_;
+    using base::label_indices_;
+
+    parameters params;
+
+    //! Dataset view for converting records
+    boost::shared_ptr<dataset_view<la_type> > ds_light_view;
+
+    //! Base classifier
+    boost::shared_ptr<multiclass_classifier<la_type> > base_learner;
+
+    //! Dataset structure for records which this classifier takes.
+    datasource_info_type datasource_info_;
+
+    //! Temp record for avoiding reallocation.
+    mutable record_type tmp_rec;
+
+    //! Temp assignment for avoiding reallocation.
+    mutable assignment tmp_assign;
+
+    // Protected methods
+    //==========================================================================
+
+    void init_only(const datasource& ds);
+
+    void build(const dataset<la_type>& orig_ds);
+
   }; // class multiclass2multilabel
+
+  //============================================================================
+  // Implementations of methods in multiclass2multilabel
+  //============================================================================
+
+  // Prediction methods
+  //==========================================================================
+
+  template <typename LA>
+  void
+  multiclass2multilabel<LA>::
+  predict(const record_type& example, std::vector<size_t>& v) const {
+    ds_light_view->convert_record(example, tmp_rec);
+    size_t pred(base_learner->predict(tmp_rec));
+    ds_light_view->revert_merged_value(pred, v);
+  }
+
+  template <typename LA>
+  void
+  multiclass2multilabel<LA>::
+  predict(const assignment& example, std::vector<size_t>& v) const {
+    ds_light_view->convert_assignment(example, tmp_assign);
+    ds_light_view->revert_merged_value(base_learner->predict(tmp_assign), v);
+  }
+
+  template <typename LA>
+  void
+  multiclass2multilabel<LA>::
+  predict(const record_type& example, finite_assignment& a) const {
+    ds_light_view->convert_record(example, tmp_rec);
+    ds_light_view->revert_merged_value(base_learner->predict(tmp_rec), a);
+  }
+
+  template <typename LA>
+  void
+  multiclass2multilabel<LA>::
+  predict(const assignment& example, finite_assignment& a) const {
+    ds_light_view->convert_assignment(example, tmp_assign);
+    ds_light_view->revert_merged_value(base_learner->predict(tmp_assign), a);
+  }
+
+  template <typename LA>
+  std::vector<vec>
+  multiclass2multilabel<LA>::
+  marginal_probabilities(const record_type& example) const {
+    table_factor probs(probabilities(example));
+    std::vector<vec> v(labels_.size());
+    for (size_t j(0); j < labels_.size(); ++j) {
+      v[j].set_size(labels_[j]->size());
+      size_t j2(0);
+      foreach(double val, probs.marginal(make_domain(labels_[j])).values()) {
+        v[j][j2] = val;
+        ++j2;
+      }
+    }
+    return v;
+  }
+
+  template <typename LA>
+  std::vector<vec>
+  multiclass2multilabel<LA>::
+  marginal_probabilities(const assignment& example) const {
+    table_factor probs(probabilities(example));
+    std::vector<vec> v(labels_.size());
+    for (size_t j(0); j < labels_.size(); ++j) {
+      v[j].set_size(labels_[j]->size());
+      size_t j2(0);
+      foreach(double val, probs.marginal(make_domain(labels_[j])).values()) {
+        v[j][j2] = val;
+        ++j2;
+      }
+    }
+    return v;
+  }
+
+  template <typename LA>
+  table_factor
+  multiclass2multilabel<LA>::probabilities(const record_type& example) const {
+    ds_light_view->convert_record(example, tmp_rec);
+    return make_dense_table_factor(labels_,
+                                   base_learner->probabilities(tmp_rec));
+  }
+
+  template <typename LA>
+  table_factor
+  multiclass2multilabel<LA>::probabilities(const assignment& example) const {
+    ds_light_view->convert_assignment(example, tmp_assign);
+    return make_dense_table_factor(labels_,
+                                   base_learner->probabilities(tmp_assign));
+  }
+
+  // Save and load methods
+  //==========================================================================
+
+  template <typename LA>
+  void multiclass2multilabel<LA>::save(std::ofstream& out, size_t save_part,
+                                       bool save_name) const {
+    base::save(out, save_part, save_name);
+    params.save(out);
+    ds_light_view->save(out);
+    base_learner->save(out, 0, true);
+  }
+
+  template <typename LA>
+  bool multiclass2multilabel<LA>::load(std::ifstream& in, const datasource& ds,
+                                       size_t load_part) {
+    if (!(base::load(in, ds, load_part)))
+      return false;
+    params.load(in, ds);
+    ds_light_view->load(in, NULL, params.new_label);
+    base_learner = load_multiclass_classifier<la_type>(in, ds);
+    tmp_rec = record_type(ds.finite_numbering_ptr(), ds.vector_numbering_ptr(),
+                          ds.vector_dim());
+    return true;
+  }
+
+  // Protected methods
+  //==========================================================================
+
+  template <typename LA>
+  void multiclass2multilabel<LA>::init_only(const datasource& ds) {
+    params.base_learner = base_learner;
+    assert(params.valid());
+    size_t new_label_size(1);
+    for (size_t j = 0; j < labels_.size(); ++j)
+      new_label_size *= labels_[j]->size();
+    if (params.new_label == NULL ||
+        new_label_size != params.new_label->size()) {
+      assert(false);
+      return;
+    }
+    vector_dataset<la_type> orig_ds(ds.datasource_info());
+    dataset_view<la_type> ds_view(orig_ds, true);
+    ds_view.set_merged_variables(orig_ds.finite_class_variables(),
+                                 params.new_label);
+    ds_light_view = ds_view.create_light_view();
+    tmp_rec = ds_view[0];
+  }
+
+  template <typename LA>
+  void multiclass2multilabel<LA>::build(const dataset<la_type>& orig_ds) {
+    assert(params.valid());
+    size_t new_label_size(1);
+    for (size_t j = 0; j < labels_.size(); ++j)
+      new_label_size *= labels_[j]->size();
+    if (params.new_label == NULL ||
+        new_label_size != params.new_label->size()) {
+      assert(false);
+      return;
+    }
+    dataset_view<la_type> ds_view(orig_ds, true);
+    ds_view.set_merged_variables(orig_ds.finite_class_variables(),
+                                 params.new_label);
+    dataset_statistics<la_type> stats(ds_view);
+
+    boost::mt11213b rng(static_cast<unsigned>(params.random_seed));
+    params.base_learner->random_seed
+      (boost::uniform_int<int>(0, std::numeric_limits<int>::max())(rng));
+    base_learner = params.base_learner->create(stats);
+    ds_light_view = ds_view.create_light_view();
+    tmp_rec = ds_view[0];
+  }
 
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
+
+#include <sill/learning/discriminative/load_functions.hpp>
 
 #endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_MULTICLASS2MULTILABEL_HPP

@@ -73,7 +73,9 @@ namespace sill {
    * criterion) and then prunes the tree using the remaining part of the data
    * (to maximize the criterion on the held-out data).
    *
-   * @param Objective  class defining the optimization objective
+   * @tparam Objective  class defining the optimization objective
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    *
    * \author Joseph Bradley
    * \ingroup learning_discriminative
@@ -83,8 +85,9 @@ namespace sill {
    * @todo Would we ever want to templatize this and have stump replaceable by
    *       any binary classifier?
    */
-  template <typename Objective = discriminative::objective_information>
-  class decision_tree : public binary_classifier<> {
+  template <typename Objective = discriminative::objective_information,
+            typename LA = dense_linear_algebra<> >
+  class decision_tree : public binary_classifier<LA> {
 
     //    concept_assert((sill::DomainPartitioningObjective<Objective>));
 
@@ -92,21 +95,22 @@ namespace sill {
     //==========================================================================
   public:
 
-    typedef binary_classifier<> base;
+    typedef LA la_type;
 
-    typedef base::la_type la_type;
-    typedef base::record_type record_type;
+    typedef binary_classifier<la_type> base;
+
+    typedef typename base::record_type record_type;
 
     // Protected data members
     //==========================================================================
   protected:
 
     // Data from base class:
-    //  finite_variable* label_
-    //  size_t label_index_
+    using base::label_;
+    using base::label_index_;
 
     //! Type of decision stump used in decision tree nodes.
-    typedef stump<Objective> stump_type;
+    typedef stump<Objective,la_type> stump_type;
 
     decision_tree_parameters params;
 
@@ -126,7 +130,7 @@ namespace sill {
     public:
 
       //! Stump at this node
-      stump<Objective> s;
+      stump<Objective,la_type> s;
 
       //! If childA == NULL, then this is a leaf.
       //! If stump returns 1, go to this child
@@ -137,7 +141,8 @@ namespace sill {
 
       treenode() : childA(NULL), childB(NULL) { }
 
-      explicit treenode(stump<Objective> s) : s(s), childA(NULL), childB(NULL) { }
+      explicit treenode(stump<Objective,la_type> s)
+        : s(s), childA(NULL), childB(NULL) { }
 
       //! Does a deep copy
       treenode(const treenode& t)
@@ -376,16 +381,16 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
-      boost::shared_ptr<binary_classifier<> >
+    boost::shared_ptr<binary_classifier<la_type> > create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<la_type> >
         bptr(new decision_tree<Objective>(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
-      boost::shared_ptr<binary_classifier<> >
+    boost::shared_ptr<binary_classifier<la_type> > create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<la_type> >
         bptr(new decision_tree<Objective>(o, n, this->params));
       return bptr;
     }

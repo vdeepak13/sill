@@ -6,18 +6,25 @@
 namespace sill {
 
   crossval_parameters::crossval_parameters()
-    : dim(1), nfolds(10), minvals(dim, 0.000001), maxvals(dim, 1),
-      nvals(dim, 10), zoom(0), log_scale(true),
-      run_combo_type(statistics::MEAN) { }
+    : dim(1), nfolds(10), minvals(dim), maxvals(dim),
+      nvals(dim), zoom(0), log_scale(true),
+      run_combo_type(statistics::MEAN) {
+    minvals.fill(0.000001);
+    maxvals.fill(1);
+    nvals.fill(10);
+  }
 
   crossval_parameters::crossval_parameters(size_t dim)
-    : dim(dim), nfolds(10), minvals(dim, 0.000001), maxvals(dim, 1),
-      nvals(dim, 10), zoom(0), log_scale(true),
+    : dim(dim), nfolds(10), minvals(dim), maxvals(dim),
+      nvals(dim), zoom(0), log_scale(true),
       run_combo_type(statistics::MEAN) {
     if (dim == 0) {
       throw std::runtime_error
         ("crossval_parameters cannot be given dim = 0.");
     }
+    minvals.fill(0.000001);
+    maxvals.fill(1);
+    nvals.fill(10);
   }
 
   bool crossval_parameters::valid() const {

@@ -27,7 +27,7 @@ namespace sill {
   class log_reg_crf_factor
     : public learnable_crf_factor<variable, table_factor,
                                   typename multiclass_logistic_regression<LA>::opt_variables,
-                                  1> {
+                                  1, LA> {
 
     // Public types
     // =========================================================================
@@ -39,7 +39,8 @@ namespace sill {
     typedef
     learnable_crf_factor
     <variable, table_factor,
-     typename multiclass_logistic_regression<la_type>::opt_variables, 1>
+     typename multiclass_logistic_regression<la_type>::opt_variables,
+     1, la_type>
     base;
 
     // Import types from base
@@ -125,7 +126,7 @@ namespace sill {
   protected:
 
     //! Multilabel logistic regressor
-    boost::shared_ptr<multiclass2multilabel> mlr_ptr;
+    boost::shared_ptr<multiclass2multilabel<la_type> > mlr_ptr;
 
     //! Amount of smoothing to add to probabilities produced by the
     //! logistic regressor; note this is different than 'smoothing' in the
@@ -151,7 +152,11 @@ namespace sill {
      * @param X    X variables
      */
     log_reg_crf_factor(const output_domain_type& Y_,
-                       const input_domain_type& X_);
+                       const input_domain_type& X_)
+      : base(Y_, copy_ptr<domain>(new domain(X_.begin(), X_.end()))),
+        conditioned_f(Y_, 0.) {
+      assert(false); // I NEED TO INITIALIZE mlr_ptr.
+    }
 
     /**
      * Constructor.
@@ -161,9 +166,14 @@ namespace sill {
      * @param Y_           Y variables
      * @param X_ptr_       X variables
      */
-    log_reg_crf_factor(boost::shared_ptr<multiclass2multilabel> mlr_ptr,
-                       double smoothing, const finite_domain& Y_,
-                       copy_ptr<domain> X_ptr_);
+    log_reg_crf_factor
+    (boost::shared_ptr<multiclass2multilabel<la_type> > mlr_ptr,
+     double smoothing, const finite_domain& Y_, copy_ptr<domain> X_ptr_)
+      : base(Y_, X_ptr_), mlr_ptr(mlr_ptr), smoothing(smoothing), 
+        conditioned_f(Y_, 0.) {
+      assert(mlr_ptr.get() != NULL);
+      mlr_ptr->prepare_record_for_base(tmp_record);
+    }
 
     void print(std::ostream& out) const;
 
@@ -193,7 +203,7 @@ namespace sill {
      *          the given input variable (X) instantiation;
      *          in real space
      */
-    const table_factor& condition(const assignment& a) const;
+    const table_factor& condition(const input_assignment_type& a) const;
 
     /**
      * If this factor is f(Y,X), compute f(Y, X = x).
@@ -204,7 +214,7 @@ namespace sill {
      *          the given input variable (X) instantiation;
      *          in real space
      */
-    const table_factor& condition(const record_type& r) const;
+    const table_factor& condition(const input_record_type& r) const;
 
     /**
      * Returns the empirical expectation of the log of this factor.
@@ -278,7 +288,7 @@ namespace sill {
      */
     void
     add_expected_gradient(optimization_vector& grad,
-                          const record_type& r, const table_factor& fy,
+                          const input_record_type& r, const table_factor& fy,
                           double w = 1) const;
 
     /**
@@ -313,7 +323,8 @@ namespace sill {
      * @param w       Weight by which to multiply the added values.
      */
     void
-    add_expected_hessian_diag(optimization_vector& hessian, const record_type& r,
+    add_expected_hessian_diag(optimization_vector& hessian,
+                              const input_record_type& r,
                               const table_factor& fy, double w) const;
 
     /**
@@ -328,7 +339,8 @@ namespace sill {
      * @param w       Weight by which to multiply the added values.
      */
     void
-    add_expected_squared_gradient(optimization_vector& sqrgrad, const record_type& r,
+    add_expected_squared_gradient(optimization_vector& sqrgrad,
+                                  const input_record_type& r,
                                   const table_factor& fy, double w) const;
 
     /**
@@ -366,26 +378,6 @@ namespace sill {
   // =========================================================================
 
   template <typename LA>
-  log_reg_crf_factor<LA>::
-  log_reg_crf_factor(const output_domain_type& Y_,
-                     const input_domain_type& X_)
-    : base(Y_, copy_ptr<domain>(new domain(X_.begin(), X_.end()))),
-      conditioned_f(Y_, 0.) {
-    assert(false); // I NEED TO INITIALIZE mlr_ptr.
-  }
-
-  template <typename LA>
-  log_reg_crf_factor<LA>::
-  log_reg_crf_factor(boost::shared_ptr<multiclass2multilabel> mlr_ptr,
-                     double smoothing, const finite_domain& Y_,
-                     copy_ptr<domain> X_ptr_)
-    : base(Y_, X_ptr_), mlr_ptr(mlr_ptr), smoothing(smoothing), 
-      conditioned_f(Y_, 0.) {
-    assert(mlr_ptr.get() != NULL);
-    mlr_ptr->prepare_record_for_base(tmp_record);
-  }
-
-  template <typename LA>
   void log_reg_crf_factor<LA>::print(std::ostream& out) const {
     base::print(out);
     if (mlr_ptr)
@@ -397,7 +389,7 @@ namespace sill {
 
   template <typename LA>
   const table_factor&
-  log_reg_crf_factor<LA>::condition(const assignment& a) const {
+  log_reg_crf_factor<LA>::condition(const input_assignment_type& a) const {
     conditioned_f = mlr_ptr->probabilities(a);
     conditioned_f += smoothing;
     conditioned_f.normalize();
@@ -408,7 +400,7 @@ namespace sill {
 
   template <typename LA>
   const table_factor&
-  log_reg_crf_factor<LA>::condition(const record_type& r) const {
+  log_reg_crf_factor<LA>::condition(const input_record_type& r) const {
     conditioned_f = mlr_ptr->probabilities(r);
     conditioned_f += smoothing;
     conditioned_f.normalize();
@@ -484,7 +476,7 @@ namespace sill {
   void
   log_reg_crf_factor<LA>::add_expected_gradient
   (optimization_vector& grad,
-   const record_type& r, const table_factor& fy,
+   const input_record_type& r, const table_factor& fy,
    double w) const {
     assert(mlr_ptr);
     boost::shared_ptr<multiclass_classifier<la_type> >
@@ -519,7 +511,7 @@ namespace sill {
   template <typename LA>
   void
   log_reg_crf_factor<LA>::add_expected_hessian_diag
-  (optimization_vector& hessian, const record_type& r,
+  (optimization_vector& hessian, const input_record_type& r,
    const table_factor& fy, double w) const {
     return; // This is 0.
   }
@@ -527,7 +519,7 @@ namespace sill {
   template <typename LA>
   void
   log_reg_crf_factor<LA>::add_expected_squared_gradient
-  (optimization_vector& sqrgrad, const record_type& r,
+  (optimization_vector& sqrgrad, const input_record_type& r,
    const table_factor& fy, double w) const {
     assert(mlr_ptr);
     boost::shared_ptr<multiclass_classifier<la_type> >

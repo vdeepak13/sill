@@ -144,7 +144,7 @@ namespace sill {
 
     //! Returns standard errors for main result/score type.
     vec stderrs() const {
-      vec v(single_results_.size(), 0);
+      vec v(zeros<vec>(single_results_.size()));
       assert(single_results_.size() == results_.size());
       for (size_t i = 0; i < results_.size(); ++i) {
         v[i] = generalized_deviation(results_[i], run_combo_type);
@@ -162,7 +162,7 @@ namespace sill {
       typedef std::pair<std::string, std::vector<vec> > string_vecvec_pair;
       std::map<std::string, vec> allv;
       foreach(const string_vecvec_pair& svvp, all_results_) {
-        vec v(svvp.second.size(), 0);
+        vec v(zeros<vec>(svvp.second.size()));
         assert(single_all_results_.count(svvp.first) &&
                single_all_results_[svvp.first].size() == svvp.second.size());
         for (size_t i = 0; i < svvp.second.size(); ++i) {

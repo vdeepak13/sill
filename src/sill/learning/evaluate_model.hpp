@@ -70,9 +70,9 @@ namespace sill {
                                  const dataset<>& ds)
       : avg_log_likelihood(0,0), avg_per_label_accuracy(0,0),
         avg_accuracy(0,0) {
-      vec log_likelihoods(ds.size(),0);
-      vec per_label_accuracies(ds.size(),0);
-      vec accuracies(ds.size(),0);
+      vec log_likelihoods(zeros<vec>(ds.size()));
+      vec per_label_accuracies(zeros<vec>(ds.size()));
+      vec accuracies(zeros<vec>(ds.size()));
       finite_assignment mpa(model.max_prob_assignment());
       finite_var_vector finite_vars(ds.finite_list());
       size_t i(0);

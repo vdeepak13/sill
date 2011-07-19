@@ -9,7 +9,8 @@ namespace sill {
   std::vector<vec>
   create_parameter_grid(const vec& minvals, const vec& maxvals, size_t k,
                         bool log_scale, bool inclusive) {
-    uvec tmpk(maxvals.size(), k);
+    uvec tmpk(maxvals.size());
+    tmpk.fill(k);
     return create_parameter_grid(minvals, maxvals, tmpk, log_scale, inclusive);
   }
 
@@ -39,7 +40,7 @@ namespace sill {
       }
     }
     do {
-      vec vals(minvals_.size(), 0.);
+      vec vals(zeros<vec>(minvals_.size()));
       for (size_t j(0); j < minvals_.size(); ++j) {
         if (k[j] == 1) {
           vals[j] = minvals_[j];
@@ -74,7 +75,7 @@ namespace sill {
   vec create_parameter_grid(double minval, double maxval, size_t k,
                             bool log_scale, bool inclusive) {
     assert(k > 1);
-    vec values(k, 0.);
+    vec values(zeros<vec>(k));
     double minval_(minval);
     double maxval_(maxval);
     if (log_scale) {
@@ -100,7 +101,8 @@ namespace sill {
   std::vector<vec>
   create_parameter_grid_alt(const vec& minvals, const vec& maxvals, size_t k,
                             bool log_scale, bool inclusive) {
-    uvec tmpk(maxvals.size(), k);
+    uvec tmpk(maxvals.size());
+    tmpk.fill(k);
     return create_parameter_grid_alt(minvals, maxvals, tmpk, log_scale,
                                      inclusive);
   }
@@ -164,7 +166,7 @@ namespace sill {
         unique_value_sets[j].insert(v[j]);
     }
     std::vector<vec> altvals(k);
-    size_t total_vals(1);
+    size_t total_vals = 1;
     for (size_t j(0); j < k; ++j) {
       altvals[j].set_size(unique_value_sets[j].size());
       sill::copy(forward_range<double>(unique_value_sets[j].begin(),
@@ -185,7 +187,8 @@ namespace sill {
   std::vector<vec>
   zoom_parameter_grid(const std::vector<vec>& oldgrid, const vec& val,
                       size_t k, bool log_scale) {
-    uvec tmpk(val.size(), k);
+    uvec tmpk(val.size());
+    tmpk.fill(k);
     return zoom_parameter_grid(oldgrid, val, tmpk, log_scale);
   }
 
@@ -195,8 +198,10 @@ namespace sill {
     assert(oldgrid.size() > 0);
     size_t n(val.size());
     // Find bounding box.
-    vec minvals(val.size(), -std::numeric_limits<double>::max());
-    vec maxvals(val.size(), std::numeric_limits<double>::max());
+    vec minvals(val.size());
+    minvals.fill(-std::numeric_limits<double>::max());
+    vec maxvals(val.size());
+    maxvals.fill(std::numeric_limits<double>::max());
     foreach(const vec& v, oldgrid) {
       assert(v.size() == n);
       for (size_t i(0); i < n; ++i) {
@@ -249,7 +254,7 @@ namespace sill {
       if (oldgrid_set.count(v) == 0)
         tmpgrid_new.push_back(v);
     }
-    vec newgrid(tmpgrid_new.size(), 0);
+    vec newgrid(zeros<vec>(tmpgrid_new.size()));
     for (size_t i(0); i < tmpgrid_new.size(); ++i)
       newgrid[i] = tmpgrid_new[i];
     /*
@@ -261,7 +266,7 @@ namespace sill {
       else
         ++it;
     }
-    vec newgrid(newgrid_list.size(), 0.);
+    vec newgrid(zeros<vec>(newgrid_list.size()));
     it = newgrid_list.begin();
     for (size_t i(0); i < newgrid_list.size(); ++i) {
       newgrid[i] = *it;
@@ -274,7 +279,8 @@ namespace sill {
   std::vector<vec>
   zoom_parameter_grid_alt(const std::vector<vec>& oldgrid, const vec& val,
                           size_t k, bool log_scale) {
-    uvec tmpk(val.size(), k);
+    uvec tmpk(val.size());
+    tmpk.fill(k);
     return zoom_parameter_grid_alt(oldgrid, val, tmpk, log_scale);
   }
 
@@ -283,8 +289,10 @@ namespace sill {
                           const uvec& k, bool log_scale) {
     size_t n(val.size());
     // Find bounding box.
-    vec minvals(n, -std::numeric_limits<double>::max());
-    vec maxvals(n, std::numeric_limits<double>::max());
+    vec minvals(n);
+    minvals.fill(-std::numeric_limits<double>::max());
+    vec maxvals(n);
+    maxvals.fill(std::numeric_limits<double>::max());
     assert(oldgrid.size() == n);
     for (size_t i(0); i < oldgrid.size(); ++i) {
       foreach(double d, oldgrid[i]) {

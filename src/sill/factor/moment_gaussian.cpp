@@ -182,7 +182,7 @@ namespace sill {
     yc -= cmean;
     size_t n = cmean.size();
     double result =
-      as_scalar(-0.5*(yc*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));
+      as_scalar(-0.5*(trans(yc)*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
 
@@ -196,7 +196,7 @@ namespace sill {
     yc += coeff * x;
     size_t n = cmean.size();
     double result =
-      as_scalar(-0.5*(yc*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));
+      as_scalar(-0.5*(trans(yc)*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
 

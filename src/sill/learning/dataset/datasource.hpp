@@ -63,9 +63,9 @@ namespace sill {
 
     virtual ~datasource() { }
 
-    //! Resets this datasource (like a constructor).
-    //! @param var_info    info from calling datasource_info()
-    void reset(const datasource_info_type& info);
+    //! This method is like a constructor but is virtualized.
+    //! @param info    info from calling datasource_info()
+    virtual void reset(const datasource_info_type& info);
 
     void save(oarchive& a) const;
 

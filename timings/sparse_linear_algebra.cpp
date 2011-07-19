@@ -26,7 +26,7 @@ void time_dm_pe_outer_product_dv_sv(int argc) {
   double vec_sparsity = .01;
   mat dm(m,n);
   dm.zeros();
-  vec dv(m,0);
+  vec dv(m);
   for (size_t i = 0; i < m; ++i)
     dv[i] = i+1;
   sparse_vector<double> sv(n,(size_t)(n * vec_sparsity));

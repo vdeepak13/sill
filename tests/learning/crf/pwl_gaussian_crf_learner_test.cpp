@@ -7,6 +7,7 @@
 #include <sill/learning/crf/pwl_crf_learner.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/model/model_products.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>
@@ -50,6 +51,7 @@ int main(int argc, char** argv) {
                 (YXmodel, YgivenXmodel, n, u, "chain", b_max, c_max, variance,
                  YYcorrelation, YXcorrelation, XXcorrelation, add_cross_factors,
                  model_seed));
+  model_product_inplace(YgivenXmodel, YXmodel);
   vector_var_vector Y(Y_X_and_map.get<0>());
   vector_var_vector X(Y_X_and_map.get<1>());
   vector_var_vector YX(Y);

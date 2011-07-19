@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
   typedef batch_booster<boosting::adaboost>
     batch_booster_type;
   if (0) {
-  batch_booster_parameters batch_booster_params;
+    batch_booster_parameters<> batch_booster_params;
   batch_booster_params.random_seed = random_seed;
   batch_booster_params.weak_learner = wl_ptr;
   batch_booster_type batch_booster(stats, batch_booster_params);
@@ -70,7 +70,7 @@ int main(int argc, char* argv[]) {
   }
 
   if (1) {
-  batch_booster_parameters batch_booster_params;
+  batch_booster_parameters<> batch_booster_params;
   batch_booster_params.random_seed = random_seed;
   batch_booster_params.resampling = 500;
   batch_booster_params.weak_learner = wl_ptr;
@@ -114,7 +114,7 @@ int main(int argc, char* argv[]) {
 
   typedef filtering_booster<boosting::adaboost> filtering_booster_type;
   if (0) {
-  filtering_booster_parameters filtering_booster_params;
+  filtering_booster_parameters<> filtering_booster_params;
   filtering_booster_params.random_seed = random_seed;
   filtering_booster_params.weak_learner = wl_ptr;
   filtering_booster_type filtering_booster

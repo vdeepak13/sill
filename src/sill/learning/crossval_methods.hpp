@@ -56,8 +56,8 @@ namespace sill {
     std::vector<vec>
       lambdas_zoom(create_parameter_grid(cv_params.minvals, cv_params.maxvals,
                                          cv_params.nvals, cv_params.log_scale));
-    vec means_zoom(lambdas_zoom.size(), 0);
-    vec stderrs_zoom(lambdas_zoom.size(), 0);
+    vec means_zoom(zeros<vec>(lambdas_zoom.size()));
+    vec stderrs_zoom(zeros<vec>(lambdas_zoom.size()));
 
     size_t best_i(0); // This indexes the current best value in lambdas.
 

@@ -38,20 +38,25 @@ namespace sill {
    * @tparam InputVar     Type of input variable.
    * @tparam OutputFactor Type of factor resulting from conditioning.
    * @tparam OptVector    Type used to represent the factor weights
-   *                      (which must fit the OptimizationVector concept
-   *                      for crf_parameter_learner).
+   *                       (which must fit the OptimizationVector concept
+   *                       for crf_parameter_learner).
+   * @tparam LA           Linear algebra type specifier
+   *                       (default = dense_linear_algebra<>)
    *
    * @see learnable_crf_factor
    *
    * \ingroup factor
    * @author Joseph Bradley
    */
-  template <typename InputVar, typename OutputFactor, typename OptVector>
+  template <typename InputVar, typename OutputFactor, typename OptVector,
+            typename LA = dense_linear_algebra<> >
   class crf_factor {
 
     // Public types
     // =========================================================================
   public:
+
+    typedef LA la_type;
 
     // Input type group
     //--------------------
@@ -60,7 +65,7 @@ namespace sill {
     //! Typically, this type is either sill::variable or its descendant.
     typedef InputVar input_variable_type;
 
-    typedef variable_type_group<input_variable_type> ivar_group;
+    typedef variable_type_group<input_variable_type,la_type> ivar_group;
 
     //! Type for the factor's input variable domain,
     //! that is, the set of input arguments X in the factor.
@@ -112,7 +117,7 @@ namespace sill {
     variable_type_union<input_variable_type,output_variable_type>::union_type
     variable_type;
 
-    typedef variable_type_group<variable_type> var_group;
+    typedef variable_type_group<variable_type, la_type> var_group;
 
     /**
      * Type for the factor's variable domain,
@@ -240,7 +245,7 @@ namespace sill {
      * this returns the expected log likelihood of the distribution P(A | B).
      * (But this does not normalize the factor after conditioning.)
      */
-    virtual double log_expected_value(const dataset<dense_linear_algebra<> >& ds) const {
+    virtual double log_expected_value(const dataset<LA>& ds) const {
       double val(0);
       output_factor_type tmp_fctr;
       double total_ds_weight(0);
@@ -347,10 +352,11 @@ namespace sill {
 
   }; // class crf_factor
 
-  template <typename InputVar, typename OutputFactor, typename OptVector>
+  template <typename InputVar, typename OutputFactor, typename OptVector,
+            typename LA>
   std::ostream&
   operator<<(std::ostream& out,
-             const crf_factor<InputVar, OutputFactor, OptVector>& f) {
+             const crf_factor<InputVar, OutputFactor, OptVector, LA>& f) {
     f.print(out);
     return out;
   }

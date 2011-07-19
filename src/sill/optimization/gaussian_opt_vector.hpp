@@ -114,9 +114,9 @@ namespace sill {
 
     //! Sets all elements to this value.
     gaussian_opt_vector& operator=(double d) {
-      A = d;
-      b = d;
-      C = d;
+      A.fill(d);
+      b.fill(d);
+      C.fill(d);
       return *this;
     }
 
@@ -264,8 +264,8 @@ namespace sill {
      */
     void zeros(double zero_A = 1.) {
       A = zero_A * eye(A.n_rows, A.n_rows);
-      b = 0.;
-      C = 0.;
+      b.zeros();
+      C.zeros();
     }
 
     void print(std::ostream& out) const {

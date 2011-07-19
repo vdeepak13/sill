@@ -41,15 +41,14 @@ namespace sill {
     double sumw = sum(w);
 
     // compute the mean
-    vec ctr(n, 0);
+    vec ctr(zeros<vec>(n));
     foreach(const record<LA>& rec, data.records())
       ctr += w[i++] * rec.vector();
     ctr /= sumw;
 
     // compute the covariance
     i = 0;
-    mat cov(n, n);
-    cov.clear();
+    mat cov(zeros<mat>(n, n));
     foreach(const record<LA>& rec, data.records()) {
       vec x = rec.vector() - ctr;
       cov += w[i++] * outer_product(x, x);

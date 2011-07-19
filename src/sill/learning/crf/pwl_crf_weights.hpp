@@ -316,7 +316,9 @@ namespace sill {
             case 1: // DCI
               {
                 crf_factor f1(compute_regressor(make_domain(y1)));
-                vec f1_lambda(reg_params[max_index(means)].lambdas);
+                vec f1_lambda;
+                if (params.retain_lambda_maps)
+                  f1_lambda = reg_params[max_index(means)].lambdas;
                 crf_factor f2(compute_regressor(make_domain(y2)));
                 if (params.retain_lambda_maps) {
                   vec f2_lambda(reg_params[max_index(means)].lambdas);
@@ -473,7 +475,7 @@ namespace sill {
     std::pair<double, crf_factor>
     pwl(output_variable_type* y1, output_variable_type* y2) const {
       assert(learning_mode_ == 0);
-      vec edge_score(3,0.);
+      vec edge_score(zeros<vec>(3));
       assert(y1 && y2);
       assert((Yvars_.count(y1) != 0) && (Yvars_.count(y2) != 0));
       if (y1 > y2)
@@ -510,7 +512,7 @@ namespace sill {
     std::pair<double, crf_factor>
     dci(output_variable_type* y1, output_variable_type* y2) const {
       assert(learning_mode_ == 0);
-      vec edge_score(3,0.);
+      vec edge_score(zeros<vec>(3));
       assert(y1 && y2);
       assert((Yvars_.count(y1) != 0) && (Yvars_.count(y2) != 0));
       if (y1 > y2)
@@ -524,7 +526,9 @@ namespace sill {
       if (params.retain_lambda_maps)
         edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       crf_factor f1(compute_regressor(Y1));
-      vec r1_lambdas(reg_params[max_index(means)].lambdas);
+      vec r1_lambdas;
+      if (params.retain_lambda_maps)
+        r1_lambdas = reg_params[max_index(means)].lambdas;
       crf_factor f2(compute_regressor(Y2));
       if (params.retain_lambda_maps) {
         vec r2_lambdas(reg_params[max_index(means)].lambdas);
@@ -564,7 +568,7 @@ namespace sill {
     std::pair<double, crf_factor>
     cmi(output_variable_type* y1, output_variable_type* y2) const {
       assert(learning_mode_ == 0);
-      vec edge_score(3,0.);
+      vec edge_score(zeros<vec>(3));
       assert(y1 && y2);
       assert((Yvars_.count(y1) != 0) && (Yvars_.count(y2) != 0));
       if (y1 > y2)
@@ -654,7 +658,7 @@ namespace sill {
           tmp_fctr.normalize();
           double score = tmp_fctr.logv(x);
           if (params.retain_edge_score_info) {
-            vec edge_score(3,0.);
+            vec edge_score(zeros<vec>(3));
             edge_score[0] = score;
             edge_score_info_[y12pair] = edge_score;
           }
@@ -663,7 +667,7 @@ namespace sill {
         break;
       case 1:
         {
-          vec edge_score(3,0.);
+          vec edge_score(zeros<vec>(3));
           const std::pair<crf_factor, crf_factor>&
             f2 = safe_get(vertex_part_map_, y12pair);
           tmp_fctr = f2.first.condition(x);
@@ -684,7 +688,7 @@ namespace sill {
         break;
       case 2:
         {
-          vec edge_score(3,0.);
+          vec edge_score(zeros<vec>(3));
           const crf_factor& f = safe_get(edge_part_map_, y12pair);
           tmp_fctr = f.condition(x);
           tmp_fctr.normalize();

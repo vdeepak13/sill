@@ -15,19 +15,19 @@ namespace sill {
        po::bool_switch(&no_cv)->default_value(false),
        "If true, do not run CV; use fixed_vals instead.")
       ("fixed_vals",
-       po::value<vec>(&fixed_vals)->default_value(vec(1,0)),
+       po::value<vec>(&fixed_vals)->default_value(vec_1(0.)),
        "Values to be used if not running CV.")
       ("nfolds",
        po::value<size_t>(&nfolds)->default_value(10),
        "Number of cross validation folds for choosing regularization. (> 1)")
       ("minvals",
-       po::value<vec>(&minvals)->default_value(vec(1,.00001)),
+       po::value<vec>(&minvals)->default_value(vec_1(.00001)),
        "Minimum values for factor regularization parameters. (>= 0) (Specify as, e.g., \"[.5]\")")
       ("maxvals",
-       po::value<vec>(&maxvals)->default_value(vec(1,100)),
+       po::value<vec>(&maxvals)->default_value(vec_1(100.)),
        "Maximum values for factor regularization parameters. (>= 0)")
       ("nvals",
-       po::value<uvec>(&nvals)->default_value(uvec(1,10)),
+       po::value<uvec>(&nvals)->default_value(vec_1<arma::u32>(10)),
        "Number of factor regularization values to try in each dimension. (>= 1)")
       ("zoom",
        po::value<size_t>(&zoom)->default_value(0),

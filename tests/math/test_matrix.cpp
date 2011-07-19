@@ -25,9 +25,11 @@ int main() {
   cout << a(span(0,0), span(0,1)) << endl;
 
   mat m = zeros(2,2);
+  m(0,0) = 2;
+  m(1,1) = 3;
   mat minv;
   cout << inv(m) << endl;
-  bool result = inv(m, minv);
+  bool result = inv(minv,m);
   cout << minv << endl;
-  assert(!result);
+  assert(result);
 }

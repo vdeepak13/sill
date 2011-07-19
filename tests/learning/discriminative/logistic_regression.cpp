@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
   logistic_regression_parameters lr_params;
   lr_params.lambda = lambda;
   lr_params.init_iterations = niterations;
-  logistic_regression lr(stats, lr_params);
+  logistic_regression<> lr(stats, lr_params);
 
   cout << "Trained logistic regression using batch gradient descent on "
        << ntrain << " examples to get:\n"

@@ -21,8 +21,16 @@ namespace sill {
    *  - RANDOM_SEED
    *  - INIT_ITERATIONS
    *  - CONVERGENCE_ZERO
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    */
-  struct batch_booster_parameters : public binary_booster_parameters {
+  template <typename LA = dense_linear_algebra<> >
+  struct batch_booster_parameters : public binary_booster_parameters<LA> {
+
+    typedef binary_booster_parameters<LA> base;
+
+    using base::smoothing;
+    using base::convergence_zero;
 
     //! If > 0, train WL with this many examples
     //!  (default = 0)
@@ -37,7 +45,7 @@ namespace sill {
       : resampling(0), scale_resampling(false) { }
 
     virtual bool valid() const {
-      if (!binary_booster_parameters::valid())
+      if (!base::valid())
         return false;
       if (smoothing < 0)
         return false;
@@ -52,12 +60,12 @@ namespace sill {
     }
 
     void save(std::ofstream& out) const {
-      binary_booster_parameters::save(out);
+      base::save(out);
       out << resampling << " " << (scale_resampling ? "1" : "0") << "\n";
     }
 
     void load(std::ifstream& in, const datasource& ds) {
-      binary_booster_parameters::load(in, ds);
+      base::load(in, ds);
       std::string line;
       getline(in, line);
       std::istringstream is(line);
@@ -76,40 +84,33 @@ namespace sill {
    * construct:
    * batch_booster<boosting::adaboost<>,
    *               decision_tree<discriminative::objective_information> >
+   * @tparam Objective      optimization objective defining the booster
+   * @tparam LA  Linear algebra type specifier
+   *             (default = dense_linear_algebra<>)
    *
    * \author Joseph Bradley
    * \ingroup learning_discriminative
-   * @param Objective      optimization objective defining the booster
    * @todo serialization
    * @todo Fix confidence-rated predictions.
    */
-  template <typename Objective>
-  class batch_booster : public binary_booster<Objective> {
+  template <typename Objective, typename LA = dense_linear_algebra<> >
+  class batch_booster : public binary_booster<Objective,LA> {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef binary_booster<Objective> base;
+    typedef LA la_type;
 
-    typedef typename base::la_type la_type;
+    typedef binary_booster<Objective,LA> base;
+
     typedef typename base::record_type record_type;
+
+    typedef batch_booster_parameters<la_type> parameters;
 
     // Protected data members
     //==========================================================================
   protected:
-
-    // Data from base class:
-    //  finite_variable* label_
-    //  size_t label_index_
-    //  size_t iteration_
-    //  bool wl_confidence_rated
-    //  std::vector<double> timing
-    //  boost::shared_ptr<binary_classifier> wl_ptr
-    //  boost::uniform_real<double> uniform_prob
-    //  double smoothing
-    //  std::vector<boost::shared_ptr<binary_classifier> > base_hypotheses
-    //  std::vector<double> alphas
 
     // Import stuff from multiclass_classifier
     using base::label_;
@@ -129,7 +130,7 @@ namespace sill {
     using base::base_hypotheses;
     using base::alphas;
 
-    batch_booster_parameters params;
+    parameters params;
 
     //! random number generator
     boost::mt11213b rng;
@@ -212,10 +213,10 @@ namespace sill {
      *  - loading a saved booster
      * @param params     algorithm parameters
      */
-    explicit batch_booster(batch_booster_parameters params
-                           = batch_booster_parameters())
+    explicit batch_booster(parameters params = parameters())
       : base(params), params(params), ds_ptr(new vector_dataset<la_type>()),
-        stats_ptr(new dataset_statistics<la_type>(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) { }
+        stats_ptr(new dataset_statistics<la_type>(*ds_ptr)),
+        stats(*stats_ptr), ds(*ds_ptr) { }
 
     /**
      * Constructor for a binary batch booster.
@@ -223,8 +224,7 @@ namespace sill {
      * @param params        algorithm parameters
      */
     explicit batch_booster(dataset_statistics<la_type>& stats,
-                           batch_booster_parameters params
-                           = batch_booster_parameters())
+                           parameters params = parameters())
       : base(stats.get_dataset(), params),
         params(params), ds_ptr(NULL), stats_ptr(NULL),
         stats(stats), ds(stats.get_dataset()) {
@@ -241,10 +241,12 @@ namespace sill {
      * @param params        algorithm parameters
      */
     batch_booster(oracle<la_type>& o, size_t n,
-                  batch_booster_parameters params = batch_booster_parameters())
+                  parameters params = parameters())
       : base(o, params),
-        params(params), ds_ptr(new vector_dataset<la_type>(o.datasource_info())),
-        stats_ptr(new dataset_statistics<la_type>(*ds_ptr)), stats(*stats_ptr), ds(*ds_ptr) {
+        params(params),
+        ds_ptr(new vector_dataset<la_type>(o.datasource_info())),
+        stats_ptr(new dataset_statistics<la_type>(*ds_ptr)),
+        stats(*stats_ptr), ds(*ds_ptr) {
       for (size_t i = 0; i < n; ++i) {
         if (o.next())
           ds_ptr->insert(o.current().finite(), o.current().vector());
@@ -268,17 +270,19 @@ namespace sill {
     }
 
     //! Train a new binary classifier of this type with the given data.
-    boost::shared_ptr<binary_classifier<> > create(dataset_statistics<la_type>& stats) const {
-      boost::shared_ptr<binary_classifier<> >
-        bptr(new batch_booster<Objective>(stats, this->params));
+    boost::shared_ptr<binary_classifier<la_type> >
+    create(dataset_statistics<la_type>& stats) const {
+      boost::shared_ptr<binary_classifier<la_type> >
+        bptr(new batch_booster<Objective,la_type>(stats, this->params));
       return bptr;
     }
 
     //! Train a new binary classifier of this type with the given data.
     //! @param n  max number of examples which should be drawn from the oracle
-    boost::shared_ptr<binary_classifier<> > create(oracle<la_type>& o, size_t n) const {
-      boost::shared_ptr<binary_classifier<> >
-        bptr(new batch_booster<Objective>(o, n, this->params));
+    boost::shared_ptr<binary_classifier<la_type> >
+    create(oracle<la_type>& o, size_t n) const {
+      boost::shared_ptr<binary_classifier<la_type> >
+        bptr(new batch_booster<Objective,la_type>(o, n, this->params));
       return bptr;
     }
 
@@ -372,7 +376,8 @@ namespace sill {
         if (BATCH_BOOSTER_DEBUG) {
           double tmpacc = 0;
           size_t i = 0;
-          for (typename dataset<la_type>::record_iterator_type ds_it = ds.begin();
+          for (typename dataset<la_type>::record_iterator_type ds_it
+                 = ds.begin();
                ds_it != ds_end; ++ds_it) {
             tmpacc += (base_hypotheses.back()->predict(*ds_it) == label(ds,i) ?
                        1 : 0);
@@ -517,5 +522,7 @@ namespace sill {
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
+
+#include <sill/learning/discriminative/load_functions.hpp>
 
 #endif // #ifndef SILL_LEARNING_DISCRIMINATIVE_BATCH_BOOSTER_HPP

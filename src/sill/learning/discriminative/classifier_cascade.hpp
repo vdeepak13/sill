@@ -20,6 +20,8 @@ namespace sill {
 
   struct classifier_cascade_parameters {
 
+    typedef dense_linear_algebra<> la_type;
+
     /**
      * Empty classifiers to use to construct the base classifiers.  The
      * parameters from these classifiers are used for the base classifiers,
@@ -29,7 +31,8 @@ namespace sill {
      * the extra base classifiers.
      *  (required)
      */
-    std::vector<boost::shared_ptr<binary_classifier<> > > base_classifiers;
+    std::vector<boost::shared_ptr<binary_classifier<la_type> > >
+    base_classifiers;
 
     //! Initial number of base classifiers to build.
     //!  (default = 0)
@@ -150,22 +153,26 @@ namespace sill {
    * \ingroup learning_discriminative
    * @todo serialization
    */
-  class classifier_cascade : public binary_classifier<> {
+  class classifier_cascade
+    : public binary_classifier<dense_linear_algebra<> > {
 
     // Public types
     //==========================================================================
   public:
 
-    typedef binary_classifier<> base;
+    typedef dense_linear_algebra<> la_type;
 
-    typedef base::la_type la_type;
+    typedef binary_classifier<la_type> base;
+
     typedef base::record_type record_type;
+
+    typedef classifier_cascade_parameters parameters;
 
     // Protected data members
     //==========================================================================
   protected:
 
-    classifier_cascade_parameters params;
+    parameters params;
 
     // copied from params:
     size_t max_filter_count_;
@@ -191,7 +198,7 @@ namespace sill {
     vec base_ds_preds;
 
     //! Base classifiers
-    std::vector<boost::shared_ptr<binary_classifier<> > > base_classifiers;
+    std::vector<boost::shared_ptr<binary_classifier<la_type> > > base_classifiers;
 
     //! Thresholds for base classifiers
     std::vector<double> thresholds;
@@ -216,7 +223,7 @@ namespace sill {
      *  - loading a saved cascade
      * @param params     algorithm parameters
      */
-    explicit classifier_cascade(classifier_cascade_parameters params)
+    explicit classifier_cascade(parameters params)
       : params(params), base_ds(), rare_ds_size(0),
         ds_o_ptr(new ds_oracle<la_type>(base_ds)), common_o(*ds_o_ptr) {
     }
@@ -228,7 +235,7 @@ namespace sill {
      * @param params     algorithm parameters
      */
     classifier_cascade(const dataset<la_type>& rare_ds, oracle<la_type>& common_o,
-                       classifier_cascade_parameters params)
+                       parameters params)
       : base(rare_ds), params(params), base_ds(rare_ds.datasource_info()),
         rare_ds_size(rare_ds.size()), ds_o_ptr(NULL), common_o(common_o) {
       assert(rare_ds.is_weighted() == false);
@@ -241,17 +248,17 @@ namespace sill {
     }
 
     //! Warning: This should not be used for this class!
-    boost::shared_ptr<binary_classifier<> >
+    boost::shared_ptr<binary_classifier<la_type> >
     create(dataset_statistics<la_type>& stats) const {
       assert(false);
-      return boost::shared_ptr<binary_classifier<> >();
+      return boost::shared_ptr<binary_classifier<la_type> >();
     }
 
     //! Warning: This should not be used for this class!
-    boost::shared_ptr<binary_classifier<> >
+    boost::shared_ptr<binary_classifier<la_type> >
     create(oracle<la_type>& o, size_t n) const {
       assert(false);
-      return boost::shared_ptr<binary_classifier<> >();
+      return boost::shared_ptr<binary_classifier<la_type> >();
     }
 
     // Getters and helpers

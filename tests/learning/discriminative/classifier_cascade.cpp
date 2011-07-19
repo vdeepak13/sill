@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
   classifier_cascade_parameters params;
   std::vector<boost::shared_ptr<binary_classifier<> > > base_classifiers;
   boost::shared_ptr<stump<> > wl_ptr(new stump<>());
-  batch_booster_parameters batch_booster_params;
+  batch_booster_parameters<> batch_booster_params;
   batch_booster_params.init_iterations = 5;
   batch_booster_params.resampling = 100;
   batch_booster_params.weak_learner = wl_ptr;

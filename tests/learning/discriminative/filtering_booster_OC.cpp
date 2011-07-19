@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
   typedef stump<> wl_type;
   boost::shared_ptr<wl_type> wl_ptr(new wl_type());
   typedef filtering_booster_OC<boosting::filterboost> filtering_booster_type;
-  filtering_booster_OC_parameters filtering_booster_params;
+  filtering_booster_OC_parameters<> filtering_booster_params;
   filtering_booster_params.init_iterations = niterations;
   filtering_booster_params.random_seed = random_seed;
   filtering_booster_params.binary_label = binary_var;
