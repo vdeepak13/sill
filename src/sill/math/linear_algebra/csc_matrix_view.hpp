@@ -74,7 +74,7 @@ namespace sill {
     //==========================================================================
 
     //! Return a const view of column j of the matrix.
-    sparse_vector_view<value_type,size_type> column(size_type j) const {
+    sparse_vector_view<value_type,size_type> col(size_type j) const {
       if (j < n_cols()) {
         size_type co_j = col_offsets_[j];
         size_type co_jp1 = col_offsets_[j+1];

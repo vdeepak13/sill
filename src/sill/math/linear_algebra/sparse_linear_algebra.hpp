@@ -12,4 +12,16 @@
 #include <sill/math/linear_algebra/vector_matrix_ops.hpp>
 #include <sill/math/linear_algebra/norms.hpp>
 
+namespace sill {
+
+  template <typename VecType>
+  inline
+  VecType zeros(typename VecType::size_type n) {
+    VecType v(n);
+    v.zeros();
+    return v;
+  }
+
+} // namespace sill
+
 #endif // #ifndef _SILL_SPARSE_LINEAR_ALGEBRA_HPP_

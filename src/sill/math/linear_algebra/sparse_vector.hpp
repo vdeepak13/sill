@@ -212,10 +212,9 @@ namespace sill {
     sparse_vector operator()(const index_vector_type& ind) const {
       std::vector<size_type> subinds;
       std::vector<value_type> subvals;
-      size_type newi = 0;
       for (size_type k = 0; k < ind.size(); ++k) {
         if (this->operator()(ind[k]) != 0) {
-          subinds.push_back(newi);
+          subinds.push_back(k);
           subvals.push_back(this->operator()(ind[k]));
         }
       }
@@ -381,8 +380,16 @@ namespace sill {
 
     //! Set to all zeros.
     void zeros() {
-      indices_.resize(0);
-      values_.resize(0);
+      indices_.set_size(0);
+      values_.set_size(0);
+    }
+
+    //! Resize to length n, and set to all zeros.
+    void zeros(size_type n) {
+      this->n_ = n;
+      indices_.set_size(0);
+      values_.set_size(0);
+      sorted_ = true;
     }
 
     // Methods to support optimization routines

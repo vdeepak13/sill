@@ -24,38 +24,31 @@ int main(int argc, char* argv[]) {
 
   // Create a dataset to work with
   universe u;
+  syn_oracle_majority majority(create_syn_oracle_majority(100,u));
+  finite_variable* class_var = majority.finite_class_variables().front();
 
-  size_t ntrain;
-  size_t ntest;
-  boost::shared_ptr<vector_dataset<> > ds_train_ptr;
-  boost::shared_ptr<vector_dataset<> > ds_test_ptr;
+  size_t ntrain = 500;
+  size_t ntest = 500;
 
-  ntrain = 30162;
-  ntest = 15060;
-  ds_train_ptr = data_loader::load_symbolic_dataset<vector_dataset<> >
-    ("/Users/jbradley/data/uci/adult/adult-train.sum", u, ntrain);
-  finite_var_vector new_class_vars(ds_train_ptr->finite_class_variables());
-  new_class_vars.push_back(ds_train_ptr->finite_list()[6]);
-  // 0: workclass (arity 8)
-  // 6: sex (arity 2)
-  ds_train_ptr->set_finite_class_variables(new_class_vars);
-  ds_test_ptr = data_loader::load_symbolic_dataset<vector_dataset<> >
-    ("/Users/jbradley/data/uci/adult/adult-test.sum",
-     ds_train_ptr->datasource_info(), ntest);
-  ds_test_ptr->set_finite_class_variables(new_class_vars);
+  vector_dataset<> ds_train;
+  oracle2dataset(majority, ntrain, ds_train);
+  vector_dataset<> ds_test;
+  oracle2dataset(majority, ntest, ds_test);
+
+  finite_var_vector new_class_vars;
+  new_class_vars.push_back(ds_train.finite_list()[0]);
+  new_class_vars.push_back(ds_train.finite_list()[1]);
+  ds_train.set_finite_class_variables(new_class_vars);
+  ds_test.set_finite_class_variables(new_class_vars);
   vec means;
   vec std_devs;
   if (normalize_data) {
-    boost::tie(means,std_devs) = ds_train_ptr->normalize();
-    ds_test_ptr->normalize(means,std_devs);
+    boost::tie(means,std_devs) = ds_train.normalize();
+    ds_test.normalize(means,std_devs);
   }
-  vector_dataset<>& ds_train = *ds_train_ptr;
-  vector_dataset<>& ds_test = *ds_test_ptr;
 
-  size_t new_class_vars_size(1);
-  foreach(finite_variable* v, new_class_vars)
-    new_class_vars_size *= v->size();
-  finite_variable* new_merged_var = u.new_finite_variable(new_class_vars_size);
+  finite_variable* new_merged_var =
+    u.new_finite_variable(num_assignments(make_domain(new_class_vars)));
 
   dataset_statistics<> stats(ds_train);
 

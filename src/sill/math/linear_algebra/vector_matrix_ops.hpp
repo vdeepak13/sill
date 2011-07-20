@@ -486,7 +486,7 @@ namespace sill {
     if (dim == 0) {
       arma::Col<T> v(m.num_cols());
       for (SizeType i = 0; i < v.size(); ++i)
-        v[i] = sum(m.column(i));
+        v[i] = sum(m.col(i));
       return v;
     } else if (dim == 1) {
       arma::Col<T> v(zeros<arma::Col<T> >(m.num_rows()));
@@ -505,7 +505,7 @@ namespace sill {
     if (dim == 0) {
       arma::Col<T> v(m.num_cols());
       for (SizeType i = 0; i < v.size(); ++i)
-        v[i] = sum(m.column(i), mfunc);
+        v[i] = sum(m.col(i), mfunc);
       return v;
     } else if (dim == 1) {
       arma::Col<T> v(zeros<arma::Col<T> >(m.num_rows()));

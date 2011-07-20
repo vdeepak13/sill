@@ -25,7 +25,7 @@ namespace sill {
     // and some useful statistics
     mat y(nh, np);
     for(size_t i = 0; i < np; i++) 
-      y.set_column(i, ng.mean(x.column(i)));
+      y.set_column(i, ng.mean(x.col(i)));
     vec meany = sum(elem_mult(y, repmat(w, nh, 1, true)), 1);
     mat yc = y - repmat(meany, 1, np); // y centered
     mat ycwt = elem_mult(yc.transpose(), repmat(w, 1, nh));

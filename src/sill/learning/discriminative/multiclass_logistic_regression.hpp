@@ -903,7 +903,7 @@ namespace sill {
     finite_domain get_finite_dependencies() const {
       finite_domain x;
       for (size_t i(0); i < finite_seq.size(); ++i) {
-        if (sum(abs(weights_.f.column(i))) > params.gm_params.convergence_zero)
+        if (sum(abs(weights_.f.col(i))) > params.gm_params.convergence_zero)
           x.insert(finite_seq[i]);
       }
       return x;
@@ -916,7 +916,7 @@ namespace sill {
     vector_domain get_vector_dependencies() const {
       vector_domain x;
       for (size_t i(0); i < vector_seq.size(); ++i) {
-        if (sum(abs(weights_.v.column(i))) > params.gm_params.convergence_zero)
+        if (sum(abs(weights_.v.col(i))) > params.gm_params.convergence_zero)
           x.insert(vector_seq[i]);
       }
       return x;

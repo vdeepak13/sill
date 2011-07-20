@@ -350,7 +350,7 @@ namespace sill {
   typename multilabel_classifier<LA>::dense_vector_type
   multilabel_classifier<LA>::
   test_accuracy(const dataset<la_type>& testds) const {
-    dense_vector_type test_acc(nlabels(), 0);
+    dense_vector_type test_acc(zeros<dense_vector_type>(nlabels()));
     if (testds.size() == 0) {
       std::cerr << "multilabel_classifier::test_accuracy() called with an"
                 << " empty dataset." << std::endl;
@@ -359,7 +359,8 @@ namespace sill {
     }
     typename dataset<la_type>::record_iterator_type testds_end = testds.end();
     std::vector<size_t> truth;
-    for (typename dataset<la_type>::record_iterator_type testds_it = testds.begin();
+    for (typename dataset<la_type>::record_iterator_type testds_it
+           = testds.begin();
          testds_it != testds_end; ++testds_it) {
       const record_type& example = *testds_it;
       std::vector<size_t> pred(predict(example));

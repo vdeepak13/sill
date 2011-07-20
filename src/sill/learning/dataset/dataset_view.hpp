@@ -766,7 +766,8 @@ namespace sill {
   }
 
   template <typename LA>
-  void dataset_view<LA>::load_assignment_pointer(size_t i, assignment** a) const {
+  void
+  dataset_view<LA>::load_assignment_pointer(size_t i, assignment** a) const {
     assert(false);
   }
 
@@ -1249,21 +1250,22 @@ namespace sill {
     // Construct the new finite variable ordering, putting the new variable
     //  at the end of the ordering.
     m_new_var = new_var;
-    m_new_var_index = num_finite() - original_vars.size();
+    m_new_var_index = ds.num_finite() - original_vars.size();
     m_orig_vars_sorted = original_vars;
     m_orig_vars_indices.clear();
     m_orig2new_indices.clear();
-    m_orig2new_indices.resize(num_finite(), 0);
-    m_new2orig_indices.resize(num_finite() - original_vars.size() + 1);
+    m_orig2new_indices.resize(ds.num_finite(), 0);
+    m_new2orig_indices.resize(ds.num_finite() - original_vars.size() + 1);
     m_multipliers_sorted.resize(original_vars.size());
-    tmp_findata.resize(num_finite());
+    tmp_findata.resize(ds.num_finite());
     for (size_t j(0); j < original_vars.size(); ++j) {
       m_orig2new_indices[ds.record_index(original_vars[j])]
         = std::numeric_limits<size_t>::max();
       if (j == 0)
         m_multipliers_sorted[0] = 1;
       else
-        m_multipliers_sorted[j] = original_vars[j-1]->size() * m_multipliers_sorted[j-1];
+        m_multipliers_sorted[j] =
+          original_vars[j-1]->size() * m_multipliers_sorted[j-1];
       m_orig_vars_indices.push_back(ds.record_index(original_vars[j]));
     }
     size_t j2(0); // index in new findata corresponding to j
@@ -1275,7 +1277,7 @@ namespace sill {
       }
     }
     m_new2orig_indices.back() = std::numeric_limits<size_t>::max();
-    assert(m_orig_vars_sorted.size() == original_vars.size()); // check uniqueness
+    assert(m_orig_vars_sorted.size() == original_vars.size());//check uniqueness
     // Fix indices for binarizing variables.
     if (binarized_var != NULL)
       binarized_var_index = m_orig2new_indices[binarized_var_index];
@@ -1314,6 +1316,7 @@ namespace sill {
     }
     tmp_var_type_order.push_back(variable::FINITE_VARIABLE);
     finite_seq = tmp_finite_seq;
+    finite_numbering_ptr_->clear();
     size_t nfinite(0);
     foreach(finite_variable* v, finite_seq)
       finite_numbering_ptr_->operator[](v) = nfinite++;
@@ -1327,12 +1330,13 @@ namespace sill {
     m_multipliers.clear();
     for (size_t j(0); j < m_orig_vars_sorted.size(); ++j)
       tmp_orderstats[m_orig_vars_indices[j]] = j;
-    for (size_t j(0); j < ds.num_finite(); ++j)
+    for (size_t j(0); j < ds.num_finite(); ++j) {
       if (tmp_orig_vars_indices_set.count(j)) { // if in merged vars
         m_orig_vars.push_back(m_orig_vars_sorted[tmp_orderstats[j]]);
         tmp_m_orig_vars_indices.push_back(j);
         m_multipliers.push_back(m_multipliers_sorted[tmp_orderstats[j]]);
       }
+    }
     m_orig_vars_indices = tmp_m_orig_vars_indices;
   } // set_merged_variables()
 

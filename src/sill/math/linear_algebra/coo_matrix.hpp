@@ -95,7 +95,7 @@ namespace sill {
       size_type l(0);
       for (size_type j(0); j < other.n_cols(); ++j) {
         const sparse_vector_view<OtherT,OtherSizeType>
-          other_col_j(other.column(j));
+          other_col_j(other.col(j));
         for (size_type i(0); i < other_col_j.num_non_zeros(); ++i) {
           row_indices_[l] = other_col_j.index(i);
           col_indices_[l] = j;

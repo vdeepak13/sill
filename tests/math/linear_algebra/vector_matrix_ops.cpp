@@ -19,17 +19,17 @@ int main(int argc, char** argv) {
   std::vector<size_t> indices;
   std::vector<double> values;
   for (size_t i = 0; i < k; ++i) {
-    indices.push_back(2 * i);
+    indices.push_back(n - 2 * i - 1);
     values.push_back(2 * i + 1);
   }
   sparse_vector<double> sv(n, indices, values);
   std::cout << "sv: " << sv << std::endl;
 
-  vec dv(n);
+  vec dv(zeros<vec>(n));
   for (size_t j = 0; j < n / 2; ++j) {
     dv[2 * j] = 2 * j + 2;
   }
-  std::cout << "dv: " << dv << std::endl;
+  std::cout << "dv: " << trans(dv) << std::endl;
 
   size_t m = 3;
   arma::Mat<double> dm(m,n);
@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
   {
     vec tmp_dv(dv);
     tmp_dv += sv;
-    std::cout << "dv += sv --> " << tmp_dv << std::endl;
+    std::cout << "dv += sv --> " << trans(tmp_dv) << std::endl;
 
     sparse_vector<double> tmp_sv(sv);
     tmp_sv -= dv;
@@ -96,8 +96,8 @@ int main(int argc, char** argv) {
 
   // Matrix-vector ops
   {
-    std::cout << "sum(cscmat,0) = " << sum(cscmat,0) << std::endl;
-    std::cout << "sum(cscmat,1) = " << sum(cscmat,1) << std::endl;
+    std::cout << "sum(cscmat,0) = " << trans(sum(cscmat,0)) << std::endl;
+    std::cout << "sum(cscmat,1) = " << trans(sum(cscmat,1)) << std::endl;
 
     mat tmp_dm(dm);
     tmp_dm.row(0) -= sv;
@@ -107,10 +107,11 @@ int main(int argc, char** argv) {
   // Matrix-vector ops
   {
     vec tmp_dv(dm * sv);
-    std::cout << "dm * sv = " << tmp_dv << std::endl;
+    std::cout << "dm * sv = " << trans(tmp_dv) << std::endl;
     tmp_dv.zeros();
     sill::gemv(dm, sv, tmp_dv);
-    std::cout << "tmp_dv from gemv(dm, sv, tmp_dv) = " << tmp_dv << std::endl;
+    std::cout << "tmp_dv from gemv(dm, sv, tmp_dv) = " << trans(tmp_dv)
+              << std::endl;
   }
 
   // Matrix-matrix ops
@@ -118,7 +119,8 @@ int main(int argc, char** argv) {
     arma::Mat<double> tmp_dm(dm);
     vec tmp_dv(dv.subvec(span(0,dm.n_rows-1)));
     tmp_dm += outer_product(tmp_dv,sv);
-    std::cout << "dm += outer_product(" << tmp_dv << ",sv) -->\n" << tmp_dm
+    std::cout << "dm += outer_product(" << trans(tmp_dv) << ",sv) -->\n"
+              << tmp_dm
               << std::endl;
   }
 
