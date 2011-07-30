@@ -21,16 +21,19 @@ namespace sill {
 
 namespace sill {
 
-  class universe{
+  class universe {
 
   private:
-    //! A map that stores the variables
+    //! Map: variable name --> pointer to variable
     std::map<std::string, variable*> vars;
 
-    //! A map that stores the processes
+    //! Map: process name --> pointer to process
     std::map<std::string, process*> procs;
-    
+
+    //! vars_vector[variable ID] = pointer to variable
     std::vector<variable*> vars_vector;
+
+    //! procs_vector[process ID] = pointer to process
     std::vector<process*> procs_vector;
     
     size_t next_id() {
@@ -61,14 +64,13 @@ namespace sill {
       return procs_vector[id];
     }
 
-    variable* var_from_name(std::string &name) const{
+    variable* var_from_name(const std::string& name) const{
       return safe_get(vars, name, (variable*)(NULL));
     }
 
-    process* process_from_name(std::string &name) const{
+    process* process_from_name(const std::string& name) const{
       return safe_get(procs, name, (process*)(NULL));
     }
-
 
     /**
      * Returns a finite variable with the given name and domain size.
@@ -80,7 +82,8 @@ namespace sill {
 
     finite_variable*
     new_finite_variable(size_t size) {
-      return new_finite_variable(boost::lexical_cast<std::string>(next_id()), size);
+      return new_finite_variable(boost::lexical_cast<std::string>(next_id()),
+                                 size);
     }
 
     finite_var_vector
@@ -99,7 +102,8 @@ namespace sill {
     }
 
     vector_variable* new_vector_variable(size_t dim) {
-      return new_vector_variable(boost::lexical_cast<std::string>(next_id()), dim);
+      return new_vector_variable(boost::lexical_cast<std::string>(next_id()),
+                                 dim);
     }
     
     vector_var_vector new_vector_variables(size_t n, size_t dim) {

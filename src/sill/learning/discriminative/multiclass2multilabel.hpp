@@ -96,9 +96,10 @@ namespace sill {
     //==========================================================================
   public:
 
-    typedef multilabel_classifier<LA> base;
+    typedef LA la_type;
 
-    typedef typename base::la_type la_type;
+    typedef multilabel_classifier<la_type> base;
+
     typedef typename base::record_type record_type;
 
     typedef multiclass2multilabel_parameters<la_type> parameters;
@@ -257,6 +258,7 @@ namespace sill {
 
     //! For each label, predict the marginal probability of each class.
     std::vector<vec> marginal_probabilities(const record_type& example) const;
+
     std::vector<vec> marginal_probabilities(const assignment& example) const;
 
     //! Returns a factor which gives the probability for each assignment
@@ -309,7 +311,10 @@ namespace sill {
     //!       log_reg_crf_factor.
     void convert_record_for_base(const record_type& orig_r,
                                  record_type& new_r) const {
-      ds_light_view->convert_record(orig_r, new_r);
+      if (ds_light_view)
+        ds_light_view->convert_record(orig_r, new_r);
+      else
+        new_r = orig_r;
     }
 
     // Protected data members
@@ -322,7 +327,8 @@ namespace sill {
 
     parameters params;
 
-    //! Dataset view for converting records
+    //! Dataset view for converting records.
+    //! If NULL, then there is only a single label, so no conversion is needed.
     boost::shared_ptr<dataset_view<la_type> > ds_light_view;
 
     //! Base classifier
@@ -340,11 +346,74 @@ namespace sill {
     // Protected methods
     //==========================================================================
 
-    void init_only(const datasource& ds);
+    void init_sub() {
+      assert(params.valid());
+      size_t new_label_size = num_assignments(make_domain(labels_));
+      if (params.new_label == NULL ||
+          new_label_size != params.new_label->size()) {
+        assert(false);
+        return;
+      }
+    }
 
-    void build(const dataset<la_type>& orig_ds);
+    void init_only(const datasource& ds) {
+      init_sub();
+
+      if (ds.finite_class_variables().size() > 1) {
+        vector_dataset<la_type> orig_ds(ds.datasource_info());
+        dataset_view<la_type> ds_view(orig_ds, true);
+        ds_view.set_merged_variables(orig_ds.finite_class_variables(),
+                                     params.new_label);
+        ds_light_view = ds_view.create_light_view();
+        tmp_rec = ds_view[0];
+      } else {
+        assert(ds.finite_class_variables().size() == 1);
+        ds_light_view.reset();
+      }
+
+      params.base_learner = base_learner;
+    }
+
+    void build(const dataset<la_type>& orig_ds) {
+      init_sub();
+
+      boost::mt11213b rng(static_cast<unsigned>(params.random_seed));
+      params.base_learner->random_seed
+        (boost::uniform_int<int>(0, std::numeric_limits<int>::max())(rng));
+
+      if (orig_ds.finite_class_variables().size() > 1) {
+        dataset_view<la_type> ds_view(orig_ds, true);
+        ds_view.set_merged_variables(orig_ds.finite_class_variables(),
+                                     params.new_label);
+        dataset_statistics<la_type> stats(ds_view);
+        ds_light_view = ds_view.create_light_view();
+        tmp_rec = ds_view[0];
+
+        base_learner = params.base_learner->create(stats);
+      } else {
+        assert(orig_ds.finite_class_variables().size() == 1);
+        ds_light_view.reset();
+        dataset_statistics<la_type> stats(orig_ds);
+
+        base_learner = params.base_learner->create(stats);
+      }
+    }
+
+    std::vector<vec> probs2marginals(const table_factor& probs) const {
+      std::vector<vec> v(labels_.size());
+      for (size_t j(0); j < labels_.size(); ++j) {
+        v[j].set_size(labels_[j]->size());
+        size_t j2(0);
+        foreach(double val, probs.marginal(make_domain(labels_[j])).values()) {
+          v[j][j2] = val;
+          ++j2;
+        }
+      }
+      return v;
+    }
 
   }; // class multiclass2multilabel
+
 
   //============================================================================
   // Implementations of methods in multiclass2multilabel
@@ -357,33 +426,54 @@ namespace sill {
   void
   multiclass2multilabel<LA>::
   predict(const record_type& example, std::vector<size_t>& v) const {
-    ds_light_view->convert_record(example, tmp_rec);
-    size_t pred(base_learner->predict(tmp_rec));
-    ds_light_view->revert_merged_value(pred, v);
+    if (ds_light_view) {
+      ds_light_view->convert_record(example, tmp_rec);
+      size_t pred = base_learner->predict(tmp_rec);
+      ds_light_view->revert_merged_value(pred, v);
+    } else {
+      v.resize(1);
+      v[0] = base_learner->predict(example);
+    }
   }
 
   template <typename LA>
   void
   multiclass2multilabel<LA>::
   predict(const assignment& example, std::vector<size_t>& v) const {
-    ds_light_view->convert_assignment(example, tmp_assign);
-    ds_light_view->revert_merged_value(base_learner->predict(tmp_assign), v);
+    if (ds_light_view) {
+      ds_light_view->convert_assignment(example, tmp_assign);
+      size_t pred = base_learner->predict(tmp_assign);
+      ds_light_view->revert_merged_value(pred, v);
+    } else {
+      v.resize(1);
+      v[0] = base_learner->predict(example);
+    }
   }
 
   template <typename LA>
   void
   multiclass2multilabel<LA>::
   predict(const record_type& example, finite_assignment& a) const {
-    ds_light_view->convert_record(example, tmp_rec);
-    ds_light_view->revert_merged_value(base_learner->predict(tmp_rec), a);
+    if (ds_light_view) {
+      ds_light_view->convert_record(example, tmp_rec);
+      ds_light_view->revert_merged_value(base_learner->predict(tmp_rec), a);
+    } else {
+      assert(labels_.size() == 1);
+      a[labels_[0]] = base_learner->predict(example);
+    }
   }
 
   template <typename LA>
   void
   multiclass2multilabel<LA>::
   predict(const assignment& example, finite_assignment& a) const {
-    ds_light_view->convert_assignment(example, tmp_assign);
-    ds_light_view->revert_merged_value(base_learner->predict(tmp_assign), a);
+    if (ds_light_view) {
+      ds_light_view->convert_assignment(example, tmp_assign);
+      ds_light_view->revert_merged_value(base_learner->predict(tmp_assign), a);
+    } else {
+      assert(labels_.size() == 1);
+      a[labels_[0]] = base_learner->predict(example);
+    }
   }
 
   template <typename LA>
@@ -391,16 +481,7 @@ namespace sill {
   multiclass2multilabel<LA>::
   marginal_probabilities(const record_type& example) const {
     table_factor probs(probabilities(example));
-    std::vector<vec> v(labels_.size());
-    for (size_t j(0); j < labels_.size(); ++j) {
-      v[j].set_size(labels_[j]->size());
-      size_t j2(0);
-      foreach(double val, probs.marginal(make_domain(labels_[j])).values()) {
-        v[j][j2] = val;
-        ++j2;
-      }
-    }
-    return v;
+    return probs2marginals(probs);
   }
 
   template <typename LA>
@@ -408,32 +489,33 @@ namespace sill {
   multiclass2multilabel<LA>::
   marginal_probabilities(const assignment& example) const {
     table_factor probs(probabilities(example));
-    std::vector<vec> v(labels_.size());
-    for (size_t j(0); j < labels_.size(); ++j) {
-      v[j].set_size(labels_[j]->size());
-      size_t j2(0);
-      foreach(double val, probs.marginal(make_domain(labels_[j])).values()) {
-        v[j][j2] = val;
-        ++j2;
-      }
-    }
-    return v;
+    return probs2marginals(probs);
   }
 
   template <typename LA>
   table_factor
   multiclass2multilabel<LA>::probabilities(const record_type& example) const {
-    ds_light_view->convert_record(example, tmp_rec);
-    return make_dense_table_factor(labels_,
-                                   base_learner->probabilities(tmp_rec));
+    if (ds_light_view) {
+      ds_light_view->convert_record(example, tmp_rec);
+      return make_dense_table_factor(labels_,
+                                     base_learner->probabilities(tmp_rec));
+    } else {
+      return make_dense_table_factor(labels_,
+                                     base_learner->probabilities(example));
+    }
   }
 
   template <typename LA>
   table_factor
   multiclass2multilabel<LA>::probabilities(const assignment& example) const {
-    ds_light_view->convert_assignment(example, tmp_assign);
-    return make_dense_table_factor(labels_,
-                                   base_learner->probabilities(tmp_assign));
+    if (ds_light_view) {
+      ds_light_view->convert_assignment(example, tmp_assign);
+      return make_dense_table_factor(labels_,
+                                     base_learner->probabilities(tmp_assign));
+    } else {
+      return make_dense_table_factor(labels_,
+                                     base_learner->probabilities(example));
+    }
   }
 
   // Save and load methods
@@ -444,7 +526,12 @@ namespace sill {
                                        bool save_name) const {
     base::save(out, save_part, save_name);
     params.save(out);
-    ds_light_view->save(out);
+    if (ds_light_view) {
+      out << true << "\n";
+      ds_light_view->save(out);
+    } else {
+      out << false << "\n";
+    }
     base_learner->save(out, 0, true);
   }
 
@@ -454,58 +541,17 @@ namespace sill {
     if (!(base::load(in, ds, load_part)))
       return false;
     params.load(in, ds);
-    ds_light_view->load(in, NULL, params.new_label);
+    bool load_ds_light_view;
+    in >> load_ds_light_view;
+    in >> std::ws;
+    if (load_ds_light_view)
+      ds_light_view->load(in, NULL, params.new_label);
+    else
+      ds_light_view.reset();
     base_learner = load_multiclass_classifier<la_type>(in, ds);
     tmp_rec = record_type(ds.finite_numbering_ptr(), ds.vector_numbering_ptr(),
                           ds.vector_dim());
     return true;
-  }
-
-  // Protected methods
-  //==========================================================================
-
-  template <typename LA>
-  void multiclass2multilabel<LA>::init_only(const datasource& ds) {
-    params.base_learner = base_learner;
-    assert(params.valid());
-    size_t new_label_size(1);
-    for (size_t j = 0; j < labels_.size(); ++j)
-      new_label_size *= labels_[j]->size();
-    if (params.new_label == NULL ||
-        new_label_size != params.new_label->size()) {
-      assert(false);
-      return;
-    }
-    vector_dataset<la_type> orig_ds(ds.datasource_info());
-    dataset_view<la_type> ds_view(orig_ds, true);
-    ds_view.set_merged_variables(orig_ds.finite_class_variables(),
-                                 params.new_label);
-    ds_light_view = ds_view.create_light_view();
-    tmp_rec = ds_view[0];
-  }
-
-  template <typename LA>
-  void multiclass2multilabel<LA>::build(const dataset<la_type>& orig_ds) {
-    assert(params.valid());
-    size_t new_label_size(1);
-    for (size_t j = 0; j < labels_.size(); ++j)
-      new_label_size *= labels_[j]->size();
-    if (params.new_label == NULL ||
-        new_label_size != params.new_label->size()) {
-      assert(false);
-      return;
-    }
-    dataset_view<la_type> ds_view(orig_ds, true);
-    ds_view.set_merged_variables(orig_ds.finite_class_variables(),
-                                 params.new_label);
-    dataset_statistics<la_type> stats(ds_view);
-
-    boost::mt11213b rng(static_cast<unsigned>(params.random_seed));
-    params.base_learner->random_seed
-      (boost::uniform_int<int>(0, std::numeric_limits<int>::max())(rng));
-    base_learner = params.base_learner->create(stats);
-    ds_light_view = ds_view.create_light_view();
-    tmp_rec = ds_view[0];
   }
 
 } // namespace sill

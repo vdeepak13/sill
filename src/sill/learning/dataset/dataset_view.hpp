@@ -65,8 +65,10 @@ namespace sill {
     //==========================================================================
   public:
 
+    typedef LA la_type;
+
     //! Base class
-    typedef dataset<LA> base;
+    typedef dataset<la_type> base;
 
     //! Import stuff from base class
     typedef typename base::record_type record_type;
@@ -118,7 +120,7 @@ namespace sill {
      * Construct a view of a dataset which is the same as the original dataset.
      * @param keep_weights  if true, then records keep their associated weights
      */
-    explicit dataset_view(const dataset<LA>& ds, bool keep_weights = false)
+    explicit dataset_view(const dataset<la_type>& ds, bool keep_weights = false)
       : base(ds), ds_ptr(NULL), ds(ds),
         record_view(RECORD_ALL), saved_record_indices(NULL),
         vv_view(VAR_ALL), binarized_var(NULL), m_new_var(NULL) {
@@ -462,16 +464,18 @@ namespace sill {
     using base::weighted;
     using base::weights_;
     using base::load_record;
+    using base::load_finite_record;
+    using base::load_vector_record;
     using base::load_finite;
     using base::load_vector;
     using base::make_record_iterator;
 
     //! Used for deleting the dataset to make a light class which can convert
     //! records according to the view.
-    vector_dataset<LA>* ds_ptr;
+    vector_dataset<la_type>* ds_ptr;
 
     //! Dataset
-    const dataset<LA>& ds;
+    const dataset<la_type>& ds;
 
     // Protected data members: for record views
     //==========================================================================
@@ -499,7 +503,10 @@ namespace sill {
     //==========================================================================
 
     //! Types of views for variables
-    enum var_view_type {VAR_INDICES, VAR_ALL};
+    enum var_view_type {ALL_VAR_INDICES, // all vars indexed
+                        FIN_VAR_INDICES, // finite vars only
+                        VEC_VAR_INDICES, // vector vars only
+                        VAR_ALL};        // using all vars
 
     //! Type of view for variables
     var_view_type vv_view;
@@ -589,7 +596,7 @@ namespace sill {
 
     //! Constructor for a view without associated data;
     //! used by create_light_view().
-    dataset_view(vector_dataset<LA>* ds_ptr, const dataset_view& ds_view_source)
+    dataset_view(vector_dataset<la_type>* ds_ptr, const dataset_view& ds_view_source)
       : base(ds_view_source), ds_ptr(ds_ptr), ds(*ds_ptr),
         record_view(RECORD_ALL), saved_record_indices(NULL),
         vv_view(VAR_ALL), binarized_var(NULL), m_new_var(NULL) { }
@@ -603,8 +610,11 @@ namespace sill {
     //! Load datapoint i into assignment a
     void load_assignment(size_t i, sill::assignment& a) const;
 
-    //! Load record i into r
-    void load_record(size_t i, record_type& r) const;
+    //! Load finite record i into r.
+    void load_finite_record(size_t i, finite_record& r) const;
+
+    //! Load vector record i into r.
+    void load_vector_record(size_t i, vector_record<la_type>& r) const;
 
     //! Load finite data for datapoint i into findata
     void load_finite(size_t i, std::vector<size_t>& findata) const;
@@ -652,16 +662,16 @@ namespace sill {
       fa.erase(binarized_var);
     }
     if (m_new_var != NULL) {
-      size_t val(0);
-      for (size_t j(0); j < m_orig_vars.size(); ++j)
+      size_t val = 0;
+      for (size_t j = 0; j < m_orig_vars.size(); ++j)
         val += m_multipliers[j] * fa[m_orig_vars[j]];
       fa[m_new_var] = val;
-      for (size_t j(0); j < m_orig_vars.size(); ++j)
+      for (size_t j = 0; j < m_orig_vars.size(); ++j)
         fa.erase(m_orig_vars[j]);
     }
-    if (vv_view != VAR_ALL) {
-      size_t j2(0); // index into vv_finite_var_indices
-      for (size_t j(0); j < ds.num_finite(); ++j) {
+    if (vv_view == ALL_VAR_INDICES || vv_view == FIN_VAR_INDICES) {
+      size_t j2 = 0; // index into vv_finite_var_indices
+      for (size_t j = 0; j < ds.num_finite(); ++j) {
         if (j2 < vv_finite_var_indices.size() &&
             vv_finite_var_indices[j2] == j) {
           ++j2;
@@ -669,9 +679,11 @@ namespace sill {
         }
         fa.erase(ds.finite_list()[j]);
       }
+    }
+    if (vv_view == ALL_VAR_INDICES || vv_view == VEC_VAR_INDICES) {
       vector_assignment& va = a.vector();
-      j2 = 0; // index into vv_vector_var_indices
-      for (size_t j(0); j < ds.num_vector(); ++j) {
+      size_t j2 = 0; // index into vv_vector_var_indices
+      for (size_t j = 0; j < ds.num_vector(); ++j) {
         if (j2 < vv_vector_var_indices.size() &&
             (size_t)(vv_vector_var_indices[j2]) == j) {
           ++j2;
@@ -680,7 +692,7 @@ namespace sill {
         va.erase(ds.vector_list()[j]);
       }
     }
-  }
+  } // convert_assignment_
 
   template <typename LA>
   void dataset_view<LA>::load_assignment(size_t i, sill::assignment& a) const {
@@ -689,15 +701,14 @@ namespace sill {
   }
 
   template <typename LA>
-  void dataset_view<LA>::load_record(size_t i, record_type& r) const {
+  void dataset_view<LA>::load_finite_record(size_t i, finite_record& r) const {
     if (m_new_var != NULL) {
-      ds.load_vector(convert_index(i), r.vector());
       ds.load_finite(convert_index(i), tmp_findata);
       // Note: tmp_findata is larger than r.finite() is.
       std::vector<size_t>& fin = r.finite();
-      size_t val(0);
-      size_t j2(0); // index into m_multipliers
-      for (size_t j(0); j < m_orig2new_indices.size(); ++j) {
+      size_t val = 0;
+      size_t j2 = 0; // index into m_multipliers
+      for (size_t j = 0; j < m_orig2new_indices.size(); ++j) {
         if (m_orig2new_indices[j] == std::numeric_limits<size_t>::max()) {
           val += m_multipliers[j2] * tmp_findata[j];
           ++j2;
@@ -705,23 +716,30 @@ namespace sill {
           fin[m_orig2new_indices[j]] = tmp_findata[j];
       }
       fin[m_new_var_index] = val;
-    } else if (vv_view != VAR_ALL) { // TO DO: SPEED THIS UP!
-      ds.load_vector(convert_index(i), tmp_vecdata);
+    } else if (vv_view == ALL_VAR_INDICES || vv_view == FIN_VAR_INDICES) {
       ds.load_finite(convert_index(i), tmp_findata);
       std::vector<size_t>& fin = r.finite();
-      for (size_t j(0); j < vv_finite_var_indices.size(); ++j)
+      for (size_t j = 0; j < vv_finite_var_indices.size(); ++j)
         fin[j] = tmp_findata[vv_finite_var_indices[j]];
-      r.vector() = tmp_vecdata(vv_vector_var_indices);
-      //        vector_type& v = r.vector();
-      //        for (size_t j(0); j < vv_vector_var_indices.size(); ++j)
-      //          v[j] = tmp_vecdata[vv_vector_var_indices[j]];
     } else {
-      ds.load_record(convert_index(i), r);
+      ds.load_finite_record(convert_index(i), r);
     }
     if (binarized_var != NULL) // move this to below if-then
       r.finite(binarized_var_index) =
         binary_coloring[r.finite(binarized_var_index)];
     r.finite_numbering_ptr = finite_numbering_ptr_;
+  } // load_finite_record
+
+  template <typename LA>
+  void
+  dataset_view<LA>::
+  load_vector_record(size_t i, vector_record<la_type>& r) const {
+    if (vv_view == ALL_VAR_INDICES || vv_view == FIN_VAR_INDICES) {
+      ds.load_vector(convert_index(i), tmp_vecdata);
+      r.vector() = tmp_vecdata(vv_vector_var_indices);
+    } else {
+      ds.load_vector_record(convert_index(i), r);
+    }
     r.vector_numbering_ptr = vector_numbering_ptr_;
   }
 
@@ -731,9 +749,9 @@ namespace sill {
     if (m_new_var != NULL) {
       ds.load_finite(convert_index(i), tmp_findata);
       // Note: tmp_findata is larger than findata is.
-      size_t val(0);
-      size_t j2(0); // index into m_multipliers
-      for (size_t j(0); j < m_orig2new_indices.size(); ++j) {
+      size_t val = 0;
+      size_t j2 = 0; // index into m_multipliers
+      for (size_t j = 0; j < m_orig2new_indices.size(); ++j) {
         if (m_orig2new_indices[j] ==std::numeric_limits<size_t>::max()){
           val += m_multipliers[j2] * tmp_findata[j];
           ++j2;
@@ -741,9 +759,9 @@ namespace sill {
           findata[m_orig2new_indices[j]] = tmp_findata[j];
       }
       findata[m_new_var_index] = val;
-    } else if (vv_view != VAR_ALL) {
+    } else if (vv_view == ALL_VAR_INDICES || vv_view == FIN_VAR_INDICES) {
       ds.load_finite(convert_index(i), tmp_findata);
-      for (size_t j(0); j < vv_finite_var_indices.size(); ++j)
+      for (size_t j = 0; j < vv_finite_var_indices.size(); ++j)
         findata[j] = tmp_findata[vv_finite_var_indices[j]];
     } else {
       ds.load_finite(convert_index(i), findata);
@@ -756,13 +774,12 @@ namespace sill {
 
   template <typename LA>
   void dataset_view<LA>::load_vector(size_t i, vector_type& vecdata) const {
-    if (vv_view != VAR_ALL) {
+    if (vv_view == ALL_VAR_INDICES || vv_view == VEC_VAR_INDICES) {
       ds.load_vector(convert_index(i), tmp_vecdata);
       vecdata = tmp_vecdata(vv_vector_var_indices);
-      //        for (size_t j(0); j < vv_vector_var_indices.size(); ++j)
-      //          vecdata[j] = tmp_vecdata[vv_vector_var_indices[j]];
-    } else
+    } else {
       ds.load_vector(convert_index(i), vecdata);
+    }
   }
 
   template <typename LA>
@@ -776,16 +793,8 @@ namespace sill {
 
   template <typename LA>
   size_t dataset_view<LA>::finite(size_t i, size_t j) const {
-    size_t val(0);
-    if (m_new_var == NULL)
-      val = ds.finite(convert_index(i), j);
-    else if (vv_view != VAR_ALL) {
-      if (j >= finite_seq.size()) {
-        assert(false);
-        return 0;
-      }
-      val = ds.finite(convert_index(i), vv_finite_var_indices[j]);
-    } else {
+    size_t val = 0;
+    if (m_new_var != NULL) {
       if (j >= finite_seq.size()) {
         assert(false);
         return 0;
@@ -793,9 +802,17 @@ namespace sill {
       if (j != m_new_var_index)
         val = ds.finite(convert_index(i), m_new2orig_indices[j]);
       else
-        for (size_t j(0); j < m_orig_vars.size(); ++j)
+        for (size_t j = 0; j < m_orig_vars.size(); ++j)
           val += m_multipliers[j]
             * ds.finite(convert_index(i), m_orig_vars_indices[j]);
+    } else if (vv_view == ALL_VAR_INDICES || vv_view == FIN_VAR_INDICES) {
+      if (j >= finite_seq.size()) {
+        assert(false);
+        return 0;
+      }
+      val = ds.finite(convert_index(i), vv_finite_var_indices[j]);
+    } else {
+      val = ds.finite(convert_index(i), j);
     }
     if (binarized_var == NULL || j != binarized_var_index)
       return val;
@@ -805,18 +822,20 @@ namespace sill {
 
   template <typename LA>
   double dataset_view<LA>::vector(size_t i, size_t j) const {
-    if (vv_view == VAR_INDICES) {
+    if (vv_view == ALL_VAR_INDICES || vv_view == VEC_VAR_INDICES) {
       if (j >= vector_seq.size()) {
         assert(false);
         return 0;
       }
       return ds.vector(convert_index(i), vv_vector_var_indices[j]);
-    } else
+    } else {
       return ds.vector(convert_index(i), j);
+    }
   }
 
   template <typename LA>
-  void dataset_view<LA>::convert_assignment(const assignment& orig_r, assignment& new_r) const {
+  void dataset_view<LA>::convert_assignment(const assignment& orig_r,
+                                            assignment& new_r) const {
     new_r.finite() = orig_r.finite();
     new_r.vector() = orig_r.vector();
     /*
@@ -829,15 +848,16 @@ namespace sill {
   }
 
   template <typename LA>
-  void dataset_view<LA>::convert_record(const record_type& orig_r, record_type& new_r) const {
+  void dataset_view<LA>::convert_record(const record_type& orig_r,
+                                        record_type& new_r) const {
     if (m_new_var != NULL) {
       new_r.vector() = orig_r.vector();
       tmp_findata = orig_r.finite();
       // Note: tmp_findata is larger than new_r.finite() is.
       std::vector<size_t>& fin = new_r.finite();
-      size_t val(0);
-      size_t j2(0); // index into m_multipliers
-      for (size_t j(0); j < m_orig2new_indices.size(); ++j) {
+      size_t val = 0;
+      size_t j2 = 0; // index into m_multipliers
+      for (size_t j = 0; j < m_orig2new_indices.size(); ++j) {
         if (m_orig2new_indices[j] == std::numeric_limits<size_t>::max()) {
           val += m_multipliers[j2] * tmp_findata[j];
           ++j2;
@@ -846,15 +866,21 @@ namespace sill {
       }
       fin[m_new_var_index] = val;
     } else if (vv_view != VAR_ALL) {
-      tmp_findata = orig_r.finite();
-      tmp_vecdata = orig_r.vector();
-      std::vector<size_t>& fin = new_r.finite();
-      vector_type& v = new_r.vector();
-      for (size_t j(0); j < vv_finite_var_indices.size(); ++j)
-        fin[j] = tmp_findata[vv_finite_var_indices[j]];
-      v = tmp_vecdata(vv_vector_var_indices);
-      //      for (size_t j(0); j < vv_vector_var_indices.size(); ++j)
-      //        v[j] = tmp_vecdata[vv_vector_var_indices[j]];
+      if (vv_view == ALL_VAR_INDICES || vv_view == FIN_VAR_INDICES) {
+        tmp_findata = orig_r.finite();
+        std::vector<size_t>& fin = new_r.finite();
+        for (size_t j = 0; j < vv_finite_var_indices.size(); ++j)
+          fin[j] = tmp_findata[vv_finite_var_indices[j]];
+      } else {
+        new_r.finite_record::operator=(orig_r);
+      }
+      if (vv_view == ALL_VAR_INDICES || vv_view == VEC_VAR_INDICES) {
+        tmp_vecdata = orig_r.vector();
+        vector_type& v = new_r.vector();
+        v = tmp_vecdata(vv_vector_var_indices);
+      } else {
+        new_r.vector_record<la_type>::operator=(orig_r);
+      }
     } else {
       new_r = orig_r;
     }
@@ -866,9 +892,10 @@ namespace sill {
   }
 
   template <typename LA>
-  void dataset_view<LA>::revert_merged_value(size_t merged_val,
-                                             std::vector<size_t>& orig_vals) const {
-    size_t val(merged_val);
+  void
+  dataset_view<LA>::revert_merged_value(size_t merged_val,
+                                        std::vector<size_t>& orig_vals) const {
+    size_t val = merged_val;
     for (size_t j(m_orig_vars_sorted.size()-1); j > 0; --j) {
       orig_vals[j] = val / m_multipliers_sorted[j];
       val = val % m_multipliers_sorted[j];
@@ -877,9 +904,10 @@ namespace sill {
   }
 
   template <typename LA>
-  void dataset_view<LA>::revert_merged_value(size_t merged_val,
-                                             finite_assignment& orig_vals) const {
-    size_t val(merged_val);
+  void
+  dataset_view<LA>::revert_merged_value(size_t merged_val,
+                                        finite_assignment& orig_vals) const {
+    size_t val = merged_val;
     for (size_t j(m_orig_vars_sorted.size()-1); j > 0; --j) {
       orig_vals[m_orig_vars_sorted[j]] = val / m_multipliers_sorted[j];
       val = val % m_multipliers_sorted[j];
@@ -997,7 +1025,7 @@ namespace sill {
       set_record_range(lower, upper);
     } else {
       std::vector<size_t> indices;
-      for (size_t i(0); i < lower; ++i)
+      for (size_t i = 0; i < lower; ++i)
         indices.push_back(i);
       for (size_t i(upper); i < nrecords; ++i)
         indices.push_back(i);
@@ -1019,7 +1047,7 @@ namespace sill {
       saved_record_indices->operator=(record_indices);
       break;
     case RECORD_ALL:
-      for (size_t i(0); i < ds.size(); ++i)
+      for (size_t i = 0; i < ds.size(); ++i)
         saved_record_indices->push_back(i);
       break;
     default:
@@ -1038,8 +1066,9 @@ namespace sill {
 
   template <typename LA>
   void
-  dataset_view<LA>::set_variable_indices(const std::set<size_t>& finite_indices,
-                                         const std::set<size_t>& vector_indices) {
+  dataset_view<LA>::
+  set_variable_indices(const std::set<size_t>& finite_indices,
+                       const std::set<size_t>& vector_indices) {
     if (binarized_var != NULL || m_new_var != NULL) {
       std::cerr << "dataset_view does not support variable views"
                 << " simultaneously with binarized and merged variables yet!"
@@ -1047,6 +1076,9 @@ namespace sill {
       assert(false);
       return;
     }
+    assert(vv_view == VAR_ALL); // TO DO: IMPLEMENT THIS
+
+    bool index_finite = true;
     // Check indices
     foreach(size_t j, finite_indices) {
       if (j >= num_finite()) {
@@ -1056,6 +1088,39 @@ namespace sill {
         assert(false);
       }
     }
+    if (finite_indices.size() < num_finite()) {
+      // Construct view
+      finite_var_vector new_finite_class_vars;
+      finite_var_vector vv_finite_vars; // Finite variables in view
+      std::set<finite_variable*>
+        old_finite_class_vars(finite_class_vars.begin(),
+                              finite_class_vars.end());
+      vv_finite_var_indices.clear();
+      for (size_t j = 0; j < num_finite(); ++j) {
+        if (finite_indices.count(j)) {
+          vv_finite_vars.push_back(finite_seq[j]);
+          vv_finite_var_indices.push_back(j);
+          if (old_finite_class_vars.count(finite_seq[j]))
+            new_finite_class_vars.push_back(finite_seq[j]);
+        }
+      }
+      // Update datasource info
+      finite_seq = vv_finite_vars;
+      finite_numbering_ptr_->clear();
+      dfinite = 0;
+      for (size_t j = 0; j < vv_finite_vars.size(); ++j) {
+        finite_numbering_ptr_->operator[](vv_finite_vars[j]) = j;
+        dfinite += vv_finite_vars[j]->size();
+      }
+      finite_class_vars = new_finite_class_vars;
+
+      tmp_findata.resize(ds.num_finite());
+    } else {
+      index_finite = false;
+    }
+
+    bool index_vector = true;
+    // Check indices
     foreach(size_t j, vector_indices) {
       if (j >= num_vector()) {
         std::cerr << "dataset_view::set_variable_indices() was given vector"
@@ -1064,28 +1129,15 @@ namespace sill {
         assert(false);
       }
     }
-    // Construct view
-    finite_var_vector new_finite_class_vars;
-    vector_var_vector new_vector_class_vars;
-    finite_var_vector vv_finite_vars; // Finite variables in view
-    vector_var_vector vv_vector_vars; // Vector variables in view
-    if (vv_view == VAR_ALL) {
-      std::set<finite_variable*>
-        old_finite_class_vars(finite_class_vars.begin(),
-                              finite_class_vars.end());
-      vv_finite_var_indices.clear();
-      for (size_t j = 0; j < num_finite(); ++j)
-        if (finite_indices.count(j)) {
-          vv_finite_vars.push_back(finite_seq[j]);
-          vv_finite_var_indices.push_back(j);
-          if (old_finite_class_vars.count(finite_seq[j]))
-            new_finite_class_vars.push_back(finite_seq[j]);
-        }
+    if (vector_indices.size() < num_vector()) {
+      // Construct view
+      vector_var_vector new_vector_class_vars;
+      vector_var_vector vv_vector_vars; // Vector variables in view
       std::set<vector_variable*>
         old_vector_class_vars(vector_class_vars.begin(),
                               vector_class_vars.end());
       vv_vector_var_indices.set_size(vector_indices.size());
-      size_t j2(0); // index into vv_vector_var_indices
+      size_t j2 = 0; // index into vv_vector_var_indices
       for (size_t j = 0; j < num_vector(); ++j) {
         if (vector_indices.count(j)) {
           vv_vector_vars.push_back(vector_seq[j]);
@@ -1095,57 +1147,60 @@ namespace sill {
           ++j2;
         }
       }
-    } else {
-      // TODO: IMPLEMENT THIS
-      assert(false);
-    }
-    vv_view = VAR_INDICES;
-    std::vector<variable::variable_typenames> new_var_type_order;
-    size_t j_f = 0, j_v = 0;
-    for (size_t j = 0; j < var_type_order.size(); ++j) {
-      if (var_type_order[j] == variable::FINITE_VARIABLE) {
-        if (finite_indices.count(j_f))
-          new_var_type_order.push_back(variable::FINITE_VARIABLE);
-        ++j_f;
-      } else {
-        if (vector_indices.count(j_v))
-          new_var_type_order.push_back(variable::VECTOR_VARIABLE);
-        ++j_v;
+      // Update datasource info
+      vector_seq = vv_vector_vars;
+      vector_numbering_ptr_->clear();
+      dvector = 0;
+      for (size_t j = 0; j < vv_vector_vars.size(); ++j) {
+        vector_numbering_ptr_->operator[](vv_vector_vars[j]) = j;
+        dvector += vv_vector_vars[j]->size();
       }
+      vector_class_vars = new_vector_class_vars;
+
+      tmp_vecdata.set_size(ds.vector_dim());
+    } else {
+      index_vector = false;
     }
-    // Update datasource info
-//    finite_vars = finite_domain(vv_finite_vars.begin(), vv_finite_vars.end());
-    finite_seq = vv_finite_vars;
-    finite_numbering_ptr_->clear();
-    dfinite = 0;
-    for (size_t j = 0; j < vv_finite_vars.size(); ++j) {
-      finite_numbering_ptr_->operator[](vv_finite_vars[j]) = j;
-      dfinite += vv_finite_vars[j]->size();
+
+    if (index_finite && index_vector)
+      vv_view = ALL_VAR_INDICES;
+    else if (index_finite)
+      vv_view = FIN_VAR_INDICES;
+    else if (index_vector)
+      vv_view = VEC_VAR_INDICES;
+    else
+      vv_view = VAR_ALL;
+
+    if (vv_view != VAR_ALL) {
+      // Construct new variable type order
+      std::vector<variable::variable_typenames> new_var_type_order;
+      {
+        size_t j_f = 0, j_v = 0;
+        for (size_t j = 0; j < var_type_order.size(); ++j) {
+          if (var_type_order[j] == variable::FINITE_VARIABLE) {
+            if (finite_indices.count(j_f))
+              new_var_type_order.push_back(variable::FINITE_VARIABLE);
+            ++j_f;
+          } else {
+            if (vector_indices.count(j_v))
+              new_var_type_order.push_back(variable::VECTOR_VARIABLE);
+            ++j_v;
+          }
+        }
+      }
+      var_type_order = new_var_type_order;
     }
-    finite_class_vars = new_finite_class_vars;
-//    vector_vars = vector_domain(vv_vector_vars.begin(), vv_vector_vars.end());
-    vector_seq = vv_vector_vars;
-    vector_numbering_ptr_->clear();
-    dvector = 0;
-    for (size_t j = 0; j < vv_vector_vars.size(); ++j) {
-      vector_numbering_ptr_->operator[](vv_vector_vars[j]) = j;
-      dvector += vv_vector_vars[j]->size();
-    }
-    vector_class_vars = new_vector_class_vars;
-    var_type_order = new_var_type_order;
-    tmp_findata.resize(ds.num_finite());
-    tmp_vecdata.set_size(ds.vector_dim());
-  }
+  } // set_variable_indices
 
   template <typename LA>
   void dataset_view<LA>::set_variables(const finite_domain& fvars,
                                        const vector_domain& vvars) {
     std::set<size_t> finite_indices;
     std::set<size_t> vector_indices;
-    for (size_t j(0); j < finite_seq.size(); ++j)
+    for (size_t j = 0; j < finite_seq.size(); ++j)
       if (fvars.count(finite_seq[j]) != 0)
         finite_indices.insert(j);
-    for (size_t j(0); j < vector_seq.size(); ++j)
+    for (size_t j = 0; j < vector_seq.size(); ++j)
       if (vvars.count(vector_seq[j]) != 0)
         vector_indices.insert(j);
     set_variable_indices(finite_indices, vector_indices);
@@ -1222,7 +1277,7 @@ namespace sill {
     std::set<finite_variable*> tmp_fin_class_vars(finite_class_vars.begin(),
                                                   finite_class_vars.end());
     bool is_class = tmp_fin_class_vars.count(original_vars[0]);
-    for (size_t j(0); j < original_vars.size(); ++j) {
+    for (size_t j = 0; j < original_vars.size(); ++j) {
       assert(original_vars[j] != NULL &&
              has_variable(original_vars[j]) &&
              original_vars[j] != binarized_var);
@@ -1258,7 +1313,7 @@ namespace sill {
     m_new2orig_indices.resize(ds.num_finite() - original_vars.size() + 1);
     m_multipliers_sorted.resize(original_vars.size());
     tmp_findata.resize(ds.num_finite());
-    for (size_t j(0); j < original_vars.size(); ++j) {
+    for (size_t j = 0; j < original_vars.size(); ++j) {
       m_orig2new_indices[ds.record_index(original_vars[j])]
         = std::numeric_limits<size_t>::max();
       if (j == 0)
@@ -1268,8 +1323,8 @@ namespace sill {
           original_vars[j-1]->size() * m_multipliers_sorted[j-1];
       m_orig_vars_indices.push_back(ds.record_index(original_vars[j]));
     }
-    size_t j2(0); // index in new findata corresponding to j
-    for (size_t j(0); j < num_finite(); ++j) {
+    size_t j2 = 0; // index in new findata corresponding to j
+    for (size_t j = 0; j < num_finite(); ++j) {
       if (m_orig2new_indices[j] != std::numeric_limits<size_t>::max()) {
         m_orig2new_indices[j] = j2;
         m_new2orig_indices[j2] = j;
@@ -1282,7 +1337,7 @@ namespace sill {
     if (binarized_var != NULL)
       binarized_var_index = m_orig2new_indices[binarized_var_index];
     // Fix datasource finite variable and variable ordering info.
-    for (size_t j(0); j < original_vars.size(); ++j) {
+    for (size_t j = 0; j < original_vars.size(); ++j) {
 //      finite_vars.erase(original_vars[j]);
       dfinite -= original_vars[j]->size();
     }
@@ -1290,14 +1345,14 @@ namespace sill {
     dfinite += new_var->size();
     if (is_class) {
       finite_class_vars.clear();
-      for (size_t j(0); j < original_vars.size(); ++j)
+      for (size_t j = 0; j < original_vars.size(); ++j)
         tmp_fin_class_vars.erase(original_vars[j]);
       foreach(finite_variable* f, tmp_fin_class_vars)
         finite_class_vars.push_back(f);
       finite_class_vars.push_back(new_var);
     }
     finite_var_vector tmp_finite_seq;
-    for (size_t j(0); j < m_new2orig_indices.size() - 1; ++j) {
+    for (size_t j = 0; j < m_new2orig_indices.size() - 1; ++j) {
       tmp_finite_seq.push_back(finite_seq[m_new2orig_indices[j]]);
     }
     tmp_finite_seq.push_back(new_var);
@@ -1305,7 +1360,7 @@ namespace sill {
     j2 = 0; // index into original finite_seq
     std::set<size_t> tmp_orig_vars_indices_set(m_orig_vars_indices.begin(),
                                                m_orig_vars_indices.end());
-    for (size_t j(0); j < var_type_order.size(); ++j) {
+    for (size_t j = 0; j < var_type_order.size(); ++j) {
       if (var_type_order[j] == variable::FINITE_VARIABLE) {
         if (!tmp_orig_vars_indices_set.count(j2)) // if not in merged vars
           tmp_var_type_order.push_back(variable::FINITE_VARIABLE);
@@ -1317,7 +1372,7 @@ namespace sill {
     tmp_var_type_order.push_back(variable::FINITE_VARIABLE);
     finite_seq = tmp_finite_seq;
     finite_numbering_ptr_->clear();
-    size_t nfinite(0);
+    size_t nfinite = 0;
     foreach(finite_variable* v, finite_seq)
       finite_numbering_ptr_->operator[](v) = nfinite++;
     var_type_order = tmp_var_type_order;
@@ -1328,9 +1383,9 @@ namespace sill {
     m_orig_vars.clear();
     std::vector<size_t> tmp_m_orig_vars_indices;
     m_multipliers.clear();
-    for (size_t j(0); j < m_orig_vars_sorted.size(); ++j)
+    for (size_t j = 0; j < m_orig_vars_sorted.size(); ++j)
       tmp_orderstats[m_orig_vars_indices[j]] = j;
-    for (size_t j(0); j < ds.num_finite(); ++j) {
+    for (size_t j = 0; j < ds.num_finite(); ++j) {
       if (tmp_orig_vars_indices_set.count(j)) { // if in merged vars
         m_orig_vars.push_back(m_orig_vars_sorted[tmp_orderstats[j]]);
         tmp_m_orig_vars_indices.push_back(j);
@@ -1344,7 +1399,7 @@ namespace sill {
   void dataset_view<LA>::restrict_to_assignment(const finite_assignment& fa) {
     std::vector<size_t> offsets(fa.size(), 0); // indices of vars in records
     std::vector<size_t> vals(fa.size(), 0);    // corresponding values
-    size_t i(0);
+    size_t i = 0;
     for (finite_assignment::const_iterator it(fa.begin());
          it != fa.end(); ++it) {
       offsets[i] = this->record_index(it->first);
@@ -1355,7 +1410,7 @@ namespace sill {
     i = 0;
     foreach(const record_type& r, this->records()) {
       bool fits(true);
-      for (size_t j(0); j < offsets.size(); ++j) {
+      for (size_t j = 0; j < offsets.size(); ++j) {
         if (r.finite(offsets[j]) != vals[j]) {
           fits = false;
           break;

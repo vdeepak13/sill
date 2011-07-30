@@ -295,10 +295,10 @@ namespace sill {
     }
 
     double add_results(const dataset<>& ds, const std::string& prefix) {
-      double ll = model.expected_log_likelihood(ds);
+      double ll = ds.expected_value(model.log_likelihood());
       result_map_[prefix + "log likelihood"] = ll;
       result_map_[prefix + "per-label accuracy"] =
-        model.expected_per_label_accuracy(ds);
+        ds.expected_value(model.per_label_accuracy());
       return ll;
     }
 

@@ -418,23 +418,44 @@ namespace sill {
     }
 
     /**
-     * Compute the expected value and standard error of the given function
-     * w.r.t. this dataset.
+     * Returns the expected value of the given functor w.r.t. this dataset.
+     * Returns 0 if this dataset is empty.
      *
-     * @tparam Function type; this must take a record and return a real number.
-     *
-     * @todo Replace the above function with this one.
+     * @tparam F   Functor type implementing: double operator()(record type)
      */
     template <typename F>
-    std::pair<value_type, value_type> expected_value(F f) const {
-      value_type sum(0);
-      value_type sum2(0);
-      value_type total_weight(0);
+    value_type expected_value(F f) const {
+      value_type sum = 0;
+      value_type total_weight = 0;
+      if (nrecords == 0)
+        return 0;
+      size_t i = 0;
+      foreach(const record_type& r, records()) {
+        sum += weight(i) * f(r);
+        total_weight += weight(i);
+        ++i;
+      }
+      sum /= total_weight;
+      return sum;
+    }
+
+    /**
+     * Returns the <expected value, stderr> of the given functor
+     * w.r.t. this dataset.
+     * Returns <0,0> if this dataset is empty.
+     *
+     * @tparam F   Functor type implementing: double operator()(record type)
+     */
+    template <typename F>
+    std::pair<value_type, value_type> expected_value_and_stderr(F f) const {
+      value_type sum = 0;
+      value_type sum2 = 0;
+      value_type total_weight = 0;
       if (nrecords == 0)
         return std::make_pair(0,0);
-      size_t i(0);
+      size_t i = 0;
       foreach(const record_type& r, records()) {
-        value_type val(weight(i) * f(r));
+        value_type val = weight(i) * f(r);
         sum += val;
         sum2 += val * val;
         total_weight += weight(i);
@@ -664,7 +685,18 @@ namespace sill {
 
     //! Load record i into r.
     //! Record r is assumed to be the correct size for this dataset.
-    virtual void load_record(size_t i, record_type& r) const = 0;
+    void load_record(size_t i, record_type& r) const {
+      load_finite_record(i, r);
+      load_vector_record(i, r);
+    }
+
+    //! Load finite record i into r.
+    //! Record r is assumed to be the correct size for this dataset.
+    virtual void load_finite_record(size_t i, finite_record& r) const = 0;
+
+    //! Load vector record i into r.
+    //! Record r is assumed to be the correct size for this dataset.
+    virtual void load_vector_record(size_t i,vector_record<la_type>& r) const=0;
 
     //! Load finite data for datapoint i into findata.
     //! findata is assumed to be the correct size for this dataset.

@@ -370,6 +370,7 @@ namespace sill {
    const typename log_reg_crf_factor<LA>::parameters& params,
    unsigned random_seed) {
 
+    assert(Y_.size() != 0);
     if (!ds.has_variables(Y_)) {
       std::cerr << "learn_crf_factor given Y_ = " << Y_
                 << ", but the dataset only contains finite variables: "
@@ -380,52 +381,67 @@ namespace sill {
     }
     assert(X_ptr_);
 
-    assert(includes(ds.variables(), *X_ptr_));
+    assert(ds.has_variables(*X_ptr_));
     assert(params.valid());
-    // Set up dataset view
-    dataset_view<LA> ds_view(ds);
-    std::set<size_t> finite_indices;
-    size_t new_class_var_size(1);
-    foreach(finite_variable* v, Y_) {
-      finite_indices.insert(ds_view.record_index(v));
-      new_class_var_size *= v->size();
-    }
-    std::set<size_t> vector_indices;
-    foreach(variable* v, *X_ptr_) {
-      switch(v->get_variable_type()) {
-      case variable::FINITE_VARIABLE:
-        finite_indices.insert
-          (ds_view.record_index(dynamic_cast<finite_variable*>(v)));
-        break;
-      case variable::VECTOR_VARIABLE:
-        vector_indices.insert
-          (ds_view.record_index(dynamic_cast<vector_variable*>(v)));
-        break;
-      default:
-        assert(false);
+
+    if (Y_.size() == 1) {
+      dataset_statistics<LA> stats(ds);
+      // Train multiclass logistic regressor
+      multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
+      mlr_params.regularization = params.reg.regularization;
+      mlr_params.lambda = params.reg.lambdas[0];
+      mlr_params.random_seed = random_seed;
+      boost::shared_ptr<multiclass_logistic_regression<LA> >
+        mlr_ptr(new multiclass_logistic_regression<LA>(ds, mlr_params));
+      return
+        log_reg_crf_factor<LA>
+        (boost::shared_ptr<multiclass2multilabel<LA> >
+         (new multiclass2multilabel<LA>(mlr_ptr, ds)),
+         params.smoothing / ds.size(), Y_, X_ptr_);
+    } else { // then Y_.size() > 1
+      // Set up dataset view
+      dataset_view<LA> ds_view(ds);
+      std::set<size_t> finite_indices;
+      size_t new_class_var_size = num_assignments(Y_);
+      foreach(finite_variable* v, Y_) {
+        finite_indices.insert(ds_view.record_index(v));
       }
+      std::set<size_t> vector_indices;
+      foreach(variable* v, *X_ptr_) {
+        switch(v->get_variable_type()) {
+        case variable::FINITE_VARIABLE:
+          finite_indices.insert
+            (ds_view.record_index(dynamic_cast<finite_variable*>(v)));
+          break;
+        case variable::VECTOR_VARIABLE:
+          vector_indices.insert
+            (ds_view.record_index(dynamic_cast<vector_variable*>(v)));
+          break;
+        default:
+          assert(false);
+        }
+      }
+      ds_view.set_variable_indices(finite_indices, vector_indices);
+      ds_view.set_finite_class_variables(Y_);
+      dataset_statistics<LA> stats(ds_view);
+      // Train multilabel logistic regressor
+      multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
+      mlr_params.regularization = params.reg.regularization;
+      mlr_params.lambda = params.reg.lambdas[0];
+      finite_variable* new_merged_var
+        = params.u.new_finite_variable(new_class_var_size);
+      multiclass2multilabel_parameters<LA> m2m_params;
+      m2m_params.base_learner =
+        boost::shared_ptr<multiclass_classifier<LA> >
+        (new multiclass_logistic_regression<LA>(mlr_params));
+      m2m_params.random_seed = random_seed;
+      m2m_params.new_label = new_merged_var;
+      return
+        log_reg_crf_factor<LA>
+        (boost::shared_ptr<multiclass2multilabel<LA> >
+         (new multiclass2multilabel<LA>(stats, m2m_params)),
+         params.smoothing / ds.size(), Y_, X_ptr_);
     }
-    ds_view.set_variable_indices(finite_indices, vector_indices);
-    ds_view.set_finite_class_variables(Y_);
-    dataset_statistics<LA> stats(ds_view);
-    // Train multilabel logistic regressor
-    multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
-    mlr_params.regularization = params.reg.regularization;
-    mlr_params.lambda = params.reg.lambdas[0];
-    finite_variable* new_merged_var
-      = params.u.new_finite_variable(new_class_var_size);
-    multiclass2multilabel_parameters<LA> m2m_params;
-    m2m_params.base_learner =
-      boost::shared_ptr<multiclass_classifier<LA> >
-      (new multiclass_logistic_regression<LA>(mlr_params));
-    m2m_params.random_seed = random_seed;
-    m2m_params.new_label = new_merged_var;
-    return
-      log_reg_crf_factor<LA>
-      (boost::shared_ptr<multiclass2multilabel<LA> >
-       (new multiclass2multilabel<LA>(stats, m2m_params)),
-       params.smoothing / ds.size(), Y_, X_ptr_);
-    // RIGHT HERE NOW: TEMPLATIZE multiclass2multilabel by la_type
   } // learn_crf_factor<log_reg_crf_factor<LA> >::train
 
 }  // namespace sill

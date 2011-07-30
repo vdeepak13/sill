@@ -364,6 +364,8 @@ int main(int argc, char** argv) {
     ("random_seed",
      po::value<unsigned>(&random_seed)->default_value(time(NULL)),
      "random seed (default = time)");
+  desc.add_options()
+    ("help", "Print this help message.");
 
   // Parse options
   po::variables_map vm;
@@ -372,7 +374,8 @@ int main(int argc, char** argv) {
 
   // Check options
   if (!vm.count("factor_type") ||
-      ntrain == 0 || ntest == 0 || Ysize == 0 || Xsize == 0) {
+      ntrain == 0 || ntest == 0 || Ysize == 0 || Xsize == 0 ||
+      vm.count("help")) {
     cout << desc << endl;
     return 1;
   }

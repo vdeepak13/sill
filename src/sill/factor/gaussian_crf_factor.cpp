@@ -215,6 +215,19 @@ namespace sill {
   gaussian_crf_factor::gaussian_crf_factor(double c)
     : base(), fixed_records_(false), conditioned_f(c), relabeled(false) { }
 
+  gaussian_crf_factor::
+  gaussian_crf_factor(const vector_domain& out_args,
+                      const vector_domain& in_args,
+                      const vector_var_vector& head_,
+                      const vector_var_vector& tail_,
+                      const mat& A, const vec& b, const mat& C)
+    : base(out_args, in_args), head_(head_), tail_(tail_), ov(A,b,C),
+      fixed_records_(false), relabeled(false) {
+    if (out_args != make_domain(head_) || in_args != make_domain(tail_)) {
+      relabel_outputs_inputs(out_args, in_args);
+    }
+  }
+
   void gaussian_crf_factor::save(oarchive & ar) const {
     base::save(ar);
     bool const_value = (head_.size() == 0);

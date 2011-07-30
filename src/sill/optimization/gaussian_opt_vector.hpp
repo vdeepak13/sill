@@ -60,6 +60,9 @@ namespace sill {
 
     gaussian_opt_vector(const mat& A, const vec& b, const mat& C)
       : A(A), b(b), C(C) {
+      if (C.n_rows == 0 && C.n_cols == 0 &&
+          A.n_rows != 0)
+        this->C.set_size(A.n_rows, 0);
       if (!valid_size())
         throw std::invalid_argument
           (std::string("gaussian_opt_vector constructor:") +

@@ -9,6 +9,8 @@
 // #include <sill/model/projections.hpp>
 #include <sill/model/markov_network.hpp>
 
+#include <sill/macros_def.hpp>
+
 /**
  * \file bayes_markov_model.cpp Bayes net and Markov net test
  */
@@ -86,4 +88,24 @@ int main() {
   cout << "Converted Bayes net to pairwise Markov network:\n";
   cout << pmn << endl;
   */
-}
+
+  // Test serialization.
+  ofstream fout("test.bin",fstream::binary);
+  oarchive oa(fout);
+  oa << bn;
+  fout.close();
+
+  ifstream fin("test.bin",fstream::binary);
+  iarchive ia(fin);
+  ia.attach_universe(&u);
+  bayesian_network<table_factor> bn2;
+  ia >> bn2;
+  fin.close();
+  assert(bn.arguments() == bn2.arguments());
+  foreach(finite_variable* var, bn.arguments()) {
+    assert(bn.factor(var) == bn2.factor(var));
+  }
+
+} // main
+
+#include <sill/macros_undef.hpp>

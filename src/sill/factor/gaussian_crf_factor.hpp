@@ -228,6 +228,22 @@ namespace sill {
      */
     explicit gaussian_crf_factor(double c);
 
+    /**
+     * Constructor using the native parameterization.
+     * @param  out_args  Output arguments.
+     * @param  in_args   Input arguments.
+     * @param  head      Head (same as out_args if not relabeled).
+     * @param  tail      Tail (same as in_args if not relabeled).
+     * @param  A         weights().A
+     * @param  b         weights().b
+     * @param  C         weights().C
+     */
+    gaussian_crf_factor(const vector_domain& out_args,
+                        const vector_domain& in_args,
+                        const vector_var_vector& head_,
+                        const vector_var_vector& tail_,
+                        const mat& A, const vec& b, const mat& C);
+
     //! Serialize members
     void save(oarchive & ar) const;
 

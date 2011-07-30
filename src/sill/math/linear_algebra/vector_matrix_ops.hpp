@@ -2,6 +2,7 @@
 #ifndef _SILL_VECTOR_MATRIX_OPS_HPP_
 #define _SILL_VECTOR_MATRIX_OPS_HPP_
 
+#include <sill/base/assertions.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/linear_algebra/blas.hpp>
 #include <sill/math/linear_algebra/coo_matrix.hpp>
@@ -578,7 +579,8 @@ namespace sill {
     inline void
     gemv_densemat_sparsevec_(const arma::Mat<T>& A, const InVecType& x,
                              arma::Col<T>& y) {
-      assert(A.n_cols == x.size());
+      //      assert(A.n_cols == x.size());
+      ASSERT_EQ(A.n_cols, x.size());
       assert(y.size() == A.n_rows);
       const T* A_it = A.begin();
       for (SizeType i = 0; i < y.size(); ++i) {

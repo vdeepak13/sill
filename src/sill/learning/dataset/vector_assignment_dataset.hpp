@@ -257,8 +257,21 @@ namespace sill {
     //! Load datapoint i into assignment a
     void load_assignment(size_t i, sill::assignment& a) const;
 
-    //! Load record i into r
-    void load_record(size_t i, record_type& r) const;
+    //! Load finite record i into r.
+    void load_finite_record(size_t i, finite_record& r) const {
+      if (r.fin_own)
+        r.fin_ptr->operator=(finite_data[i]);
+      else
+        r.fin_ptr = &(finite_data[i]);
+    }
+
+    //! Load vector record i into r.
+    void load_vector_record(size_t i, vector_record<la_type>& r) const {
+      if (r.vec_own)
+        r.vec_ptr->operator=(vector_data[i]);
+      else
+        r.vec_ptr = &(vector_data[i]);
+    }
 
     //! Load finite data for datapoint i into findata
     void load_finite(size_t i, std::vector<size_t>& findata) const {
@@ -484,18 +497,6 @@ namespace sill {
   void vector_assignment_dataset<LA>::load_assignment(size_t i, sill::assignment& a) const {
     assert(i < nrecords);
     a = data_vector[i];
-  }
-
-  template <typename LA>
-  void vector_assignment_dataset<LA>::load_record(size_t i, record_type& r) const {
-    if (r.fin_own)
-      r.fin_ptr->operator=(finite_data[i]);
-    else
-      r.fin_ptr = &(finite_data[i]);
-    if (r.vec_own)
-      r.vec_ptr->operator=(vector_data[i]);
-    else
-      r.vec_ptr = &(vector_data[i]);
   }
 
   template <typename LA>

@@ -12,6 +12,7 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/model/crf_graph.hpp>
 #include <sill/model/decomposable.hpp>
+#include <sill/model/model_functors.hpp>
 #include <sill/range/forward_range.hpp>
 #include <sill/range/transformed.hpp>
 
@@ -663,164 +664,6 @@ namespace sill {
     // =========================================================================
 
     /**
-     * Computes log P(Y = y | X = x).
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param a    an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    double log_likelihood(const assignment_type& a, double base) const {
-      condition_model(a);
-      return conditioned_model.log_likelihood(a, base);
-    }
-
-    /**
-     * Computes log P(Y = y | X = x).
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param r    record with an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    double log_likelihood(const record_type& r, double base) const {
-      condition_model(r);
-      return conditioned_model.log_likelihood(r, base);
-    }
-
-    /**
-     * Computes log P(Y = y | X = x) using log base e.
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param a    an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    double log_likelihood(const assignment_type& a) const {
-      return log_likelihood(a, exp(1.));
-    }
-
-    /**
-     * Computes log P(Y = y | X = x) using log base e.
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param r    record with an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    double log_likelihood(const record_type& r) const {
-      return log_likelihood(r, exp(1.));
-    }
-
-    /**
-     * Computes E[ log P(Y=y | X=x) ] where the expectation is over samples
-     * in the given dataset, using log base e.
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     *
-     * @return E[ log P(Y=y | X=x) ], or 0 if the dataset is empty.
-     */
-    template <typename LA>
-    double expected_log_likelihood(const dataset<LA>& ds) const {
-      if (ds.size() == 0)
-        return 0;
-      double ll(0);
-      foreach(const record_type& r, ds.records()) {
-        const decomposable<output_factor_type>& tmpmodel
-          = this->condition(r);
-        ll += tmpmodel.log_likelihood(r);
-      }
-      return (ll / ds.size());
-    }
-
-    /**
-     * Computes the mean squared error (mean over Y variables);
-     * for finite data, this is the same as per-label accuracy.
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param a    an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    double mean_squared_error(const assignment_type& a) const {
-      condition_model(a);
-      return conditioned_model.mean_squared_error(a);
-    }
-
-    /**
-     * Computes the expected mean squared error (mean over Y variables),
-     * where the expectation is over samples in the given dataset.
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     *
-     * @return  expected mean squared error, or 0 if the dataset is empty.
-     */
-    template <typename LA>
-    double expected_mean_squared_error(const dataset<LA>& ds) const {
-      if (ds.size() == 0)
-        return 0;
-      double mse(0);
-      foreach(const record_type& r, ds.records()) {
-        const decomposable<output_factor_type>& tmpmodel
-          = this->condition(r);
-        mse += tmpmodel.mean_squared_error(r);
-      }
-      return (mse / ds.size());
-    }
-
-    /**
-     * Computes the per-label accuracy (average over Y variables).
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param a    an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    double per_label_accuracy(const assignment_type& a) const {
-      condition_model(a);
-      return conditioned_model.per_label_accuracy(a);
-    }
-
-    /**
-     * Computes the per-label accuracy (average over Y variables).
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param r    record with an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    double per_label_accuracy(const record_type& r) const {
-      condition_model(r);
-      return conditioned_model.per_label_accuracy(r);
-    }
-
-    /**
-     * Computes the expected per-label accuracy (average over Y variables),
-     * where the expectation is over samples in the given dataset.
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     *
-     * @return  expected per-label accuracy, or 0 if the dataset is empty.
-     */
-    template <typename LA>
-    double expected_per_label_accuracy(const dataset<LA>& ds) const {
-      if (ds.size() == 0)
-        return 0;
-      double acc(0);
-      foreach(const record_type& r, ds.records()) {
-        const decomposable<output_factor_type>& tmpmodel
-          = this->condition(r);
-        acc += tmpmodel.per_label_accuracy(r);
-      }
-      return (acc / ds.size());
-    }
-
-    /**
-     * Returns 1 if this predicts all Y variable values correctly and 0 o.w.
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param a    an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    size_t accuracy(const assignment_type& a) const {
-      condition_model(a);
-      return conditioned_model.accuracy(a);
-    }
-
-    /**
-     * Returns 1 if this predicts all Y variable values correctly and 0 o.w.
-     * WARNING: This assumes that the model P(Y | X = x) is tractable!
-     * @param r    record with an assignment to Y,X
-     * @todo Make this safer (in terms of tractability) and more efficient.
-     */
-    size_t accuracy(const record_type& r) const {
-      condition_model(r);
-      return conditioned_model.accuracy(r);
-    }
-
-    /**
      * Return a decomposable model for P(Y | X = x).
      * WARNING: This assumes that the model P(Y | X = x) is tractable!
      * Note: This reference may no longer be valid after other calls to
@@ -887,6 +730,169 @@ namespace sill {
     sample(const input_assignment_type& x, RandomNumberGenerator& rng) const {
       condition_model(x);
       return conditioned_model.sample(rng);
+    }
+
+    // Losses
+    //==========================================================================
+
+    /**
+     * Computes log P(Y = y | X = x).
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param a    an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double log_likelihood(const assignment_type& a, double base) const {
+      condition_model(a);
+      return conditioned_model.log_likelihood(a, base);
+    }
+
+    /**
+     * Computes log P(Y = y | X = x).
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param r    record with an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double log_likelihood(const record_type& r, double base) const {
+      condition_model(r);
+      return conditioned_model.log_likelihood(r, base);
+    }
+
+    /**
+     * Computes log P(Y = y | X = x) using log base e.
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param a    an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double log_likelihood(const assignment_type& a) const {
+      return log_likelihood(a, exp(1.));
+    }
+
+    /**
+     * Computes log P(Y = y | X = x) using log base e.
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param r    record with an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double log_likelihood(const record_type& r) const {
+      return log_likelihood(r, exp(1.));
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected log likelihood E[log P(Y|X)].
+     */
+    model_log_likelihood_functor<crf_model>
+    log_likelihood(double base = exp(1.)) const {
+      return model_log_likelihood_functor<crf_model>(*this, base);
+    }
+
+    /**
+     * Computes the per-label accuracy (average over Y variables).
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param a    an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double per_label_accuracy(const assignment_type& a) const {
+      condition_model(a);
+      return conditioned_model.per_label_accuracy(a);
+    }
+
+    /**
+     * Computes the per-label accuracy (average over Y variables).
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param r    record with an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double per_label_accuracy(const record_type& r) const {
+      condition_model(r);
+      return conditioned_model.per_label_accuracy(r);
+    }
+
+    /**
+     * Computes the per-label accuracy of predicting Y given Z and X,
+     * where this model is of P(Y,Z|X).
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param r    record with an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double per_label_accuracy(const record_type& r,
+                              const output_domain_type& Z) const {
+      condition_model(r);
+      return conditioned_model.per_label_accuracy(r, Z);
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected per-label accuracy of predicting Y given X.
+     */
+    model_per_label_accuracy_functor<crf_model>
+    per_label_accuracy() const {
+      return model_per_label_accuracy_functor<crf_model>(*this);
+    }
+
+    /**
+     * Returns 1 if this predicts all Y variable values correctly and 0 o.w.
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param a    an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    size_t accuracy(const assignment_type& a) const {
+      condition_model(a);
+      return conditioned_model.accuracy(a);
+    }
+
+    /**
+     * Returns 1 if this predicts all Y variable values correctly and 0 o.w.
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param r    record with an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    size_t accuracy(const record_type& r) const {
+      condition_model(r);
+      return conditioned_model.accuracy(r);
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected all-or-nothing accuracy of predicting Y given X.
+     */
+    model_accuracy_functor<crf_model>
+    accuracy() const {
+      return model_accuracy_functor<crf_model>(*this);
+    }
+
+    /**
+     * Computes the mean squared error (mean over Y variables);
+     * for finite data, this is the same as per-label accuracy.
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param a    an assignment to Y,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double mean_squared_error(const assignment_type& a) const {
+      condition_model(a);
+      return conditioned_model.mean_squared_error(a);
+    }
+
+    /**
+     * Computes the mean squared error of predicting Y given Z and X,
+     * where this model is P(Y,Z|X).
+     * WARNING: This assumes that the model P(Y | X = x) is tractable!
+     * @param a    an assignment to Y,Z,X
+     * @todo Make this safer (in terms of tractability) and more efficient.
+     */
+    double mean_squared_error(const assignment_type& a,
+                              const output_domain_type& Z) const {
+      condition_model(a);
+      return conditioned_model.mean_squared_error(a,Z);
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected mean squared error of predicting Y given X.
+     */
+    model_mean_squared_error_functor<crf_model>
+    mean_squared_error() const {
+      return model_mean_squared_error_functor<crf_model>(*this);
     }
 
     //! Computes the pseudolikelihood of this model for the given record.
@@ -1229,6 +1235,7 @@ namespace sill {
 
   }; // crf_model
 
+
   /**
    * Write a CRF to an output stream using its built-in print() function.
    */
@@ -1237,6 +1244,86 @@ namespace sill {
     crf.print(out);
     return out;
   }
+
+  // Specializations of model functors for crf_model types
+  //============================================================================
+
+  template <typename F>
+  struct model_conditional_log_likelihood_functor<crf_model<F> > {
+
+    explicit
+    model_conditional_log_likelihood_functor
+    (const crf_model<F>& model,
+     const typename crf_model<F>::output_domain_type& X,
+     double base = exp(1.))
+      : modelptr(&model), X(X), base(base) { }
+
+    double operator()(const typename crf_model<F>::record_type r) const {
+      assert(modelptr);
+      return modelptr->conditional_log_likelihood(r, X, base);
+    }
+
+  private:
+    const crf_model<F>* modelptr;
+    typename crf_model<F>::output_domain_type X;
+    double base;
+  };
+
+  template <typename F>
+  struct model_per_label_accuracy_functor<crf_model<F> > {
+
+    //! Constructor for accuracy w.r.t. all arguments of the model.
+    explicit model_per_label_accuracy_functor(const crf_model<F>& model)
+      : modelptr(&model) { }
+
+    //! Constructor for accuracy of predicting Y given X, where the model
+    //! is of P(Y,X).
+    explicit
+    model_per_label_accuracy_functor
+    (const crf_model<F>& model,
+     const typename crf_model<F>::output_domain_type& X)
+      : modelptr(&model), X(X) { }
+
+    double operator()(const typename crf_model<F>::record_type r) const {
+      assert(modelptr);
+      if (X.size() == 0)
+        return modelptr->per_label_accuracy(r);
+      else
+        return modelptr->per_label_accuracy(r, X);
+    }
+
+  private:
+    const crf_model<F>* modelptr;
+    const typename crf_model<F>::output_domain_type X;
+  };
+
+  template <typename F>
+  struct model_mean_squared_error_functor<crf_model<F> > {
+
+    //! Constructor for mean squared error w.r.t. all arguments of the model.
+    explicit model_mean_squared_error_functor(const crf_model<F>& model)
+      : modelptr(&model) { }
+
+    //! Constructor for mean squared error of predicting Y given X,
+    //! where the model is P(Y,X).
+    explicit
+    model_mean_squared_error_functor
+    (const crf_model<F>& model,
+     const typename crf_model<F>::output_domain_type& X)
+      : modelptr(&model), X(X) { }
+
+    double operator()(const typename crf_model<F>::record_type r) const {
+      assert(modelptr);
+      if (X.size() == 0)
+        return modelptr->mean_squared_error(r);
+      else
+        return modelptr->mean_squared_error(r, X);
+    }
+
+  private:
+    const crf_model<F>* modelptr;
+    typename crf_model<F>::output_domain_type X;
+  };
 
 }  // namespace sill
 

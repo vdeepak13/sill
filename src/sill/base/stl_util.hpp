@@ -152,7 +152,7 @@ namespace sill {
    */
   template <typename Key, typename T>
   const T safe_get(const std::map<Key, T>& map,
-                    const Key& key, const T default_value) {
+                   const Key& key, const T default_value) {
     typedef typename std::map<Key, T>::const_iterator iterator;
     iterator iter = map.find(key);
     if (iter == map.end()) {

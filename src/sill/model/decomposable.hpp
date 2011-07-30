@@ -20,6 +20,7 @@
 #include <sill/learning/error_measures.hpp>
 #include <sill/model/interfaces.hpp>
 #include <sill/model/junction_tree.hpp>
+#include <sill/model/model_functors.hpp>
 #include <sill/model/normalization_error.hpp>
 #include <sill/inference/variable_elimination.hpp>
 
@@ -389,6 +390,61 @@ namespace sill {
       jt.check_validity();
     }
 
+    /**
+     * Checks that this decomposable model is valid.  This method will
+     * generate an assertion violation if the decomposable model is
+     * not valid.  The junction tree must be valid, and the clique and
+     * separator marginals must have the correct argument sets.
+     *
+     * \todo This method should also check for edge consistency.
+     */
+    void check_validity() const {
+      // Check that the junction tree is valid.
+      jt.check_validity();
+      // Check that the arguments of clique & separator marginals match JT.
+      foreach(vertex v, vertices())
+        if (clique(v) != marginal(v).arguments()) {
+          std::cerr << "check_validity() failed: "
+                    << "clique(v) != marginal(v).arguments():"
+                    << std::endl;
+          std::cerr << "  clique(v) = " << clique(v)
+                    << ", arguments() = " << marginal(v).arguments()
+                    << std::endl;
+          std::cerr << (*this);
+          assert(false);
+        }
+      foreach(edge e, edges())
+        if (separator(e) != marginal(e).arguments()) {
+          std::cerr << "check_validity() failed: "
+                    << "separator(e) != marginal(e).arguments():"
+                    << std::endl;
+          std::cerr << "  separator(e) = " << separator(e)
+                    << ", arguments() = " << marginal(e).arguments()
+                    << std::endl;
+          std::cerr << (*this);
+          assert(false);
+        }
+      // TODO: check that marginalizing the clique marginals to the
+      // separator yields the separator marginal.
+    }
+
+    /**
+     * Prints a human-readable representation of the decomposable
+     * model to the supplied output stream.
+     *
+     * \todo Standardize with factors.
+     */
+    template <typename OutputStream>
+    void print(OutputStream& out) const {
+      jt.print(out);
+    }
+
+    operator std::string() const {
+      std::ostringstream out;
+      out << *this;
+      return out.str();
+    }
+
     // Probabilistic model queries
     //==========================================================================
 
@@ -553,158 +609,6 @@ namespace sill {
       variable_elimination(orig_marginals, vars, sum_product,
                            min_degree_strategy(), back_inserter(new_marginals));
       output *= new_marginals;
-    }
-
-    /**
-     * Computes the log likelihood of the given assignment according to this
-     * distribution.
-     *
-     * @param a    Assignment to a subset of the variables of the distribution.
-     *             Note that if this assigns values to variables not in this
-     *             model, then those variables are ignored.
-     * @param base base of the log, default e
-     * @return log likelihood of the assignment
-     */
-    double log_likelihood(const assignment_type& a, double base) const {
-      using std::log;
-      bool a_includes_args = true;
-      foreach(variable_type* v, args) {
-        if (a.find(v) == a.end()) {
-          a_includes_args = false;
-          break;
-        }
-      }
-      if (a_includes_args) {
-        double loglike = 0;
-        foreach(vertex v, vertices())
-          loglike += marginal(v).logv(a);
-        foreach(edge e, edges())
-          loglike -= marginal(e).logv(a);
-        return (loglike / log(base));
-      } else {
-        decomposable marginal_model(*this);
-        marginal_model.marginalize_out(set_difference(args, keys(a)));
-        return marginal_model.log_likelihood(a, base);
-      }
-    }
-
-    /**
-     * Computes the log likelihood of the given assignment according to this
-     * distribution.
-     *
-     * @param r    Record with values for a subset of the variables of the
-     *             distribution.
-     *             Note that if this assigns values to variables not in this
-     *             model, then those variables are ignored.
-     * @param base base of the log, default e
-     * @return log likelihood of the assignment
-     */
-    double log_likelihood(const record_type& r, double base) const {
-      using std::log;
-      bool r_includes_args(true);
-      foreach(variable_type* v, args) {
-        if (!r.has_variable(v)) {
-          r_includes_args = false;
-          break;
-        }
-      }
-      if (r_includes_args) {
-        double loglike(0.);
-        foreach(vertex v, vertices())
-          loglike += marginal(v).logv(r);
-        foreach(edge e, edges())
-          loglike -= marginal(e).logv(r);
-        return (loglike / log(base));
-      } else {
-        decomposable marginal_model(*this);
-        marginal_model.marginalize_out(set_difference(args, r.variables()));
-        return marginal_model.log_likelihood(r, base);
-      }
-    }
-
-    double log_likelihood(const assignment_type& a) const {
-      return log_likelihood(a, exp(double(1)));
-    }
-
-    double log_likelihood(const record_type& r) const {
-      return log_likelihood(r, exp(double(1)));
-    }
-
-    logarithmic<double> operator()(const assignment_type& a) const {
-      return logarithmic<double>(log_likelihood(a), log_tag());
-    }
-
-    logarithmic<double> operator()(const record_type& r) const {
-      return logarithmic<double>(log_likelihood(r), log_tag());
-    }
-
-    /**
-     * Expected log likelihood E[P(X)], where P(X) is this model and
-     * the expectation is w.r.t. the given dataset.
-     */
-    template <typename LA>
-    double expected_log_likelihood(const dataset<LA>& ds, double base) const {
-      if (ds.size() == 0)
-        return 0;
-      double ll = 0;
-      if (!includes(ds.variables(), args)) {
-        throw std::runtime_error("decomposable::expected_log_likelihood currently requires that the given dataset includes all variables in the decomposable model.");
-      }
-      foreach(const record<LA>& r, ds.records()) {
-        ll += this->log_likelihood(r, base);
-      }
-      return ll / ds.size();
-    }
-
-    /**
-     * Expected log likelihood E[P(X)], where P(X) is this model and
-     * the expectation is w.r.t. the given dataset.
-     * This version uses log base e.
-     */
-    template <typename LA>
-    double expected_log_likelihood(const dataset<LA>& ds) const {
-      return expected_log_likelihood(ds, std::exp(1));
-    }
-
-    /**
-     * Computes the expected conditional log likelihood E[P(Y|X)],
-     * where the expectation is w.r.t. the given dataset and this distribution
-     * represents P(Y,X).
-     *
-     * @param ds   Dataset with values for a subset of the variables of the
-     *             distribution.
-     *             If this assigns values to variables not in this model,
-     *             then those variables are ignored.
-     * @param X    Variables (which MUST be a subset of this model's arguments)
-     *             to condition on.
-     * @param base base of the log (default = e)
-     *
-     * @return  expected conditional log likelihood, or 0 if dataset is empty
-     *
-     * @todo Add support for when this model represents P(Y,X,Z).
-     */
-    template <typename LA>
-    double expected_conditional_log_likelihood(const dataset<LA>& ds,
-                                               const domain_type& X,
-                                               double base) const {
-      if (ds.size() == 0)
-        return 0;
-      double cll(0);
-      if (!includes(ds.variables(), args)) {
-        throw std::runtime_error("decomposable::expected_conditional_log_likelihood currently requires that the given dataset includes all variables in the decomposable model.");
-      }
-      foreach(const record<LA>& r, ds.records()) {
-        decomposable tmp_model(*this);
-        tmp_model.condition(r.assignment(X));
-        cll += tmp_model.log_likelihood(r, base);
-      }
-      return cll / ds.size();
-    }
-
-    template <typename LA>
-    double expected_conditional_log_likelihood(const dataset<LA>& ds,
-                                               const domain_type& X) const {
-      return expected_conditional_log_likelihood(ds, X, exp(double(1)));
     }
 
     /**
@@ -912,9 +816,210 @@ namespace sill {
       return a;
     }
 
+    // Losses
+    //==========================================================================
+
+    /**
+     * Computes the log likelihood of the given assignment according to this
+     * distribution.
+     *
+     * @param a    Assignment to a subset of the variables of the distribution.
+     *             Note that if this assigns values to variables not in this
+     *             model, then those variables are ignored.
+     * @param base base of the log, default e
+     * @return log likelihood of the assignment
+     */
+    double log_likelihood(const assignment_type& a, double base) const {
+      using std::log;
+      bool a_includes_args = true;
+      foreach(variable_type* v, args) {
+        if (a.find(v) == a.end()) {
+          a_includes_args = false;
+          break;
+        }
+      }
+      if (a_includes_args) {
+        double loglike = 0;
+        foreach(vertex v, vertices())
+          loglike += marginal(v).logv(a);
+        foreach(edge e, edges())
+          loglike -= marginal(e).logv(a);
+        return (loglike / log(base));
+      } else {
+        decomposable marginal_model(*this);
+        marginal_model.marginalize_out(set_difference(args, keys(a)));
+        return marginal_model.log_likelihood(a, base);
+      }
+    }
+
+    /**
+     * Computes the log likelihood of the given assignment according to this
+     * distribution.
+     *
+     * @param r    Record with values for a subset of the variables of the
+     *             distribution.
+     *             Note that if this assigns values to variables not in this
+     *             model, then those variables are ignored.
+     * @param base base of the log, default e
+     * @return log likelihood of the assignment
+     */
+    double log_likelihood(const record_type& r, double base) const {
+      using std::log;
+      bool r_includes_args(true);
+      foreach(variable_type* v, args) {
+        if (!r.has_variable(v)) {
+          r_includes_args = false;
+          break;
+        }
+      }
+      if (r_includes_args) {
+        double loglike(0.);
+        foreach(vertex v, vertices())
+          loglike += marginal(v).logv(r);
+        foreach(edge e, edges())
+          loglike -= marginal(e).logv(r);
+        return (loglike / log(base));
+      } else {
+        decomposable marginal_model(*this);
+        marginal_model.marginalize_out(set_difference(args, r.variables()));
+        return marginal_model.log_likelihood(r, base);
+      }
+    }
+
+    double log_likelihood(const assignment_type& a) const {
+      return log_likelihood(a, exp(double(1)));
+    }
+
+    double log_likelihood(const record_type& r) const {
+      return log_likelihood(r, exp(double(1)));
+    }
+
+    //! Probability of the assignment P(a)
+    logarithmic<double> operator()(const assignment_type& a) const {
+      return logarithmic<double>(log_likelihood(a), log_tag());
+    }
+
+    //! Probability of the assignment P(r)
+    logarithmic<double> operator()(const record_type& r) const {
+      return logarithmic<double>(log_likelihood(r), log_tag());
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected log likelihood E[log P(X)].
+     */
+    model_log_likelihood_functor<decomposable>
+    log_likelihood(double base = exp(1.)) const {
+      return model_log_likelihood_functor<decomposable>(*this, base);
+    }
+
+    /**
+     * Computes the conditional log likelihood: log P(y|x),
+     * where this distribution represents P(Y,X).
+     *
+     * @param X    Variables (which MUST be a subset of this model's arguments)
+     *             to condition on.
+     * @param base base of the log (default = e)
+     *
+     * @todo Add support for when this model represents P(Y,X,Z).
+     */
+    double conditional_log_likelihood(const record_type& r,
+                                      const domain_type& X,
+                                      double base) const {
+      decomposable tmp_model(*this);
+      tmp_model.condition(r.assignment(X));
+      return tmp_model.log_likelihood(r, base);
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected conditional log likelihood E[log P(Y|X)].
+     */
+    model_conditional_log_likelihood_functor<decomposable>
+    conditional_log_likelihood(const domain_type& X,
+                               double base = exp(1.)) const {
+      return
+        model_conditional_log_likelihood_functor<decomposable>(*this, X, base);
+    }
+
+    /**
+     * Computes the per-label accuracy (average over X variables).
+     * @param a    an assignment to this model's arguments
+     */
+    double per_label_accuracy(const assignment_type& a) const {
+      double acc = 0;
+      assignment_type pred(max_prob_assignment());
+      foreach(variable_type* v, args) {
+        if (equal(pred[v], safe_get(a, v)))
+          ++acc;
+      }
+      return (acc / args.size());
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected per-label accuracy.
+     */
+    model_per_label_accuracy_functor<decomposable>
+    per_label_accuracy() const {
+      return model_per_label_accuracy_functor<decomposable>(*this);
+    }
+
+    /**
+     * Computes the per-label accuracy of predicting Y given X,
+     * where this distribution represents P(Y,X).
+     * @param a    an assignment to this model's arguments
+     * @param X    Variables (which MUST be a subset of this model's arguments)
+     *             to condition on.
+     */
+    double
+    per_label_accuracy(const assignment_type& a, const domain_type& X) const {
+      assignment_type tmpa;
+      foreach(variable_type* v, X) {
+        tmpa[v] = safe_get(a, v);
+      }
+      decomposable tmp_model(*this);
+      tmp_model.condition(tmpa);
+      return tmp_model.per_label_accuracy(a);
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected per-label accuracy of predicting Y given X,
+     * where this distribution represents P(Y,X).
+     * @param X    Variables (which MUST be a subset of this model's arguments)
+     *             to condition on.
+     */
+    model_per_label_accuracy_functor<decomposable>
+    per_label_accuracy(const domain_type& X) const {
+      return model_per_label_accuracy_functor<decomposable>(*this, X);
+    }
+
+    /**
+     * Returns 1 if this predicts all variable values correctly and 0 otherwise.
+     * @param a    an assignment to Y,X
+     */
+    size_t accuracy(const assignment_type& a) const {
+      assignment_type pred(max_prob_assignment());
+      foreach(variable_type* v, args) {
+        if (pred[v] != safe_get(a, v))
+          return 0;
+      }
+      return 1;
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected accuracy.
+     */
+    model_accuracy_functor<decomposable>
+    accuracy() const {
+      return model_accuracy_functor<decomposable>(*this);
+    }
+
     /**
      * Computes the mean squared error (mean over variables).
-     * Note: This is equivalent to per_label_accuracy for finite data.
+     * Note: This is equivalent to per_label_accuracy for finite variables.
      *
      * @param a    an assignment to X
      */
@@ -924,171 +1029,37 @@ namespace sill {
     }
 
     /**
-     * Computes the expected mean squared error (mean over variables) of Y,
-     * conditioned on X, where the expectation is w.r.t. the given dataset
-     * and this distribution represents P(Y,X).
-     *
-     * Note: This is equivalent to expected_per_label_accuracy for finite data.
-     *
-     * @param ds   Dataset with values for a subset of the variables of the
-     *             distribution.
-     *             If this assigns values to variables not in this model,
-     *             then those variables are ignored.
-     * @param X    Variables (which MUST be a subset of this model's arguments)
-     *             to condition on.
-     *
-     * @return  expected mean squared error, or 0 if dataset is empty
-     *
-     * @todo Add support for when this model represents P(Y,X,Z).
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected mean squared error.
      */
-    template <typename LA>
-    double expected_mean_squared_error(const dataset<LA>& ds,
-                                       const domain_type& X) const {
-      if (ds.size() == 0)
-        return 0;
-      double pla(0);
-      if (!includes(ds.variables(), args)) {
-        throw std::runtime_error
-          (std::string("decomposable::expected_mean_squared_error") +
-           " currently requires that the given dataset includes all variables"+
-           " in the decomposable model.");
+    model_mean_squared_error_functor<decomposable>
+    mean_squared_error() const {
+      return model_mean_squared_error_functor<decomposable>(*this);
+    }
+
+    /**
+     * Computes the mean squared error of predicting Y given X,
+     * where this model is of P(Y,X).
+     */
+    double
+    mean_squared_error(const assignment_type& a, const domain_type& X) const {
+      assignment_type tmpa;
+      foreach(variable_type* v, X) {
+        tmpa[v] = safe_get(a, v);
       }
-      foreach(const record<LA>& r, ds.records()) {
-        decomposable tmp_model(*this);
-        tmp_model.condition(r.assignment(X));
-        pla += tmp_model.mean_squared_error(r);
-      }
-      return pla / ds.size();
+      decomposable tmp_model(*this);
+      tmp_model.condition(tmpa);
+      return (error_measures::squared_error<assignment_type>
+              (a, tmp_model.max_prob_assignment(), args) / args.size());
     }
 
     /**
-     * Computes the per-label accuracy (average over X variables).
-     *
-     * @param a    an assignment to X
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected mean squared error of predicting Y given X.
      */
-    double per_label_accuracy(const assignment_type& a) const {
-      double acc(0);
-      assignment_type pred(max_prob_assignment());
-      foreach(variable_type* v, args)
-        if (equal(pred[v], safe_get(a, v)))
-          ++acc;
-      return (acc / args.size());
-    }
-
-    /**
-     * Computes the expected per-label accuracy (average over X variables),
-     * where the expectation is over samples in the given dataset.
-     *
-     * @return  expected per-label accuracy, or 0 if the dataset is empty.
-     */
-    template <typename LA>
-    double expected_per_label_accuracy(const dataset<LA>& ds) const {
-      if (ds.size() == 0)
-        return 0;
-      double acc(0);
-      foreach(const record_type& r, ds.records())
-        acc += per_label_accuracy(r);
-      return (acc / ds.size());
-    }
-
-    /**
-     * Computes the expected per-label accuracy of predicting Y given X,
-     * where the expectation is w.r.t. the given dataset and this distribution
-     * represents P(Y,X).
-     *
-     * @param ds   Dataset with values for a subset of the variables of the
-     *             distribution.
-     *             If this assigns values to variables not in this model,
-     *             then those variables are ignored.
-     * @param X    Variables (which MUST be a subset of this model's arguments)
-     *             to condition on.
-     *
-     * @return  expected per-label accuracy, or 0 if dataset is empty
-     *
-     * @todo Add support for when this model represents P(Y,X,Z).
-     */
-    template <typename LA>
-    double expected_per_label_accuracy(const dataset<LA>& ds,
-                                       const domain_type& X) const {
-      if (ds.size() == 0)
-        return 0;
-      double pla(0);
-      if (!includes(ds.variables(), args)) {
-        throw std::runtime_error("decomposable::expected_per_label_accuracy currently requires that the given dataset includes all variables in the decomposable model.");
-      }
-      foreach(const record<LA>& r, ds.records()) {
-        decomposable tmp_model(*this);
-        tmp_model.condition(r.assignment(X));
-        pla += tmp_model.per_label_accuracy(r);
-      }
-      return pla / ds.size();
-    }
-
-    /**
-     * Returns 1 if this predicts all variable values correctly and 0 otherwise.
-     * @param a    an assignment to Y,X
-     */
-    size_t accuracy(const assignment_type& a) const {
-      assignment_type pred(max_prob_assignment());
-      foreach(variable_type* v, args)
-        if (pred[v] != safe_get(a, v))
-          return 0;
-      return 1;
-    }
-
-    /**
-     * Checks that this decomposable model is valid.  This method will
-     * generate an assertion violation if the decomposable model is
-     * not valid.  The junction tree must be valid, and the clique and
-     * separator marginals must have the correct argument sets.
-     *
-     * \todo This method should also check for edge consistency.
-     */
-    void check_validity() const {
-      // Check that the junction tree is valid.
-      jt.check_validity();
-      // Check that the arguments of clique & separator marginals match JT.
-      foreach(vertex v, vertices())
-        if (clique(v) != marginal(v).arguments()) {
-          std::cerr << "check_validity() failed: "
-                    << "clique(v) != marginal(v).arguments():"
-                    << std::endl;
-          std::cerr << "  clique(v) = " << clique(v)
-                    << ", arguments() = " << marginal(v).arguments()
-                    << std::endl;
-          std::cerr << (*this);
-          assert(false);
-        }
-      foreach(edge e, edges())
-        if (separator(e) != marginal(e).arguments()) {
-          std::cerr << "check_validity() failed: "
-                    << "separator(e) != marginal(e).arguments():"
-                    << std::endl;
-          std::cerr << "  separator(e) = " << separator(e)
-                    << ", arguments() = " << marginal(e).arguments()
-                    << std::endl;
-          std::cerr << (*this);
-          assert(false);
-        }
-      // TODO: check that marginalizing the clique marginals to the
-      // separator yields the separator marginal.
-    }
-
-    /**
-     * Prints a human-readable representation of the decomposable
-     * model to the supplied output stream.
-     *
-     * \todo Standardize with factors.
-     */
-    template <typename OutputStream>
-    void print(OutputStream& out) const {
-      jt.print(out);
-    }
-
-    operator std::string() const {
-      std::ostringstream out;
-      out << *this;
-      return out.str();
+    model_mean_squared_error_functor<decomposable>
+    mean_squared_error(const domain_type& X) const {
+      return model_mean_squared_error_functor<decomposable>(*this, X);
     }
 
     // Restructuring operations

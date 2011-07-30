@@ -1,4 +1,5 @@
 set(PRL_BASE_SOURCES
+  assertions
   process
   universe
   variable

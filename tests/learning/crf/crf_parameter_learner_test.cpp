@@ -50,8 +50,8 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
   vector_assignment_dataset<> test_ds(ds_info, ntest);
   generate_dataset(test_ds, YXmodel, ntest, rng);
 
-  double true_train_ll = YgivenXmodel.expected_log_likelihood(train_ds);
-  double true_test_ll = YgivenXmodel.expected_log_likelihood(test_ds);
+  double true_train_ll = train_ds.expected_value(YgivenXmodel.log_likelihood());
+  double true_test_ll = test_ds.expected_value(YgivenXmodel.log_likelihood());
 
   cout << "Doing parameter learning" << endl;
   crf_model<F> init_model;
@@ -97,8 +97,8 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
     cpl_obj_calls_per_iter =
       param_learner.my_objective_count() / param_learner.iteration();
   }
-  double train_ll = learned_model.expected_log_likelihood(train_ds);
-  double test_ll = learned_model.expected_log_likelihood(test_ds);
+  double train_ll = train_ds.expected_value(learned_model.log_likelihood());
+  double test_ll = test_ds.expected_value(learned_model.log_likelihood());
 
   cout << "crf_parameter_learner did " << cpl_iterations
        << " iterations, with " << cpl_obj_calls_per_iter

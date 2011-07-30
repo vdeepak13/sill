@@ -23,5 +23,19 @@ int main() {
   mix.normalize();
   cout << mix << endl;
 
+  // Test serialization.
+  ofstream fout("test.bin",fstream::binary);
+  oarchive oa(fout);
+  oa << mix;
+  fout.close();
+
+  ifstream fin("test.bin",fstream::binary);
+  iarchive ia(fin);
+  ia.attach_universe(&u);
+  mixture_gaussian mix2;
+  ia >> mix2;
+  fin.close();
+  assert(mix == mix2);
+
   return 0;
 }
