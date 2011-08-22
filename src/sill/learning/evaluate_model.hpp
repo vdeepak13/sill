@@ -2,11 +2,11 @@
 #ifndef SILL_EVALUATE_MODEL_HPP
 #define SILL_EVALUATE_MODEL_HPP
 
-//#include <sill/factor/log_table_factor.hpp>
-#include <sill/factor/table_factor.hpp>
 #include <sill/learning/crf/crf_X_mapping.hpp>
 #include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/math/statistics.hpp>
+#include <sill/model/crf_model.hpp>
 #include <sill/model/decomposable.hpp>
 
 #include <sill/macros_def.hpp>
@@ -18,116 +18,76 @@
  *  - Evaluating the performance of graphical models on data sets.
  *  - Evaluating how well a distribution obeys certain properties.
  *     - Score Decay Assumption
+ *
+ * @todo Move the SDA part elsewhere.
  */
 
 namespace sill {
 
   /**
-   * Class for evaluating a generative model over finite variables.
+   * Compute the precision and recall of a model on a dataset.
+   *  - precision = (# correctly predicted positives) / (# predicted positives)
+   *  - recall = (# correctly predicted positives) / (# actual positives)
+   * The counts are computed via sums over both samples and labels.
    *
-   * Usage: The constructor computes some statistics which are then
-   *        freely accessible in public variables.
+   * @param crf  Model whose output variables Y must all be binary-valued.
+   *
+   * @return <precision,recall>
    */
-  struct evaluate_finite_decomposable {
-
-    // Evaluation statistics
-    //==========================================================================
-
-    //! Data log (base e) likelihood: <mean, standard error>
-    std::pair<double, double> avg_log_likelihood;
-
-    //! Per-label accuracy: <mean, standard error>
-    std::pair<double, double> avg_per_label_accuracy;
-
-    //! 0-1 accuracy: <mean, standard error>
-    std::pair<double, double> avg_accuracy;
-
-    //! Evaluate for a single assignment.
-    void evaluate_point(const decomposable<table_factor>& model,
-                        const finite_assignment& a) {
-      finite_assignment mpa(model.max_prob_assignment());
-      avg_log_likelihood.first = model.log_likelihood(a);
-      double ncorrect(0);
-      foreach(finite_variable* v, model.arguments()) {
-        if (safe_get(a,v) == mpa[v])
-          ++ncorrect;
-      }
-      avg_per_label_accuracy.first = ncorrect / model.arguments().size();
-      if (ncorrect == model.arguments().size())
-        avg_accuracy.first = 1;
+  template <typename F, typename LA>
+  std::pair<double,double>
+  precision_recall(const crf_model<F>& crf, const dataset<LA>& ds) {
+    size_t n_correct_pred = 0;
+    size_t n_pred = 0;
+    size_t actual = 0;
+    foreach(typename F::output_variable_type* v, crf.output_arguments()) {
+      assert(v->get_variable_type() == variable::FINITE_VARIABLE);
+      finite_variable* fv = static_cast<finite_variable*>(v);
+      assert(fv->size() == 2);
     }
-
-    // Public methods
-    //==========================================================================
-
-    /**
-     * Constructor.
-     * This evaluates the given model on the given dataset.
-     *
-     * @param model  This should be normalized already.
-     */
-    evaluate_finite_decomposable(const decomposable<table_factor>& model,
-                                 const dataset<>& ds)
-      : avg_log_likelihood(0,0), avg_per_label_accuracy(0,0),
-        avg_accuracy(0,0) {
-      vec log_likelihoods(zeros<vec>(ds.size()));
-      vec per_label_accuracies(zeros<vec>(ds.size()));
-      vec accuracies(zeros<vec>(ds.size()));
-      finite_assignment mpa(model.max_prob_assignment());
-      finite_var_vector finite_vars(ds.finite_list());
-      size_t i(0);
-      foreach(const finite_record& r, ds.records()) {
-        log_likelihoods[i] = model.log_likelihood(r);
-        double ncorrect(0);
-        for (size_t j(0); j < finite_vars.size(); ++j) {
-          if (r.finite(j) == mpa[finite_vars[j]])
-            ++ncorrect;
+    foreach(const record<LA>& r, ds.records()) {
+      const decomposable<typename F::output_factor_type>& Ygivenx =
+        crf.condition(r);
+      finite_assignment mpa(Ygivenx.max_prob_assignment());
+      foreach(finite_variable* v, Ygivenx.arguments()) {
+        if (r.finite(v) == 1) {
+          ++actual;
+          if (mpa[v] == 1)
+            ++n_correct_pred;
         }
-        per_label_accuracies[i] = ncorrect / finite_vars.size();
-        if (ncorrect == finite_vars.size())
-          accuracies[i] = 1;
-        ++i;
+        if (mpa[v] == 1)
+          ++n_pred;
       }
-      avg_log_likelihood = mean_stderr(log_likelihoods);
-      avg_per_label_accuracy = mean_stderr(per_label_accuracies);
-      avg_accuracy = mean_stderr(accuracies);
     }
+    double precision = (n_correct_pred + 0.) / n_pred;
+    double recall = (n_correct_pred + 0.) / actual;
+    return std::make_pair(precision, recall);
+  } // precision_recall
 
-    /**
-     * Constructor.
-     * This evaluates the given model on a single record.
-     *
-     * Note: The standard errors are not valid after evaluation on 1 record.
-     *
-     * @param model  This should be normalized already.
-     */
-    evaluate_finite_decomposable(const decomposable<table_factor>& model,
-                                 const finite_record& r)
-      : avg_log_likelihood(0,0), avg_per_label_accuracy(0,0),
-        avg_accuracy(0,0) {
-      finite_assignment a;
-      finite_var_vector finite_vars(r.finite_list());
-      for (size_t i(0); i < finite_vars.size(); ++i)
-        a[finite_vars[i]] = r.finite(i);
-      evaluate_point(model, a);
+  /**
+   * Compute the precision and recall of a model on a dataset.
+   *  - precision = (# correctly predicted positives) / (# predicted positives)
+   *  - recall = (# correctly predicted positives) / (# actual positives)
+   * The counts are computed via sums over both samples and labels.
+   *
+   * @return <precision,recall>
+   */
+  template <typename LA1, typename LA2>
+  std::pair<double,double>
+  precision_recall(const multiclass_classifier<LA1>& model,
+                   const dataset<LA2>& ds) {
+    assert(ds.has_variable(model.label()));
+    size_t n_correct_pred = 0;
+    size_t n_pred = ds.size();
+    size_t actual = ds.size();
+    foreach(const record<LA2>& r, ds.records()) {
+      if (r.finite(model.label()) == model.predict(r))
+        ++n_correct_pred;
     }
-
-    /**
-     * Constructor.
-     * This evaluates the given model on a single assignment.
-     *
-     * Note: The standard errors are not valid after evaluation on 1 test point.
-     *
-     * @param model  This should be normalized already.
-     */
-    evaluate_finite_decomposable(const decomposable<table_factor>& model,
-                                 const finite_assignment& a)
-      : avg_log_likelihood(0,0), avg_per_label_accuracy(0,0),
-        avg_accuracy(0,0) {
-      evaluate_point(model, a);
-    }
-
-  }; // struct evaluate_finite_decomposable
+    double precision = (n_correct_pred + 0.) / n_pred;
+    double recall = (n_correct_pred + 0.) / actual;
+    return std::make_pair(precision, recall);
+  } // precision_recall
 
   /**
    * Class for evaluating how well a distribution represented by P(X), P(Y|X)

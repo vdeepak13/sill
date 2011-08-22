@@ -516,7 +516,6 @@ namespace sill {
 
     //! Indices of vector variables in view in original dataset's vector data
     uvec vv_vector_var_indices;
-    //    std::vector<size_t> vv_vector_var_indices;
 
     // Protected data members: for binarizing finite variables
     //==========================================================================
@@ -734,7 +733,7 @@ namespace sill {
   void
   dataset_view<LA>::
   load_vector_record(size_t i, vector_record<la_type>& r) const {
-    if (vv_view == ALL_VAR_INDICES || vv_view == FIN_VAR_INDICES) {
+    if (vv_view == ALL_VAR_INDICES || vv_view == VEC_VAR_INDICES) {
       ds.load_vector(convert_index(i), tmp_vecdata);
       r.vector() = tmp_vecdata(vv_vector_var_indices);
     } else {

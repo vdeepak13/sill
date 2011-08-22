@@ -272,6 +272,18 @@ namespace sill {
     using base::make_assignment_iterator;
     using base::make_record_iterator;
 
+    // Public access to protected data
+    //==========================================================================
+  public:
+
+    //! Table of finite values.
+    //! WARNING: This is internal data.
+    const finite_array& get_finite_data() const { return finite_data; }
+
+    //! Table of vector values.
+    //! WARNING: This is internal data.
+    const vector_array& get_vector_data() const { return vector_data; }
+
   };  // class vector_dataset
 
   //============================================================================

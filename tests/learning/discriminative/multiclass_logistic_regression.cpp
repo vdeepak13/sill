@@ -5,8 +5,8 @@
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
 #include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/dataset_statistics.hpp>
+#include <sill/learning/dataset/generate_datasets.hpp>
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/syn_oracle_majority.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
@@ -21,6 +21,9 @@ int main(int argc, char* argv[]) {
 
   using namespace sill;
   using namespace std;
+
+  typedef dense_linear_algebra<> la_type;
+//  typedef sparse_linear_algebra<> la_type;
 
   //==========================================================
 
@@ -94,8 +97,10 @@ int main(int argc, char* argv[]) {
   // Create a dataset to work with
   universe u;
 
-  boost::shared_ptr<vector_dataset<> > ds_train_ptr(new vector_dataset<>());
-  boost::shared_ptr<vector_dataset<> > ds_test_ptr(new vector_dataset<>());
+  boost::shared_ptr<vector_dataset<la_type> >
+    ds_train_ptr(new vector_dataset<la_type>());
+  boost::shared_ptr<vector_dataset<la_type> >
+    ds_test_ptr(new vector_dataset<la_type>());
 
   if (vm.count("synthetic_data")) {
     if (synthetic_data == "knorm") {
@@ -126,10 +131,10 @@ int main(int argc, char* argv[]) {
       assert(false);
     }
   } else {
-    boost::shared_ptr<vector_dataset<> > ds_ptr =
-      data_loader::load_symbolic_dataset<vector_dataset<> >(data_path, u);
-    ds_train_ptr.reset(new vector_dataset<>(ds_ptr->datasource_info()));
-    ds_test_ptr.reset(new vector_dataset<>(ds_ptr->datasource_info()));
+    boost::shared_ptr<vector_dataset<la_type> > ds_ptr =
+      data_loader::load_symbolic_dataset<vector_dataset<la_type> >(data_path,u);
+    ds_train_ptr.reset(new vector_dataset<la_type>(ds_ptr->datasource_info()));
+    ds_test_ptr.reset(new vector_dataset<la_type>(ds_ptr->datasource_info()));
     ds_ptr->randomize();
     for (size_t i(0); i < (size_t)(ds_ptr->size() * fraction_train); ++i)
       ds_train_ptr->insert(ds_ptr->operator[](i));
@@ -146,27 +151,28 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  vector_dataset<>& ds_train = *ds_train_ptr;
-  vector_dataset<>& ds_test = *ds_test_ptr;
+  vector_dataset<la_type>& ds_train = *ds_train_ptr;
+  vector_dataset<la_type>& ds_test = *ds_test_ptr;
   finite_variable* class_var = ds_train.finite_class_variables().front();
 
-  dataset_statistics<> stats(ds_train);
+  dataset_statistics<la_type> stats(ds_train);
 
   cout << "Marginal over training set class variables:\n"
-       << learn_factor<table_factor>::learn_marginal(make_domain(class_var), ds_train)
+       << learn_factor<table_factor>::learn_marginal(make_domain(class_var),
+                                                     ds_train)
        << endl;
 
   if (no_cv) {
     cout << "Using fixed lambda = " << fixed_lambda << endl;
   } else {
     mlr_params.lambda =
-      multiclass_logistic_regression<>::choose_lambda
+      multiclass_logistic_regression<la_type>::choose_lambda
       (cv_params, *ds_train_ptr, mlr_params, unif_int(rng));
     cout << "Chose lambda via " << cv_params.nfolds << "-fold CV:\n"
          << "Chose lambda = " << mlr_params.lambda << "\n"
          << std::endl;
   }
-  multiclass_logistic_regression<> mlr(stats, mlr_params);
+  multiclass_logistic_regression<la_type> mlr(stats, mlr_params);
 
   cout << "Trained multiclass logistic regression on "
        << ntrain << " examples to get:\n"

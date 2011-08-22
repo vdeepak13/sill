@@ -6,9 +6,9 @@
 #include <sill/factor/gaussian_crf_factor.hpp>
 #include <sill/factor/log_reg_crf_factor.hpp>
 #include <sill/factor/table_crf_factor.hpp>
-#include <sill/learning/crossval_methods.hpp>
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/learning/learn_factor.hpp>
+#include <sill/learning/validation/model_validation_functor.hpp>
 #include <sill/math/constants.hpp>
 #include <sill/math/permutations.hpp>
 
@@ -47,9 +47,7 @@ namespace sill {
     template <typename F>
     F
     learn_crf_factor_cv_generic
-    (std::vector<typename F::regularization_type>& reg_params,
-     vec& means, vec& stderrs,
-     const crossval_parameters& cv_params,
+    (const crossval_parameters& cv_params,
      const dataset<typename F::la_type>& ds,
      const typename F::output_domain_type& Y_,
      copy_ptr<typename F::input_domain_type> X_ptr_,
@@ -85,22 +83,6 @@ namespace sill {
           const typename F::parameters& params,
           unsigned random_seed = time(NULL));
 
-    //! @deprecated
-    static F
-    train_cv
-    (std::vector<typename F::regularization_type>& reg_params,
-     vec& means, vec& stderrs,
-     const crossval_parameters& cv_params,
-     const dataset<typename F::la_type>& ds,
-     const typename F::output_domain_type& Y_,
-     copy_ptr<typename F::input_domain_type> X_ptr_,
-     const typename F::parameters& params,
-     unsigned random_seed = time(NULL)) {
-      return impl::learn_crf_factor_cv_generic<F>
-        (reg_params, means, stderrs,
-         cv_params, ds, Y_, X_ptr_, params, random_seed);
-    }
-
     /**
      * Returns a newly allocated factor which represents P(Y, X) or P(Y | X),
      * learned from data;
@@ -128,11 +110,8 @@ namespace sill {
      copy_ptr<typename F::input_domain_type> X_ptr_,
      const typename F::parameters& params,
      unsigned random_seed = time(NULL)) {
-      std::vector<typename F::regularization_type> reg_params;
-      vec means;
-      vec stderrs;
-      return train_cv(reg_params, means, stderrs,
-                      cv_params, ds, Y_, X_ptr_, params, random_seed);
+      return impl::learn_crf_factor_cv_generic<F>
+        (cv_params, ds, Y_, X_ptr_, params, random_seed);
     }
 
   }; // struct learn_crf_factor
@@ -167,32 +146,13 @@ namespace sill {
     //! @deprecated
     static log_reg_crf_factor<LA>
     train_cv
-    (std::vector<typename log_reg_crf_factor<LA>::regularization_type>&
-     reg_params,
-     vec& means, vec& stderrs,
-     const crossval_parameters& cv_params,
-     const dataset<typename log_reg_crf_factor<LA>::la_type>& ds,
-     const finite_domain& Y_, copy_ptr<domain> X_ptr_,
-     const typename log_reg_crf_factor<LA>::parameters& params,
-     unsigned random_seed) {
-      return impl::learn_crf_factor_cv_generic<log_reg_crf_factor<LA> >
-        (reg_params, means, stderrs,
-         cv_params, ds, Y_, X_ptr_, params, random_seed);
-    }
-
-    static log_reg_crf_factor<LA>
-    train_cv
     (const crossval_parameters& cv_params,
      const dataset<typename log_reg_crf_factor<LA>::la_type>& ds,
      const finite_domain& Y_, copy_ptr<domain> X_ptr_,
      const typename log_reg_crf_factor<LA>::parameters& params,
      unsigned random_seed) {
-      std::vector<typename log_reg_crf_factor<LA>::regularization_type>
-        reg_params;
-      vec means;
-      vec stderrs;
-      return train_cv(reg_params, means, stderrs,
-                      cv_params, ds, Y_, X_ptr_, params, random_seed);
+      return impl::learn_crf_factor_cv_generic<log_reg_crf_factor<LA> >
+        (cv_params, ds, Y_, X_ptr_, params, random_seed);
     }
 
   };
@@ -206,16 +166,6 @@ namespace sill {
   learn_crf_factor<gaussian_crf_factor>::train
   (const dataset<gaussian_crf_factor::la_type>& ds,
    const vector_domain& Y_, copy_ptr<vector_domain> X_ptr_,
-   const gaussian_crf_factor::parameters& params, unsigned random_seed);
-
-  template <>
-  gaussian_crf_factor
-  learn_crf_factor<gaussian_crf_factor>::train_cv
-  (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
-   vec& means, vec& stderrs,
-   const crossval_parameters& cv_params,
-   const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
-   copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed);
 
   template <>
@@ -242,90 +192,138 @@ namespace sill {
 
     //! Functor for default train_cv implementation
     template <typename F>
-    class learn_crf_factor_cv_functor {
+    class learn_crf_factor_val_functor
+      : public model_validation_functor<typename F::la_type> {
 
-      const dataset<typename F::la_type>& ds;
+      // Public types
+      //------------------------------------------------------------------------
+    public:
 
-      const typename F::output_domain_type* Y_ptr;
+      typedef typename F::la_type la_type;
+
+      typedef model_validation_functor<la_type> base;
+
+      typedef typename la_type::value_type value_type;
+      typedef arma::Col<value_type>        dense_vector_type;
+
+      // Public methods
+      //------------------------------------------------------------------------
+    public:
+
+      learn_crf_factor_val_functor()
+        : params_ptr(NULL) { }
+
+      //! Constructor. (no CV)
+      learn_crf_factor_val_functor
+      (const typename F::parameters& params,
+       const typename F::output_domain_type& Y_,
+       copy_ptr<typename F::input_domain_type> X_ptr_)
+        : params_ptr(new typename F::parameters(params)),
+          Y_(Y_), X_ptr_(X_ptr_), do_cv(false) {
+        assert(X_ptr_);
+      }
+
+      //! Constructor. (with CV)
+      learn_crf_factor_val_functor
+      (const typename F::parameters& params,
+       const typename F::output_domain_type& Y_,
+       copy_ptr<typename F::input_domain_type> X_ptr_,
+       const crossval_parameters& cv_params)
+        : params_ptr(new typename F::parameters(params)),
+          Y_(Y_), X_ptr_(X_ptr_), do_cv(true), cv_params(cv_params) {
+        assert(X_ptr_);
+        assert(params_ptr->valid());
+        assert(cv_params.valid());
+      }
+
+      ~learn_crf_factor_val_functor() {
+        if (params_ptr)
+          delete(params_ptr);
+      }
+
+      learn_crf_factor_val_functor(const learn_crf_factor_val_functor& other) {
+        *this = other;
+      }
+
+      learn_crf_factor_val_functor&
+      operator=(const learn_crf_factor_val_functor& other) {
+        if (params_ptr)
+          delete(params_ptr);
+        params_ptr = new typename F::parameters(*other.params_ptr);
+        Y_ = other.Y_;
+        X_ptr_ = other.X_ptr_;
+        f = other.f;
+        do_cv = other.do_cv;
+        cv_params = other.cv_params;
+      }
+
+      // Protected data
+      //------------------------------------------------------------------------
+    protected:
+
+      using base::result_map_;
+
+      //! Owned by this class.
+      typename F::parameters* params_ptr;
+
+      typename F::output_domain_type Y_;
 
       copy_ptr<typename F::input_domain_type> X_ptr_;
 
-      const typename F::parameters* params_ptr;
+      F f;
 
-    public:
+      bool do_cv;
 
-      //! Constructor.
-      learn_crf_factor_cv_functor(const dataset<typename F::la_type>& ds,
-                                 const typename F::output_domain_type& Y_,
-                                 copy_ptr<typename F::input_domain_type> X_ptr_,
-                                 const typename F::parameters& params)
-        : ds(ds), Y_ptr(&Y_), X_ptr_(X_ptr_), params_ptr(&params) { }
+      crossval_parameters cv_params;
 
-      //! Try the given lambdas, and returns means,stderrs of results.
-      vec operator()(vec& means, vec& stderrs, const std::vector<vec>& lambdas,
-                     size_t nfolds, unsigned random_seed) const {
+      // Protected methods
+      //------------------------------------------------------------------------
 
-        assert(params_ptr->valid());
-        assert(nfolds <= ds.size());
+      void train_model(const dataset<la_type>& ds, unsigned random_seed) {
+        assert(params_ptr);
+        if (do_cv) {
+          boost::mt11213b rng(random_seed);
+          boost::uniform_int<int> unif_int(0,std::numeric_limits<int>::max());
 
-        means.zeros(lambdas.size());
-        stderrs.zeros(lambdas.size());
-        boost::mt11213b rng(random_seed);
-        boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
-        dataset_view<typename F::la_type> permuted_view(ds);
-        permuted_view.set_record_indices(randperm(ds.size(), rng));
-        typename F::parameters tmp_params(*params_ptr);
-        dataset_view<typename F::la_type> fold_train_view(permuted_view);
-        dataset_view<typename F::la_type> fold_test_view(permuted_view);
-        fold_train_view.save_record_view();
-        fold_test_view.save_record_view();
-        // For each fold
-        for (size_t fold(0); fold < nfolds; ++fold) {
-          // Prepare the fold dataset views
-          if (fold != 0) {
-            fold_train_view.restore_record_view();
-            fold_test_view.restore_record_view();
-          }
-          fold_train_view.set_cross_validation_fold(fold, nfolds, false);
-          fold_test_view.set_cross_validation_fold(fold, nfolds, true);
-          for (size_t k(0); k < lambdas.size(); ++k) {
-            if (!is_finite(means[k]))
-              continue;
-            tmp_params.reg.lambdas = lambdas[k];
-            try {
-              F tmpf =
-                learn_crf_factor<F>::train(fold_train_view, *Y_ptr, X_ptr_,
-                                           tmp_params, unif_int(rng));
-              double tmpval(tmpf.log_expected_value(fold_test_view));
-              if (is_finite(means[k])) {
-                means[k] -= tmpval;
-                stderrs[k] += tmpval * tmpval;
-              }
-            } catch(const std::runtime_error& e) {
-              // Assume the regularization must be stronger.
-              means[k] = std::numeric_limits<double>::infinity();
-              stderrs[k] = std::numeric_limits<double>::infinity();
-            }
-          }
+          learn_crf_factor_val_functor lcf_val_func(*params_ptr, Y_, X_ptr_);
+          validation_framework<la_type>
+            val_frame(ds, cv_params, lcf_val_func, unif_int(rng));
+          assert(val_frame.best_lambdas().size()
+                 == params_ptr->reg.lambdas.size());
+          params_ptr->reg.lambdas = val_frame.best_lambdas();
+          random_seed = unif_int(rng);
         }
-        for (size_t k(0); k < means.size(); ++k) {
-          if (is_finite(means[k])) {
-            means[k] /= nfolds;
-            stderrs[k] = std::sqrt((stderrs[k] / nfolds) - (means[k]*means[k]));
-          }
-        }
-        return lambdas[max_index(means, rng)];
-      } // operator()
 
-    }; // class learn_crf_factor_cv_functor
+        f = learn_crf_factor<F>::train(ds, Y_, X_ptr_, *params_ptr,random_seed);
+      }
+
+      void train_model(const dataset<la_type>& ds,
+                       const dense_vector_type& validation_params,
+                       unsigned random_seed) {
+        assert(!do_cv);//This would mean choosing lambda within choosing lambda.
+        assert(validation_params.size() == params_ptr->reg.lambdas.size());
+        params_ptr->reg.lambdas = validation_params;
+        train_model(ds, random_seed);
+      }
+
+      //! Compute results from model, and store them in result_map_.
+      //! @param prefix  Prefix to add to result names.
+      //! @return  Main result/score.
+      value_type
+      add_results(const dataset<la_type>& ds, const std::string& prefix) {
+        value_type ll = ds.expected_value(f.log_likelihood());
+        result_map_[prefix + "log likelihood"] = ll;
+        return ll;
+      }
+
+    }; // class learn_crf_factor_val_functor
+
 
     //! Default train_cv implementation
     template <typename F>
     F
     learn_crf_factor_cv_generic
-    (std::vector<typename F::regularization_type>& reg_params,
-     vec& means, vec& stderrs,
-     const crossval_parameters& cv_params,
+    (const crossval_parameters& cv_params,
      const dataset<typename F::la_type>& ds,
      const typename F::output_domain_type& Y_,
      copy_ptr<typename F::input_domain_type> X_ptr_,
@@ -338,22 +336,14 @@ namespace sill {
       boost::mt11213b rng(random_seed);
       boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max());
 
-      std::vector<vec> lambdas;
-      impl::learn_crf_factor_cv_functor<F> cvfunctor(ds, Y_, X_ptr_, params);
-      vec best_lambda =
-        crossval_zoom<impl::learn_crf_factor_cv_functor<F> >
-        (lambdas, means, stderrs, cv_params, cvfunctor, unif_int(rng));
-      assert(best_lambda.size() == F::regularization_type::nlambdas);
-
-      reg_params.clear();
-      typename F::regularization_type reg;
-      reg.regularization = params.reg.regularization;
-      foreach(const vec& v, lambdas) {
-        reg.lambdas = v;
-        reg_params.push_back(reg);
-      }
+      learn_crf_factor_val_functor<F> lcf_val_func(params, Y_, X_ptr_);
+      validation_framework<typename F::la_type>
+        val_frame(ds, cv_params, lcf_val_func, unif_int(rng));
+      assert(val_frame.best_lambdas().size()
+             == params.reg.lambdas.size());
       typename F::parameters tmp_params(params);
-      tmp_params.reg.lambdas = best_lambda;
+      tmp_params.reg.lambdas = val_frame.best_lambdas();
+
       return
         learn_crf_factor<F>::train(ds, Y_, X_ptr_, tmp_params, unif_int(rng));
     } // learn_crf_factor_cv_generic
@@ -384,63 +374,59 @@ namespace sill {
     assert(ds.has_variables(*X_ptr_));
     assert(params.valid());
 
+    // Set up dataset view
+    dataset_view<LA> ds_view(ds);
+    std::set<size_t> finite_indices;
+    foreach(finite_variable* v, Y_) {
+      finite_indices.insert(ds_view.record_index(v));
+    }
+    std::set<size_t> vector_indices;
+    foreach(variable* v, *X_ptr_) {
+      switch(v->get_variable_type()) {
+      case variable::FINITE_VARIABLE:
+        finite_indices.insert
+          (ds_view.record_index(dynamic_cast<finite_variable*>(v)));
+        break;
+      case variable::VECTOR_VARIABLE:
+        vector_indices.insert
+          (ds_view.record_index(dynamic_cast<vector_variable*>(v)));
+        break;
+      default:
+        assert(false);
+      }
+    }
+    ds_view.set_variable_indices(finite_indices, vector_indices);
+    ds_view.set_finite_class_variables(Y_);
+
+    // Train multiclass logistic regressor
+    multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
+    mlr_params.regularization = params.reg.regularization;
+    mlr_params.lambda = params.reg.lambdas[0];
     if (Y_.size() == 1) {
-      dataset_statistics<LA> stats(ds);
-      // Train multiclass logistic regressor
-      multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
-      mlr_params.regularization = params.reg.regularization;
-      mlr_params.lambda = params.reg.lambdas[0];
       mlr_params.random_seed = random_seed;
       boost::shared_ptr<multiclass_logistic_regression<LA> >
-        mlr_ptr(new multiclass_logistic_regression<LA>(ds, mlr_params));
+        mlr_ptr(new multiclass_logistic_regression<LA>(ds_view, mlr_params));
+      mlr_ptr->finish_learning();
       return
         log_reg_crf_factor<LA>
         (boost::shared_ptr<multiclass2multilabel<LA> >
-         (new multiclass2multilabel<LA>(mlr_ptr, ds)),
+         (new multiclass2multilabel<LA>(mlr_ptr, ds_view)),
          params.smoothing / ds.size(), Y_, X_ptr_);
     } else { // then Y_.size() > 1
-      // Set up dataset view
-      dataset_view<LA> ds_view(ds);
-      std::set<size_t> finite_indices;
-      size_t new_class_var_size = num_assignments(Y_);
-      foreach(finite_variable* v, Y_) {
-        finite_indices.insert(ds_view.record_index(v));
-      }
-      std::set<size_t> vector_indices;
-      foreach(variable* v, *X_ptr_) {
-        switch(v->get_variable_type()) {
-        case variable::FINITE_VARIABLE:
-          finite_indices.insert
-            (ds_view.record_index(dynamic_cast<finite_variable*>(v)));
-          break;
-        case variable::VECTOR_VARIABLE:
-          vector_indices.insert
-            (ds_view.record_index(dynamic_cast<vector_variable*>(v)));
-          break;
-        default:
-          assert(false);
-        }
-      }
-      ds_view.set_variable_indices(finite_indices, vector_indices);
-      ds_view.set_finite_class_variables(Y_);
       dataset_statistics<LA> stats(ds_view);
-      // Train multilabel logistic regressor
-      multiclass_logistic_regression_parameters mlr_params(params.mlr_params);
-      mlr_params.regularization = params.reg.regularization;
-      mlr_params.lambda = params.reg.lambdas[0];
       finite_variable* new_merged_var
-        = params.u.new_finite_variable(new_class_var_size);
+        = params.u.new_finite_variable(num_assignments(Y_));
       multiclass2multilabel_parameters<LA> m2m_params;
       m2m_params.base_learner =
         boost::shared_ptr<multiclass_classifier<LA> >
         (new multiclass_logistic_regression<LA>(mlr_params));
       m2m_params.random_seed = random_seed;
       m2m_params.new_label = new_merged_var;
-      return
-        log_reg_crf_factor<LA>
-        (boost::shared_ptr<multiclass2multilabel<LA> >
-         (new multiclass2multilabel<LA>(stats, m2m_params)),
-         params.smoothing / ds.size(), Y_, X_ptr_);
+      boost::shared_ptr<multiclass2multilabel<LA> >
+        m2m_ptr(new multiclass2multilabel<LA>(stats, m2m_params));
+      m2m_ptr->finish_learning();
+      return log_reg_crf_factor<LA>(m2m_ptr, params.smoothing / ds.size(),
+                                    Y_, X_ptr_);
     }
   } // learn_crf_factor<log_reg_crf_factor<LA> >::train
 

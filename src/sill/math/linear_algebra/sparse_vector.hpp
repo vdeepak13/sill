@@ -91,6 +91,13 @@ namespace sill {
       sort_indices();
     }
 
+    //! Constructor from a dense vector.
+    template <typename OtherT>
+    sparse_vector(const arma::Col<OtherT>& other)
+      : base(other.size()),
+        indices_(sequence(0, other.size())), values_(other), sorted_(true) {
+    }
+
     /**
      * Reset this vector to have the given non-zero elements.
      * @param n         Size of vector.

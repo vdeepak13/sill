@@ -6,14 +6,14 @@
 namespace sill {
 
   stochastic_gradient_parameters::stochastic_gradient_parameters()
-    : base() {
+    : base(), add_gradient_inplace(false) {
     set_defaults();
   }
 
   stochastic_gradient_parameters::
   stochastic_gradient_parameters
   (const gradient_method_parameters& gm_params)
-    : base(gm_params) {
+    : base(gm_params), add_gradient_inplace(false) {
     set_defaults();
   }
 
@@ -32,6 +32,7 @@ namespace sill {
   }
 
   void stochastic_gradient_parameters::print(std::ostream& out) const {
+    out << "add_gradient_inplace: " << add_gradient_inplace << "\n";
     base::print(out);
   }
 

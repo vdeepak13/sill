@@ -310,15 +310,13 @@ namespace sill {
           weight_functor_.clear_edge_part_map();
       } else {
         // Add a single-variable factor for each output variable.
-        std::vector<crf_factor_reg_type> reg_params;
-        vec means, stderrs;
         foreach(output_variable_type* fv, Yvars) {
           output_domain_type tmpdom(make_domain<output_variable_type>(fv));
           crf_factor f;
           if (params.crf_factor_cv) {
             f =
               learn_crf_factor<crf_factor>::train_cv
-              (reg_params, means, stderrs, params.cv_params,
+              (params.cv_params,
                ds, tmpdom, weight_functor_.X_mapping()[tmpdom],
                *(params.crf_factor_params_ptr),
                boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));

@@ -101,8 +101,6 @@ int main(int argc, char** argv) {
   gaussian_crf_factor::parameters gcf_params;
   gcf_params.reg.lambdas[0] = .1;
   gcf_params.reg.lambdas[1] = .1;
-  std::vector<gaussian_crf_factor::regularization_type> reg_params;
-  vec means, stderrs;
   crossval_parameters
     cv_params(gaussian_crf_factor::regularization_type::nlambdas);
   cv_params.nfolds = 5;
@@ -113,7 +111,7 @@ int main(int argc, char** argv) {
   cv_params.log_scale = true;
   gaussian_crf_factor f1 =
     learn_crf_factor<gaussian_crf_factor>::train_cv
-    (reg_params, means, stderrs, cv_params, ds,
+    (cv_params, ds,
      make_domain<vector_variable>(Y),
      copy_ptr<vector_domain>(new vector_domain(X.begin(), X.end())),
      gcf_params, unif_int(rng));

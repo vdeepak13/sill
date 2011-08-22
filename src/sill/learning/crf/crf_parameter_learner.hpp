@@ -547,6 +547,13 @@ namespace sill {
         }
       } // gradient(grad,x)
 
+      //! Computes the gradient of the function at x.
+      //! @param grad  Data type in which to store the gradient.
+      void add_gradient(opt_variables& grad, const opt_variables& x,
+                        double w) const {
+        assert(false); // TO DO
+      }
+
       //! Applies the preconditioner to the given direction,
       //! when the optimization variables have value x.
       void
@@ -589,7 +596,40 @@ namespace sill {
     //! Type for optimization methods
     typedef real_optimizer<opt_variables> real_optimizer_type;
 
-     // Private data members
+    //! Struct used for specialized implementations for dense/sparse SGD.
+    template <typename LAType>
+    struct sgd_specializer {
+    }; // struct sgd_specializer
+
+    friend struct sgd_specializer<la_type>;
+
+    template <typename T, typename I>
+    struct sgd_specializer<dense_linear_algebra<T,I> > {
+
+      static void
+      init_optimization_stochastic(crf_parameter_learner& cpl) {
+      }
+
+      static bool step_stochastic(crf_parameter_learner& cpl) {
+        assert(false); return false;
+      }
+
+    }; // struct sgd_specializer<dense_linear_algebra<T,I> >
+
+    template <typename T, typename I>
+    struct sgd_specializer<sparse_linear_algebra<T,I> > {
+
+      static void
+      init_optimization_stochastic(crf_parameter_learner& cpl) {
+      }
+
+      static bool step_stochastic(crf_parameter_learner& cpl) {
+        assert(false); return false;
+      }
+
+    }; // struct sgd_specializer<sparse_linear_algebra<T,I> >
+
+    // Private data members
     // =========================================================================
 
     crf_parameter_learner_parameters params;

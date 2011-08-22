@@ -6,6 +6,9 @@
  * \file generate_datasets.hpp  Free functions for generating synthetic data.
  */
 
+#include <iostream>
+
+#include <sill/learning/dataset/oracle.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
 #include <sill/model/bayesian_network.hpp>
 #include <sill/model/crf_model.hpp>
@@ -57,6 +60,21 @@ namespace sill {
       typename CRFfactor::output_assignment_type
         fa2(YgivenXmodel.sample(fa, rng));
       ds.insert(assignment(map_union(fa, fa2)));
+    }
+  }
+
+  /**
+   * Draw examples from the given oracle to build a dataset.
+   */
+  template <typename LA1, typename LA2>
+  void
+  oracle2dataset(oracle<LA1>& o, size_t max_records, dataset<LA2>& ds) {
+    ds.reset(o.datasource_info());
+    for (size_t i = 0; i < max_records; i++) {
+      if (o.next())
+        ds.insert(o.current().finite(), o.current().vector());
+      else
+        break;
     }
   }
 

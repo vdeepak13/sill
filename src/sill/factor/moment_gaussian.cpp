@@ -193,7 +193,7 @@ namespace sill {
     assert(x.size() == coeff.n_cols);
     vec yc(y);
     yc -= cmean;
-    yc += coeff * x;
+    yc -= coeff * x;
     size_t n = cmean.size();
     double result =
       as_scalar(-0.5*(trans(yc)*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));

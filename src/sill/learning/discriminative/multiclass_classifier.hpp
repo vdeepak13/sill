@@ -4,6 +4,7 @@
 
 #include <sill/learning/dataset/dataset_statistics.hpp>
 #include <sill/learning/discriminative/singlelabel_classifier.hpp>
+#include <sill/model/model_functors.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -169,6 +170,8 @@ namespace sill {
     // Getters and helpers
     //==========================================================================
 
+    using base::label;
+
     //! Returns the number of classes (values the label can take).
     size_t nclasses() const;
 
@@ -218,6 +221,47 @@ namespace sill {
     probabilities(const record_type& example) const;
 
     virtual dense_vector_type probabilities(const assignment& example) const;
+
+    // Prediction methods: PGMs
+    //==========================================================================
+
+    //! Compute log P(Y=y | X=x).
+    //! @param base  Base of the log (default = e)
+    double log_likelihood(const assignment& a, double base = exp(1.)) const {
+      dense_vector_type probs(probabilities(a));
+      return std::log(probs[safe_get(a,label())]) / std::log(base);
+    }
+
+    //! Compute log P(Y=y | X=x).
+    //! @param base  Base of the log (default = e)
+    double log_likelihood(const record_type& r, double base = exp(1.)) const {
+      dense_vector_type probs(probabilities(r));
+      return std::log(probs[r.finite(label())]) / std::log(base);
+    }
+
+    //! Returns a functor usable with dataset::expected_value() for computing
+    //! expected log likelihood E[log P(Y|X)].
+    model_log_likelihood_functor<multiclass_classifier>
+    log_likelihood(double base = exp(1.)) const {
+      return model_log_likelihood_functor<multiclass_classifier>(*this, base);
+    }
+
+    //! Returns 1 if this predicts the label value correctly and 0 o.w.
+    size_t accuracy(const assignment& a) const {
+      return (predict(a) == safe_get(a,label()));
+    }
+
+    //! Returns 1 if this predicts the label value correctly and 0 o.w.
+    size_t accuracy(const record_type& r) const {
+      return (predict(r) == r.finite(label()));
+    }
+
+    //! Returns a functor usable with dataset::expected_value() for computing
+    //! expected accuracy of predicting Y given X.
+    model_accuracy_functor<multiclass_classifier>
+    accuracy() const {
+      return model_accuracy_functor<multiclass_classifier>(*this);
+    }
 
     // Methods for iterative learners
     // (None of these are implemented by non-iterative learners.)

@@ -1,4 +1,5 @@
 
+#include <sill/learning/crossval_methods.hpp>
 #include <sill/learning/learn_crf_factor.hpp>
 
 #include <sill/macros_def.hpp>
@@ -65,9 +66,7 @@
   template <>                                                           \
   hybrid_crf_factor<F>                                                  \
   learn_crf_factor<hybrid_crf_factor<F> >::train_cv                     \
-  (std::vector<hybrid_crf_factor<F>::regularization_type>& reg_params,  \
-   vec& means, vec& stderrs,                                            \
-   const crossval_parameters& cv_params,                                \
+  (const crossval_parameters& cv_params,                                \
    const dataset<hybrid_crf_factor<F>::la_type>& ds,                    \
    const hybrid_crf_factor<F>::output_domain_type& Y_,                  \
    copy_ptr<hybrid_crf_factor<F>::input_domain_type> X_ptr_,            \
@@ -83,14 +82,8 @@
     boost::mt11213b rng(random_seed);                                   \
     boost::uniform_int<int> unif_int(0, std::numeric_limits<int>::max()); \
                                                                         \
-    reg_params.resize(0);                                               \
-    means.set_size(0);                                                  \
-    stderrs.set_size(0);                                                \
-    std::vector<F::regularization_type> sub_reg_params;                 \
-    vec sub_means, sub_stderrs;                                         \
-                                                                        \
     std::vector<F> subfactors(num_assignments(params.hcf_x2));          \
-    finite_var_vector x2_vec(params.hcf_x2.begin(), params.hcf_x2.end());       \
+    finite_var_vector x2_vec(params.hcf_x2.begin(), params.hcf_x2.end()); \
     std::vector<size_t>                                                 \
       x2_multipliers(hybrid_crf_factor<F>::compute_multipliers(x2_vec)); \
     copy_ptr<sub_input_domain_type>                                     \
@@ -101,7 +94,6 @@
         sub_X_ptr_->insert((F::input_variable_type*)v);                 \
     }                                                                   \
                                                                         \
-    size_t return_j(0);                                                 \
     foreach(const finite_assignment& x2, assignments(params.hcf_x2)) {  \
       dataset_view<hybrid_crf_factor<F>::la_type> sub_ds(ds);           \
       sub_ds.restrict_to_assignment(x2);                                \
@@ -110,27 +102,11 @@
       assert(i < subfactors.size());                                    \
       subfactors[i] =                                                   \
         learn_crf_factor<F>::train_cv                                   \
-        (sub_reg_params, sub_means, sub_stderrs,                        \
-         cv_params, sub_ds, Y_, sub_X_ptr_,                             \
-         params, unif_int(rng));                                        \
-      if (reg_params.size() == 0) {                                     \
-        assert(sub_means.size() == sub_stderrs.size() &&                \
-               sub_means.size() == sub_reg_params.size());              \
-        reg_params.resize                                               \
-          (num_assignments(params.hcf_x2) * sub_reg_params.size());     \
-        means.set_size(reg_params.size());                              \
-        stderrs.set_size(reg_params.size());                            \
-      }                                                                 \
-      for (size_t j(0); j < sub_reg_params.size(); ++j) {               \
-        reg_params[return_j] = sub_reg_params[j];                       \
-        means[return_j] = sub_means[j];                                 \
-        stderrs[return_j] = sub_stderrs[j];                             \
-        ++return_j;                                                     \
-      }                                                                 \
+        (cv_params, sub_ds, Y_, sub_X_ptr_, params, unif_int(rng));     \
     }                                                                   \
     return hybrid_crf_factor<F>(Y_, X_ptr_, subfactors, x2_vec,         \
                                 x2_multipliers);                        \
-  }
+  } // learn_crf_factor<hybrid_crf_factor<F> >::train_cv
 
 
 namespace sill {
@@ -515,12 +491,13 @@ namespace sill {
   template <>
   gaussian_crf_factor
   learn_crf_factor<gaussian_crf_factor>::train_cv
-  (std::vector<gaussian_crf_factor::regularization_type>& reg_params,
-   vec& means, vec& stderrs,
-   const crossval_parameters& cv_params,
+  (const crossval_parameters& cv_params,
    const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
    copy_ptr<vector_domain> X_ptr_,
    const gaussian_crf_factor::parameters& params, unsigned random_seed) {
+
+    vec means;
+    vec stderrs;
 
     assert(params.valid());
     assert(cv_params.valid());
@@ -536,12 +513,10 @@ namespace sill {
     assert(best_lambda.size() ==
            gaussian_crf_factor::regularization_type::nlambdas);
 
-    reg_params.clear();
     gaussian_crf_factor::regularization_type reg;
     reg.regularization = params.reg.regularization;
     foreach(const vec& v, lambdas) {
       reg.lambdas = v;
-      reg_params.push_back(reg);
     }
     gaussian_crf_factor::parameters tmp_params(params);
     tmp_params.reg.lambdas = best_lambda;
@@ -549,21 +524,6 @@ namespace sill {
       learn_crf_factor<gaussian_crf_factor>::train(ds, Y_, X_ptr_,
                                                    tmp_params, unif_int(rng));
 
-  } // learn_crf_factor<gaussian_crf_factor>::train_cv
-
-  template <>
-  gaussian_crf_factor
-  learn_crf_factor<gaussian_crf_factor>::train_cv
-  (const crossval_parameters& cv_params,
-   const dataset<gaussian_crf_factor::la_type>& ds, const vector_domain& Y_,
-   copy_ptr<vector_domain> X_ptr_,
-   const gaussian_crf_factor::parameters& params, unsigned random_seed) {
-    std::vector<gaussian_crf_factor::regularization_type> reg_params;
-    vec means;
-    vec stderrs;
-    return learn_crf_factor<gaussian_crf_factor>::train_cv
-      (reg_params, means, stderrs, cv_params, ds, Y_, X_ptr_, params,
-       random_seed);
   } // learn_crf_factor<gaussian_crf_factor>::train_cv
 
   //============================================================================

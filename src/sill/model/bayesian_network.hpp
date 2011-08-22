@@ -9,6 +9,7 @@
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/model/bayesian_graph.hpp>
 #include <sill/model/markov_network.hpp>
+#include <sill/model/model_functors.hpp>
 #include <sill/graph/graph_traversal.hpp>
 #include <sill/graph/property_functors.hpp>
 
@@ -247,55 +248,34 @@ namespace sill {
     } // condition(a, restrict_vars)
 
     /**
-     * Computes the expected conditional log likelihood E[P(Y|X)],
-     * where the expectation is w.r.t. the given dataset and
-     * this model represents P(Y,X).
+     * Computes the conditional log likelihood: log P(y|x),
+     * where this model represents P(Y,X).
      *
-     * @param ds   Dataset with values for all of the variables in this model.
-     *             If ds assigns values to variables not in this model,
-     *             then those variables are ignored.
      * @param X    Variables (which MUST be a subset of this model's arguments)
      *             to condition on.
      * @param base base of the log (default = e)
-     *
-     * @return  expected conditional log likelihood, or 0 if dataset is empty
      */
-    template <typename LA>
-    double expected_conditional_log_likelihood(const dataset<LA>& ds,
-                                               const domain_type& X,
-                                               double base) const {
-      if (ds.size() == 0)
-        return 0;
-      double cll(0);
+    double conditional_log_likelihood(const record_type& r,
+                                      const domain_type& X,
+                                      double base = exp(1.)) const {
       domain_type YX(arguments());
-      assert(includes(ds.variables(), YX));
+      assert(includes(r.variables(), YX));
       assert(includes(YX, X));
-      foreach(const record<LA>& r, ds.records()) {
-        bayesian_network tmpbn(*this);
-        tmpbn.condition(r, X);
-        cll += tmpbn.log_likelihood(r, base);
-      }
-      return cll / ds.size();
+      bayesian_network tmpbn(*this);
+      tmpbn.condition(r, X);
+      return tmpbn.log_likelihood(r, base);
     }
 
     /**
-     * Computes the expected conditional log likelihood E[P(Y|X)],
-     * where the expectation is w.r.t. the given dataset and
-     * this model represents P(Y,X).
-     *
-     * @param ds   Dataset with values for all of the variables in this model.
-     *             If ds assigns values to variables not in this model,
-     *             then those variables are ignored.
-     * @param X    Variables (which MUST be a subset of this model's arguments)
-     *             to condition on.
-     * @param base base of the log (default = e)
-     *
-     * @return  expected conditional log likelihood, or 0 if dataset is empty
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected conditional log likelihood E[log P(Y|X)].
      */
-    template <typename LA>
-    double expected_conditional_log_likelihood(const dataset<LA>& ds,
-                                               const domain_type& X) const {
-      return expected_conditional_log_likelihood(ds, X, std::exp(1.0));
+    model_conditional_log_likelihood_functor<bayesian_network>
+    conditional_log_likelihood(const domain_type& X,
+                               double base = exp(1.)) const {
+      return
+        model_conditional_log_likelihood_functor<bayesian_network>
+        (*this, X, base);
     }
 
   }; // class bayesian_network

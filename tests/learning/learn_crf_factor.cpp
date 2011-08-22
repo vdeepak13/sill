@@ -106,12 +106,10 @@ test_learn_crf_factor
   boost::uniform_int<unsigned>
     unif_int(0,std::numeric_limits<unsigned>::max());
 
-  std::vector<typename F::regularization_type> reg_params;
-  vec means, stderrs;
   boost::timer timer;
   if (do_cv) {
     f1 = learn_crf_factor<F>::train_cv
-      (reg_params, means, stderrs, cv_params, train_ds,
+      (cv_params, train_ds,
        make_domain<output_variable_type>(Y),
        copy_ptr<input_domain_type>(new input_domain_type(X.begin(), X.end())),
        f_params, unif_int(rng));
@@ -123,20 +121,6 @@ test_learn_crf_factor
   }
   learn_crf_factor_time = timer.elapsed();
 
-  if (do_cv) {
-    cout << "CV results for CRF factor learning:\n"
-         << "lambdas: ";
-    for (size_t j(0); j < reg_params.size(); ++j)
-      cout << reg_params[j].lambdas << " ";
-    cout << "\n"
-         << "means:   " << means << "\n"
-         << "stderrs: " << stderrs << "\n"
-         << endl;
-
-    size_t max_i = max_index(means);
-    cout << "Chose lambda = " << reg_params[max_i].lambdas
-         << ", with score = " << means[max_i] << "\n";
-  }
   cout << "Learned factor:\n" << f1 << endl;
 
   double f_ll(0);

@@ -532,7 +532,8 @@ namespace sill {
     void insert(const assignment& a, value_type w = 1);
 
     //! Adds a new record with weight w (default = 1)
-    void insert(const record_type& r, value_type w = 1) {
+    template <typename OtherLA>
+    void insert(const record<OtherLA>& r, value_type w = 1) {
       insert(r.finite(), r.vector(), w);
     }
 
@@ -545,7 +546,8 @@ namespace sill {
 
     //! Adds a new record with weight w (default = 1).
     //! This version fails if this dataset has any finite variables.
-    void insert(const vector_record_type& r, value_type w = 1) {
+    template <typename OtherLA>
+    void insert(const vector_record<OtherLA>& r, value_type w = 1) {
       assert(num_finite() == 0);
       insert(std::vector<size_t>(), r.vector(), w);
     }
@@ -553,13 +555,27 @@ namespace sill {
     //! Adds a new record with finite variable values fvals and vector variable
     //! values vvals, with weight w (default = 1).
     void insert(const std::vector<size_t>& fvals, const vector_type& vvals,
-                value_type w = 1);
+                value_type w = 1) {
+      if (nrecords == capacity())
+        reserve(std::max<size_t>(1, 2*nrecords));
+      size_t i = nrecords;
+      ++nrecords;
+      set_record(i, fvals, vvals, w);
+    }
+
+    //! Adds a new record with finite variable values fvals and vector variable
+    //! values vvals, with weight w (default = 1).
+    template <typename OtherVecType>
+    void insert(const std::vector<size_t>& fvals, const OtherVecType& vvals,
+                value_type w = 1) {
+      insert(fvals, vector_type(vvals), w);
+    }
 
     //! Adds a new record with all values set to 0, with weight w (default = 1).
     void insert_zero_record(value_type w = 1);
 
     //! Sets record with index i to this value and weight.
-    virtual void set_record(size_t i, const assignment& a, value_type w = 1) = 0;
+    virtual void set_record(size_t i, const assignment& a, value_type w = 1) =0;
 
     //! Sets record with index i to this value and weight.
     virtual void set_record(size_t i, const std::vector<size_t>& fvals,
@@ -1012,16 +1028,6 @@ namespace sill {
     size_t i(nrecords);
     ++nrecords;
     set_record(i, a, w);
-  }
-
-  template <typename LA>
-  void dataset<LA>::insert(const std::vector<size_t>& fvals, const vector_type& vvals,
-                       value_type w) {
-    if (nrecords == capacity())
-      reserve(std::max<size_t>(1, 2*nrecords));
-    size_t i(nrecords);
-    ++nrecords;
-    set_record(i, fvals, vvals, w);
   }
 
   template <typename LA>

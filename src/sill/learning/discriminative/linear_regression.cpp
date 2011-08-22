@@ -204,26 +204,26 @@ namespace sill {
     case 1: // Batch gradient descent
       {
         obj_functor_ptr = new objective_functor(*this);
-        grad_functor_ptr = new gradient_functor(*this);
+        grad_functor_ptr = new lr_gradient_functor(*this);
         gradient_descent_parameters ga_params;
         ga_params.convergence_zero = params.convergence_zero;
 //        if (params.debug > 1)
 //          ga_params.debug = params.debug - 1;
         gradient_descent_ptr =
-          new gradient_descent<opt_vector,objective_functor,gradient_functor>
+          new gradient_descent<opt_vector,objective_functor,lr_gradient_functor>
           (*obj_functor_ptr, *grad_functor_ptr, weights_, ga_params);
       }
       break;
     case 2: // Batch conjugate gradient
       {
         obj_functor_ptr = new objective_functor(*this);
-        grad_functor_ptr = new gradient_functor(*this);
+        grad_functor_ptr = new lr_gradient_functor(*this);
         conjugate_gradient_parameters cg_params;
         cg_params.convergence_zero = params.convergence_zero;
         if (params.debug > 1)
           cg_params.debug = params.debug - 1;
         conjugate_gradient_ptr = new
-          conjugate_gradient<opt_vector,objective_functor,gradient_functor>
+          conjugate_gradient<opt_vector,objective_functor,lr_gradient_functor>
           (*obj_functor_ptr, *grad_functor_ptr, weights_, cg_params);
       }
       break;

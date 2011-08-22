@@ -5,6 +5,8 @@
 /**
  * \file model_functors.hpp
  *         Functors for evaluating models on datasets w.r.t. different losses.
+ *
+ * @todo Change this to distribution_functors since I use it for factors too.
  */
 
 #include <sill/macros_def.hpp>

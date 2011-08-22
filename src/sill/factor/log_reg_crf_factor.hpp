@@ -216,14 +216,6 @@ namespace sill {
      */
     const table_factor& condition(const input_record_type& r) const;
 
-    /**
-     * Returns the empirical expectation of the log of this factor.
-     * In particular, if this factor represents P(A|B), then
-     * this returns the expected log likelihood of the distribution P(A | B).
-     * This uses real-space; i.e., the log of this factor is in log-space.
-     */
-//    double log_expected_value(const dataset& ds) const;
-
     // Public: Learning-related methods from crf_factor interface
     // =========================================================================
 
@@ -408,27 +400,6 @@ namespace sill {
     // TO DO: MAKE THE ABOVE MORE EFFICIENT IF NECESSARY (I.E., MAKE USE OF
     //        THE PRE-ALLOCATED conditioned_f.
   }
-
-  /*
-  template <typename LA>
-  double log_reg_crf_factor<LA>::log_expected_value(const dataset& ds) const {
-    double val(0);
-    table_factor tmp_fctr;
-    double total_ds_weight(0);
-    size_t i(0);
-    foreach(const assignment& a, ds.assignments()) {
-      assignment tmpa(a);
-      foreach(finite_variable* v, output_arguments())
-        tmpa.finite().erase(v);
-      tmp_fctr = condition(tmpa);
-      val += ds.weight(i) * std::log(tmp_fctr(a.finite()));
-      total_ds_weight += ds.weight(i);
-      ++i;
-    }
-    assert(total_ds_weight > 0);
-    return (val / total_ds_weight);        
-  }
-  */
 
   // Public: Learning-related methods from crf_factor interface
   // =========================================================================

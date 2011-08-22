@@ -3,7 +3,7 @@
 
 #include <sill/learning/chow_liu.hpp>
 #include <sill/learning/dataset/assignment_dataset.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/generate_datasets.hpp>
 #include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
 #include <sill/model/random.hpp>
 

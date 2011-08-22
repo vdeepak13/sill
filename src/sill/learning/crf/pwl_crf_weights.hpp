@@ -76,11 +76,6 @@ namespace sill {
     //!  (default = false)
     bool retain_vertex_part_map;
 
-    //! If true, record edge_part_lambda_map, vertex_part_lambda_map
-    //! (regardless of learning mode).
-    //!  (default = false)
-    bool retain_lambda_maps;
-
     /**
      * Used to make the algorithm deterministic
      *    (default = time)
@@ -89,7 +84,7 @@ namespace sill {
 
     pwl_crf_weights_parameters()
       : score_type(1), crf_factor_cv(false), retain_edge_score_info(false),
-        retain_vertex_part_map(false), retain_lambda_maps(false),
+        retain_vertex_part_map(false),
         random_seed(time(NULL)) { }
 
     bool valid() const {
@@ -239,23 +234,7 @@ namespace sill {
                      std::pair<crf_factor, crf_factor> >
       vertex_part_map_;
 
-    //! Map: vertex pair <y1,y2> --> lambdas chosen for edge part of score.
-    //! Vertex pairs are stored s.t. y1 < y2.
-    //! (Only retained when set in parameters.)
-    mutable std::map<std::pair<output_variable_type*,output_variable_type*>,vec>
-      edge_part_lambda_map_;
-
-    //! Map: vertex pair <y1,y2> --> lambdas chosen for edge part of score.
-    //! Vertex pairs are stored s.t. y1 < y2.
-    //! (Only retained when set in parameters.)
-    mutable std::map<std::pair<output_variable_type*,output_variable_type*>,
-                     std::pair<vec,vec> >
-      vertex_part_lambda_map_;
-
     // Temporary for avoiding reallocation.
-    mutable std::vector<crf_factor_reg_type> reg_params;
-    mutable vec means;
-    mutable vec stderrs;
     mutable output_factor_type tmp_fctr;
 
     // Protected methods
@@ -266,8 +245,7 @@ namespace sill {
       if (params.crf_factor_cv) {
         return
           learn_crf_factor<crf_factor>::train_cv
-          (reg_params, means, stderrs,
-           params.cv_params, ds, Y, X_mapping_[Y],
+          (params.cv_params, ds, Y, X_mapping_[Y],
            *(params.crf_factor_params_ptr), unif_int(rng));
       } else {
         return
@@ -316,15 +294,7 @@ namespace sill {
             case 1: // DCI
               {
                 crf_factor f1(compute_regressor(make_domain(y1)));
-                vec f1_lambda;
-                if (params.retain_lambda_maps)
-                  f1_lambda = reg_params[max_index(means)].lambdas;
                 crf_factor f2(compute_regressor(make_domain(y2)));
-                if (params.retain_lambda_maps) {
-                  vec f2_lambda(reg_params[max_index(means)].lambdas);
-                  vertex_part_lambda_map_[y12pair] =
-                    std::make_pair(f1_lambda, f2_lambda);
-                }
                 vertex_part_map_[y12pair] = std::make_pair(f1,f2);
                 edge_part_map_[y12pair] = compute_regressor(twoYvars);
               }
@@ -334,10 +304,6 @@ namespace sill {
               break;
             default:
               assert(false);
-            }
-            if (params.retain_lambda_maps) {
-              edge_part_lambda_map_[y12pair] =
-                reg_params[max_index(means)].lambdas;
             }
           }
         }
@@ -413,39 +379,12 @@ namespace sill {
       return vertex_part_map_;
     }
 
-    /**
-     * Returns a map:
-     *    edge pair (ordered first < second)
-     *     --> lambda chosen via CV (if using CV) when learning the
-     *         regression function used for edge part of score
-     * (You must set a parameter to retain this mapping.)
-     */
-    const std::map<std::pair<output_variable_type*,output_variable_type*>,vec>&
-    edge_part_lambda_map() const {
-      return edge_part_lambda_map_;
-    }
-
-    /**
-     * Returns a map:
-     *    edge pair (ordered first < second)
-     *     --> lambdas chosen via CV (if using CV) when learning the
-     *         regression functions used for vertex parts of score
-     * (You must set a parameter to retain this mapping.)
-     */
-    const std::map<std::pair<output_variable_type*,output_variable_type*>,
-                   std::pair<vec, vec> >&
-    vertex_part_lambda_map() const {
-      return vertex_part_lambda_map_;
-    }
-
-    //! Clears edge_score_info, edge_part_map, vertex_part_map,
-    //! edge_part_lambda_map, vertex_part_lambda_map to free up space.
+    //! Clears edge_score_info, edge_part_map, vertex_part_map
+    //! to free up space.
     void clear_info_maps() {
       edge_score_info_.clear();
       edge_part_map_.clear();
       vertex_part_map_.clear();
-      edge_part_lambda_map_.clear();
-      vertex_part_lambda_map_.clear();
     }
 
     //! Clears edge_part_map to free up space.
@@ -485,8 +424,6 @@ namespace sill {
         y12pair(std::make_pair(y1,y2));
       crf_factor f(compute_regressor(Y));
       edge_part_map_[y12pair] = f;
-      if (params.retain_lambda_maps)
-        edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       double total_ds_weight(0);
       size_t i(0);
       foreach(const record_type& r, ds.records()) {
@@ -523,17 +460,8 @@ namespace sill {
       std::pair<output_variable_type*, output_variable_type*>
         y12pair(std::make_pair(y1,y2));
       crf_factor f(compute_regressor(Y));
-      if (params.retain_lambda_maps)
-        edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       crf_factor f1(compute_regressor(Y1));
-      vec r1_lambdas;
-      if (params.retain_lambda_maps)
-        r1_lambdas = reg_params[max_index(means)].lambdas;
       crf_factor f2(compute_regressor(Y2));
-      if (params.retain_lambda_maps) {
-        vec r2_lambdas(reg_params[max_index(means)].lambdas);
-        vertex_part_lambda_map_[y12pair]=std::make_pair(r1_lambdas,r2_lambdas);
-      }
       edge_part_map_[y12pair] = f;
       if (params.retain_vertex_part_map)
         vertex_part_map_[y12pair] = std::make_pair(f1, f2);
@@ -580,8 +508,6 @@ namespace sill {
         y12pair(std::make_pair(y1,y2));
       crf_factor f(compute_regressor(Y));
       edge_part_map_[y12pair] = f;
-      if (params.retain_lambda_maps)
-        edge_part_lambda_map_[y12pair] = reg_params[max_index(means)].lambdas;
       double total_ds_weight(0);
       size_t i(0);
       foreach(const record_type& r, ds.records()) {

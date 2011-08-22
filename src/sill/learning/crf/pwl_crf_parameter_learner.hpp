@@ -168,11 +168,9 @@ namespace sill {
                  boost::mt11213b& rng) const {
       crf_factor f;
       if (params.crf_factor_cv) {
-        std::vector<typename crf_factor::regularization_type> reg_params;
-        vec means, stderrs;
         f =
           learn_crf_factor<crf_factor>::train_cv
-          (reg_params, means, stderrs, params.cv_params,
+          (params.cv_params,
            ds, Yvars, Xvars_ptr, *(params.crf_factor_params_ptr),
            boost::uniform_int<int>(0,std::numeric_limits<int>::max())(rng));
       } else {

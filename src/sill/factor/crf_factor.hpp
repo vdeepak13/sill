@@ -4,6 +4,7 @@
 #include <sill/base/variable_type_group.hpp>
 #include <sill/base/variable_type_union.hpp>
 #include <sill/learning/dataset/dataset.hpp>
+#include <sill/model/model_functors.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -258,6 +259,23 @@ namespace sill {
       }
       assert(total_ds_weight > 0);
       return (val / total_ds_weight);        
+    }
+
+    // Public methods: Losses
+    // =========================================================================
+
+    //! Compute log P(Y=y|X=x).
+    //! @param base  Base of logarithm (default = e).
+    double log_likelihood(const record_type& r, double base = exp(1.)) const {
+      const output_factor_type& f = condition(r);
+      return (f.logv(r) - std::log(f.norm_constant())) / std::log(base);
+    }
+
+    //! Returns a functor usable with dataset::expected_value() for computing
+    //! expected log likelihood E[log P(X)].
+    model_log_likelihood_functor<crf_factor>
+    log_likelihood(double base = exp(1.)) const {
+      return model_log_likelihood_functor<crf_factor>(*this, base);
     }
 
     // Public methods: Learning-related methods

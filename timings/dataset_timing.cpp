@@ -8,7 +8,7 @@
 #include <sill/learning/dataset/data_loader.hpp>
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
+#include <sill/learning/dataset/generate_datasets.hpp>
 #include <sill/learning/dataset/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 

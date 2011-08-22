@@ -267,6 +267,17 @@ namespace sill {
 
     table_factor probabilities(const assignment& example) const;
 
+    // Methods for iterative learners
+    //==========================================================================
+
+    //! Call this after learning to free memory.
+    //! NOTE: Once this method has been called, step() may fail!
+    //! ITERATIVE ONLY: This may be implemented by iterative learners.
+    void finish_learning() {
+      if (base_learner)
+        base_learner->finish_learning();
+    }
+
     // Save and load methods
     //==========================================================================
 
@@ -357,9 +368,8 @@ namespace sill {
     }
 
     void init_only(const datasource& ds) {
-      init_sub();
-
       if (ds.finite_class_variables().size() > 1) {
+        init_sub();
         vector_dataset<la_type> orig_ds(ds.datasource_info());
         dataset_view<la_type> ds_view(orig_ds, true);
         ds_view.set_merged_variables(orig_ds.finite_class_variables(),

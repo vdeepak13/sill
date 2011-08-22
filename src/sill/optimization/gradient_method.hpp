@@ -334,7 +334,7 @@ namespace sill {
       }
 
       total_obj_calls_ += step_ptr->calls_to_objective();
-      double eta(step_ptr->eta());
+      double eta = step_ptr->eta();
       x_ += direction_ * eta;
       double new_objective(step_ptr->valid_objective() ?
                            step_ptr->objective() :

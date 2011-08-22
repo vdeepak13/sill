@@ -11,7 +11,9 @@
 #include <sill/learning/dataset/ds_oracle.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
+#include <sill/math/linear_algebra/linear_algebra_types.hpp>
 #include <sill/math/statistics.hpp>
+#include <sill/optimization/logreg_opt_vector.hpp>
 #include <sill/optimization/real_optimizer_builder.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/stl_io.hpp>
@@ -146,568 +148,7 @@ namespace sill {
     typedef typename base::dense_vector_type  dense_vector_type;
     typedef typename base::dense_matrix_type  dense_matrix_type;
 
-    /**
-     * Optimization variables (which fit the OptimizationVector concept).
-     * These are the logistic regression weights.
-     */
-    struct opt_variables {
-
-      // Types and data
-      //------------------------------------------------------------------------
-
-      struct size_type {
-        size_t f_rows;
-        size_t f_cols;
-        size_t v_rows;
-        size_t v_cols;
-        size_t b_size;
-
-        size_type() { }
-
-        size_type(size_t f_rows, size_t f_cols, size_t v_rows, size_t v_cols,
-                  size_t b_size)
-          : f_rows(f_rows), f_cols(f_cols), v_rows(v_rows), v_cols(v_cols),
-            b_size(b_size) { }
-
-        bool operator==(const size_type& other) const {
-          return ((f_rows == other.f_rows) && (f_cols == other.f_cols) &&
-                  (v_rows == other.v_rows) && (v_cols == other.v_cols) &&
-                  (b_size == other.b_size));
-        }
-
-        bool operator!=(const size_type& other) const {
-          return (!operator==(other));
-        }
-      };
-
-      //! f(k,j) = weight for label k, finite index j
-      dense_matrix_type f;
-
-      //! v(k,j) = weight for label k, vector index j
-      dense_matrix_type v;
-
-      //! Offsets b; b(k) = offset for label k
-      dense_vector_type b;
-
-      // Constructors
-      //------------------------------------------------------------------------
-
-      opt_variables() { }
-
-      opt_variables(size_type s, double default_val = 0)
-        : f(s.f_rows, s.f_cols), v(s.v_rows, s.v_cols), b(s.b_size) {
-        f.fill(default_val);
-        v.fill(default_val);
-        b.fill(default_val);
-      }
-
-      opt_variables(const dense_matrix_type& f, const dense_matrix_type& v,
-                    const dense_vector_type& b)
-        : f(f), v(v), b(b) { }
-
-      // Getters and non-math setters
-      //------------------------------------------------------------------------
-
-      //! Returns true iff this instance equals the other.
-      bool operator==(const opt_variables& other) const {
-        return (equal(f, other.f) && equal(v, other.v) && equal(b, other.b));
-      }
-
-      //! Returns false iff this instance equals the other.
-      bool operator!=(const opt_variables& other) const {
-        return !operator==(other);
-      }
-
-      size_type size() const {
-        return size_type(f.n_rows, f.n_cols, v.n_rows, v.n_cols, b.size());
-      }
-
-      //! Resize the data.
-      void resize(const size_type& newsize) {
-        f.set_size(newsize.f_rows, newsize.f_cols);
-        v.set_size(newsize.v_rows, newsize.v_cols);
-        b.set_size(newsize.b_size);
-      }
-
-      // Math operations
-      //------------------------------------------------------------------------
-
-      //! Sets all elements to this value.
-      opt_variables& operator=(double d) {
-        f.fill(d);
-        v.fill(d);
-        b.fill(d);
-        return *this;        
-      }
-
-      //! Addition.
-      opt_variables operator+(const opt_variables& other) const {
-        return opt_variables(f + other.f, v + other.v, b + other.b);
-      }
-
-      //! Addition.
-      opt_variables& operator+=(const opt_variables& other) {
-        f += other.f;
-        v += other.v;
-        b += other.b;
-        return *this;
-      }
-
-      //! Subtraction.
-      opt_variables operator-(const opt_variables& other) const {
-        return opt_variables(f - other.f, v - other.v, b - other.b);
-      }
-
-      //! Subtraction.
-      opt_variables& operator-=(const opt_variables& other) {
-        f -= other.f;
-        v -= other.v;
-        b -= other.b;
-        return *this;
-      }
-
-      //! Scalar subtraction.
-      opt_variables operator-(double d) const {
-        return opt_variables(f - d, v - d, b - d);
-      }
-
-      //! Subtraction.
-      opt_variables& operator-=(double d) {
-        f -= d;
-        v -= d;
-        b -= d;
-        return *this;
-      }
-
-      //! Multiplication by a scalar value.
-      opt_variables operator*(double d) const {
-        return opt_variables(f * d, v * d, b * d);
-      }
-
-      //! Multiplication by a scalar value.
-      opt_variables& operator*=(double d) {
-        f *= d;
-        v *= d;
-        b *= d;
-        return *this;
-      }
-
-      //! Division by a scalar value.
-      opt_variables operator/(double d) const {
-        assert(d != 0);
-        return opt_variables(f / d, v / d, b / d);
-      }
-
-      //! Division by a scalar value.
-      opt_variables& operator/=(double d) {
-        assert(d != 0);
-        f /= d;
-        v /= d;
-        b /= d;
-        return *this;
-      }
-
-      //! Inner product with a value of the same size.
-      double dot(const opt_variables& other) const {
-        return (sill::dot(f, other.f)
-                + sill::dot(v, other.v)
-                + sill::dot(b, other.b));
-      }
-
-      //! Element-wise multiplication with another value of the same size.
-      opt_variables& elem_mult(const opt_variables& other) {
-        f %= other.f;
-        v %= other.v;
-        b %= other.b;
-        return *this;
-      }
-
-      //! Element-wise reciprocal (i.e., change v to 1/v).
-      opt_variables& reciprocal() {
-        for (size_t i(0); i < f.n_rows; ++i) {
-          for (size_t j(0); j < f.n_cols; ++j) {
-            double& val = f(i,j);
-            assert(val != 0);
-            val = 1. / val;
-          }
-        }
-        for (size_t i(0); i < v.n_rows; ++i) {
-          for (size_t j(0); j < v.n_cols; ++j) {
-            double& val = v(i,j);
-            assert(val != 0);
-            val = 1. / val;
-          }
-        }
-        for (size_t i(0); i < b.size(); ++i) {
-          double& val = b[i];
-          assert(val != 0);
-          val = 1. / val;
-        }
-        return *this;
-      }
-
-      //! Returns the L1 norm.
-      double L1norm() const {
-        double l1val(0);
-        for (size_t i(0); i < f.size(); ++i)
-          l1val += fabs(f[i]);
-        for (size_t i(0); i < v.size(); ++i)
-          l1val += fabs(v[i]);
-        foreach(double val, b)
-          l1val += fabs(val);
-        return l1val;
-      }
-
-      //! Returns the L2 norm.
-      double L2norm() const {
-        return sqrt(dot(*this));
-      }
-
-      //! Returns a struct of the same size but with values replaced by their
-      //! signs (-1 for negative, 0 for 0, 1 for positive).
-      opt_variables sign() const {
-        opt_variables ov(*this);
-        for (size_t i(0); i < f.size(); ++i)
-          ov.f[i] = (f[i] > 0 ? 1 : (f[i] == 0 ? 0 : -1) );
-        for (size_t i(0); i < v.size(); ++i)
-          ov.v[i] = (v[i] > 0 ? 1 : (v[i] == 0 ? 0 : -1) );
-        foreach(double& val, ov.b)
-          val = (val > 0 ? 1 : (val == 0 ? 0 : -1) );
-        return ov;
-      }
-
-      //! Sets all values to 0.
-      void zeros() {
-        f.zeros();
-        v.zeros();
-        b.zeros();
-      }
-
-      //! Print info about this vector (for debugging).
-      void print_info(std::ostream& out) const {
-        out << "f.size: [" << f.n_rows << ", " << f.n_cols << "], "
-            << "v.size: [" << v.n_rows << ", " << v.n_cols << "], "
-            << "b.size: " << b.size() << "\n";
-      }
-
-      //! Print info about extrema in this vector (for debugging).
-      void print_extrema_info(std::ostream& out) const {
-        for (size_t i(0); i < f.n_rows; ++i) {
-          if (f.size() > 0)
-            out << "f(" << i << ",min) = " << f(i, min_index(f.row(i)))
-                << "\t"
-                << "f(" << i << ",max) = " << f(i,max_index(f.row(i)))
-                << std::endl;
-          if (v.size() > 0)
-            out << "v(" << i << ",min) = " << v(i, min_index(v.row(i)))
-                << "\t"
-                << "v(" << i << ",max) = " << v(i, max_index(v.row(i)))
-                << std::endl;
-        }
-        if (b.size() > 0)
-          out << "b(min) = " << b(min_index(b)) << "\t"
-              << "b(max) = " << b(max_index(b)) << std::endl;
-      }
-
-    }; // struct opt_variables
-
-    // Protected types
-    //==========================================================================
-  protected:
-
-    //! Objective functor usable with optimization routines.
-    class objective_functor {
-
-      const multiclass_logistic_regression& mlr;
-
-      mutable typename dataset<la_type>::record_iterator_type ds_it;
-
-      typename dataset<la_type>::record_iterator_type ds_end;
-
-    public:
-      objective_functor(const multiclass_logistic_regression& mlr)
-        : mlr(mlr), ds_it(mlr.ds_ptr->begin()), ds_end(mlr.ds_ptr->end()) { }
-
-      //! Computes the value of the objective at x.
-      double objective(const opt_variables& x) const {
-        double neg_ll(0);
-        size_t i(0);
-        ds_it.reset();
-        while (ds_it != ds_end) {
-          dense_vector_type v;
-          mlr.my_probabilities(*ds_it, v, x.f, x.v, x.b);
-          const std::vector<size_t>& findata = (*ds_it).finite();
-          size_t label_(findata[mlr.label_index_]);
-          neg_ll -= mlr.ds_ptr->weight(i) * std::log(v[label_]);
-          ++i;
-          ++ds_it;
-        }
-        neg_ll /= mlr.total_train_weight;
-
-        switch(mlr.params.regularization) {
-        case 0:
-          break;
-        case 1:
-          neg_ll += mlr.params.lambda * x.L1norm();
-          break;
-        case 2:
-          {
-            double tmpval(x.L2norm());
-            neg_ll += mlr.params.lambda * .5 * tmpval * tmpval;
-          }
-          break;
-        default:
-          assert(false);
-        }
-
-        return neg_ll;
-      }
-
-    }; // class objective_functor
-
-    //! Gradient functor used with optimization routines.
-    class gradient_functor {
-
-      const multiclass_logistic_regression& mlr;
-      bool stochastic;
-
-    public:
-      gradient_functor(const multiclass_logistic_regression& mlr,
-                       bool stochastic)
-        : mlr(mlr), stochastic(stochastic) { }
-
-      //! Computes the gradient of the function at x.
-      //! @param grad  Data type in which to store the gradient.
-      void gradient(opt_variables& grad, const opt_variables& x) const {
-        if (stochastic)
-          mlr.my_stochastic_gradient(grad, x);
-        else
-          mlr.my_gradient(grad, x);
-      }
-
-    }; // class gradient_functor
-
-    //! Diagonal preconditioner functor usable with optimization routines.
-    //! Fits the PreconditionerFunctor concept.
-    class preconditioner_functor {
-
-      const multiclass_logistic_regression& mlr;
-
-      mutable opt_variables preconditioner;
-
-    public:
-      preconditioner_functor(const multiclass_logistic_regression& mlr)
-        : mlr(mlr) { }
-
-      //! Applies a preconditioner to the given direction,
-      //! when the optimization variables have value x.
-      void precondition(opt_variables& direction, const opt_variables& x) const{
-	mlr.my_hessian_diag(preconditioner, x);
-        preconditioner.reciprocal();
-	direction.elem_mult(preconditioner);
-      }
-
-      //! Applies the last computed preconditioner to the given direction.
-      void precondition(opt_variables& direction) const {
-	assert(preconditioner.size() == direction.size());
-	direction.elem_mult(preconditioner);
-      }
-
-    };  // class preconditioner_functor
-
-    // Protected data members
-    //==========================================================================
-
-    using base::label_;
-    using base::label_index_;
-
-    multiclass_logistic_regression_parameters params;
-
-    mutable boost::mt11213b rng;
-
-    //! Dataset pointer (for simulating batch learning from an oracle)
-    vector_dataset<la_type>* my_ds_ptr;
-
-    //! Oracle pointer (for simulating online learning from a dataset)
-    ds_oracle<la_type>* my_ds_o_ptr;
-
-    //! Dataset (for batch learning)
-    const dataset<la_type>* ds_ptr;
-
-    //! Oracle (for online learning)
-    oracle<la_type>* o_ptr;
-
-    //! datasource.finite_list()
-    finite_var_vector finite_seq;
-
-    //! datasource.vector_list()
-    vector_var_vector vector_seq;
-
-    //! True if fix_record() has been called.
-    bool fixed_record;
-
-    //! List of indices of non-class finite variables
-    //! @todo See if it's faster just to compare with the class variable index.
-    std::vector<size_t> finite_indices;
-
-    //! finite_offset[j] = first index in w_fin for finite variable j,
-    //!  as indexed in finite_indices
-    //!  (so finite_offset[j] + k is the index for value k)
-    std::vector<size_t> finite_offset;
-
-    //! vector_offset[j] = first index in w_vec for vector variable j
-    //!  (so vector_offset[j] + k is the index for value k of variable j)
-    std::vector<size_t> vector_offset;
-
-    /*
-      This model predicts:
-      P(label k | features x) = exp(w_k'x + b_k) / sum_j exp(w_j'x + b_j)
-     */
-
-    //! Lambda
-    double lambda;
-
-    //! Weights
-    opt_variables weights_;
-
-    //! For all generic optimization methods
-    objective_functor* obj_functor_ptr;
-
-    //! For all generic optimization methods
-    gradient_functor* grad_functor_ptr;
-
-    //! For all generic optimization methods
-    preconditioner_functor* prec_functor_ptr;
-
-    //! For batch and stochastic optimization methods
-    real_optimizer<opt_variables>* optimizer_ptr;
-
-    //! Current iteration; i.e., # iterations completed
-    size_t iteration_;
-
-    //! Total weight of training examples
-    double total_train_weight;
-
-    //! Number of classes
-    size_t nclasses_;
-
-    //! Current training accuracy
-    double train_acc;
-
-    //! Current training objective
-    double train_obj;
-
-    //! Temp vector for making predictions (to avoid reallocation).
-    mutable dense_vector_type tmpvec;
-
-    //! Stores std::log(std::numeric_limits<double>::max() / nclasses_).
-    double log_max_double;
-
-    // Protected methods
-    //==========================================================================
-
-    /**
-     * Initializes stuff using preset ds, o.
-     * @param init_weights  If true, initialize the optimization variables.
-     * @param n             If drawing a dataset from an oracle, draw this many
-     *                      samples.
-     */
-    void init(bool init_weights, size_t n);
-
-    //! Initialize optimization-related pointers (not ds,o pointers).
-    void init_opt_pointers();
-
-    //! Free all pointers with data owned by this class.
-    void clear_pointers();
-
-    //! Learn stuff.
-    void build();
-
-    //! Given that the vector v is set to the class weights in log-space,
-    //! exponentiate them and normalize them to compute probabilities.
-    void finish_probabilities(dense_vector_type& v) const;
-
-    //! Set v to be the predicted class conditional probabilities for the
-    //! given example, using the given parameters.
-    void my_probabilities(const record_type& example, dense_vector_type& v,
-                          const dense_matrix_type& w_fin_,
-                          const dense_matrix_type& w_vec_,
-                          const dense_vector_type& b_) const;
-
-    //! Set v to be the predicted class conditional probabilities for the
-    //! given example, using the given parameters.
-    void my_probabilities(const assignment& example, dense_vector_type& v,
-                          const dense_matrix_type& w_fin_,
-                          const dense_matrix_type& w_vec_,
-                          const dense_vector_type& b_) const;
-
-    //! Set v to be the predicted class conditional probabilities for the
-    //! given example.
-    void my_probabilities(const record_type& example, dense_vector_type& v) const;
-
-    //! Set v to be the predicted class conditional probabilities for the
-    //! given example.
-    void my_probabilities(const assignment& example, dense_vector_type& v) const;
-
-    /**
-     * Compute the gradient of the unregularized objective at x
-     * for the given example, adding it to the given opt_variables.
-     * Computes some objectives for little extra cost.
-     *
-     * @param gradient    (Return value) Pre-allocated value to which to
-     *                     add the gradient.
-     * @param acc         (Return value) Value to which to add the accuracy
-     *                     on the example (0/1).
-     * @param ll          (Return value) Value to which to add the example's
-     *                     log likelihood.
-     * @param example     Example to use to calculate the gradient.
-     * @param ex_weight   Example weight.
-     * @param alt_weight  Weight by which to multiply the gradient
-     *                     (in addition to the example weight).
-     * @param x           Point at which to calculate the gradient (w.r.t. x).
-     */
-    void
-    add_raw_gradient(opt_variables& gradient, double& acc, double& ll,
-                     const record_type& example, double ex_weight, double alt_weight,
-                     const opt_variables& x) const;
-
-    /**
-     * Compute the gradient of the regularization term of the objective at x,
-     * adding it to the given opt_variables.
-     *
-     * @param gradient    (Return value) Pre-allocated value to which to
-     *                     add the gradient.
-     * @param alt_weight  Weight by which to multiply the gradient.
-     * @param x           Point at which to calculate the gradient (w.r.t. x).
-     */
-    void
-    add_reg_gradient(opt_variables& gradient, double alt_weight,
-                     const opt_variables& x) const;
-
-    //! Compute the gradient at x, storing it in the given opt_variables.
-    //! Computes some objectives for little extra cost.
-    //! @param gradient  Pre-allocated place to store gradient.
-    //! @return <avg training accuracy, avg training log likelihood>
-    std::pair<double,double>
-    my_gradient(opt_variables& gradient, const opt_variables& x) const;
-
-    /**
-     * Compute a stochastic estimate of the gradient at x, storing it in
-     * the given opt_variables.
-     * Computes some objectives for little extra cost.
-     * @param gradient  Pre-allocated place to store gradient.
-     * @return <avg training accuracy, avg training log likelihood>
-     *         (average over stochastically chosen samples)
-     */
-    std::pair<double,double>
-    my_stochastic_gradient(opt_variables& gradient,
-                           const opt_variables& x) const;
-
-    //! Compute the diagonal of the Hessian at x, storing it in the given
-    //! opt_variables.
-    //! @param hd    Pre-allocated place to store the Hessian diagonal.
-    void
-    my_hessian_diag(opt_variables& hd, const opt_variables& x) const;
+    typedef logreg_opt_vector<value_type> opt_variables;
 
     // Public methods
     //==========================================================================
@@ -858,7 +299,6 @@ namespace sill {
     //==========================================================================
 
     using base::nclasses;
-    using base::test_log_likelihood;
 
     //! Return a name for the algorithm without template parameters.
     std::string name() const {
@@ -902,7 +342,7 @@ namespace sill {
      */
     finite_domain get_finite_dependencies() const {
       finite_domain x;
-      for (size_t i(0); i < finite_seq.size(); ++i) {
+      for (size_t i = 0; i < finite_seq.size(); ++i) {
         if (sum(abs(weights_.f.col(i))) > params.gm_params.convergence_zero)
           x.insert(finite_seq[i]);
       }
@@ -915,7 +355,7 @@ namespace sill {
      */
     vector_domain get_vector_dependencies() const {
       vector_domain x;
-      for (size_t i(0); i < vector_seq.size(); ++i) {
+      for (size_t i = 0; i < vector_seq.size(); ++i) {
         if (sum(abs(weights_.v.col(i))) > params.gm_params.convergence_zero)
           x.insert(vector_seq[i]);
       }
@@ -1001,7 +441,8 @@ namespace sill {
      * Used by add_gradient from log_reg_crf_factor.
      * @todo Figure out a better way to do this.
      */
-    void add_gradient(opt_variables& grad, const record_type& r, double w) const;
+    void
+    add_gradient(opt_variables& grad, const record_type& r, double w) const;
 
     /**
      * Used by add_expected_gradient from log_reg_crf_factor.
@@ -1100,6 +541,13 @@ namespace sill {
     void reset_datasource(dataset_statistics<la_type>& stats) { assert(false); }
     */
 
+    //! Call this after learning to free memory.
+    //! NOTE: Once this method has been called, step() may fail!
+    //! ITERATIVE ONLY: This may be implemented by iterative learners.
+    void finish_learning() {
+      clear_pointers();
+    }
+
     // Save and load methods
     //==========================================================================
 
@@ -1163,6 +611,437 @@ namespace sill {
     (const crossval_parameters& cv_params, const dataset<la_type>& ds,
      const multiclass_logistic_regression_parameters& params,
      unsigned random_seed);
+
+    // Protected types
+    //==========================================================================
+  protected:
+
+    //! Objective functor usable with optimization routines.
+    class objective_functor {
+
+      const multiclass_logistic_regression& mlr;
+
+      mutable typename dataset<la_type>::record_iterator_type ds_it;
+
+      typename dataset<la_type>::record_iterator_type ds_end;
+
+    public:
+      objective_functor(const multiclass_logistic_regression& mlr)
+        : mlr(mlr), ds_it(mlr.ds_ptr->begin()), ds_end(mlr.ds_ptr->end()) { }
+
+      //! Computes the value of the objective at x.
+      double objective(const opt_variables& x) const {
+        double neg_ll = 0;
+        size_t i = 0;
+        ds_it.reset();
+        while (ds_it != ds_end) {
+          dense_vector_type v;
+          mlr.my_probabilities(*ds_it, v, x.f, x.v, x.b);
+          const std::vector<size_t>& findata = (*ds_it).finite();
+          size_t label_(findata[mlr.label_index_]);
+          neg_ll -= mlr.ds_ptr->weight(i) * std::log(v[label_]);
+          ++i;
+          ++ds_it;
+        }
+        neg_ll /= mlr.total_train_weight;
+
+        switch(mlr.params.regularization) {
+        case 0:
+          break;
+        case 1:
+          neg_ll += mlr.params.lambda * x.L1norm();
+          break;
+        case 2:
+          {
+            double tmpval(x.L2norm());
+            neg_ll += mlr.params.lambda * .5 * tmpval * tmpval;
+          }
+          break;
+        default:
+          assert(false);
+        }
+
+        return neg_ll;
+      }
+
+    }; // class objective_functor
+
+    //! Gradient functor used with optimization routines.
+    struct mlr_gradient_functor {
+
+      mlr_gradient_functor(const multiclass_logistic_regression& mlr,
+                           bool stochastic)
+        : mlr(mlr), stochastic(stochastic) { }
+
+      //! Computes the gradient of the function at x.
+      //! @param grad  Data type in which to store the gradient.
+      void add_gradient(opt_variables& grad, const opt_variables& x,
+                        double w) const {
+        if (stochastic)
+          mlr.add_stochastic_gradient(grad, x, w);
+        else
+          mlr.add_gradient(grad, x, w);
+      }
+
+      //! Computes the gradient of the function at x.
+      //! @param grad  Location in which to store the gradient.
+      void gradient(opt_variables& grad, const opt_variables& x) const {
+        grad.zeros();
+        add_gradient(grad, x, 1);
+      }
+
+    private:
+      const multiclass_logistic_regression& mlr;
+      bool stochastic;
+
+    }; // struct mlr_gradient_functor
+
+    //! Diagonal preconditioner functor usable with optimization routines.
+    //! Fits the PreconditionerFunctor concept.
+    class preconditioner_functor {
+
+      const multiclass_logistic_regression& mlr;
+
+      mutable opt_variables preconditioner;
+
+    public:
+      preconditioner_functor(const multiclass_logistic_regression& mlr)
+        : mlr(mlr) { }
+
+      //! Applies a preconditioner to the given direction,
+      //! when the optimization variables have value x.
+      void precondition(opt_variables& direction, const opt_variables& x) const{
+	mlr.my_hessian_diag(preconditioner, x);
+        preconditioner.reciprocal();
+	direction.elem_mult(preconditioner);
+      }
+
+      //! Applies the last computed preconditioner to the given direction.
+      void precondition(opt_variables& direction) const {
+	assert(preconditioner.size() == direction.size());
+	direction.elem_mult(preconditioner);
+      }
+
+    };  // class preconditioner_functor
+
+    //! Struct used for specialized implementations for dense/sparse SGD.
+    template <typename LAType>
+    struct sgd_specializer {
+    }; // struct sgd_specializer
+
+    friend struct sgd_specializer<la_type>;
+
+    template <typename T, typename I>
+    struct sgd_specializer<dense_linear_algebra<T,I> > {
+
+      static void
+      init_optimization_stochastic(multiclass_logistic_regression& mlr) {
+        stochastic_gradient_parameters sg_params(mlr.params.gm_params);
+        if (mlr.params.init_iterations != 0)
+          sg_params.single_opt_step_params.set_shrink_eta
+            (mlr.params.init_iterations);
+        sg_params.add_gradient_inplace = true;
+        typedef stochastic_gradient<opt_variables,mlr_gradient_functor>
+          stochastic_gradient_type;
+        mlr.optimizer_ptr =
+          new stochastic_gradient_type(*mlr.grad_functor_ptr, mlr.weights_,
+                                       sg_params);
+      }
+
+      static bool step_stochastic(multiclass_logistic_regression& mlr) {
+        assert(mlr.optimizer_ptr);
+        if (!mlr.optimizer_ptr->step())
+          return false;
+        ++mlr.iteration_;
+        return true;
+      }
+    }; // struct sgd_specializer<dense_linear_algebra<T,I> >
+
+    template <typename T, typename I>
+    struct sgd_specializer<sparse_linear_algebra<T,I> > {
+
+      static void
+      init_optimization_stochastic(multiclass_logistic_regression& mlr) {
+        assert(mlr.lambda < 1);
+        mlr.ssgd_eta = mlr.params.gm_params.single_opt_step_params.init_eta;
+        mlr.ssgd_cumsum_log_etas.push_back
+          (std::log(1 - mlr.ssgd_eta * mlr.lambda));
+        mlr.ssgd_shrink_eta =
+          mlr.params.gm_params.single_opt_step_params.shrink_eta;
+        mlr.ssgd_weights_v.zeros(mlr.weights_.v.n_rows, mlr.weights_.v.n_cols);
+      }
+
+      static bool step_stochastic(multiclass_logistic_regression& mlr) {
+        if (!mlr.o_ptr->next())
+          assert(false);
+        const record_type& r = mlr.o_ptr->current();
+
+        // Equivalent to these steps:
+        //   my_probabilities(r, tmpvec, weights_.f, weights_.v, weights_.b);
+        //   add_reg_gradient(weights_, w, weights_);
+        mlr.tmpvec = mlr.weights_.b;
+        const std::vector<size_t>& findata = r.finite();
+        for (size_t k = 0; k < mlr.nclasses_; ++k) {
+          for (size_t j = 0; j < mlr.finite_indices.size(); ++j) {
+            size_t val = findata[mlr.finite_indices[j]];
+            mlr.tmpvec[k] += mlr.weights_.f(k, mlr.finite_offset[j] + val);
+          }
+        }
+        if (mlr.weights_.v.size() != 0) {
+          // tmpvec += weights_.v * r.vector();
+          const T* weights_v_it = mlr.weights_.v.begin();
+          for (I i = 0; i < mlr.tmpvec.size(); ++i) {
+            T dot_val = 0;
+            for (I k = 0; k < r.vector().num_non_zeros(); ++k) {
+              I j = r.vector().index(k);
+              T& weights_v_i_j = mlr.weights_.v(i,j);
+              // Update weights_v_i_j with regularization history.
+              weights_v_i_j *=
+                std::exp(mlr.ssgd_cumsum_log_etas[mlr.iteration_]
+                         - mlr.ssgd_cumsum_log_etas[mlr.ssgd_weights_v(i,j)]);
+              mlr.ssgd_weights_v(i,j) = mlr.iteration_;
+              // Contribute to dot product.
+              dot_val += weights_v_i_j * r.vector().value(k);
+            }
+            mlr.tmpvec[i] += dot_val;
+            ++weights_v_it;
+          }
+        }
+        mlr.finish_probabilities(mlr.tmpvec);
+
+        // All weights used here will have been updated already.
+        double acc = 0;
+        double ll = 0;
+        mlr.add_raw_gradient(mlr.weights_, acc, ll, r, mlr.o_ptr->weight(),
+                             -mlr.ssgd_eta, mlr.tmpvec);
+
+        // Update eta and eta history.
+        mlr.ssgd_eta *= mlr.ssgd_shrink_eta;
+        mlr.ssgd_cumsum_log_etas.push_back
+          (std::log(1 - mlr.ssgd_eta * mlr.lambda));
+
+        ++mlr.iteration_;
+        return true;
+      }
+    }; // struct sgd_specializer<sparse_linear_algebra<T,I> >
+
+    // Protected data members
+    //==========================================================================
+
+    using base::label_;
+    using base::label_index_;
+
+    multiclass_logistic_regression_parameters params;
+
+    mutable boost::mt11213b rng;
+
+    //! Dataset pointer (for simulating batch learning from an oracle)
+    vector_dataset<la_type>* my_ds_ptr;
+
+    //! Oracle pointer (for simulating online learning from a dataset)
+    ds_oracle<la_type>* my_ds_o_ptr;
+
+    //! Dataset (for batch learning)
+    const dataset<la_type>* ds_ptr;
+
+    //! Oracle (for online learning)
+    oracle<la_type>* o_ptr;
+
+    //! datasource.finite_list()
+    finite_var_vector finite_seq;
+
+    //! datasource.vector_list()
+    vector_var_vector vector_seq;
+
+    //! True if fix_record() has been called.
+    bool fixed_record;
+
+    //! List of indices of non-class finite variables
+    //! @todo See if it's faster just to compare with the class variable index.
+    std::vector<size_t> finite_indices;
+
+    //! finite_offset[j] = first index in w_fin for finite variable j,
+    //!  as indexed in finite_indices
+    //!  (so finite_offset[j] + k is the index for value k)
+    std::vector<size_t> finite_offset;
+
+    //! vector_offset[j] = first index in w_vec for vector variable j
+    //!  (so vector_offset[j] + k is the index for value k of variable j)
+    std::vector<size_t> vector_offset;
+
+    /*
+      This model predicts:
+      P(label k | features x) = exp(w_k'x + b_k) / sum_j exp(w_j'x + b_j)
+     */
+
+    //! Lambda
+    double lambda;
+
+    //! Weights
+    opt_variables weights_;
+
+    //! For all generic optimization methods
+    objective_functor* obj_functor_ptr;
+
+    //! For all generic optimization methods
+    mlr_gradient_functor* grad_functor_ptr;
+
+    //! For all generic optimization methods
+    preconditioner_functor* prec_functor_ptr;
+
+    //! For batch and stochastic optimization methods
+    real_optimizer<opt_variables>* optimizer_ptr;
+
+    //! Current iteration; i.e., # iterations completed
+    size_t iteration_;
+
+    //! Total weight of training examples
+    double total_train_weight;
+
+    //! Number of classes
+    size_t nclasses_;
+
+    //! Current training accuracy
+    double train_acc;
+
+    //! Current training objective
+    double train_obj;
+
+    //! Temp vector for making predictions (to avoid reallocation).
+    mutable dense_vector_type tmpvec;
+
+    //! Stores std::log(std::numeric_limits<double>::max() / nclasses_).
+    double log_max_double;
+
+    //! (For stochastic gradient with sparse data)
+    //! ssgd_cumsum_log_etas[iter] = sum_{t=1}^iter  log(1 - eta_t * lambda)
+    std::vector<double> ssgd_cumsum_log_etas;
+
+    //! (For stochastic gradient with sparse data)
+    //! Current eta.
+    double ssgd_eta;
+
+    //! (For stochastic gradient with sparse data)
+    //! Copied from params.
+    double ssgd_shrink_eta;
+
+    //! (For stochastic gradient with sparse data)
+    //! Elements of ssgd_weights_v correspond to weights_.f and mark the
+    //! last iteration on which those elements were updated.
+    umat ssgd_weights_v;
+
+    // Protected methods
+    //==========================================================================
+
+    /**
+     * Initializes stuff using preset ds, o.
+     * @param init_weights  If true, initialize the optimization variables.
+     * @param n             If drawing a dataset from an oracle, draw this many
+     *                      samples.
+     */
+    void init(bool init_weights, size_t n);
+
+    //! Initialize optimization-related pointers (not ds,o pointers).
+    void init_optimization();
+
+    //! Specialized for dense and sparse linear algebra.
+    void init_optimization_stochastic();
+
+    //! Free all pointers with data owned by this class.
+    void clear_pointers();
+
+    //! Learn stuff.
+    void build();
+
+    //! Given that the vector v is set to the class weights in log-space,
+    //! exponentiate them and normalize them to compute probabilities.
+    void finish_probabilities(dense_vector_type& v) const;
+
+    //! Set v to be the predicted class conditional probabilities for the
+    //! given example, using the given parameters.
+    void my_probabilities(const record_type& example, dense_vector_type& v,
+                          const dense_matrix_type& w_fin_,
+                          const dense_matrix_type& w_vec_,
+                          const dense_vector_type& b_) const;
+
+    //! Set v to be the predicted class conditional probabilities for the
+    //! given example, using the given parameters.
+    void my_probabilities(const assignment& example, dense_vector_type& v,
+                          const dense_matrix_type& w_fin_,
+                          const dense_matrix_type& w_vec_,
+                          const dense_vector_type& b_) const;
+
+    //! Set v to be the predicted class conditional probabilities for the
+    //! given example.
+    void
+    my_probabilities(const record_type& example, dense_vector_type& v) const;
+
+    //! Set v to be the predicted class conditional probabilities for the
+    //! given example.
+    void
+    my_probabilities(const assignment& example, dense_vector_type& v) const;
+
+    /**
+     * Compute the gradient of the unregularized objective at x
+     * for the given example, adding it to the given opt_variables.
+     * Computes some objectives for little extra cost.
+     *
+     * @param gradient    (Return value) Pre-allocated value to which to
+     *                     add the gradient.
+     * @param acc         (Return value) Value to which to add the accuracy
+     *                     on the example (0/1).
+     * @param ll          (Return value) Value to which to add the example's
+     *                     log likelihood.
+     * @param example     Example to use to calculate the gradient.
+     * @param ex_weight   Example weight.
+     * @param alt_weight  Weight by which to multiply the gradient
+     *                     (in addition to the example weight).
+     *                     This weight does not affect acc,ll.
+     * @param probs       Predicted class conditional probabilities at x.
+     *                    Note: This method alters the probs vector!
+     */
+    void
+    add_raw_gradient(opt_variables& gradient, double& acc, double& ll,
+                     const record_type& example, double ex_weight,
+                     double alt_weight, dense_vector_type& probs) const;
+
+    /**
+     * Compute the gradient of the regularization term of the objective at x,
+     * adding it to the given opt_variables.
+     *
+     * @param gradient    (Return value) Pre-allocated value to which to
+     *                     add the gradient.
+     * @param alt_weight  Weight by which to multiply the gradient.
+     * @param x           Point at which to calculate the gradient (w.r.t. x).
+     */
+    void
+    add_reg_gradient(opt_variables& gradient, double alt_weight,
+                     const opt_variables& x) const;
+
+    //! Compute the gradient at x, storing it in the given opt_variables.
+    //! Computes some objectives for little extra cost.
+    //! @param gradient  Pre-allocated place to store gradient.
+    void add_gradient(opt_variables& gradient, const opt_variables& x,
+                      double w) const;
+
+    /**
+     * Compute a stochastic estimate of the gradient at x, storing it in
+     * the given opt_variables.
+     * Computes some objectives for little extra cost.
+     * @param gradient  Pre-allocated place to store gradient.
+     */
+    void
+    add_stochastic_gradient(opt_variables& gradient,
+                            const opt_variables& x, double w) const;
+
+    //! Compute the diagonal of the Hessian at x, storing it in the given
+    //! opt_variables.
+    //! @param hd    Pre-allocated place to store the Hessian diagonal.
+    void
+    my_hessian_diag(opt_variables& hd, const opt_variables& x) const;
+
+    //! Specialized for dense and sparse linear algebra.
+    bool step_stochastic();
 
   }; // class multiclass_logistic_regression
 
@@ -1310,10 +1189,13 @@ namespace sill {
         }
         random_seed = unif_int(rng);
       }
+
       params.random_seed = random_seed;
       if (mlr_ptr) {
+        multiclass_logistic_regression<la_type>* tmp_ptr = mlr_ptr;
         mlr_ptr =
-          new multiclass_logistic_regression<la_type>(ds, *mlr_ptr, params);
+          new multiclass_logistic_regression<la_type>(ds, *tmp_ptr, params);
+        delete(tmp_ptr); tmp_ptr = NULL;
         if (mlr_ptr->train_objective() == inf()) {
           // Try without the warm start.
           delete(mlr_ptr);
@@ -1323,6 +1205,7 @@ namespace sill {
       } else {
         mlr_ptr = new multiclass_logistic_regression<la_type>(ds, params);
       }
+      mlr_ptr->finish_learning();
     } // train_model(ds, random_seed)
 
     void train_model(const dataset<la_type>& ds,
@@ -1340,9 +1223,9 @@ namespace sill {
     value_type
     add_results(const dataset<la_type>& ds, const std::string& prefix) {
       assert(mlr_ptr);
-      value_type ll = mlr_ptr->test_log_likelihood(ds).first;
+      value_type ll = ds.expected_value(mlr_ptr->log_likelihood());
       result_map_[prefix + "log likelihood"] = ll;
-      result_map_[prefix + "accuracy"] = mlr_ptr->test_accuracy(ds);
+      result_map_[prefix + "accuracy"] = ds.expected_value(mlr_ptr->accuracy());
       return ll;
     }
 
@@ -1450,7 +1333,7 @@ namespace sill {
   } // init(init_weights, n)
 
   template <typename LA>
-  void multiclass_logistic_regression<LA>::init_opt_pointers() {
+  void multiclass_logistic_regression<LA>::init_optimization() {
     switch(params.opt_method) {
     case real_optimizer_builder::CONJUGATE_GRADIENT_DIAG_PREC:
       prec_functor_ptr = new preconditioner_functor(*this);
@@ -1458,10 +1341,10 @@ namespace sill {
     case real_optimizer_builder::CONJUGATE_GRADIENT:
     case real_optimizer_builder::LBFGS:
       obj_functor_ptr = new objective_functor(*this);
-      grad_functor_ptr = new gradient_functor(*this, false);
+      grad_functor_ptr = new mlr_gradient_functor(*this, false);
       break;
     case real_optimizer_builder::STOCHASTIC_GRADIENT:
-      grad_functor_ptr = new gradient_functor(*this, true);
+      grad_functor_ptr = new mlr_gradient_functor(*this, true);
       break;
     default:
       assert(false);
@@ -1471,7 +1354,7 @@ namespace sill {
       {
         gradient_descent_parameters ga_params(params.gm_params);
         typedef
-          gradient_descent<opt_variables,objective_functor,gradient_functor>
+          gradient_descent<opt_variables,objective_functor,mlr_gradient_functor>
           gradient_descent_type;
         optimizer_ptr =
           new gradient_descent_type(*obj_functor_ptr, *grad_functor_ptr,
@@ -1483,7 +1366,7 @@ namespace sill {
         conjugate_gradient_parameters cg_params(params.gm_params);
         cg_params.update_method = params.cg_update_method;
         typedef
-          conjugate_gradient<opt_variables,objective_functor,gradient_functor>
+          conjugate_gradient<opt_variables,objective_functor,mlr_gradient_functor>
           conjugate_gradient_type;
         optimizer_ptr =
           new conjugate_gradient_type(*obj_functor_ptr, *grad_functor_ptr,
@@ -1495,7 +1378,7 @@ namespace sill {
         conjugate_gradient_parameters cg_params(params.gm_params);
         cg_params.update_method = params.cg_update_method;
         typedef conjugate_gradient<opt_variables,objective_functor,
-                                   gradient_functor,preconditioner_functor>
+                                   mlr_gradient_functor,preconditioner_functor>
           prec_conjugate_gradient_type;
         optimizer_ptr =
           new prec_conjugate_gradient_type(*obj_functor_ptr, *grad_functor_ptr,
@@ -1507,7 +1390,7 @@ namespace sill {
       {
         lbfgs_parameters lbfgs_params(params.gm_params);
         lbfgs_params.M = params.lbfgs_M;
-        typedef lbfgs<opt_variables,objective_functor,gradient_functor>
+        typedef lbfgs<opt_variables,objective_functor,mlr_gradient_functor>
           lbfgs_type;
         optimizer_ptr =
           new lbfgs_type(*obj_functor_ptr, *grad_functor_ptr,
@@ -1515,21 +1398,17 @@ namespace sill {
       }
       break;
     case real_optimizer_builder::STOCHASTIC_GRADIENT:
-      {
-        stochastic_gradient_parameters sg_params(params.gm_params);
-        if (params.init_iterations != 0)
-          sg_params.single_opt_step_params.set_shrink_eta
-            (params.init_iterations);
-        typedef stochastic_gradient<opt_variables,gradient_functor>
-          stochastic_gradient_type;
-        optimizer_ptr =
-          new stochastic_gradient_type(*grad_functor_ptr, weights_, sg_params);
-      }
+      init_optimization_stochastic();
       break;
     default:
       assert(false);
     }
-  } // init_opt_pointers
+  } // init_optimization
+
+  template <typename LA>
+  void multiclass_logistic_regression<LA>::init_optimization_stochastic() {
+    sgd_specializer<LA>::init_optimization_stochastic(*this);
+  } // init_optimization_stochastic
 
   template <typename LA>
   void multiclass_logistic_regression<LA>::clear_pointers() {
@@ -1586,7 +1465,7 @@ namespace sill {
         return;
       }
     }
-    for (size_t i(0); i < ds.size(); ++i)
+    for (size_t i = 0; i < ds.size(); ++i)
       total_train_weight += ds.weight(i);
 
     // Initialize weights
@@ -1604,7 +1483,7 @@ namespace sill {
         v = uniform_dist(rng);
     }
 
-    init_opt_pointers();
+    init_optimization();
 
     while (iteration_ < params.init_iterations) {
       if (!step()) {
@@ -1628,10 +1507,10 @@ namespace sill {
   void multiclass_logistic_regression<LA>::
   finish_probabilities(dense_vector_type& v) const {
     if (params.resolve_numerical_problems) {
-      for (size_t k(0); k < nclasses_; ++k) {
+      for (size_t k = 0; k < nclasses_; ++k) {
         if (v[k] > log_max_double) {
           double maxval(v[max_index(v, rng)]);
-          for (size_t k(0); k < nclasses_; ++k) {
+          for (size_t k = 0; k < nclasses_; ++k) {
             if (v[k] == maxval)
               v[k] = 1;
             else
@@ -1641,7 +1520,7 @@ namespace sill {
           return;
         }
       }
-      for (size_t k(0); k < nclasses_; ++k)
+      for (size_t k = 0; k < nclasses_; ++k)
         v[k] = exp(v[k]);
       double tmpsum(sum(v));
       if (tmpsum == 0) {
@@ -1651,7 +1530,7 @@ namespace sill {
       }
       v /= tmpsum;
     } else {
-      for (size_t k(0); k < nclasses_; ++k) {
+      for (size_t k = 0; k < nclasses_; ++k) {
         if (v[k] > log_max_double) {
           throw std::runtime_error
             (std::string("multiclass_logistic_regression") +
@@ -1680,8 +1559,8 @@ namespace sill {
                    const dense_vector_type& b_) const {
     v = b_;
     const std::vector<size_t>& findata = example.finite();
-    for (size_t k(0); k < nclasses_; ++k) {
-      for (size_t j(0); j < finite_indices.size(); ++j) {
+    for (size_t k = 0; k < nclasses_; ++k) {
+      for (size_t j = 0; j < finite_indices.size(); ++j) {
         size_t val(findata[finite_indices[j]]);
         v[k] += w_fin_(k, finite_offset[j] + val);
       }
@@ -1702,14 +1581,14 @@ namespace sill {
     v = b_;
     const finite_assignment& fa = example.finite();
     const vector_assignment& va = example.vector();
-    for (size_t k(0); k < nclasses_; ++k) {
-      for (size_t j(0); j < finite_indices.size(); ++j) {
+    for (size_t k = 0; k < nclasses_; ++k) {
+      for (size_t j = 0; j < finite_indices.size(); ++j) {
         size_t val(safe_get(fa, finite_seq[finite_indices[j]]));
         v[k] += w_fin_(k, finite_offset[j] + val);
       }
-      for (size_t j(0); j < vector_seq.size(); ++j) {
+      for (size_t j = 0; j < vector_seq.size(); ++j) {
         const vec& vecdata = safe_get(va, vector_seq[j]);
-        for (size_t j2(0); j2 < vector_seq[j]->size(); ++j2) {
+        for (size_t j2 = 0; j2 < vector_seq[j]->size(); ++j2) {
           size_t ind(vector_offset[j] + j2);
           v[k] += w_vec_(k,ind) * vecdata[j2];
         }
@@ -1745,27 +1624,25 @@ namespace sill {
   multiclass_logistic_regression<LA>::
   add_raw_gradient(opt_variables& gradient, double& acc, double& ll,
                    const record_type& example, double weight, double alt_weight,
-                   const opt_variables& x) const {
-    dense_vector_type v;
-    my_probabilities(example, v, x.f, x.v, x.b);
+                   dense_vector_type& probs) const {
     const std::vector<size_t>& findata = example.finite();
-    size_t label_val(findata[label_index_]);
-    size_t pred_(max_index(v, rng));
+    size_t label_val = findata[label_index_];
+    size_t pred_ = max_index(probs, rng);
     if (label_val == pred_)
       acc += weight;
-    ll += weight * std::log(v[label_val]);
+    ll += weight * std::log(probs[label_val]);
     // Update gradients
-    v[label_val] -= 1;
-    v *= weight * alt_weight;
-    for (size_t j(0); j < finite_indices.size(); ++j) {
-      size_t val(finite_offset[j] + findata[finite_indices[j]]);
-      for (size_t k(0); k < nclasses_; ++k) {
-        gradient.f(k, val) += v[k];
+    probs[label_val] -= 1;
+    probs *= weight * alt_weight;
+    for (size_t j = 0; j < finite_indices.size(); ++j) {
+      size_t val = finite_offset[j] + findata[finite_indices[j]];
+      for (size_t k = 0; k < nclasses_; ++k) {
+        gradient.f(k, val) += probs[k];
       }
     }
     if (example.vector().size() != 0)
-      gradient.v += outer_product(v, example.vector());
-    gradient.b += v;
+      gradient.v += outer_product(probs, example.vector());
+    gradient.b += probs;
   } // add_raw_gradient()
 
   template <typename LA>
@@ -1780,14 +1657,14 @@ namespace sill {
     case 1: // L-1
       // TODO: Figure out a better way to do this.
       //       (Add more functionality to vector.hpp and matrix.hpp?)
-      for (size_t i(0); i < nclasses_; ++i) {
-        for (size_t j(0); j < x.f.n_cols; ++j) {
+      for (size_t i = 0; i < nclasses_; ++i) {
+        for (size_t j = 0; j < x.f.n_cols; ++j) {
           if (x.f(i,j) > 0)
             gradient.f(i,j) += w;
           else if (x.f(i,j) < 0)
             gradient.f(i,j) -= w;
         }
-        for (size_t j(0); j < x.v.n_cols; ++j) {
+        for (size_t j = 0; j < x.v.n_cols; ++j) {
           if (x.v(i,j) > 0)
             gradient.v(i,j) += w;
           else if (x.v(i,j) < 0)
@@ -1810,53 +1687,46 @@ namespace sill {
   } // add_reg_gradient()
 
   template <typename LA>
-  std::pair<double,double>
-  multiclass_logistic_regression<LA>::my_gradient(opt_variables& gradient,
-                                              const opt_variables& x) const {
-    double train_acc(0.);
-    double train_log_like(0.);
-    gradient.zeros();
+  void
+  multiclass_logistic_regression<LA>::
+  add_gradient(opt_variables& gradient, const opt_variables& x, double w) const{
+    double train_acc = 0;
+    double train_log_like = 0;
     typename dataset<la_type>::record_iterator_type it_end(ds_ptr->end());
-    size_t i(0); // index into dataset
+    size_t i = 0; // index into dataset
+    dense_vector_type probs;
     for (typename dataset<la_type>::record_iterator_type it(ds_ptr->begin());
          it != it_end; ++it) {
-      // Compute v = prediction for *it.  Update accuracy, log likelihood.
+      const record_type& r = *it;
+      my_probabilities(r, probs, x.f, x.v, x.b);
       add_raw_gradient
-        (gradient, train_acc, train_log_like, *it, ds_ptr->weight(i), 1, x);
+        (gradient, train_acc, train_log_like, r, ds_ptr->weight(i),
+         w / total_train_weight, probs);
       ++i;
     }
-    gradient.f /= total_train_weight;
-    gradient.v /= total_train_weight;
-    gradient.b /= total_train_weight;
 
     // Update gradients to account for regularization
     add_reg_gradient(gradient, 1, x);
-    return std::make_pair(train_acc, train_log_like);
+//    return std::make_pair(train_acc, train_log_like);
   } // end of function my_gradient()
 
   template <typename LA>
-  std::pair<double,double>
+  void
   multiclass_logistic_regression<LA>::
-  my_stochastic_gradient(opt_variables& gradient,
-                         const opt_variables& x) const {
-    double train_acc(0.);
-    double train_log_like(0.);
-    gradient.zeros();
+  add_stochastic_gradient(opt_variables& gradient,
+                          const opt_variables& x, double w) const {
+    double acc = 0;
+    double ll = 0;
     if (o_ptr->next()) {
+      dense_vector_type probs;
       const record_type& r = o_ptr->current();
-      double r_weight(o_ptr->weight());
-//      total_train_weight += r_weight;
-      add_raw_gradient(gradient, train_acc, train_log_like, r, r_weight, 1, x);
-      // Update gradients to account for regularization
-      add_reg_gradient(gradient, 1, x);
-      /*
-        if (params.debug > 1) {
-        std::cerr << "Gradient extrema info:\n";
-        gradient.print_extrema_info(std::cerr);
-        }
-      */
+      my_probabilities(r, probs, x.f, x.v, x.b);
+      add_reg_gradient(gradient, w, x);
+      add_raw_gradient(gradient, acc, ll, r, o_ptr->weight(), w, probs);
+    } else {
+      assert(false);
     }
-    return std::make_pair(train_acc, train_log_like);
+//    return std::make_pair(acc, ll);
   }
 
   template <typename LA>
@@ -1868,7 +1738,7 @@ namespace sill {
       hd.resize(x.size());
     hd.zeros();
     typename dataset<la_type>::record_iterator_type it_end(ds_ptr->end());
-    size_t i(0); // index into ds
+    size_t i = 0; // index into ds
     dense_vector_type v;
     vector_type vecdata;
     for (typename dataset<la_type>::record_iterator_type it(ds_ptr->begin());
@@ -1877,7 +1747,7 @@ namespace sill {
       v -= v % v;
       v *= ds_ptr->weight(i);
       const std::vector<size_t>& findata = (*it).finite();
-      for (size_t j(0); j < finite_indices.size(); ++j) {
+      for (size_t j = 0; j < finite_indices.size(); ++j) {
 	size_t val(findata[finite_indices[j]]);
 	hd.f.col(finite_offset[j] + val) += v;
       }
@@ -1916,6 +1786,8 @@ namespace sill {
   operator=(const multiclass_logistic_regression& other) {
     this->clear_pointers();
 
+    base::operator=(other);
+
     params = other.params;
     rng = other.rng;
     if (other.my_ds_ptr) {
@@ -1941,7 +1813,11 @@ namespace sill {
 
     // To do eventually: Do a more careful deep copy of optimizer_ptr,
     //  but have it reference the *_functor_ptr copies.
-    init_opt_pointers();
+    init_optimization();
+    ssgd_eta = other.ssgd_eta;
+    ssgd_cumsum_log_etas = other.ssgd_cumsum_log_etas;
+    ssgd_shrink_eta = other.ssgd_shrink_eta;
+    ssgd_weights_v = other.ssgd_weights_v;
 
     iteration_ = other.iteration_;
     total_train_weight = other.total_train_weight;
@@ -1993,13 +1869,13 @@ namespace sill {
     const finite_assignment& fa = a.finite();
     const vector_assignment& va = a.vector();
     size_t label_val(safe_get(fa,label_));
-    for (size_t j(0); j < finite_indices.size(); ++j) {
+    for (size_t j = 0; j < finite_indices.size(); ++j) {
       size_t val(safe_get(fa, finite_seq[finite_indices[j]]));
       grad.f(label_val, finite_offset[j] + val) -= w;
     }
-    for (size_t j(0); j < vector_seq.size(); ++j) {
+    for (size_t j = 0; j < vector_seq.size(); ++j) {
       const vector_type& vecdata = safe_get(va, vector_seq[j]);
-      for (size_t j2(0); j2 < vecdata.size(); ++j2) {
+      for (size_t j2 = 0; j2 < vecdata.size(); ++j2) {
         size_t ind(vector_offset[j] + j2);
         grad.v(label_val, ind) -= vecdata[j2] * w;
       }
@@ -2056,7 +1932,7 @@ namespace sill {
     finite_assignment tmpa;
     dense_vector_type r_vector(grad.v.n_cols);
     vector_assignment2vector(a.vector(), vector_seq, r_vector);
-    for (size_t label_val(0); label_val < nclasses_; ++label_val) {
+    for (size_t label_val = 0; label_val < nclasses_; ++label_val) {
       tmpa[label_] = label_val;
       double label_prob(label_marginal(tmpa));
       if (label_prob == 0)
@@ -2072,7 +1948,7 @@ namespace sill {
            fa_it != fa_end; ++fa_it)
         tmpa[fa_it->first] = fa_it->second;
       size_t label_val(tmpa[label_]);
-      for (size_t j(0); j < finite_indices.size(); ++j) {
+      for (size_t j = 0; j < finite_indices.size(); ++j) {
         size_t val(tmpa[finite_seq[finite_indices[j]]]);
         grad.f(label_val, finite_offset[j] + val) -= w * fy(fa);
       }
@@ -2095,7 +1971,7 @@ namespace sill {
       table_factor
         label_marginal(fy.marginal(make_domain<finite_variable>(label_)));
       finite_assignment tmpa;
-      for (size_t label_val(0); label_val < nclasses_; ++label_val) {
+      for (size_t label_val = 0; label_val < nclasses_; ++label_val) {
         tmpa[label_] = label_val;
         double label_prob(label_marginal(tmpa));
         if (label_prob == 0)
@@ -2111,7 +1987,7 @@ namespace sill {
              fa_it != fa_end; ++fa_it)
           tmpa[fa_it->first] = fa_it->second;
         size_t label_val(tmpa[label_]);
-        for (size_t j(0); j < finite_indices.size(); ++j) {
+        for (size_t j = 0; j < finite_indices.size(); ++j) {
           size_t val(tmpa[finite_seq[finite_indices[j]]]);
           grad.f(label_val, finite_offset[j] + val) -= w * fy(fa);
         }
@@ -2136,7 +2012,7 @@ namespace sill {
         label_marginal(fy.marginal(make_domain<finite_variable>(label_)));
       finite_assignment tmpa;
       const std::vector<size_t>& findata = r.finite();
-      for (size_t label_val(0); label_val < nclasses_; ++label_val) {
+      for (size_t label_val = 0; label_val < nclasses_; ++label_val) {
         tmpa[label_] = label_val;
         double label_prob(label_marginal(tmpa));
         if (label_prob == 0)
@@ -2147,7 +2023,7 @@ namespace sill {
         grad.v.row(label_val) -= label_prob * r.vector();
         grad.b[label_val] -= label_prob;
       }
-      for (size_t j(0); j < finite_indices.size(); ++j) {
+      for (size_t j = 0; j < finite_indices.size(); ++j) {
         size_t val(findata[finite_indices[j]]);
         grad.f(findata[label_index_], finite_offset[j] + val) -= w;
       }
@@ -2158,7 +2034,7 @@ namespace sill {
              fa_it != fa_end; ++fa_it)
           tmpa[fa_it->first] = fa_it->second;
         size_t label_val(tmpa[label_]);
-        for (size_t j(0); j < finite_indices.size(); ++j) {
+        for (size_t j = 0; j < finite_indices.size(); ++j) {
           size_t val(tmpa[finite_seq[finite_indices[j]]]);
           grad.f(label_val, finite_offset[j] + val) += w * fy(fa);
         }
@@ -2187,7 +2063,7 @@ namespace sill {
       table_factor
         label_marginal(fy.marginal(make_domain<finite_variable>(label_)));
       finite_assignment tmpa;
-      for (size_t label_val(0); label_val < nclasses_; ++label_val) {
+      for (size_t label_val = 0; label_val < nclasses_; ++label_val) {
         tmpa[label_] = label_val;
         double label_prob(label_marginal(tmpa));
         if (label_prob == 0)
@@ -2203,7 +2079,7 @@ namespace sill {
              fa_it != fa_end; ++fa_it)
           tmpa[fa_it->first] = fa_it->second;
         size_t label_val(tmpa[label_]);
-        for (size_t j(0); j < finite_indices.size(); ++j) {
+        for (size_t j = 0; j < finite_indices.size(); ++j) {
           size_t val(tmpa[finite_seq[finite_indices[j]]]);
           hd.f(label_val, finite_offset[j] + val) -= w * fy(fa);
         }
@@ -2216,44 +2092,50 @@ namespace sill {
 
   template <typename LA>
   bool multiclass_logistic_regression<LA>::step() {
+    if (real_optimizer_builder::is_stochastic(params.opt_method))
+      return step_stochastic();
+
     assert(optimizer_ptr);
     if (!optimizer_ptr->step())
       return false;
-    if (!real_optimizer_builder::is_stochastic(params.opt_method)) {
-      double prev_train_obj(train_obj);
-      train_obj = optimizer_ptr->objective();
-      if (train_obj == inf()) {
-        if (params.debug > 0)
-          std::cerr << "multiclass_logistic_regression::step() failed since"
-                    << " objective = inf." << std::endl;
-        return false;
+    double prev_train_obj(train_obj);
+    train_obj = optimizer_ptr->objective();
+    if (train_obj == inf()) {
+      if (params.debug > 0)
+        std::cerr << "multiclass_logistic_regression::step() failed since"
+                  << " objective = inf." << std::endl;
+      return false;
+    }
+    if (params.debug > 0) {
+      if (train_obj > prev_train_obj) {
+        std::cerr << "multiclass_logistic_regression took a step which "
+                  << "increased the objective from " << prev_train_obj
+                  << " to " << train_obj << std::endl;
       }
-      if (params.debug > 0) {
-        if (train_obj > prev_train_obj) {
-          std::cerr << "multiclass_logistic_regression took a step which "
-                    << "increased the objective from " << prev_train_obj
-                    << " to " << train_obj << std::endl;
-        }
-        if (params.debug > 1) {
-          std::cerr << "change in objective = "
-                    << (train_obj - prev_train_obj) << std::endl;
-        }
+      if (params.debug > 1) {
+        std::cerr << "change in objective = "
+                  << (train_obj - prev_train_obj) << std::endl;
       }
-      // Check for convergence
-      if (fabs(train_obj - prev_train_obj)
-          < params.gm_params.convergence_zero) {
-        if (params.debug > 1)
-          std::cerr << "multiclass_logistic_regression converged:"
-                    << " objective changed from "
-                    << prev_train_obj << " to " << train_obj
-                    << "; exiting early (iteration " << iteration() << ")."
-                    << std::endl;
-        return false;
-      }
+    }
+    // Check for convergence
+    if (fabs(train_obj - prev_train_obj)
+        < params.gm_params.convergence_zero) {
+      if (params.debug > 1)
+        std::cerr << "multiclass_logistic_regression converged:"
+                  << " objective changed from "
+                  << prev_train_obj << " to " << train_obj
+                  << "; exiting early (iteration " << iteration() << ")."
+                  << std::endl;
+      return false;
     }
     ++iteration_;
     return true;
   } // step
+
+  template <typename LA>
+  bool multiclass_logistic_regression<LA>::step_stochastic() {
+    return sgd_specializer<LA>::step_stochastic(*this);
+  }
 
   // Save and load methods
   //==========================================================================

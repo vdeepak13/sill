@@ -156,6 +156,13 @@ namespace sill {
       assert(false);
     }
 
+    //! Call this after learning to free memory.
+    //! NOTE: Once this method has been called, step() may fail!
+    //! ITERATIVE ONLY: This may be implemented by iterative learners.
+    virtual void finish_learning() {
+      // Do nothing by default.
+    }
+
     // Save and load methods
     //==========================================================================
 

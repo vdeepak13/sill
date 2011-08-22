@@ -925,7 +925,7 @@ namespace sill {
      */
     double conditional_log_likelihood(const record_type& r,
                                       const domain_type& X,
-                                      double base) const {
+                                      double base = exp(1.)) const {
       decomposable tmp_model(*this);
       tmp_model.condition(r.assignment(X));
       return tmp_model.log_likelihood(r, base);

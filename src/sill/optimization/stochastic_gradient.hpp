@@ -3,6 +3,7 @@
 #define SILL_STOCHASTIC_GRADIENT_HPP
 
 #include <sill/optimization/gradient_method.hpp>
+#include <sill/optimization/optimization_vector.hpp>
 #include <sill/optimization/void_objective.hpp>
 
 #include <sill/macros_def.hpp>
@@ -26,6 +27,12 @@ namespace sill {
     : public gradient_method_parameters {
 
     typedef gradient_method_parameters base;
+
+    //! If true, then add_gradient can operate on the same OptVector from
+    //! which it is computing the gradient.
+    //! This option should be set by the learner, not by command line options.
+    //!  (default = false)
+    bool add_gradient_inplace;
 
     stochastic_gradient_parameters();
 
@@ -88,7 +95,8 @@ namespace sill {
     (const Gradient& grad_functor, OptVector& x_,
      const stochastic_gradient_parameters& params
      = stochastic_gradient_parameters())
-      : base(void_obj_functor, grad_functor, x_, params) {
+      : base(void_obj_functor, grad_functor, x_, params),
+        add_gradient_inplace(params.add_gradient_inplace) {
       assert(params.valid());
     }
 
@@ -97,17 +105,24 @@ namespace sill {
     bool step() {
       // Note: This method does not use gradient_method::run_line_search,
       //       which incurs extra overhead.
-      grad_functor.gradient(direction_, x_);
-
-      if (params.debug > 0) {
-        double step_magnitude(direction_.L2norm());
-        if (!rls_valid_step_magnitude_(step_magnitude))
-          return false;
-      }
 
       assert(step_ptr);
       step_ptr->step(*void_step_functor_ptr);
-      x_ -= direction_ * step_ptr->eta();
+
+      if (add_gradient_inplace) {
+        grad_functor.add_gradient(x_, x_, - step_ptr->eta());
+      } else {
+        grad_functor.gradient(direction_, x_);
+
+        if (params.debug > 0) {
+          double step_magnitude(direction_.L2norm());
+          if (!rls_valid_step_magnitude_(step_magnitude))
+            return false;
+        }
+
+        ov_axpy<OptVector>(- step_ptr->eta(), direction_, x_);
+//      x_ -= direction_ * step_ptr->eta();
+      }
 
       ++iteration_;
 
@@ -128,6 +143,9 @@ namespace sill {
     using base::void_step_functor_ptr;
 
     using base::rls_valid_step_magnitude_;
+
+    //! Copied from parameters.
+    bool add_gradient_inplace;
 
     void_objective<OptVector> void_obj_functor;
 

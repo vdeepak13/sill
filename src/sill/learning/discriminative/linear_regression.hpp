@@ -458,24 +458,18 @@ namespace sill {
     }; // class objective_functor
 
     //! Gradient functor usage with optimization routines.
-    class gradient_functor {
+    struct lr_gradient_functor {
 
-      const linear_regression& lr;
-
-      mutable vec yvec;
-
-      mutable mat tmpmat;
-
-    public:
-      gradient_functor(const linear_regression& lr)
+      lr_gradient_functor(const linear_regression& lr)
         : lr(lr), yvec(zeros<vec>(lr.Yvec_size)),
           tmpmat(zeros<mat>(lr.Ydata().n_rows, lr.Ydata().n_cols)) { }
 
-      //! Computes the gradient of the function at x.
-      //! @param grad  Data type in which to store the gradient.
-      void gradient(opt_vector& grad, const opt_vector& x) const {
-        grad.A.zeros();
-        grad.b.zeros();
+      //! Computes the gradient of the function at x, multiplies it by w,
+      //! and adds it to grad.
+      //! @param grad  The gradient is added to this OptVector.
+      void add_gradient(opt_vector& grad, const opt_vector& x, double w) const {
+
+        w /= lr.total_train_weight;
 
         switch(lr.params.objective) {
         case 2: // least-squares
@@ -485,27 +479,27 @@ namespace sill {
             for (size_t i(0); i < tmpmat.n_rows; ++i) {
               tmpmat.row(i) += x.b;
 //              tmpmat.add_row(i, x.b);
-              grad.A += 2. * tmpmat.row(i) * trans(lr.Xdata().row(i));
-//              grad.A += 2. * outer_product(tmpmat.row(i), lr.Xdata().row(i));
+              grad.A += 2 * w * tmpmat.row(i) * trans(lr.Xdata().row(i));
+//              grad.A += 2 * outer_product(tmpmat.row(i), lr.Xdata().row(i));
             }
-            grad.b = sum(tmpmat, 1);
+            grad.b -= 2 * w * sum(tmpmat, 1);
           } else {
             for (size_t i(0); i < tmpmat.n_rows; ++i) {
               tmpmat.row(i) += x.b;
 //              tmpmat.add_row(i, x.b);
-              grad.A += (2. * lr.data_weights[i])
+              grad.A += (2 * w * lr.data_weights[i])
                 * tmpmat.row(i) * trans(lr.Xdata().row(i));
 //                * outer_product(tmpmat.row(i), lr.Xdata().row(i));
             }
-            grad.b = trans(tmpmat) * lr.data_weights;
+            grad.b -= 2 * w * trans(tmpmat) * lr.data_weights;
           }
-          grad.b *= -2.;
           break;
         default:
           throw std::invalid_argument
             ("linear_regression was given a bad objective parameter");
         }
 
+        w *= lr.params.lambda;
         switch(lr.params.regularization) {
         case 0:
           break;
@@ -513,32 +507,43 @@ namespace sill {
           for (size_t i(0); i < x.b.size(); ++i) {
             for (size_t j(0); j < x.A.n_cols; ++j) {
               if (x.A(i,j) > 0)
-                grad.A(i,j) += lr.params.lambda;
+                grad.A(i,j) += w;
               else if (x.A(i,j) > 0)
-                grad.A(i,j) -= lr.params.lambda;
+                grad.A(i,j) -= w;
             }
           }
           if (lr.params.regularize_mean) {
             for (size_t i(0); i < x.b.size(); ++i) {
               if (x.b[i] > 0)
-                grad.b[i] += lr.params.lambda;
+                grad.b[i] += w;
               else if (x.b[i] < 0)
-                grad.b[i] -= lr.params.lambda;
+                grad.b[i] -= w;
             }
           }
           break;
         case 2:
-          grad.A += lr.params.lambda * x.A;
+          grad.A += w * x.A;
           if (lr.params.regularize_mean)
-            grad.b += lr.params.lambda * x.b;
+            grad.b += w * x.b;
           break;
         default:
           assert(false);
         }
-        grad /= lr.total_train_weight;
       } // gradient()
 
-    }; // class gradient_functor
+      //! Computes the gradient of the function at x.
+      //! @param grad  Location in which to store the gradient.
+      void gradient(opt_vector& grad, const opt_vector& x) const {
+        grad.zeros();
+        add_gradient(grad, x, 1);
+      }
+
+    private:
+      const linear_regression& lr;
+      mutable vec yvec;
+      mutable mat tmpmat;
+
+    }; // class lr_gradient_functor
 
     // Protected data members
     //==========================================================================
@@ -585,14 +590,14 @@ namespace sill {
     objective_functor* obj_functor_ptr;
 
     //! For all generic optimization methods
-    gradient_functor* grad_functor_ptr;
+    lr_gradient_functor* grad_functor_ptr;
 
     //! For batch gradient descent (stores weights)
-    gradient_descent<opt_vector, objective_functor, gradient_functor>*
+    gradient_descent<opt_vector, objective_functor, lr_gradient_functor>*
     gradient_descent_ptr;
 
     //! For batch conjugate gradient (stores weights)
-    conjugate_gradient<opt_vector, objective_functor, gradient_functor>*
+    conjugate_gradient<opt_vector, objective_functor, lr_gradient_functor>*
     conjugate_gradient_ptr;
 
     //! Current iteration; i.e., # iterations completed
@@ -769,14 +774,14 @@ namespace sill {
       if (lr.obj_functor_ptr)
         obj_functor_ptr = new objective_functor(*(lr.obj_functor_ptr));
       if (lr.grad_functor_ptr)
-        grad_functor_ptr = new gradient_functor(*(lr.grad_functor_ptr));
+        grad_functor_ptr = new lr_gradient_functor(*(lr.grad_functor_ptr));
       if (lr.gradient_descent_ptr)
         gradient_descent_ptr =
-          new gradient_descent<opt_vector, objective_functor, gradient_functor>
+          new gradient_descent<opt_vector, objective_functor, lr_gradient_functor>
           (*(lr.gradient_descent_ptr));
       if (lr.conjugate_gradient_ptr)
         conjugate_gradient_ptr =
-          new conjugate_gradient<opt_vector, objective_functor,gradient_functor>
+          new conjugate_gradient<opt_vector, objective_functor,lr_gradient_functor>
           (*(lr.conjugate_gradient_ptr));
     }
 
@@ -816,14 +821,14 @@ namespace sill {
         grad_functor_ptr = NULL;
       }
       if (lr.grad_functor_ptr)
-        grad_functor_ptr = new gradient_functor(*(lr.grad_functor_ptr));
+        grad_functor_ptr = new lr_gradient_functor(*(lr.grad_functor_ptr));
       if (gradient_descent_ptr) {
         delete(gradient_descent_ptr);
         gradient_descent_ptr = NULL;
       }
       if (lr.gradient_descent_ptr)
         gradient_descent_ptr =
-          new gradient_descent<opt_vector, objective_functor, gradient_functor>
+          new gradient_descent<opt_vector, objective_functor, lr_gradient_functor>
           (*(lr.gradient_descent_ptr));
       if (conjugate_gradient_ptr) {
         delete(conjugate_gradient_ptr);
@@ -831,7 +836,7 @@ namespace sill {
       }
       if (lr.conjugate_gradient_ptr)
         conjugate_gradient_ptr =
-          new conjugate_gradient<opt_vector, objective_functor,gradient_functor>
+          new conjugate_gradient<opt_vector, objective_functor,lr_gradient_functor>
           (*(lr.conjugate_gradient_ptr));
       iteration_ = lr.iteration_;
       total_train_weight = lr.total_train_weight;

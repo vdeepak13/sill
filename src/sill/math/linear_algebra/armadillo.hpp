@@ -308,6 +308,9 @@ namespace sill {
     return v;
   }
 
+  //! Constructs a sequence [from, from+1, ..., to-1].
+  uvec sequence(size_t from, size_t to);
+
   // Serialization
   //============================================================================
 
