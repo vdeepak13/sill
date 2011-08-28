@@ -2,6 +2,9 @@
 #ifndef SILL_DATASET_VIEW_HPP
 #define SILL_DATASET_VIEW_HPP
 
+#include <boost/random/mersenne_twister.hpp>
+#include <boost/random/uniform_int.hpp>
+
 #include <sill/learning/dataset/dataset.hpp>
 #include <sill/range/algorithm.hpp>
 #include <sill/range/concepts.hpp>

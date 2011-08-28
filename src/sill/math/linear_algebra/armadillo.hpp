@@ -1,6 +1,12 @@
 #ifndef SILL_ARMADILLO_HPP
 #define SILL_ARMADILLO_HPP
 
+/**
+ * \file armadillo.hpp  Includes dense linear algebra headers.
+ *
+ * @todo Change this file's name to dense_linear_algebra.hpp?
+ */
+
 #include <armadillo>
 
 #include <sill/base/stl_util.hpp>
@@ -59,6 +65,33 @@ namespace sill {
 
   // functions of vectors and matrices
   using arma::dot;
+
+  //============================================================================
+
+  /**
+   * Dense linear algebra specification.
+   *
+   * This type of struct can be passed to methods as a template parameters
+   * to specify what vector/matrix classes should be used.
+   *
+   * STANDARD: Classes which take a linear algebra specifier as a template
+   *           parameter (or have one hard-coded) should typedef the specifier
+   *           as "la_type" as a standard name for other classes to use.
+   */
+  template <typename T = double, typename SizeType = arma::u32>
+  struct dense_linear_algebra {
+
+    typedef arma::Col<T>  vector_type;
+    typedef arma::Mat<T>  matrix_type;
+    typedef typename vector_type::value_type value_type;
+    typedef typename vector_type::size_type  size_type;
+
+    typedef arma::Col<T>  dense_vector_type;
+    typedef arma::Mat<T>  dense_matrix_type;
+
+    typedef uvec  index_vector_type;
+
+  };
 
   // (temporary) Functions which would be nice to have in Armadillo
   //============================================================================
@@ -413,6 +446,16 @@ namespace sill {
   template <typename T>
   iarchive& operator>>(iarchive& a, arma::Mat<T>& m) {
     return impl::operator_gg_(a,m);
+  }
+
+  // Functions to match sparse linear algebra interface
+  //============================================================================
+
+  //! Dense vector += dense matrix * dense vector
+  template <typename T>
+  void
+  gemv(const arma::Mat<T>& m, const arma::Col<T>& v, arma::Col<T>& out) {
+    out += m * v;
   }
 
 } // namespace sill

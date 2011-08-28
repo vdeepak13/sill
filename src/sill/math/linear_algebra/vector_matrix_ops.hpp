@@ -208,11 +208,6 @@ namespace sill {
   arma::Col<T>
   operator*(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v);
 
-  //! Dense vector += dense matrix * dense vector
-  template <typename T>
-  void
-  gemv(const arma::Mat<T>& m, const arma::Col<T>& v, arma::Col<T>& out);
-
   //! Dense vector += dense matrix  *  sparse vector
   template <typename T, typename SizeType>
   void
@@ -605,12 +600,6 @@ namespace sill {
     return
       impl::mult_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>
       (A,x);
-  }
-
-  template <typename T>
-  void
-  gemv(const arma::Mat<T>& m, const arma::Col<T>& v, arma::Col<T>& out) {
-    out += m * v; // TO DO: USE BLAS
   }
 
   template <typename T, typename SizeType>

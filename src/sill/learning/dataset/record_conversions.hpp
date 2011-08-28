@@ -3,7 +3,7 @@
 #define SILL_RECORD_CONVERSIONS_HPP
 
 #include <sill/base/assignment.hpp>
-#include <sill/math/linear_algebra/linear_algebra_types.hpp>
+#include <sill/math/linear_algebra/sparse_linear_algebra.hpp>
 
 #include <sill/macros_def.hpp>
 

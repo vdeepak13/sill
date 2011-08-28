@@ -11,7 +11,7 @@
 #include <sill/learning/dataset/ds_oracle.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
-#include <sill/math/linear_algebra/linear_algebra_types.hpp>
+#include <sill/math/linear_algebra/sparse_linear_algebra.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/optimization/logreg_opt_vector.hpp>
 #include <sill/optimization/real_optimizer_builder.hpp>
