@@ -65,6 +65,7 @@ namespace sill {
 
   // functions of vectors and matrices
   using arma::dot;
+  using arma::norm;
 
   //============================================================================
 
