@@ -53,8 +53,8 @@ namespace sill {
       {
         finite_variable* v1 = *(X.begin());
         finite_variable* v2 = *(++(X.begin()));
-        table_factor f(make_associative_factor(v1, v2, params.base_val));
-        f.update(exponent<double>());
+        table_factor
+          f(make_associative_factor(v1, v2, std::exp(params.base_val)));
         return f;
       }
     case parameters::RANDOM_ASSOCIATIVE:
