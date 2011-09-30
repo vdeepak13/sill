@@ -953,7 +953,7 @@ namespace sill {
       foreach(const typename crf_graph_type::vertex& neighbor_v,
               neighbors(Yi)){
         const typename crf_factor::output_factor_type& neighbor_f =
-          this->operator[](neighbor_v)->condition(r);
+          this->operator[](neighbor_v)->condition(a);
         neighbor_f.restrict
           (a, set_difference(neighbor_f.arguments(), make_domain(Yi)), tmpf);
         f *= tmpf;
