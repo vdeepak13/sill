@@ -2,6 +2,7 @@
 #define SILL_CRF_PARAMETER_LEARNER_PARAMETERS_HPP
 
 #include <sill/optimization/real_optimizer_builder.hpp>
+#include <sill/serialization/serialize.hpp>
 
 namespace sill {
 
@@ -127,7 +128,19 @@ namespace sill {
     //! Check validity; assert false if invalid.
     void check() const;
 
+    void save(oarchive & ar) const;
+
+    void load(iarchive & ar);
+
   }; // struct crf_parameter_learner_parameters
+
+  oarchive&
+  operator<<(oarchive& a,
+             crf_parameter_learner_parameters::learning_objective_enum val);
+
+  iarchive&
+  operator>>(iarchive& a,
+             crf_parameter_learner_parameters::learning_objective_enum& val);
 
 }  // namespace sill
 

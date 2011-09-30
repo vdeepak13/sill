@@ -25,6 +25,36 @@ namespace sill {
     assert(lbfgs_M != 0);
   }
 
+  void crf_parameter_learner_parameters::save(oarchive& ar) const {
+    ar << regularization << lambdas << init_iterations << init_time_limit
+       << learning_objective << perturb << random_seed << keep_fixed_records
+       << debug << no_shared_computation << opt_method << gm_params
+       << cg_update_method << lbfgs_M;
+  }
+
+  void crf_parameter_learner_parameters::load(iarchive& ar) {
+    ar >> regularization >> lambdas >> init_iterations >> init_time_limit
+       >> learning_objective >> perturb >> random_seed >> keep_fixed_records
+       >> debug >> no_shared_computation >> opt_method >> gm_params
+       >> cg_update_method >> lbfgs_M;
+  }
+
+  oarchive&
+  operator<<(oarchive& a,
+             crf_parameter_learner_parameters::learning_objective_enum val) {
+    a << (size_t)(val);
+    return a;
+  }
+
+  iarchive&
+  operator>>(iarchive& a,
+             crf_parameter_learner_parameters::learning_objective_enum& val) {
+    size_t tmp;
+    a >> tmp;
+    val = (crf_parameter_learner_parameters::learning_objective_enum)(tmp);
+    return a;
+  }
+
 }  // namespace sill
 
 #include <sill/macros_undef.hpp>
