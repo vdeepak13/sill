@@ -895,8 +895,9 @@ namespace sill {
       return model_mean_squared_error_functor<crf_model>(*this);
     }
 
-    //! Computes the pseudolikelihood of this model for the given record.
-    double pseudolikelihood(const record_type& r) const {
+    //! Computes the log pseudolikelihood of this model for the given record.
+    double
+    log_pseudolikelihood(const record_type& r, double base = exp(1.)) const {
       double pl = 0;
       foreach(output_variable_type* y, output_arguments()) {
         typename crf_factor::output_factor_type y_f(make_domain(y), 1);
@@ -912,7 +913,16 @@ namespace sill {
         y_f.normalize();
         pl += y_f.logv(r);
       }
-      return pl;
+      return (pl / std::log(base));
+    }
+
+    /**
+     * Returns a functor usable with dataset::expected_value() for computing
+     * expected log pseudolikelihood.
+     */
+    model_log_pseudolikelihood_functor<crf_model>
+    log_pseudolikelihood(double base = exp(1.)) const {
+      return model_log_pseudolikelihood_functor<crf_model>(*this, base);
     }
 
     // Mutating methods

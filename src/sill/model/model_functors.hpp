@@ -132,6 +132,25 @@ namespace sill {
     typename ModelType::domain_type X;
   };
 
+
+  //! Functor for computing the log pseudolikelihood for a model.
+  template <typename ModelType>
+  struct model_log_pseudolikelihood_functor {
+
+    explicit model_log_pseudolikelihood_functor(const ModelType& model,
+                                                double base = exp(1.))
+      : modelptr(&model), base(base) { }
+
+    double operator()(const typename ModelType::record_type r) const {
+      assert(modelptr);
+      return modelptr->log_pseudolikelihood(r, base);
+    }
+
+  private:
+    const ModelType* modelptr;
+    double base;
+  };
+
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
