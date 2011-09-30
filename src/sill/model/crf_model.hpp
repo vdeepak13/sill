@@ -899,21 +899,18 @@ namespace sill {
     double
     log_pseudolikelihood(const record_type& r, double base = exp(1.)) const {
       double pl = 0;
-      foreach(output_variable_type* y, output_arguments()) {
-        typename crf_factor::output_factor_type y_f(make_domain(y), 1);
-        typename crf_factor::output_factor_type tmpf;
-        foreach(const typename crf_graph_type::vertex& neighbor_v,
-                neighbors(y)){
-          const typename crf_factor::output_factor_type& neighbor_f =
-            this->operator[](neighbor_v)->condition(r);
-          neighbor_f.restrict
-            (r, set_difference(neighbor_f.arguments(), make_domain(y)), tmpf);
-          y_f *= tmpf;
-        }
-        y_f.normalize();
-        pl += y_f.logv(r);
-      }
-      return (pl / std::log(base));
+      foreach(output_variable_type* y, output_arguments())
+        pl += log_pseudolikelihood_component(y, r, base);
+      return pl;
+    }
+
+    //! Computes the log pseudolikelihood of this model for the given record.
+    double
+    log_pseudolikelihood(const assignment_type& a, double base = exp(1.)) const{
+      double pl = 0;
+      foreach(output_variable_type* y, output_arguments())
+        pl += log_pseudolikelihood_component(y, a, base);
+      return pl;
     }
 
     /**
@@ -923,6 +920,46 @@ namespace sill {
     model_log_pseudolikelihood_functor<crf_model>
     log_pseudolikelihood(double base = exp(1.)) const {
       return model_log_pseudolikelihood_functor<crf_model>(*this, base);
+    }
+
+    //! Computes the log pseudolikelihood component for Yi:
+    //!  log P(Yi | neighbors of Yi in Y,X)
+    double
+    log_pseudolikelihood_component(output_variable_type* Yi,
+                                   const record_type& r,
+                                   double base = exp(1.)) const {
+      typename crf_factor::output_factor_type f(make_domain(Yi), 1);
+      typename crf_factor::output_factor_type tmpf;
+      foreach(const typename crf_graph_type::vertex& neighbor_v,
+              neighbors(Yi)){
+        const typename crf_factor::output_factor_type& neighbor_f =
+          this->operator[](neighbor_v)->condition(r);
+        neighbor_f.restrict
+          (r, set_difference(neighbor_f.arguments(), make_domain(Yi)), tmpf);
+        f *= tmpf;
+      }
+      f.normalize();
+      return f.logv(r) / std::log(base);
+    }
+
+    //! Computes the log pseudolikelihood component for Yi:
+    //!  log P(Yi | neighbors of Yi in Y,X)
+    double
+    log_pseudolikelihood_component(output_variable_type* Yi,
+                                   const assignment_type& a,
+                                   double base = exp(1.)) const {
+      typename crf_factor::output_factor_type f(make_domain(Yi), 1);
+      typename crf_factor::output_factor_type tmpf;
+      foreach(const typename crf_graph_type::vertex& neighbor_v,
+              neighbors(Yi)){
+        const typename crf_factor::output_factor_type& neighbor_f =
+          this->operator[](neighbor_v)->condition(r);
+        neighbor_f.restrict
+          (a, set_difference(neighbor_f.arguments(), make_domain(Yi)), tmpf);
+        f *= tmpf;
+      }
+      f.normalize();
+      return f.logv(a) / std::log(base);
     }
 
     // Mutating methods
