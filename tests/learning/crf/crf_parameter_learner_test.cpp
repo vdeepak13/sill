@@ -6,7 +6,6 @@
 #include <sill/base/universe.hpp>
 #include <sill/factor/log_reg_crf_factor.hpp>
 #include <sill/factor/table_crf_factor.hpp>
-#include <sill/factor/table_factor.hpp>
 #include <sill/learning/crf/crf_parameter_learner_builder.hpp>
 #include <sill/learning/crf/crf_validation_functor.hpp>
 #include <sill/learning/crf/pwl_crf_parameter_learner.hpp>
@@ -14,7 +13,7 @@
 #include <sill/learning/validation/validation_framework.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/generate_datasets.hpp>
-#include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/model/model_products.hpp>
 #include <sill/model/random.hpp>
 
@@ -45,9 +44,9 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
   // Generate a dataset
   cout << "Sampling " << ntrain << " training samples and "
        << ntest << " test samples from the model" << endl;
-  vector_assignment_dataset<> train_ds(ds_info, ntrain);
+  vector_dataset<> train_ds(ds_info, ntrain);
   generate_dataset(train_ds, YXmodel, ntrain, rng);
-  vector_assignment_dataset<> test_ds(ds_info, ntest);
+  vector_dataset<> test_ds(ds_info, ntest);
   generate_dataset(test_ds, YXmodel, ntest, rng);
 
   double true_train_ll = train_ds.expected_value(YgivenXmodel.log_likelihood());
