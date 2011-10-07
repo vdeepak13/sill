@@ -1,4 +1,3 @@
-link_libraries(itpp)
 
 subdirs(function linear_algebra)
 

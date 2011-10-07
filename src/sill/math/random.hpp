@@ -10,17 +10,6 @@
 
 namespace sill {
 
-  /*
-  using itpp::randb;
-  using itpp::randu;
-  using itpp::randi;
-  using itpp::randn;
-  using itpp::randn_c;
-  using itpp::randray;
-  using itpp::randrice;
-  using itpp::randexp;
-  */
-
   /**
    * Gamma distribution.
    * This is parameterized as Gamma(k, alpha) where the mean is k * alpha
