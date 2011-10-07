@@ -39,7 +39,8 @@ namespace sill {
 
   };
 
-
+  /*
+// THIS CONFLICTS with arma::zeros on the new Ubuntu distribution.
   template <typename VecType>
   inline
   VecType zeros(typename VecType::size_type n) {
@@ -47,6 +48,7 @@ namespace sill {
     v.zeros();
     return v;
   }
+  */
 
 } // namespace sill
 
