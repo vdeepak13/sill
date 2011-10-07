@@ -56,12 +56,12 @@ namespace sill {
    * @param  sep   String with which to separate the values.
    * @param  vals  Values to concatenate.
    */
-  template <typename T>
-  std::string string_join(const std::string& sep, const std::vector<T>& vals) {
+  template <typename VecType>
+  std::string string_join(const std::string& sep, const VecType& vals) {
     if (vals.size() == 0)
       return std::string();
     std::ostringstream o;
-    for (size_t i(0); i < vals.size() - 1; ++i)
+    for (size_t i = 0; i < vals.size() - 1; ++i)
       o << vals[i] << sep;
     o << vals[vals.size() - 1];
     return o.str();
