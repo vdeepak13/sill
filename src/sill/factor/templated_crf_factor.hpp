@@ -84,7 +84,8 @@ namespace sill {
 
     //! Default constructor.
     templated_crf_factor()
-      : base(), factor_ptr_(new F()), fixed_records_(false) { }
+      : base(), factor_ptr_(new F()), fixed_records_(false),
+        relabeled_args(false) { }
 
     /**
      * Constructor which creates a template of the given factor.
@@ -95,7 +96,8 @@ namespace sill {
      *                      rather than doing a deep copy.
      */
     templated_crf_factor(boost::shared_ptr<F> factor_ptr_)
-      : base(*factor_ptr_), factor_ptr_(factor_ptr_), fixed_records_(false) {
+      : base(*factor_ptr_), factor_ptr_(factor_ptr_), fixed_records_(false),
+        relabeled_args(false) {
       init();
     }
 
@@ -124,7 +126,8 @@ namespace sill {
      const
      typename variable_type_group<input_variable_type,la_type>::var_map_type&
      Xvarmap)
-      : base(), factor_ptr_(factor_ptr_), fixed_records_(false) {
+      : base(), factor_ptr_(factor_ptr_), fixed_records_(false),
+        relabeled_args(false) {
       init(Yvarmap,Xvarmap);
     }
 
@@ -139,7 +142,8 @@ namespace sill {
      */
     templated_crf_factor(const output_domain_type& Y_,
                          const input_domain_type& X_)
-      : base(Y_, X_), factor_ptr_(new F(Y_,X_)), fixed_records_(false) {
+      : base(Y_, X_), factor_ptr_(new F(Y_,X_)), fixed_records_(false),
+        relabeled_args(false) {
       init();
     }
 
@@ -156,7 +160,10 @@ namespace sill {
         base_input_record(other.base_input_record),
         vmap_base2this(other.vmap_base2this),
         vmap_this2base(other.vmap_this2base),  tmp_factor(other.tmp_factor),
-        fixed_records_(other.fixed_records_) { }
+        fixed_records_(other.fixed_records_),
+        relabeled_args(other.relabeled_args),
+        base_newY(other.base_newY), base_newX(other.base_newX),
+        base_oldY(other.base_oldY), base_oldX(other.base_oldX){ }
 
     /**
      * Assignment operator.
@@ -174,11 +181,19 @@ namespace sill {
       vmap_this2base = other.vmap_this2base;
       tmp_factor = other.tmp_factor;
       fixed_records_ = other.fixed_records_;
+      relabeled_args = other.relabeled_args;
+      base_newY = other.base_newY;
+      base_newX = other.base_newX;
+      base_oldY = other.base_oldY;
+      base_oldX = other.base_oldX;
       return *this;
     }
 
     // Getters and helpers
     // =========================================================================
+
+    using base::output_arguments;
+    using base::input_arguments;
 
     /**
      * @param print_Y    If true, print Y variables. (default = true)
@@ -215,8 +230,39 @@ namespace sill {
      */
     void relabel_outputs_inputs(const output_domain_type& new_Y,
                                 const input_domain_type& new_X) {
-      assert(false); // RIGHT HERE NOW
-    }
+      assert(factor_ptr_);
+      unfix_records();
+      // Adjust templated factor's arguments.
+      domain_type old_args(output_arguments());
+      old_args.insert(input_arguments().begin(), input_arguments().end());
+      Ydomain_ = set_intersect(old_args,new_Y);
+      Xdomain_ptr_->operator=(set_intersect(old_args,new_X));
+      if (!set_disjoint(output_arguments(), input_arguments())) {
+        throw std::invalid_argument
+          (std::string("templated_crf_factor::relabel_outputs_inputs given") +
+           " new_Y,new_X which were not disjoint.");
+      }
+      if (output_arguments().size() + input_arguments().size()
+          != old_args.size()) {
+        throw std::invalid_argument
+          (std::string("templated_crf_factor::relabel_outputs_inputs given ") +
+           "new_Y,new_X whose union did not include the union of the old Y,X.");
+      }
+      // Pre-compute base factor's arguments.
+      base_newY.clear();
+      base_newX.clear();
+      foreach(output_variable_type* v, output_arguments())
+        base_newY.insert(safe_get(vmap_this2base,v));
+      foreach(input_variable_type* v, input_arguments())
+        base_newX.insert(safe_get(vmap_this2base,v));
+      base_oldY = factor_ptr_->output_arguments();
+      base_oldX = factor_ptr_->input_arguments();
+      // Set base_input_record.
+      input_var_vector_type base_input_vars(base_newX.begin(), base_newX.end());
+      base_input_record = input_record_type(base_input_vars);
+
+      relabeled_args = true;
+    } // relabel_outputs_inputs
 
     //! Get the base factor.
     const F& base_factor() const {
@@ -231,28 +277,28 @@ namespace sill {
     //! in real-space (not log-space).
     double v(const assignment_type& a) const {
       base_record.copy_from_assignment_mapped(a, vmap_base2this);
-      return factor_ptr_->v(base_record);
+      return v_sub();
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
     double v(const record_type& r) const {
       base_record.copy_from_record_mapped(r, vmap_base2this);
-      return factor_ptr_->v(base_record);
+      return v_sub();
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
     double logv(const assignment_type& a) const {
       base_record.copy_from_assignment_mapped(a, vmap_base2this);
-      return factor_ptr_->logv(base_record);
+      return logv_sub();
     }
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
     double logv(const record_type& r) const {
       base_record.copy_from_record_mapped(r, vmap_base2this);
-      return factor_ptr_->logv(base_record);
+      return logv_sub();
     }
 
     /**
@@ -267,8 +313,7 @@ namespace sill {
      */
     const output_factor_type& condition(const input_assignment_type& a) const {
       base_input_record.copy_from_assignment_mapped(a, vmap_base2this);
-      tmp_factor = factor_ptr_->condition(base_input_record);
-      tmp_factor.subst_args(vmap_base2this);
+      condition_sub();
       return tmp_factor;
     }
 
@@ -283,8 +328,7 @@ namespace sill {
      */
     const output_factor_type& condition(const input_record_type& r) const {
       base_input_record.copy_from_record_mapped(r, vmap_base2this);
-      tmp_factor = factor_ptr_->condition(base_input_record);
-      tmp_factor.subst_args(vmap_base2this);
+      condition_sub();
       return tmp_factor;
     }
 
@@ -374,7 +418,13 @@ namespace sill {
     void add_gradient(optimization_vector& grad, const record_type& r,
                       double w) const {
       base_record.copy_from_record_mapped(r, vmap_base2this);
-      factor_ptr_->add_gradient(grad, base_record, w);
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        factor_ptr_->add_gradient(grad, base_record, w);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+      } else {
+        factor_ptr_->add_gradient(grad, base_record, w);
+      }
     }
 
     /**
@@ -396,7 +446,13 @@ namespace sill {
       base_input_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = fy;
       tmp_factor.subst_args(vmap_this2base);
-      factor_ptr_->add_expected_gradient(grad, base_input_record, tmp_factor,w);
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        factor_ptr_->add_expected_gradient(grad,base_input_record,tmp_factor,w);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+      } else {
+        factor_ptr_->add_expected_gradient(grad,base_input_record,tmp_factor,w);
+      }
     }
 
     /**
@@ -410,7 +466,13 @@ namespace sill {
       base_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = fy;
       tmp_factor.subst_args(vmap_this2base);
-      factor_ptr_->add_combined_gradient(grad, base_record, tmp_factor, w);
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        factor_ptr_->add_combined_gradient(grad, base_record, tmp_factor, w);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+      } else {
+        factor_ptr_->add_combined_gradient(grad, base_record, tmp_factor, w);
+      }
     }
 
     /**
@@ -424,7 +486,13 @@ namespace sill {
     add_hessian_diag(optimization_vector& hessian, const record_type& r,
                      double w) const {
       base_record.copy_from_record_mapped(r, vmap_base2this);
-      factor_ptr_->add_hessian_diag(hessian, base_record, w);
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        factor_ptr_->add_hessian_diag(hessian, base_record, w);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+      } else {
+        factor_ptr_->add_hessian_diag(hessian, base_record, w);
+      }
     }
 
     /**
@@ -445,8 +513,16 @@ namespace sill {
       base_input_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = fy;
       tmp_factor.subst_args(vmap_this2base);
-      factor_ptr_->add_expected_hessian_diag(hessian, base_input_record,
-                                             tmp_factor, w);
+
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        factor_ptr_->add_expected_hessian_diag(hessian, base_input_record,
+                                               tmp_factor, w);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+      } else {
+        factor_ptr_->add_expected_hessian_diag(hessian, base_input_record,
+                                               tmp_factor, w);
+      }
     }
 
     /**
@@ -467,8 +543,15 @@ namespace sill {
       base_input_record.copy_from_record_mapped(r, vmap_base2this);
       tmp_factor = fy;
       tmp_factor.subst_args(vmap_this2base);
-      factor_ptr_->add_expected_squared_gradient(sqrgrad, base_input_record,
-                                                 tmp_factor, w);
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        factor_ptr_->add_expected_squared_gradient(sqrgrad, base_input_record,
+                                                   tmp_factor, w);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+      } else {
+        factor_ptr_->add_expected_squared_gradient(sqrgrad, base_input_record,
+                                                   tmp_factor, w);
+      }
     }
 
     /**
@@ -528,8 +611,52 @@ namespace sill {
     //! True if fix_records() has been called.
     bool fixed_records_;
 
+    //! If set, then base_newY, base_newX are set too.
+    bool relabeled_args;
+
+    //! Stores relabeled outputs/inputs for base factor.
+    output_domain_type base_newY;
+    input_domain_type base_newX;
+
+    //! Stores original outputs/inputs for base factor.
+    output_domain_type base_oldY;
+    input_domain_type base_oldX;
+
     // Private methods
     // =========================================================================
+
+    double v_sub() const {
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        double val = factor_ptr_->v(base_record);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+        return val;
+      } else {
+        return factor_ptr_->v(base_record);
+      }
+    }
+
+    double logv_sub() const {
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        double val = factor_ptr_->logv(base_record);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+        return val;
+      } else {
+        return factor_ptr_->logv(base_record);
+      }
+    }
+
+    void condition_sub() const {
+      if (relabeled_args) {
+        factor_ptr_->relabel_outputs_inputs(base_newY, base_newX);
+        tmp_factor = factor_ptr_->condition(base_input_record);
+        factor_ptr_->relabel_outputs_inputs(base_oldY, base_oldX);
+      } else {
+        tmp_factor = factor_ptr_->condition(base_input_record);
+      }
+      tmp_factor.subst_args(vmap_base2this);
+    }
 
     //! Initialize with identity variable map.
     //! Given: factor_ptr_ is set
