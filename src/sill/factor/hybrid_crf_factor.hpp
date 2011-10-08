@@ -210,6 +210,11 @@ namespace sill {
       out << std::flush;
     }
 
+    void relabel_outputs_inputs(const output_domain_type& new_Y,
+                                const input_domain_type& new_X) {
+      assert(false);
+    }
+
     // Public methods: Probabilistic queries
     // =========================================================================
 

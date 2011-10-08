@@ -442,6 +442,10 @@ namespace sill {
     //! Set this factor to the square root of its value.
     gaussian_crf_factor& square_root();
 
+    //! Set this factor to the k^th root of its value
+    //! (i.e., raise to the power of 1/k).
+    gaussian_crf_factor& kth_root(double k);
+
     // Public: Learning-related methods from crf_factor interface
     // =========================================================================
 

@@ -333,6 +333,29 @@ namespace sill {
     // =========================================================================
 
     /**
+     * Relabels outputs Y, inputs X so that
+     * inputs may become outputs (if variable_type = output_variable_type) and
+     * outputs may become inputs (if variable_type = input_variable_type).
+     * The entire argument set must remain the same, i.e.,
+     * union(Y,X) must equal union(new_Y, new_X).
+     */
+    virtual void relabel_outputs_inputs(const output_domain_type& new_Y,
+                                        const input_domain_type& new_X) = 0;
+
+    /**
+     * Relabels outputs Y, inputs X.
+     * The new outputs are new_Y; the new inputs are the remaining variables.
+     */
+    void relabel_outputs_inputs(const output_domain_type& new_Y) {
+      input_domain_type new_X(input_arguments());
+      foreach(output_variable_type* v, output_arguments()) {
+        if (new_Y.count(v) == 0)
+          new_X.insert(v);
+      }
+      relabel_outputs_inputs(new_Y, new_X);
+    }
+
+    /**
      * Check the validity of a shuffling of the output, input variables.
      * To be valid, new_Y and new_X must be disjoint,
      * and their union must be a superset of the union of old_Y and old_X.

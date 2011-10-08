@@ -46,6 +46,20 @@ namespace sill {
       return f.f(r.finite_assignment());
   }
 
+  double table_crf_factor::logv(const finite_assignment& a) const {
+    if (log_space_)
+      return f.f(a);
+    else
+      return std::log(f.f(a));
+  }
+
+  double table_crf_factor::logv(const finite_record& r) const {
+    if (log_space_)
+      return f.f(r.finite_assignment());
+    else
+      return std::log(f.f(r.finite_assignment()));
+  }
+
   const table_factor&
   table_crf_factor::condition(const finite_assignment& a) const {
     f.f.restrict(a, input_arguments(), true, conditioned_f);
@@ -220,6 +234,15 @@ namespace sill {
   table_crf_factor& table_crf_factor::square_root() {
     if (log_space_)
       f /= 2;
+    else
+      f.elem_square_root();
+    return *this;
+  }
+
+  table_crf_factor& table_crf_factor::kth_root(double k) {
+    assert(k > 0);
+    if (log_space_)
+      f /= k;
     else
       f.elem_square_root();
     return *this;

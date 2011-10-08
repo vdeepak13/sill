@@ -62,6 +62,17 @@ namespace sill {
     T operator()(const T& value) { return sqrt(value); }
   };
 
+  //! A functor that computes the k^th root of a value
+  //! (i.e., raises the value to the power of 1/k)
+  template <typename T>
+  struct kth_root : std::unary_function<T,T> {
+    double k;
+    kth_root(double k) : k(k) { assert(k > 0); }
+    T operator()(const T& value) { return std::pow(value, k); }
+  private:
+    kth_root() { }
+  };
+
   //! A functor which computes the sign of a value (-1, 0, 1).
   template <typename T>
   struct sign_functor : std::unary_function<T,T> {

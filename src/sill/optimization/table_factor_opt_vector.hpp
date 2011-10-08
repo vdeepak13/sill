@@ -208,6 +208,12 @@ namespace sill {
       f.update(square_root<double>());
     }
 
+    //! Element-wise k^th root. (I.e., raise to the (1/k)^th power.)
+    void elem_kth_root(double k) {
+      assert(k > 0);
+      f.update(kth_root<double>(k));
+    }
+
     //! Print info about this vector (for debugging).
     void print_info(std::ostream& out) const {
       out << "PRINT_INFO TO BE IMPLEMENTED\n";

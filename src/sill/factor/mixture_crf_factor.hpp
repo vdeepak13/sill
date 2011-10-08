@@ -110,6 +110,11 @@ namespace sill {
       ar >> components_;
     }
 
+    void relabel_outputs_inputs(const output_domain_type& new_Y,
+                                const input_domain_type& new_X) {
+      assert(false); // TO DO
+    }
+
     // Public methods: Getters
     // =========================================================================
 

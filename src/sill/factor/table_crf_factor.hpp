@@ -175,6 +175,14 @@ namespace sill {
     //! in real-space (not log-space).
     double v(const finite_record& r) const;
 
+    //! Evaluates this factor for the given datapoint, returning its value
+    //! in log-space.
+    double logv(const finite_assignment& a) const;
+
+    //! Evaluates this factor for the given datapoint, returning its value
+    //! in log-space.
+    double logv(const finite_record& r) const;
+
     /**
      * If this factor is f(Y,X), compute f(Y, X = x).
      *
@@ -280,6 +288,10 @@ namespace sill {
 
     //! Set this factor to the square root of its value.
     table_crf_factor& square_root();
+
+    //! Set this factor to the k^th root of its value
+    //! (i.e., raise to the power of 1/k).
+    table_crf_factor& kth_root(double k);
 
     // Public: Learning-related methods from crf_factor interface
     // =========================================================================

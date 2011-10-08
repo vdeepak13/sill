@@ -722,6 +722,12 @@ namespace sill {
     return *this;
   }
 
+  gaussian_crf_factor& gaussian_crf_factor::kth_root(double k) {
+    assert(k > 0);
+    ov /= k;
+    return *this;
+  }
+
   // Public: Learning methods from learnable_crf_factor interface
   // =========================================================================
 

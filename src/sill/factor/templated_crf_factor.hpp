@@ -204,6 +204,8 @@ namespace sill {
       out << std::flush;
     }
 
+    using base::relabel_outputs_inputs;
+
     /**
      * Relabels outputs Y, inputs X so that
      * inputs may become outputs (if variable_type = output_variable_type) and
@@ -213,7 +215,13 @@ namespace sill {
      */
     void relabel_outputs_inputs(const output_domain_type& new_Y,
                                 const input_domain_type& new_X) {
-      assert(false); // NOT YET IMPLEMENTED
+      assert(false); // RIGHT HERE NOW
+    }
+
+    //! Get the base factor.
+    const F& base_factor() const {
+      assert(factor_ptr_);
+      return *factor_ptr_;
     }
 
     // Public methods: Probabilistic queries
