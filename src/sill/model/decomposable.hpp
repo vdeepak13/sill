@@ -33,6 +33,28 @@ namespace sill {
   // Forward declaration
   class table_factor;
 
+  namespace impl {
+
+    /**
+     * Struct specifying which factors should be normalized more often.
+     * This struct's value is false by default.
+     * If this struct's value is true, then factors are normalized at these
+     * additional times:
+     *  - whenever factors are added,
+     *  - during the post-traversal of calibration.
+     */
+    template <typename F>
+    struct decomposable_extra_normalization {
+      static const bool value = false;
+    }; // struct decomposable_extra_normalization<F>
+
+    template <>
+    struct decomposable_extra_normalization<table_factor> {
+      static const bool value = true;
+    }; // struct decomposable_extra_normalization<table_factor>
+
+  } // namespace impl
+
   /**
    * A decomposable representation of a probability distribution.
    * Conceptually, decomposable model is a junction tree, in which
@@ -143,7 +165,12 @@ namespace sill {
 
       // Depending on the factor type, pre-normalize clique marginals
       // to avoid numerical issues.
-      possibly_prenormalize();
+      if (impl::decomposable_extra_normalization<F>::value) {
+        foreach(const vertex& v, vertices()) {
+          if (jt[v].is_normalizable())
+            jt[v].normalize();
+        }
+      }
 
       // Compute the separator marginals
       foreach(edge e, edges()) {
@@ -192,7 +219,12 @@ namespace sill {
 
       // Depending on the factor type, pre-normalize clique marginals
       // to avoid numerical issues.
-      possibly_prenormalize();
+      if (impl::decomposable_extra_normalization<F>::value) {
+        foreach(const vertex& v, vertices()) {
+          if (jt[v].is_normalizable())
+            jt[v].normalize();
+        }
+      }
 
       foreach(edge e, jt.edges())
         jt[e] = jt[e.source()].marginal(jt.separator(e));
@@ -1237,7 +1269,12 @@ namespace sill {
 
       // Depending on the factor type, pre-normalize clique marginals
       // to avoid numerical issues.
-      possibly_prenormalize();
+      if (impl::decomposable_extra_normalization<F>::value) {
+        foreach(const vertex& v, vertices()) {
+          if (jt[v].is_normalizable())
+            jt[v].normalize();
+        }
+      }
 
       // Recalibrate and renormalize the model.
       calibrate();
@@ -1323,7 +1360,12 @@ namespace sill {
 
       // Depending on the factor type, pre-normalize clique marginals
       // to avoid numerical issues.
-      possibly_prenormalize();
+      if (impl::decomposable_extra_normalization<F>::value) {
+        foreach(const vertex& v, vertices()) {
+          if (jt[v].is_normalizable())
+            jt[v].normalize();
+        }
+      }
 
       // Recalibrate and renormalize the model.
       calibrate();
@@ -1562,7 +1604,8 @@ namespace sill {
      */
     virtual void calibrate() {
       flow_functor flow_func_post;
-      flow_func_post.require_normalizable = false;
+      flow_func_post.require_normalizable =
+        impl::decomposable_extra_normalization<F>::value;
       flow_functor flow_func_pre;
       flow_func_pre.require_normalizable = true;
       mpp_traversal(*this, flow_func_post, flow_func_pre);
@@ -1598,13 +1641,6 @@ namespace sill {
      *     - Get marginal over [e] of [v].
      *  - During the pre-order traversal,
      */
-
-    //! Depending on the factor type, pre-normalize clique marginals
-    //! to avoid numerical issues.
-    void possibly_prenormalize() {
-      // Do nothing for general factor types.
-      // (Do not assume they will be normalizable before calibration.)
-    }
 
     // Protected member class definitions
     //==========================================================================
@@ -1880,10 +1916,6 @@ namespace sill {
     model.print(out);
     return out;
   }
-
-  // Specialization for table_factor.
-  template <>
-  void decomposable<table_factor>::possibly_prenormalize();
 
 } // namespace sill
 
