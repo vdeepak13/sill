@@ -425,7 +425,8 @@ namespace sill {
     vec means(zeros<vec>(dvector));
     vec std_devs(zeros<vec>(dvector));
     double total_ds_weight = 0;
-    vector_type tmpvec(zeros<vector_type>(dvector));
+    vector_type tmpvec;
+    tmpvec.zeros(dvector);
     for (size_t i = 0; i < nrecords; ++i) {
       means += weight(i) * vector_data[i];
       tmpvec = vector_data[i];
