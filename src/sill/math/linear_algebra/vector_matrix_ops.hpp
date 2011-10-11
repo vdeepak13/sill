@@ -152,6 +152,12 @@ namespace sill {
   rank_one_matrix<arma::Col<T>, sparse_vector<T,SizeType> >
   outer_product(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y);
 
+  //! Outer product
+  template <typename T, typename SizeType>
+  rank_one_matrix<sparse_vector<T,SizeType>, sparse_vector<T,SizeType> >
+  outer_product(const sparse_vector<T,SizeType>& x,
+                const sparse_vector<T,SizeType>& y);
+
   //! Store result of elem_mult(a,b) in c.
   template <typename T, typename SizeType>
   void elem_mult_out(const sparse_vector<T,SizeType>& a,
@@ -231,6 +237,11 @@ namespace sill {
   operator+=(arma::Mat<T>& A,
              const rank_one_matrix<arma::Col<T>,sparse_vector<T,SizeType> >& B);
 
+  //! Dense matrix += rank-one matrix
+  template <typename T, typename I>
+  arma::Mat<T>&
+  operator+=(arma::Mat<T>& A,
+             const rank_one_matrix<sparse_vector<T,I>,sparse_vector<T,I> >& B);
 
   //============================================================================
   // Vector-Scalar operations: implementations
@@ -398,10 +409,16 @@ namespace sill {
     return r;
   }
 
-  //! Outer product
   template <typename T, typename SizeType>
   rank_one_matrix<arma::Col<T>, sparse_vector<T,SizeType> >
   outer_product(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
+    return make_rank_one_matrix(x,y);
+  }
+
+  template <typename T, typename SizeType>
+  rank_one_matrix<sparse_vector<T,SizeType>, sparse_vector<T,SizeType> >
+  outer_product(const sparse_vector<T,SizeType>& x,
+                const sparse_vector<T,SizeType>& y) {
     return make_rank_one_matrix(x,y);
   }
 
@@ -640,6 +657,18 @@ namespace sill {
   (arma::Mat<double>& A,
    const rank_one_matrix<arma::Col<double>,sparse_vector<double,arma::u32> >&
    B);
+
+  template <typename T, typename I>
+  arma::Mat<T>&
+  operator+=(arma::Mat<T>& A,
+             const rank_one_matrix<sparse_vector<T,I>,sparse_vector<T,I> >& B) {
+    assert(A.n_rows == B.n_rows && A.n_cols == B.n_cols);
+    for (I kx = 0; kx < B.x().num_non_zeros(); ++kx)
+      for (I ky = 0; ky < B.y().num_non_zeros(); ++ky)
+        A(B.x().index(kx), B.y().index(ky))
+          += B.x().value(kx) * B.y().value(ky);
+    return A;
+  }
 
 } // namespace sill
 
