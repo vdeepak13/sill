@@ -145,10 +145,31 @@ namespace sill {
   // Methods for conditional models
   //============================================================================
 
+  namespace impl {
+
+    inline size_t
+    create_random_crf_choose_neighbor(const std::string& model_structure,
+                                      size_t i, boost::mt11213b& rng) {
+      if (model_structure == "chain") {
+        return i-1;
+      } else if (model_structure == "tree") {
+        return boost::uniform_int<int>(0,i-1)(rng);
+      } else if (model_structure == "star") {
+        return 0;
+      } else {
+        assert(false);
+      }
+    }
+
+  } // namespace impl
+
   /**
    * Creates models useful for doing tests with CRFs P(Y|X).
    * This generates a decomposable model for P(X) and a CRF for P(Y|X),
-   * where each of P(X), P(Y|X) can be chains or trees.
+   * where each of P(X), P(Y|X) can be chains, trees, or stars.
+   *
+   * The following description is written in terms of chains but applies
+   * to trees and stars.
    *
    * This may be used to create tractable or intractable models,
    * depending on how you use the resulting P(X), P(Y|X) and on the 'tractable'
@@ -158,7 +179,7 @@ namespace sill {
    *    Note that Q(Y,X) != P(X)P(Y|X) in general.  Sample from the tractable
    *    joint Q(Y,X).
    *  - For intractable P(Y,X): Set the 'tractable' parameter to true (in which
-   *    case P(X), P(Y|X) are both chains/trees following the same structure)
+   *    case P(X), P(Y|X) are both chains following the same structure)
    *    or to false (in which case P(X), P(Y|X) follow different structures).
    *    Sample x ~ P(X) and then sample y ~ P(Y|X=x).  Note the normalization
    *    constants make the joint model intractable in general.
@@ -180,7 +201,7 @@ namespace sill {
    *    to Y variables already in the tree with equal probability.
    *    (This is called 'non-preferential random attachment.')
    * For the intractable case, P(X) is built in a way analogous to that
-   * described above for chains/trees, and then P(Y|X) is too.  Each Y still
+   * described above for chains, and then P(Y|X) is too.  Each Y still
    * corresponds to a single X, but this correspondence does not match their
    * structures.  Instead, the correspondence is chosen via a random
    * permutation of X.
@@ -189,7 +210,7 @@ namespace sill {
    * X variable.
    * Note that other X variables may be in the Y variable's Markov blanket.
    *
-   * @param model_structure    "chain" or "tree"
+   * @param model_structure    "chain" / "tree" / "star"
    * @param n                  number of Y variables (and X variables)
    * @param tractable          If true, P(Y,X) will be tractable.
    * @param add_cross_factors  If true, add factors (Y_i, X_{i+1}), etc.
@@ -226,7 +247,8 @@ namespace sill {
     typedef typename CRFfactor::input_var_vector_type input_var_vector_type;
     typedef typename CRFfactor::output_factor_type output_factor_type;
 
-    assert((model_structure == "chain") || (model_structure == "tree"));
+    assert(model_structure == "chain" || model_structure == "tree" ||
+           model_structure == "star");
 
     boost::mt11213b rng(random_seed);
     Xmodel.clear();
@@ -268,8 +290,8 @@ namespace sill {
       // Add the rest.
       for (size_t i = 1; i < n; ++i) {
         // Choose which existing vertex j to attach to.
-        size_t j((model_structure == "chain") ?
-                 i-1 : boost::uniform_int<int>(0,i-1)(rng));
+        size_t j =
+          impl::create_random_crf_choose_neighbor(model_structure, i, rng);
         Xmodel *=
           XX_factor_func.generate_marginal(make_domain(Xvars[i],Xvars[j]));
         YgivenXmodel.add_factor
@@ -288,8 +310,8 @@ namespace sill {
       // First, create P(X).
       for (size_t i(1); i < n; ++i) {
         // Choose which existing vertex j to attach to.
-        size_t j((model_structure == "chain") ?
-                 i-1 : boost::uniform_int<int>(0,i-1)(rng));
+        size_t j =
+          impl::create_random_crf_choose_neighbor(model_structure, i, rng);
         Xmodel *=
           XX_factor_func.generate_marginal(make_domain(Xvars[i], Xvars[j]));
       }
@@ -304,8 +326,8 @@ namespace sill {
         (YX_factor_func.generate_conditional(Yvars[0], Xvars[xind[0]]));
       for (size_t i(1); i < n; ++i) {
         // Choose which existing Y_j to attach to.
-        size_t j((model_structure == "chain") ?
-                 i-1 : boost::uniform_int<int>(0,i-1)(rng));
+        size_t j =
+          impl::create_random_crf_choose_neighbor(model_structure, i, rng);
         YgivenXmodel.add_factor
           (YX_factor_func.generate_conditional(Yvars[i], Xvars[xind[i]]));
         YgivenXmodel.add_factor(YY_factor_func.generate_marginal

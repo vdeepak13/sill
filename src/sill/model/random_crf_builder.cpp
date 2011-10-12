@@ -21,7 +21,7 @@ namespace sill {
     sub_desc1.add_options()
       ("model_structure",
        po::value<std::string>(&model_structure)->default_value("chain"),
-       "Model structure: chain/tree")
+       "Model structure: chain/tree/star")
       ("factor_type",
        po::value<std::string>(&factor_type)->default_value("table"),
        "Factor type: table/gaussian. This implicitly specifies the variable type.")
@@ -62,7 +62,8 @@ namespace sill {
 
   void random_crf_builder::check() const {
     assert(factor_type == "table" || factor_type == "gaussian");
-    assert(model_structure == "chain" || model_structure == "tree");
+    assert(model_structure == "chain" || model_structure == "tree" ||
+           model_structure == "star");
     assert(model_size != 0);
     YY_rtcff_builder.check();
     YX_rtcff_builder.check();
