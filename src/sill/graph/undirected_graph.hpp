@@ -133,6 +133,7 @@ namespace sill {
     //! Assignment
     undirected_graph& operator=(const undirected_graph& g) {
       if (this == &g) return *this;
+      free_edge_data();
       data_map = g.data_map;
       edge_count = g.edge_count;
       foreach(edge e, edges()) {
