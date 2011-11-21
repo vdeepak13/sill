@@ -789,7 +789,6 @@ namespace sill {
         }
         if (mlr.weights_.v.size() != 0) {
           // tmpvec += weights_.v * r.vector();
-          const T* weights_v_it = mlr.weights_.v.begin();
           for (I i = 0; i < mlr.tmpvec.size(); ++i) {
             T dot_val = 0;
             for (I k = 0; k < r.vector().num_non_zeros(); ++k) {
@@ -804,7 +803,6 @@ namespace sill {
               dot_val += weights_v_i_j * r.vector().value(k);
             }
             mlr.tmpvec[i] += dot_val;
-            ++weights_v_it;
           }
         }
         mlr.finish_probabilities(mlr.tmpvec);

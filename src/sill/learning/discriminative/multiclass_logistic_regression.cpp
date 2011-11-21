@@ -117,7 +117,7 @@ namespace sill {
     sub_desc1.add_options()
       ("regularization",
        po::value<size_t>(&(mlr_params.regularization))->default_value(2),
-       "Regularization: 0 (none), 2 (L2).")
+       "Regularization: 0 (none), 1 (L1), 2 (L2).")
       ("lambda",
        po::value<double>(&(mlr_params.lambda))->default_value(.00001),
        "Regularization parameter.")

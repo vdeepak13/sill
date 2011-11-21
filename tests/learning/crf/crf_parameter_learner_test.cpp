@@ -4,8 +4,6 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/log_reg_crf_factor.hpp>
-#include <sill/factor/table_crf_factor.hpp>
 #include <sill/learning/crf/crf_parameter_learner_builder.hpp>
 #include <sill/learning/crf/crf_validation_functor.hpp>
 #include <sill/learning/crf/pwl_crf_parameter_learner.hpp>
@@ -15,7 +13,7 @@
 #include <sill/learning/dataset/generate_datasets.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/model/model_products.hpp>
-#include <sill/model/random.hpp>
+#include <sill/model/random_crf_builder.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -114,22 +112,21 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
        << test_ll << endl;
 } // run_test
 
+
 int main(int argc, char** argv) {
 
   using namespace sill;
   using namespace std;
 
   // Parse the command-line parameters
-  //  Dataset parameters
+  //  Model type
+  random_crf_builder crf_builder;
+  //  Dataset
   size_t ntrain;
   size_t ntest;
-  size_t model_size;
-  std::string model_type;
-  std::string factor_type;
-  //  CRF parameter learner parameters
+  //  CRF parameter learner
   crf_parameter_learner_builder cpl_builder;
-  //  CV parameters
-  vec fixed_lambda; // if not doing CV
+  //  CV
   crossval_builder cv_builder;
   //  Other parameters
   bool init_with_pwl;
@@ -146,14 +143,7 @@ int main(int argc, char** argv) {
     ("ntrain", po::value<size_t>(&ntrain)->default_value(10),
      "Number of training examples")
     ("ntest", po::value<size_t>(&ntest)->default_value(100),
-     "Number of test examples")
-    ("model_size", po::value<size_t>(&model_size)->default_value(10),
-     "Number of Y (and X) variables")
-    ("model_type", po::value<std::string>(&model_type)->default_value("chain"),
-     "Model type: chain, tree.")
-    ("factor_type",
-     po::value<std::string>(&factor_type)->default_value("table"),
-     "Factor type: table, gaussian.");
+     "Number of test examples");
   //  Other parameters
   desc.add_options()
     ("init_with_pwl",
@@ -163,6 +153,7 @@ int main(int argc, char** argv) {
      po::value<unsigned>(&random_seed)->default_value(time(NULL)),
      "Random seed. (default=time)");
   //  CRF parameter learner parameters
+  crf_builder.add_options(desc);
   cpl_builder.add_options(desc);
   cv_builder.add_options(desc);
 
@@ -172,21 +163,14 @@ int main(int argc, char** argv) {
   po::notify(vm);
 
   // Check options
-  if (vm.count("help")) {
-    cout << desc << endl;
-    return 1;
-  }
-  //  Dataset parameters
-  if (ntrain == 0 || ntest == 0 || model_size == 0 ||
-      !(model_type == "chain" || model_type == "tree") ||
-      !(factor_type == "table" || factor_type == "gaussian")) {
+  if (vm.count("help") ||
+      ntrain == 0 || ntest == 0) {
     cout << desc << endl;
     return 1;
   }
   //  CRF parameter learner parameters
   crf_parameter_learner_parameters cpl_params(cpl_builder.get_parameters());
   cpl_params.check();
-  fixed_lambda = cv_builder.fixed_vals;
 
   boost::mt11213b rng(random_seed);
   boost::uniform_int<int> unif_int(0,std::numeric_limits<int>::max());
@@ -195,43 +179,34 @@ int main(int argc, char** argv) {
 
   // Create a model
   universe u;
-  if (factor_type == "table") {
+  if (crf_builder.factor_type == "table") {
     decomposable<table_factor> YXmodel;
     crf_model<table_crf_factor> YgivenXmodel;
-    boost::tuple<finite_var_vector, finite_var_vector,
-      std::map<finite_variable*, copy_ptr<finite_domain> > >
-      Y_X_and_map(create_random_crf(YXmodel, YgivenXmodel, model_size, 2, u,
-                                    model_type, "associative", 2, 2, 2,
-                                    false, unif_int(rng)));
+    finite_var_vector Y, X;
+    std::map<finite_variable*, copy_ptr<finite_domain> > Y2X_map;
+    crf_builder.create_model(YXmodel, YgivenXmodel, Y, X, Y2X_map,
+                             u, unif_int(rng));
     model_product_inplace(YgivenXmodel, YXmodel);
-    finite_var_vector Y(Y_X_and_map.get<0>());
-    finite_var_vector X(Y_X_and_map.get<1>());
-    finite_var_vector YX(Y);
-    YX.insert(YX.end(), X.begin(), X.end());
+    finite_var_vector YX(sill::concat(Y,X));
     datasource_info_type ds_info(YX);
 
     run_test<table_crf_factor>
-      (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, fixed_lambda, rng,
-       cpl_params, cv_builder, init_with_pwl);
-  } else if (factor_type == "gaussian") {
+      (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, cv_builder.fixed_vals,
+       rng, cpl_params, cv_builder, init_with_pwl);
+  } else if (crf_builder.factor_type == "gaussian") {
     decomposable<canonical_gaussian> YXmodel;
     crf_model<gaussian_crf_factor> YgivenXmodel;
-    boost::tuple<vector_var_vector, vector_var_vector,
-      std::map<vector_variable*, copy_ptr<vector_domain> > >
-      Y_X_and_map(create_random_gaussian_crf
-                  (YXmodel, YgivenXmodel, model_size, u,
-                   model_type, 2, 2, 1, .3, .25, .1,
-                   false, unif_int(rng)));
+    vector_var_vector Y, X;
+    std::map<vector_variable*, copy_ptr<vector_domain> > Y2X_map;
+    crf_builder.create_model(YXmodel, YgivenXmodel, Y, X, Y2X_map,
+                             u, unif_int(rng));
     model_product_inplace(YgivenXmodel, YXmodel);
-    vector_var_vector Y(Y_X_and_map.get<0>());
-    vector_var_vector X(Y_X_and_map.get<1>());
-    vector_var_vector YX(Y);
-    YX.insert(YX.end(), X.begin(), X.end());
+    vector_var_vector YX(sill::concat(Y,X));
     datasource_info_type ds_info(YX);
 
     run_test<gaussian_crf_factor>
-      (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, fixed_lambda, rng,
-       cpl_params, cv_builder, init_with_pwl);
+      (YgivenXmodel, YXmodel, ds_info, ntrain, ntest, cv_builder.fixed_vals,
+       rng, cpl_params, cv_builder, init_with_pwl);
   } else {
     assert(false);
   }
