@@ -19,6 +19,7 @@
  *  - Matrix-Scalar
  *  - Matrix-Vector
  *  - Matrix-Matrix
+ *  - Conversions
  */
 
 namespace sill {
@@ -242,6 +243,15 @@ namespace sill {
   arma::Mat<T>&
   operator+=(arma::Mat<T>& A,
              const rank_one_matrix<sparse_vector<T,I>,sparse_vector<T,I> >& B);
+
+  /*****************************************************************************
+   * Conversions
+   *  - coo_matrix to arma::Mat
+   ****************************************************************************/
+
+  //! coo_matrix to arma::Mat
+  template <typename T, typename I, typename T2>
+  void convert(const coo_matrix<T,I>& from, arma::Mat<T2>& to);
 
   //============================================================================
   // Vector-Scalar operations: implementations
@@ -668,6 +678,18 @@ namespace sill {
         A(B.x().index(kx), B.y().index(ky))
           += B.x().value(kx) * B.y().value(ky);
     return A;
+  }
+
+  //============================================================================
+  // Conversions: implementations
+  //============================================================================
+
+  template <typename T, typename I, typename T2>
+  void convert(const coo_matrix<T,I>& from, arma::Mat<T2>& to) {
+    to.zeros(from.num_rows(), from.num_cols());
+    for (size_t k = 0; k < from.num_non_zeros(); ++k) {
+      to(from.row_index(k), from.col_index(k)) = from.value(k);
+    }
   }
 
 } // namespace sill

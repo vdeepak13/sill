@@ -2,6 +2,7 @@
 #ifndef _SILL_MATRIX_BASE_HPP_
 #define _SILL_MATRIX_BASE_HPP_
 
+#include <sill/base/string_functions.hpp>
 #include <sill/math/linear_algebra/linear_algebra_base.hpp>
 #include <sill/serialization/serialize.hpp>
 
