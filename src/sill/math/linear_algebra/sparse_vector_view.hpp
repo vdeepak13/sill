@@ -165,6 +165,27 @@ namespace sill {
     // Utilities
     //==========================================================================
 
+    // Methods to support optimization routines
+    //==========================================================================
+
+    //! Returns the L1 norm.
+    value_type L1norm() const {
+      // TO DO: Use BLAS.
+      value_type val = 0;
+      for (size_type i = 0; i < k_; ++i)
+        val += fabs(values_[i]);
+      return val;
+    }
+
+    //! Returns the L2 norm.
+    value_type L2norm() const {
+      // TO DO: Use BLAS.
+      value_type val = 0;
+      for (size_type i = 0; i < k_; ++i)
+        val += values_[i] * values_[i];
+      return sqrt(val);
+    }
+
     // Protected data and methods
     //==========================================================================
   protected:

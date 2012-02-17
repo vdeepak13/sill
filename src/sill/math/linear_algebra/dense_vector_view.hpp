@@ -89,6 +89,24 @@ namespace sill {
       return values_ + (n_ * pitch_);
     }
 
+    // Operations
+    //==========================================================================
+
+    //! Multiplication with a scalar.
+    dense_vector_view& operator*=(T val) {
+      for (size_type i = 0; i < n_ * pitch_; i += pitch_)
+        values_[i] *= val;
+      return *this;
+    }
+
+    //! Division by a scalar.
+    dense_vector_view& operator/=(T val) {
+      assert(val != 0);
+      for (size_type i = 0; i < n_ * pitch_; i += pitch_)
+        values_[i] /= val;
+      return *this;
+    }
+
     // Utilities
     //==========================================================================
 

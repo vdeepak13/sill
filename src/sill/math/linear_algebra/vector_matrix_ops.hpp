@@ -253,6 +253,7 @@ namespace sill {
   template <typename T, typename I, typename T2>
   void convert(const coo_matrix<T,I>& from, arma::Mat<T2>& to);
 
+
   //============================================================================
   // Vector-Scalar operations: implementations
   //============================================================================
