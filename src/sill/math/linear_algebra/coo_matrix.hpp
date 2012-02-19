@@ -71,7 +71,7 @@ namespace sill {
     //! Constructor from another type.
     template <typename OtherT, typename OtherSizeType>
     explicit coo_matrix(const coo_matrix<OtherT,OtherSizeType>& other)
-      : base(other.n_rows(), other.n_cols()), k_(other.num_non_zeros()),
+      : base(other.n_rows, other.n_cols), k_(other.num_non_zeros()),
         row_indices_(other.row_indices()), col_indices_(other.col_indices()),
         values_(other.values()) {
     }
@@ -79,7 +79,7 @@ namespace sill {
     //! Constructor from another type.
     template <typename OtherT, typename OtherSizeType>
     explicit coo_matrix(const csc_matrix<OtherT,OtherSizeType>& other)
-      : base(other.n_rows(), other.n_cols()), k_(other.num_non_zeros()),
+      : base(other.n_rows, other.n_cols), k_(other.num_non_zeros()),
         row_indices_(k_), col_indices_(k_), values_(k_) {
       this->operator=(other);
     }
@@ -89,11 +89,11 @@ namespace sill {
     coo_matrix& operator=(const csc_matrix<OtherT,OtherSizeType>& other) {
       base::operator=(other);
       k_ = other.num_non_zeros();
-      row_indices_.resize(k_);
-      col_indices_.resize(k_);
-      values_.resize(k_);
+      row_indices_.set_size(k_);
+      col_indices_.set_size(k_);
+      values_.set_size(k_);
       size_type l(0);
-      for (size_type j(0); j < other.n_cols(); ++j) {
+      for (size_type j(0); j < other.n_cols; ++j) {
         const sparse_vector_view<OtherT,OtherSizeType>
           other_col_j(other.col(j));
         for (size_type i(0); i < other_col_j.num_non_zeros(); ++i) {
@@ -272,7 +272,8 @@ namespace sill {
 
     //! Sets this matrix to be its own transpose.
     void set_transpose() {
-      row_indices().swap(col_indices());
+      // TO DO: Implement a real swap function for armadillo.
+      std::swap(row_indices(), col_indices());
       std::swap(n_rows, n_cols);
     }
 
@@ -290,7 +291,7 @@ namespace sill {
 
     //! Return a vector of the number of non-zeros in each column.
     arma::Col<size_type> non_zeros_per_column() const {
-      arma::Col<size_type> sizes(n_cols(), 0);
+      arma::Col<size_type> sizes(n_cols, 0);
       for (size_type k(0); k < num_non_zeros(); ++k)
         ++sizes[col_index(k)];
       return sizes;
@@ -310,7 +311,7 @@ namespace sill {
      * @param perm  Permutation: perm[i] = new column index for column i
      */
     void permute_columns(const arma::Col<size_type>& perm) {
-      if (perm.size() != n_cols()) {
+      if (perm.size() != n_cols) {
         throw std::runtime_error
           (std::string("coo_matrix<T>::permute_columns(perm)") +
            " was given a permutation of an incorrect size.");
@@ -340,7 +341,7 @@ namespace sill {
         carry = next_carry;
       }
       permute_columns(col_sizes);
-      unsafe_set_mnk(n_rows(), col_sizes.last() + carry, num_non_zeros());
+      unsafe_set_mnk(n_rows, col_sizes.last() + carry, num_non_zeros());
       return col_sizes;
     }
 

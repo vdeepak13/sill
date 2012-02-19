@@ -20,6 +20,7 @@
  *  - Matrix-Vector
  *  - Matrix-Matrix
  *  - Conversions
+ *  - Matrix Ops
  */
 
 namespace sill {
@@ -227,6 +228,12 @@ namespace sill {
   gemv(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v,
        arma::Col<T>& out);
 
+  //! Dense vector += alpha * csc_matrix  *  dense vector
+  template <typename T, typename SizeType>
+  void
+  gemv(T alpha, const csc_matrix<T,SizeType>& m, const arma::Col<T>& v, 
+       arma::Col<T>& out);
+
   /*****************************************************************************
    * Matrix-Matrix operations
    *  - operator+=
@@ -253,6 +260,15 @@ namespace sill {
   template <typename T, typename I, typename T2>
   void convert(const coo_matrix<T,I>& from, arma::Mat<T2>& to);
 
+  /*****************************************************************************
+   * Matrix Ops
+   *  - normalize_columns
+   ****************************************************************************/
+
+  //! Normalize the columns of A so that each has L2 norm of 1.
+  //! Any all-zero columns remain all-zero.
+  template <typename T, typename I>
+  void normalize_columns(csc_matrix<T,I>& A);
 
   //============================================================================
   // Vector-Scalar operations: implementations
@@ -646,6 +662,22 @@ namespace sill {
       (m, v, out);
   }
 
+  template <typename T, typename I>
+  void
+  gemv(T alpha, const csc_matrix<T,I>& m, const arma::Col<T>& v, 
+       arma::Col<T>& out) {
+    ASSERT_EQ(m.n_cols, v.size());
+    ASSERT_EQ(m.n_rows, out.size());
+    for (I j = 0; j < m.n_cols; ++j) {
+      dense_vector_view<I,I> row_indices(m.row_indices(j));
+      dense_vector_view<T,I> values(m.values(j));
+      T tmp = alpha * v[j];
+      for (I k = 0; k < row_indices.size(); ++k) {
+        out[row_indices[k]] += tmp * values[k];
+      }
+    }
+  }
+
   //============================================================================
   // Matrix-Matrix operations: implementations
   //============================================================================
@@ -690,6 +722,20 @@ namespace sill {
     to.zeros(from.num_rows(), from.num_cols());
     for (size_t k = 0; k < from.num_non_zeros(); ++k) {
       to(from.row_index(k), from.col_index(k)) = from.value(k);
+    }
+  }
+
+  //============================================================================
+  // Matrix Ops: implementations
+  //============================================================================
+
+  template <typename T, typename I>
+  void normalize_columns(csc_matrix<T,I>& A) {
+    for (size_t j = 0; j < A.n_cols; ++j) {
+      T z = sqr(norm(A.col(j), 2));
+      for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k) {
+        A.value(k) /= z;
+      }
     }
   }
 

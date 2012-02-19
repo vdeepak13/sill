@@ -321,6 +321,11 @@ namespace sill {
       return values_[i];
     }
 
+    //! Value for the i^th non-zero element.
+    value_type& value(size_type i) {
+      return values_[i];
+    }
+
     //! Column offsets (length n+1)
     //!  col_offsets_[i] = offset in row_indices_ and values_ for column i
     //!  col_offsets_[n] = number of non-zeros
@@ -361,12 +366,27 @@ namespace sill {
     // Operations
     //==========================================================================
 
+    vec operator*(const vec& a) const {
+      vec b(n_rows);
+      b.zeros();
+      gemv(1, *this, a, b);
+      return b;
+    }
+
     //! Returns the transpose of the matrix.
     csc_matrix transpose() const {
       // TO DO: Do more efficiently.
       coo_matrix<value_type, size_type> coomat(*this);
       coomat.set_transpose();
       return csc_matrix<value_type, size_type>(coomat);
+    }
+
+    //! Sets this matrix to be its transpose.
+    void set_transpose() {
+      // TO DO: Do more efficiently.
+      coo_matrix<value_type, size_type> coomat(*this);
+      coomat.set_transpose();
+      *this = coomat;
     }
 
     /**
