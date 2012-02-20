@@ -453,11 +453,13 @@ namespace sill {
   //============================================================================
 
   //! Dense vector += dense matrix * dense vector
+  /*
   template <typename T>
   void
   gemv(const arma::Mat<T>& m, const arma::Col<T>& v, arma::Col<T>& out) {
     out += m * v;
   }
+  */
 
 } // namespace sill
 

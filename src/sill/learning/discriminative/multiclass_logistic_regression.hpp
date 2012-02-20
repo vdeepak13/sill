@@ -1564,7 +1564,7 @@ namespace sill {
       }
     }
     if (w_vec_.size() != 0)
-      sill::gemv(w_vec_, example.vector(), v);
+      sill::gemv('n', 1.0, w_vec_, example.vector(), 1.0, v);
 //      v += w_vec_ * example.vector();
     finish_probabilities(v);
   }

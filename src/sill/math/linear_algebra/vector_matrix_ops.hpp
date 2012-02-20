@@ -20,6 +20,7 @@
  *  - Matrix-Vector
  *  - Matrix-Matrix
  *  - Conversions
+ *  - Vector Ops
  *  - Matrix Ops
  */
 
@@ -33,11 +34,23 @@ namespace sill {
 
   //! const * sparse vector --> sparse vector
   template <typename T, typename SizeType>
-  sparse_vector<T,SizeType> operator*(T c, const sparse_vector<T,SizeType>& v);
+  sparse_vector<T,SizeType>
+  operator*(T c, const sparse_vector<T,SizeType>& v);
 
   //! const * sparse vector --> sparse vector
   template <typename T, typename SizeType>
-  sparse_vector<T,SizeType> operator*(const sparse_vector<T,SizeType>& v, T c);
+  sparse_vector<T,SizeType>
+  operator*(const sparse_vector<T,SizeType>& v, T c);
+
+  //! const * sparse vector view --> sparse vector
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType>
+  operator*(T c, const sparse_vector_view<T,SizeType>& v);
+
+  //! const * sparse vector view --> sparse vector
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType>
+  operator*(const sparse_vector_view<T,SizeType>& v, T c);
 
   //! Vector summation.
   template <typename T, typename SizeType>
@@ -83,6 +96,8 @@ namespace sill {
 
   /*****************************************************************************
    * Vector-Vector operations
+   *  - operator+
+   *  - operator-
    *  - operator+=
    *  - operator-=
    *  - operator/=
@@ -93,6 +108,27 @@ namespace sill {
    *  - elem_mult_out
    *  - elem_square_out
    ****************************************************************************/
+
+
+  //! Addition
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator+(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y);
+
+  //! Addition
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator+(const sparse_vector<T,SizeType>& x, const arma::Col<T>& y);
+
+  //! Subtraction
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator-(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y);
+
+  //! Subtraction
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator-(const sparse_vector<T,SizeType>& x, const arma::Col<T>& y);
 
   //! Addition
   template <typename T, typename SizeType>
@@ -138,7 +174,15 @@ namespace sill {
 
   //! Dot product.
   template <typename T, typename SizeType>
+  T dot(const sparse_vector<T,SizeType>& y, const arma::Col<T>& x);
+
+  //! Dot product.
+  template <typename T, typename SizeType>
   T dot(const arma::Col<T>& x, const sparse_vector_view<T,SizeType>& y);
+
+  //! Dot product.
+  template <typename T, typename SizeType>
+  T dot(const sparse_vector_view<T,SizeType>& y, const arma::Col<T>& x);
 
   //! Dot product.
   template <typename T, typename SizeType>
@@ -216,23 +260,37 @@ namespace sill {
   arma::Col<T>
   operator*(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v);
 
-  //! Dense vector += dense matrix  *  sparse vector
+  //! Dense vector y = alpha * dense matrix  *  sparse vector + beta * y
   template <typename T, typename SizeType>
   void
-  gemv(const arma::Mat<T>& m, const sparse_vector<T,SizeType>& v,
-       arma::Col<T>& out);
+  gemv(char trans,
+       T alpha, const arma::Mat<T>& m, const sparse_vector<T,SizeType>& v,
+       T beta, arma::Col<T>& y);
 
-  //! Dense vector += dense matrix  *  sparse vector
+  //! Dense vector y = alpha * dense matrix  *  sparse vector + beta * y
   template <typename T, typename SizeType>
   void
-  gemv(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v,
-       arma::Col<T>& out);
+  gemv(char trans,
+       T alpha, const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v,
+       T beta, arma::Col<T>& y);
 
-  //! Dense vector += alpha * csc_matrix  *  dense vector
+  //! Dense vector y = alpha * csc_matrix  *  dense vector + beta * y
+  //! @param  trans   If trans == 'T','t','C','c' then use A'.
+  //!                 If trans == 'n','N', use A.
   template <typename T, typename SizeType>
   void
-  gemv(T alpha, const csc_matrix<T,SizeType>& m, const arma::Col<T>& v, 
-       arma::Col<T>& out);
+  gemv(char trans,
+       T alpha, const csc_matrix<T,SizeType>& A, const arma::Col<T>& v,
+       T beta, arma::Col<T>& y);
+
+  //! Dense vector y = alpha * dense matrix  *  dense vector + beta * y
+  //! @param  trans   If trans == 'T','t','C','c' then use A'.
+  //!                 If trans == 'n','N', use A.
+  template <typename T>
+  void
+  gemv(char trans,
+       T alpha, const arma::Mat<T>& A, const arma::Col<T>& v,
+       T beta, arma::Col<T>& y);
 
   /*****************************************************************************
    * Matrix-Matrix operations
@@ -261,6 +319,23 @@ namespace sill {
   void convert(const coo_matrix<T,I>& from, arma::Mat<T2>& to);
 
   /*****************************************************************************
+   * Vector Ops
+   *  - trans
+   ****************************************************************************/
+
+  //! Transpose does nothing.
+  //! @todo This is a temp fix for compatibility with Armadillo. Our sparse
+  //!       vectors do not have col/row vector distinctions.
+  template <typename T, typename I>
+  sparse_vector<T,I> trans(const sparse_vector<T,I>& v);
+
+  //! Transpose does nothing.
+  //! @todo This is a temp fix for compatibility with Armadillo. Our sparse
+  //!       vectors do not have col/row vector distinctions.
+  template <typename T, typename I>
+  sparse_vector<T,I> trans(const sparse_vector_view<T,I>& v);
+
+  /*****************************************************************************
    * Matrix Ops
    *  - normalize_columns
    ****************************************************************************/
@@ -270,19 +345,38 @@ namespace sill {
   template <typename T, typename I>
   void normalize_columns(csc_matrix<T,I>& A);
 
+
   //============================================================================
   // Vector-Scalar operations: implementations
   //============================================================================
 
   template <typename T, typename SizeType>
-  sparse_vector<T,SizeType> operator*(T c, const sparse_vector<T,SizeType>& v) {
+  sparse_vector<T,SizeType>
+  operator*(T c, const sparse_vector<T,SizeType>& v) {
     sparse_vector<T,SizeType> r(v);
     r *= c;
     return r;
   }
 
   template <typename T, typename SizeType>
-  sparse_vector<T,SizeType> operator*(const sparse_vector<T,SizeType>& v, T c) {
+  sparse_vector<T,SizeType>
+  operator*(const sparse_vector<T,SizeType>& v, T c) {
+    sparse_vector<T,SizeType> r(v);
+    r *= c;
+    return r;
+  }
+
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType>
+  operator*(T c, const sparse_vector_view<T,SizeType>& v) {
+    sparse_vector<T,SizeType> r(v);
+    r *= c;
+    return r;
+  }
+
+  template <typename T, typename SizeType>
+  sparse_vector<T,SizeType>
+  operator*(const sparse_vector_view<T,SizeType>& v, T c) {
     sparse_vector<T,SizeType> r(v);
     r *= c;
     return r;
@@ -327,6 +421,37 @@ namespace sill {
   //============================================================================
   // Vector-Vector operations: implementations
   //============================================================================
+
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator+(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
+    arma::Col<T> z(x);
+    z += y;
+    return z;
+  }
+
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator+(const sparse_vector<T,SizeType>& x, const arma::Col<T>& y) {
+    return y + x;
+  }
+
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator-(const arma::Col<T>& x, const sparse_vector<T,SizeType>& y) {
+    arma::Col<T> z(x);
+    z -= y;
+    return z;
+  }
+
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator-(const sparse_vector<T,SizeType>& x, const arma::Col<T>& y) {
+    arma::Col<T> z(y);
+    z -= x;
+    z *= -1;
+    return z;
+  }
 
   template <typename T, typename SizeType>
   arma::Col<T>&
@@ -408,7 +533,25 @@ namespace sill {
   }
 
   template <typename T, typename SizeType>
+  T dot(const sparse_vector<T,SizeType>& y, const arma::Col<T>& x) {
+    assert(x.size() == y.size());
+    T r = 0;
+    for (SizeType i = 0; i < y.num_non_zeros(); ++i)
+      r += x[y.index(i)] * y.value(i);
+    return r;
+  }
+
+  template <typename T, typename SizeType>
   T dot(const arma::Col<T>& x, const sparse_vector_view<T,SizeType>& y) {
+    assert(x.size() == y.size());
+    T r = 0;
+    for (SizeType i = 0; i < y.num_non_zeros(); ++i)
+      r += x[y.index(i)] * y.value(i);
+    return r;
+  }
+
+  template <typename T, typename SizeType>
+  T dot(const sparse_vector_view<T,SizeType>& y, const arma::Col<T>& x) {
     assert(x.size() == y.size());
     T r = 0;
     for (SizeType i = 0; i < y.num_non_zeros(); ++i)
@@ -607,7 +750,9 @@ namespace sill {
     */
 
     /**
-     * Internal gemv (dense vector += dense matrix * sparse vector).
+     * Internal gemv:
+     *  dense vector y = alpha * dense matrix * sparse vector + beta * y.
+     *
      * If A has size [m, n] and x has size n and k non-zeros,
      * this does m * k multiplications.
      *
@@ -616,20 +761,51 @@ namespace sill {
      */
     template <typename InVecType, typename T, typename SizeType>
     inline void
-    gemv_densemat_sparsevec_(const arma::Mat<T>& A, const InVecType& x,
-                             arma::Col<T>& y) {
-      //      assert(A.n_cols == x.size());
-      ASSERT_EQ(A.n_cols, x.size());
-      assert(y.size() == A.n_rows);
+    gemv_densemat_sparsevec_(char trans,
+                             T alpha, const arma::Mat<T>& A, const InVecType& x,
+                             T beta, arma::Col<T>& y) {
       const T* A_it = A.begin();
-      for (SizeType i = 0; i < y.size(); ++i) {
-        y[i] += dot(dense_vector_view<T,SizeType>(A.n_cols, A_it, A.n_rows),
-                    x);
-        ++A_it;
+
+      switch (trans) {
+      case 'n': case 'N':
+        ASSERT_EQ(A.n_cols, x.size());
+        ASSERT_EQ(A.n_rows, y.size());
+        if (beta != 1) {
+          if (beta == 0)
+            y.zeros();
+          else
+            y *= beta;
+        }
+        for (SizeType i = 0; i < y.size(); ++i) {
+          y[i] +=
+            alpha * dot(dense_vector_view<T,SizeType>(A.n_cols, A_it, A.n_rows),
+                        x);
+          ++A_it;
+        }
+        break;
+      case 't': case 'T': case 'c': case 'C':
+        ASSERT_EQ(A.n_rows, x.size());
+        ASSERT_EQ(A.n_cols, y.size());
+        if (beta != 1) {
+          if (beta == 0)
+            y.zeros();
+          else
+            y *= beta;
+        }
+        for (SizeType i = 0; i < y.size(); ++i) {
+          y[i] +=
+            alpha * dot(dense_vector_view<T,SizeType>(A.n_rows, A_it, 1),
+                        x);
+          A_it += A.n_cols;
+        }
+        break;
+      default:
+        assert(false);
       }
-    }
+    } // gemv_densemat_sparsevec_
 
   } // namespace impl
+
 
   template <typename T, typename SizeType>
   arma::Col<T> operator*(const arma::Mat<T>& A, const sparse_vector<T,SizeType>& x) {
@@ -648,33 +824,71 @@ namespace sill {
 
   template <typename T, typename SizeType>
   void
-  gemv(const arma::Mat<T>& m, const sparse_vector<T,SizeType>& v,
-       arma::Col<T>& out) {
+  gemv(char trans,
+       T alpha, const arma::Mat<T>& m, const sparse_vector<T,SizeType>& v,
+       T beta, arma::Col<T>& y) {
     impl::gemv_densemat_sparsevec_<sparse_vector<T,SizeType>,T,SizeType>
-      (m, v, out);
+      (trans, alpha, m, v, beta, y);
   }
 
   template <typename T, typename SizeType>
   void
-  gemv(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v,
-       arma::Col<T>& out) {
+  gemv(char trans,
+       T alpha, const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v,
+       T beta, arma::Col<T>& y) {
     impl::gemv_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>
-      (m, v, out);
+      (trans, alpha, m, v, beta, y);
   }
 
   template <typename T, typename I>
   void
-  gemv(T alpha, const csc_matrix<T,I>& m, const arma::Col<T>& v, 
-       arma::Col<T>& out) {
-    ASSERT_EQ(m.n_cols, v.size());
-    ASSERT_EQ(m.n_rows, out.size());
-    for (I j = 0; j < m.n_cols; ++j) {
-      dense_vector_view<I,I> row_indices(m.row_indices(j));
-      dense_vector_view<T,I> values(m.values(j));
-      T tmp = alpha * v[j];
-      for (I k = 0; k < row_indices.size(); ++k) {
-        out[row_indices[k]] += tmp * values[k];
+  gemv(char trans,
+       T alpha, const csc_matrix<T,I>& A, const arma::Col<T>& v, 
+       T beta, arma::Col<T>& out) {
+    switch (trans) {
+    case 'n': case 'N':
+      ASSERT_EQ(A.n_cols, v.size());
+      ASSERT_EQ(A.n_rows, out.size());
+      if (beta != 1)
+        out *= beta;
+      for (I j = 0; j < A.n_cols; ++j) {
+        dense_vector_view<I,I> row_indices(A.row_indices(j));
+        dense_vector_view<T,I> values(A.values(j));
+        T tmp = alpha * v[j];
+        for (I k = 0; k < row_indices.size(); ++k) {
+          out[row_indices[k]] += tmp * values[k];
+        }
       }
+      break;
+    case 't': case 'T': case 'c': case 'C':
+      ASSERT_EQ(A.n_rows, v.size());
+      ASSERT_EQ(A.n_cols, out.size());
+      if (beta != 1)
+        out *= beta;
+      for (I j = 0; j < A.n_cols; ++j) {
+        out[j] += alpha * dot(A.col(j), v);
+      }
+      break;
+    default:
+      assert(false);
+    }
+  }
+
+  template <typename T>
+  void
+  gemv(char trans,
+       T alpha, const arma::Mat<T>& A, const arma::Col<T>& v,
+       T beta, arma::Col<T>& y) {
+    y *= beta;
+    switch (trans) {
+    case 'n': case 'N':
+      y += alpha * A * v;
+      break;
+    case 't': case 'T': case 'c': case 'C':
+      y += alpha * arma::trans(A) * v;
+      break;
+    default:
+      assert(false);
     }
   }
 
@@ -723,6 +937,20 @@ namespace sill {
     for (size_t k = 0; k < from.num_non_zeros(); ++k) {
       to(from.row_index(k), from.col_index(k)) = from.value(k);
     }
+  }
+
+  //============================================================================
+  // Vector Ops: implementations
+  //============================================================================
+
+  template <typename T, typename I>
+  sparse_vector<T,I> trans(const sparse_vector<T,I>& v) {
+    return v;
+  }
+
+  template <typename T, typename I>
+  sparse_vector<T,I> trans(const sparse_vector_view<T,I>& v) {
+    return v;
   }
 
   //============================================================================

@@ -19,6 +19,13 @@ namespace sill {
   template <typename T, typename SizeType> class sparse_vector;
   template <typename T, typename SizeType> class sparse_vector_view;
 
+  template <typename T, typename SizeType>
+  void
+  gemv(char trans,
+       T alpha, const csc_matrix<T,SizeType>& m, const arma::Col<T>& v,
+       T beta, arma::Col<T>& y);
+
+
   namespace impl {
 
     //! Helper: Arrange data in standard containers.
@@ -369,7 +376,7 @@ namespace sill {
     vec operator*(const vec& a) const {
       vec b(n_rows);
       b.zeros();
-      gemv(1, *this, a, b);
+      sill::gemv('n', 1.0, *this, a, 1.0, b);
       return b;
     }
 
@@ -594,5 +601,7 @@ namespace sill {
   } // namespace impl
 
 } // namespace sill
+
+#include <sill/math/linear_algebra/vector_matrix_ops.hpp>
 
 #endif // #ifndef _SILL_CSC_MATRIX_HPP_

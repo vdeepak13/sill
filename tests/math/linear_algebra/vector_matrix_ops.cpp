@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
     vec tmp_dv(dm * sv);
     std::cout << "dm * sv = " << trans(tmp_dv) << std::endl;
     tmp_dv.zeros();
-    sill::gemv(dm, sv, tmp_dv);
+    sill::gemv('n', 1.0, dm, sv, 1.0, tmp_dv);
     std::cout << "tmp_dv from gemv(dm, sv, tmp_dv) = " << trans(tmp_dv)
               << std::endl;
   }
