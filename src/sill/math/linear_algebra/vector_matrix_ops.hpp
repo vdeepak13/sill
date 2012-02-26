@@ -960,7 +960,7 @@ namespace sill {
   template <typename T, typename I>
   void normalize_columns(csc_matrix<T,I>& A) {
     for (size_t j = 0; j < A.n_cols; ++j) {
-      T z = sqr(norm(A.col(j), 2));
+      T z = norm(A.col(j), 2);
       for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k) {
         A.value(k) /= z;
       }
