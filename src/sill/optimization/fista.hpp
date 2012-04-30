@@ -1,4 +1,6 @@
 
+// I STOPPED WRITING THIS PARTWAY.  FINISH IT SOMETIME IF IT MAKES SENSE.
+
 #ifndef SILL_FISTA_HPP
 #define SILL_FISTA_HPP
 
@@ -23,6 +25,17 @@ namespace sill {
   /**
    * Fast Iterative Shrinkage-Thresholding Algorithm (FISTA)
    *  (Beck and Teboulle, 2009)
+   *
+   *
+   * For FISTA with constant stepsize,
+   *  - Let L = Lipschitz constant of gradient of objective.
+   *  - Set parameters:
+   *     - step_type = parameters::SINGLE_OPT_STEP
+   *     - single_opt_step_params.eta_choice = parameters::FIXED_ETA
+   *     - single_opt_step_params.init_eta = L
+   * For FISTA with backtracking,
+   *  - TO DO
+   *
    *
    * ** TO DO: EDIT DOCUMENTATION BELOW! (COPIED FROM GRADIENT_DESCENT) ***
    *
@@ -67,10 +80,9 @@ namespace sill {
      * @param x_   Pre-allocated and initialized optimization variables.
      */
     fista(const Objective& obj_functor,
-                     const Gradient& grad_functor,
-                     OptVector& x_,
-                     const fista_parameters& params
-                     = fista_parameters())
+          const Gradient& grad_functor,
+          OptVector& x_,
+          const fista_parameters& params = fista_parameters())
       : base(obj_functor, grad_functor, x_, params) {
     }
 

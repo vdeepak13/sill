@@ -6,7 +6,7 @@
  */
 
 /**
- * \mainpage Probabilistic Reasoning Library (PRL)
+ * \mainpage Statistical Inference and Learning Library (SILL)
  *
  * \section mainpage_intro Introduction
  * This is a friendly package for Probabilistic Graphical Models (PGMs).
@@ -18,12 +18,12 @@
  * See the README file for installation instructions for various platforms.
  *
  * \section mainpage_important_classes Important Classes
- * This section outlines some of the major PRL classes and modules to know and
- * some of the main libraries we use from Boost.  The PRL classes generally have
+ * This section outlines some of the major SILL classes and modules to know and
+ * some of the main libraries we use from Boost.  The SILL classes generally have
  * synopses or examples in their documentation.  There are synopses and
  * tutorials for the Boost libraries below (linked from this list).
  *
- *  - Intro to Using PRL
+ *  - Intro to Using SILL
  *    - Basic Data Structures:
  *      - \ref sill::variable "Variable"
  *        - \ref sill::finite_variable "Finite Variable"
@@ -60,12 +60,12 @@
  *      - \ref sill::table_base "Tables" (\ref sill::dense_table "Dense" and
  *        \ref sill::sparse_table_t "Sparse")
  *      - \ref sill::copy_ptr "Copy-on-Write Pointer"
- *  - Intro to Programming in PRL (with Boost)
+ *  - Intro to Programming in SILL (with Boost)
  *    - \ref range "Ranges" (based on Boost ranges)
  *    - Boost Concept Checking
  *      - Interfaces are to classes as concepts are to templates.
  *      - http://www.boost.org/libs/concept_check/concept_check.htm
- *      - \ref group_concepts "List of PRL Concepts"
+ *      - \ref group_concepts "List of SILL Concepts"
  *      - \ref subpage_concepts "List of Outside Concepts"
  *    - Boost Serialization
  *      - For saving and loading classes to and from files.
@@ -82,7 +82,7 @@
  *
  * \todo Why do some items in the Class Hierarchy appear in black (w/o links)?
  *    I think they are all STL/outside classes which are used as parents of
- *    PRL classes.  I wonder if there's a way to make the outside classes not
+ *    SILL classes.  I wonder if there's a way to make the outside classes not
  *    show up.
  *
  * \todo See what the 'test' tag does.
@@ -131,7 +131,7 @@
  *   \author Mark Paskin, Stanislav Funiak
  *
  * \defgroup iterator Iterators
- *   Iterators used in various parts of the implementation in PRL;
+ *   Iterators used in various parts of the implementation in SILL;
  *   these are rarely used outside of the core classes.
  *   \author Mark Paskin, Stanislav Funiak, Joseph Bradley
  *
@@ -247,7 +247,7 @@
 
 /* DON'T DELETE THIS YET; WE SHOULD PUT IT SOMEWHERE SINCE IT HAS INFO ON
  * USING DEPOT FOR FACILITIZED MACHINES.
- * \section mainpage_installation Installing PRL
+ * \section mainpage_installation Installing SILL
  *
  * -# Prerequisites:
  *    - cmake: http://www.cmake.org
@@ -277,13 +277,13 @@
  *          - make install
  *        - Copy:
  *          - /usr/local/lib/libboost*
- *            to /usr0/prl_tools/boost_installation/usr_local_lib/
+ *            to /usr0/sill_tools/boost_installation/usr_local_lib/
  *          - /usr/local/include/boost-1_35
- *            to /usr0/prl_tools/boost_installation/usr_local_include/
+ *            to /usr0/sill_tools/boost_installation/usr_local_include/
  *        - Add lines to files:
  *          - file: /usr/local/depot/depot.pref.local
- *            - 'path boost /usr0/prl_tools/boost_installation'
- *          - file: /usr0/prl_tools/boost_installation/depot.conf
+ *            - 'path boost /usr0/sill_tools/boost_installation'
+ *          - file: /usr0/sill_tools/boost_installation/depot.conf
  *            - 'usr_local_lib lib'
  *            - 'usr_local_include include'
  *        - Run: /usr/local/bin/dosupdepot
@@ -291,14 +291,14 @@
  *          directory, so you can go ahead and check to make sure that your
  *          changes were successful.
  *    - doxygen (for documentation only): http://www.stack.nl/~dimitri/doxygen/
- * -# Use SVN to check out projects/prl.
+ * -# Use SVN to check out projects/sill.
  * -# To create debug and release directories for compiling code,
- *    run the 'configure' script in the prl root directory.
+ *    run the 'configure' script in the sill root directory.
  *    - This will create a separate folder called 'build' in which it will
  *      place the executables. (ditto for 'release')
  *    - Note there is a bug with the link libraries: (Is this comment outdated?)
  *      In Mac Os X, you need to link against
- *      '${PRL_SOURCE_DIR}/../libs/boost-trunk/build/lib/libboost_serialization.a'
+ *      '${SILL_SOURCE_DIR}/../libs/boost-trunk/build/lib/libboost_serialization.a'
  *      and in Linux, you need to link against
- *      '${PRL_SOURCE_DIR}/../libs/boost-trunk/build/lib/libboost_serialization-gcc41-d.a'
+ *      '${SILL_SOURCE_DIR}/../libs/boost-trunk/build/lib/libboost_serialization-gcc41-d.a'
  */
