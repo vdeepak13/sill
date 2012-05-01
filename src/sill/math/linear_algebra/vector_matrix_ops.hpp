@@ -260,6 +260,11 @@ namespace sill {
   arma::Col<T>
   operator*(const arma::Mat<T>& m, const sparse_vector_view<T,SizeType>& v);
 
+  //! Dense vector  *  Sparse matrix --> dense vector
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator*(const arma::Col<T>& v, const csc_matrix<T,SizeType>& m);
+
   //! Dense vector y = alpha * dense matrix  *  sparse vector + beta * y
   template <typename T, typename SizeType>
   void
@@ -808,7 +813,8 @@ namespace sill {
 
 
   template <typename T, typename SizeType>
-  arma::Col<T> operator*(const arma::Mat<T>& A, const sparse_vector<T,SizeType>& x) {
+  arma::Col<T>
+  operator*(const arma::Mat<T>& A, const sparse_vector<T,SizeType>& x) {
     return
       impl::mult_densemat_sparsevec_<sparse_vector<T,SizeType>,T,SizeType>
       (A, x);
@@ -821,6 +827,17 @@ namespace sill {
       impl::mult_densemat_sparsevec_<sparse_vector_view<T,SizeType>,T,SizeType>
       (A,x);
   }
+
+
+  template <typename T, typename SizeType>
+  arma::Col<T>
+  operator*(const arma::Col<T>& v, const csc_matrix<T,SizeType>& m) {
+    vec b(m.n_cols);
+    b.zeros();
+    sill::gemv('t', 1.0, m, v, 1.0, b);
+    return b;
+  }
+
 
   template <typename T, typename SizeType>
   void
