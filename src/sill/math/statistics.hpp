@@ -12,8 +12,17 @@
 
 namespace sill {
 
-  // Means, standard errors, medians, and MADs
+  // Sums, means, standard errors, medians, and MADs
   //============================================================================
+
+  //! Return the sum of the given vector of values.
+  template <typename T>
+  double sum(const std::vector<T>& v) {
+    double sum = 0;
+    foreach(T val, v)
+      sum += val;
+    return sum;
+  }
 
   //! Return the mean for the given vector of values.
   //! Return 0 for empty vector.

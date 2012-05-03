@@ -71,4 +71,4 @@ namespace sill {
     return gm_params;
   } // get_parameters
 
-}; // namespace sill
+} // namespace sill
