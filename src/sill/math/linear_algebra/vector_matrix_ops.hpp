@@ -323,6 +323,14 @@ namespace sill {
   template <typename T, typename I, typename T2>
   void convert(const coo_matrix<T,I>& from, arma::Mat<T2>& to);
 
+  //! coo_matrix to csc_matrix
+  template <typename T, typename I, typename T2, typename I2>
+  void convert(const coo_matrix<T,I>& from, csc_matrix<T2,I2>& to);
+
+  //! csc_matrix to coo_matrix
+  template <typename T, typename I, typename T2, typename I2>
+  void convert(const csc_matrix<T,I>& from, coo_matrix<T2,I2>& to);
+
   /*****************************************************************************
    * Vector Ops
    *  - trans
@@ -350,6 +358,10 @@ namespace sill {
   template <typename T, typename I>
   void normalize_columns(csc_matrix<T,I>& A);
 
+  //! Normalize the columns of A so that each has L2 norm of 1.
+  //! Any all-zero columns remain all-zero.
+  template <typename T>
+  void normalize_columns(arma::Mat<T>& A);
 
   //============================================================================
   // Vector-Scalar operations: implementations
@@ -956,6 +968,16 @@ namespace sill {
     }
   }
 
+  template <typename T, typename I, typename T2, typename I2>
+  void convert(const coo_matrix<T,I>& from, csc_matrix<T2,I2>& to) {
+    to = from;
+  }
+
+  template <typename T, typename I, typename T2, typename I2>
+  void convert(const csc_matrix<T,I>& from, coo_matrix<T2,I2>& to) {
+    to = from;
+  }
+
   //============================================================================
   // Vector Ops: implementations
   //============================================================================
@@ -981,6 +1003,14 @@ namespace sill {
       for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k) {
         A.value(k) /= z;
       }
+    }
+  }
+
+  template <typename T>
+  void normalize_columns(arma::Mat<T>& A) {
+    arma::Col<T> sqrt_AtA_diag = trans(sqrt(sum(A % A)));
+    for (size_t j = 0; j < A.n_cols; ++j) {
+      A.col(j) /= sqrt_AtA_diag[j];
     }
   }
 

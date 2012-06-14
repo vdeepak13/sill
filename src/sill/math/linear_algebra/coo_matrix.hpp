@@ -223,6 +223,24 @@ namespace sill {
     }
 
     //! i^th row index.
+    size_type& row_index(size_type i) {
+      assert(i < k_);
+      return row_indices_[i];
+    }
+
+    //! i^th column index.
+    size_type& col_index(size_type i) {
+      assert(i < k_);
+      return col_indices_[i];
+    }
+
+    //! i^th non-zero value.
+    value_type& value(size_type i) {
+      assert(i < k_);
+      return values_[i];
+    }
+
+    //! i^th row index.
     size_type row_index(size_type i) const {
       assert(i < k_);
       return row_indices_[i];

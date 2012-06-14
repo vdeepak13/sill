@@ -97,6 +97,16 @@ namespace sill {
   // (temporary) Functions which would be nice to have in Armadillo
   //============================================================================
 
+  //! Resize a vector.
+  template <typename T>
+  arma::Col<T> resize(const arma::Col<T>& a, size_t n) {
+    arma::Col<T> b(zeros(n));
+    size_t m = std::min<size_t>(a.size(), n);
+    for (size_t i = 0; i < m; ++i)
+      b[i] = a[i];
+    return b;
+  }
+
   //! Simpler log_det function for matrices with positive determinants.
   template <typename MatType>
   typename MatType::value_type log_det(const MatType& m) {

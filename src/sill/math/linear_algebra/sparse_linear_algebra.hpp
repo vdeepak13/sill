@@ -8,6 +8,7 @@
 
 #include <sill/math/linear_algebra/coo_matrix.hpp>
 #include <sill/math/linear_algebra/csc_matrix.hpp>
+#include <sill/math/linear_algebra/decompositions.hpp>
 #include <sill/math/linear_algebra/norms.hpp>
 #include <sill/math/linear_algebra/sparse_vector.hpp>
 #include <sill/math/linear_algebra/vector_matrix_ops.hpp>
