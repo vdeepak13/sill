@@ -362,6 +362,8 @@ namespace sill {
      */
     crf_graph() : next_vertex(1) { }
 
+    virtual ~crf_graph() { }
+
     //! Serialize members
     void save(oarchive & ar) const {
       ar << variable_index_ << factor_vertices_ << graph << next_vertex
