@@ -105,7 +105,8 @@ namespace sill {
           OptVector& x_,
           const lbfgs_parameters& params = lbfgs_parameters())
       : base(obj_functor, grad_functor, x_, params),
-        M_(params.M), alphas(M_, 0.) {
+        M_(params.M), alphas(M_) {
+      alphas.fill(0.);
     }
 
     //! Perform one step.

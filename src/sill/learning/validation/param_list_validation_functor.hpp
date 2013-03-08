@@ -43,6 +43,8 @@ namespace sill {
     param_list_validation_functor()
       : unif_int(0, std::numeric_limits<int>::max()) { }
 
+    virtual ~param_list_validation_functor() { }
+
     /**
      * Calls model_validation_functor on a list of parameter values.
      *
