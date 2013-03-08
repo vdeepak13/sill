@@ -33,6 +33,8 @@ namespace sill {
       random_seed = time_tmp;
     }
 
+    virtual ~booster_parameters() { }
+
     virtual bool valid() const {
       if (smoothing < 0)
         return false;
