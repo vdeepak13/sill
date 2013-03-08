@@ -28,6 +28,8 @@ namespace sill {
 
     typedef RFF rff_type;
 
+    //virtual ~random_factor_functor_builder_i() { }
+
     /**
      * Add options to the given Options Description.
      * Once the Options Description is used to parse argv, this struct will
