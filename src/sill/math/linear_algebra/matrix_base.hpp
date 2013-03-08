@@ -41,6 +41,8 @@ namespace sill {
     matrix_base(size_type m, size_type n)
       : n_rows(m), n_cols(n) { }
 
+    virtual ~matrix_base() { }
+
     // Serialization
     //==========================================================================
 
