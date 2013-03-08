@@ -2,10 +2,6 @@
 ## or in your installation cmake e.g. "C:\Program Files\CMake
 ## 2.6\doc\cmake-2.6"
 
-if (${CMAKE_SYSTEM} MATCHES Linux)
- set(CMAKE_CXX_COMPILER /usr/local/bin/gcc-4.7)  # Joseph: for bigbros
-endif (${CMAKE_SYSTEM} MATCHES Linux)
-
 project(SILL)
 
 cmake_minimum_required(VERSION 2.6)
@@ -53,6 +49,10 @@ if (MSVC)
 endif(MSVC)
 
 MESSAGE(STATUS "CMAKE_SYSTEM: ${CMAKE_SYSTEM}")
+
+if (${CMAKE_SYSTEM} MATCHES Linux)
+ include_directories(BEFORE /usr/local/lib64)  # Joseph: issues with bigbros
+endif (${CMAKE_SYSTEM} MATCHES Linux)
 
 # Remove tracing by default
 # add_definitions(-DTRACE_OFF)
