@@ -6,6 +6,10 @@ project(SILL)
 
 cmake_minimum_required(VERSION 2.6)
 
+if (${CMAKE_SYSTEM} MATCHES Linux)
+ set(CMAKE_CXX_COMPILER /usr/local/bin/gcc-4.7)  # Joseph: for bigbros
+endif (${CMAKE_SYSTEM} MATCHES Linux)
+
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
@@ -49,10 +53,6 @@ if (MSVC)
 endif(MSVC)
 
 MESSAGE(STATUS "CMAKE_SYSTEM: ${CMAKE_SYSTEM}")
-
-if (${CMAKE_SYSTEM} MATCHES Linux)
- set(CMAKE_CXX_COMPILER /usr/local/bin/gcc-4.7)  # Joseph: for bigbros
-endif (${CMAKE_SYSTEM} MATCHES Linux)
 
 # Remove tracing by default
 # add_definitions(-DTRACE_OFF)
