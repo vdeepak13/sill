@@ -2,13 +2,13 @@
 ## or in your installation cmake e.g. "C:\Program Files\CMake
 ## 2.6\doc\cmake-2.6"
 
-project(SILL)
-
-cmake_minimum_required(VERSION 2.6)
-
 if (${CMAKE_SYSTEM} MATCHES Linux)
  set(CMAKE_CXX_COMPILER /usr/local/bin/gcc-4.7)  # Joseph: for bigbros
 endif (${CMAKE_SYSTEM} MATCHES Linux)
+
+project(SILL)
+
+cmake_minimum_required(VERSION 2.6)
 
 if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
