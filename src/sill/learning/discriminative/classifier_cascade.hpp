@@ -97,7 +97,7 @@ namespace sill {
         if (max_false_common_rate == 1)
           max_filter_count = 100000;
         else
-          max_filter_count = 100 / (1. - max_false_common_rate);
+          max_filter_count = (size_t)(100 / (1. - max_false_common_rate));
       }
     }
 
