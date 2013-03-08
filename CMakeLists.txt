@@ -51,7 +51,8 @@ endif(MSVC)
 MESSAGE(STATUS "CMAKE_SYSTEM: ${CMAKE_SYSTEM}")
 
 if (${CMAKE_SYSTEM} MATCHES Linux)
- include_directories(BEFORE /usr/local/lib64)  # Joseph: issues with bigbros
+  include_directories(BEFORE /usr/local/lib64)  # Joseph: issues with bigbros
+  set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB64_PATHS ON)
 endif (${CMAKE_SYSTEM} MATCHES Linux)
 
 # Remove tracing by default
