@@ -1004,7 +1004,8 @@ namespace sill {
       double s2(0);
       double totalw(0);
       size_t i(0);
-      vec tmpy(Yvec_size, 0.);
+      vec tmpy(Yvec_size);
+      tmpy.fill(0.);
       foreach(const record_type& r, testds.records()) {
 //        vector_record2vector(r, Yvec, tmpy);
         r.vector_values(tmpy, Yvec);
@@ -1039,7 +1040,8 @@ namespace sill {
         return std::make_pair(0., 0.);
       std::vector<double> errors(testds.size(), 0.);
       size_t i(0);
-      vec tmpy(Yvec_size, 0.);
+      vec tmpy(Yvec_size);
+      tmpy.fill(0.);
       foreach(const record_type& r, testds.records()) {
 //        vector_record2vector(r, Yvec, tmpy);
         r.vector_values(tmpy, Yvec);
