@@ -48,6 +48,12 @@ if (MSVC)
   add_definitions(-D_SECURE_SCL=0)  # necesary for release builds of MSVC
 endif(MSVC)
 
+MESSAGE(STATUS 
+        "CMAKE_SYSTEM: ${CMAKE_SYSTEM}\n")
+
+#if (${CMAKE_SYSTEM} MATCHES Darwin)
+# CMAKE_CXX_COMPILER
+
 # Remove tracing by default
 # add_definitions(-DTRACE_OFF)
 
