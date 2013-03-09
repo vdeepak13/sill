@@ -10,7 +10,7 @@ namespace sill {
 
     void random_windows_oracle::init() {
       assert(images.size() > 0);
-      rng.seed(static_cast<double>(params.random_seed));
+      rng.seed(static_cast<unsigned>(params.random_seed));
       assert(window_h > 0 && window_w > 0);
       for (size_t i = 0; i < images.size(); ++i) {
         assert(image::height(images[i]) >= window_h);

@@ -404,9 +404,9 @@ namespace sill {
 
     //! Reset the random seed in this algorithm's parameters and in its
     //! random number generator.
-    void random_seed(double value) {
+    void random_seed(unsigned value) {
       params.random_seed = value;
-      rng.seed(static_cast<unsigned>(value));
+      rng.seed(value);
     }
 
     /**

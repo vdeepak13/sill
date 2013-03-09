@@ -13,8 +13,8 @@ namespace sill {
       std::vector<boost::tuple<size_t, size_t, size_t, size_t> > windows;
       for (double scale = 1; ; scale /= params.scale) {
         // newrows, newcols are height, width of scaled image
-        size_t newrows = floor(image::true_height(example) * scale);
-        size_t newcols = floor(image::true_width(example) * scale);
+        size_t newrows = floor((double)(image::true_height(example)) * scale);
+        size_t newcols = floor((double)(image::true_width(example)) * scale);
         if (newrows < window_h || newcols < window_w)
           break;
         // These settings for scaleh, scalew overcome numerical precision
@@ -67,8 +67,8 @@ namespace sill {
       std::vector<record_type> pics;
       for (double scale = 1; ; scale /= params.scale) {
         // newrows, newcols are height, width of scaled image
-        size_t newrows = floor(image::true_height(example) * scale);
-        size_t newcols = floor(image::true_width(example) * scale);
+        size_t newrows = floor((double)(image::true_height(example)) * scale);
+        size_t newcols = floor((double)(image::true_width(example)) * scale);
         if (newrows < window_h || newcols < window_w)
           break;
         // These settings for scaleh, scalew overcome numerical precision

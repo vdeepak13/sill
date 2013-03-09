@@ -39,9 +39,9 @@ int main(int argc, char** argv) {
   A.x = new double[A.nzmax];
   A.nz = -1;
   assert(A.m * A.n >= A.nzmax);
-  for (size_t j = 0; j < A.n; ++j) {
+  for (int j = 0; j < A.n; ++j) {
     A.p[j] = A.m * j;
-    for (size_t i = 0; i < A.m; ++i) {
+    for (int i = 0; i < A.m; ++i) {
       A.i[A.m * j + i] = i;
       if (i > j)
         A.x[A.m * j + i] = A.m * j + i + 1;
