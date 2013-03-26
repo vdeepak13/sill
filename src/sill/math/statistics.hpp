@@ -30,10 +30,7 @@ namespace sill {
   double mean(const std::vector<T>& v) {
     if (v.size() == 0)
       return 0;
-    double sum = 0;
-    foreach(T val, v)
-      sum += val;
-    return sum / v.size();
+    return sum(v) / v.size();
   }
 
   /*

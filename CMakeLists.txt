@@ -48,7 +48,7 @@ if (MSVC)
   add_definitions(-D_SECURE_SCL=0)  # necesary for release builds of MSVC
 endif(MSVC)
 
-MESSAGE(STATUS "CMAKE_SYSTEM: ${CMAKE_SYSTEM}")
+#MESSAGE(STATUS "CMAKE_SYSTEM: ${CMAKE_SYSTEM}")
 
 if (${CMAKE_SYSTEM} MATCHES Linux)
   link_directories(/usr/local/lib64)  # Joseph: issues with bigbros

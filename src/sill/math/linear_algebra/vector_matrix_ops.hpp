@@ -363,6 +363,16 @@ namespace sill {
   template <typename T>
   void normalize_columns(arma::Mat<T>& A);
 
+  //! Normalize the columns of A so that each has unit variance.
+  //! Any all-zero columns remain all-zero.
+  template <typename T, typename I>
+  void normalize_columns_unit_variance(csc_matrix<T,I>& A);
+
+  //! Normalize the columns of A so that each has unit variance.
+  //! Any all-zero columns remain all-zero.
+  template <typename T>
+  void normalize_columns_unit_variance(arma::Mat<T>& A);
+
   //============================================================================
   // Vector-Scalar operations: implementations
   //============================================================================
@@ -1000,6 +1010,8 @@ namespace sill {
   void normalize_columns(csc_matrix<T,I>& A) {
     for (size_t j = 0; j < A.n_cols; ++j) {
       T z = norm(A.col(j), 2);
+      if (z == 0)
+        continue;
       for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k) {
         A.value(k) /= z;
       }
@@ -1010,7 +1022,37 @@ namespace sill {
   void normalize_columns(arma::Mat<T>& A) {
     arma::Col<T> sqrt_AtA_diag = trans(sqrt(sum(A % A)));
     for (size_t j = 0; j < A.n_cols; ++j) {
+      if (sqrt_AtA_diag[j] == 0)
+        continue;
       A.col(j) /= sqrt_AtA_diag[j];
+    }
+  }
+
+  template <typename T, typename I>
+  void normalize_columns_unit_variance(csc_matrix<T,I>& A) {
+    for (size_t j = 0; j < A.n_cols; ++j) {
+      T mean_ = 0;
+      for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k)
+        mean_ += A.value(k);
+      mean_ /= A.num_rows();
+      T z = 0;
+      for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k)
+        z += sqr(A.value(k) - mean_);
+      z += (A.size() - A.col(j).num_non_zeros()) * sqr(mean_);
+      z = sqrt(z);
+      if (z == 0)
+        continue;
+      for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k)
+        A.value(k) /= z;
+    }
+  }
+
+  template <typename T>
+  void normalize_columns_unit_variance(arma::Mat<T>& A) {
+    for (size_t j = 0; j < A.n_cols; ++j) {
+      T z = sqrt(arma::var(A.col(j), 1));
+      if (z != 0)
+        A.col(j) /= z;
     }
   }
 
