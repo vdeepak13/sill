@@ -192,6 +192,83 @@ namespace sill {
     }
   }
 
+  /**
+   * Lightweight accumulator for computing mean, stderr, min, max.
+   */
+  template <typename T>
+  class LightStatsAccumulator {
+
+  public:
+    LightStatsAccumulator()
+      : sum(0), sum2(0), min_val(0), max_val(0), cnt(0) { }
+
+    void save(oarchive& ar) const {
+      ar << sum << sum2 << min_val << max_val << cnt;
+    }
+
+    void load(iarchive& ar) {
+      ar >> sum >> sum2 >> min_val >> max_val >> cnt;
+    }
+
+    //! Add a value to the accumulator.
+    void push(T val) {
+      sum += val;
+      sum2 += sqr(val);
+      if (cnt == 0) {
+        min_val = val;
+        max_val = val;
+      } else {
+        min_val = std::min(min_val, val);
+        max_val = std::max(max_val, val);
+      }
+      ++cnt;
+    }
+
+    //! Return mean, or 0 if no items have been added.
+    T mean() const {
+      if (cnt == 0) return 0;
+      return (sum / cnt);
+    }
+
+    //! Return standard error of the mean, or 0 if no items have been added.
+    //! The standard deviation of the sample is normalized by N (count),
+    //! not by N-1.
+    T stderr() const {
+      if (cnt == 0) return 0;
+      return std::sqrt(((sum2 / cnt) - sqr(mean())) / cnt);
+    }
+
+    //! Return min value,
+    //! or -std::numeric_limits<T>::max() if no items have been added.
+    T min() const {
+      if (cnt == 0) return -std::numeric_limits<T>::max();
+      return min_val;
+    }
+
+    //! Return max value,
+    //! or std::numeric_limits<T>::max() if no items have been added.
+    T max() const {
+      if (cnt == 0) return std::numeric_limits<T>::max();
+      return max_val;
+    }
+
+    //! Number of items added.
+    size_t count() const { return cnt; }
+
+  protected:
+    //! Sum of values added
+    T sum;
+    //! Sum of squares of values added
+    T sum2;
+    //! Min value
+    T min_val;
+    //! Max value
+    T max_val;
+    //! Count of values added
+    size_t cnt;
+
+  }; // class LightStatsAccumulator
+
   // Max and min: deterministic tie-breaking
   //============================================================================
 
