@@ -213,7 +213,7 @@ namespace sill {
       sparse_vector_view<T,I> col_j(m.col(j));
       for (size_t k = 0; k < col_j.num_non_zeros(); ++k)
         fprintf(f, "%d %d %.10g\n",
-                (int)col_j.index(k), (int)j, col_j.value(k));
+                (int)col_j.index(k) + 1, (int)j + 1, col_j.value(k));
     }
 
     fclose(f);
