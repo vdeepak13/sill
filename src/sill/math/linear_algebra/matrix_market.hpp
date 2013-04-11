@@ -190,7 +190,6 @@ namespace sill {
    */
   template <typename T, typename I>
   int save_matrix_market(const csc_matrix<T,I>& m, const std::string& filepath){
-    // 1-based indices
 
     using namespace mm;
     MM_typecode matcode;                        
@@ -209,6 +208,7 @@ namespace sill {
     mm_write_mtx_crd_size(f, (int)m.n_rows, (int)m.n_cols,
                           (int)m.num_non_zeros());
 
+    // 1-based indices
     for (size_t j = 0; j < m.n_cols; ++j) {
       sparse_vector_view<T,I> col_j(m.col(j));
       for (size_t k = 0; k < col_j.num_non_zeros(); ++k)
