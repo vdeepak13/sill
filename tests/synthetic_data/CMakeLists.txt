@@ -1,3 +1,5 @@
-
-add_executable(denoise_mln denoise_mln.cpp)
-target_link_libraries(denoise_mln jpeg)
+find_package(JPEG)
+if(JPEG_FOUND) 
+  add_executable(denoise_mln denoise_mln.cpp)
+  target_link_libraries(denoise_mln ${JPEG_LIBRARY})
+endif()

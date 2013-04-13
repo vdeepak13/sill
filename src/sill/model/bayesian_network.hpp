@@ -120,7 +120,7 @@ namespace sill {
     void check() const {
       foreach(vertex v, vertices()) {
         // 1)
-        domain_type p(boost::begin(parents(v)), boost::end(parents(v)));
+        domain_type p(boost::begin(this->parents(v)), boost::end(this->parents(v)));
         assert( factor(v).arguments() == set_union(p, v) );
         // 2)
         F f(factor(v));

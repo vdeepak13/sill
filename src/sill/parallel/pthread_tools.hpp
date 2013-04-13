@@ -306,7 +306,7 @@ namespace sill {
     friend class conditional;
   }; // End of Mutex
 
-#if _POSIX_SPIN_LOCKS >= 0
+#if defined(_POSIX_SPIN_LOCKS) && _POSIX_SPIN_LOCKS >= 0
   // We should change this to use a test for posix_spin_locks eventually
   
   // #ifdef __linux__

@@ -288,6 +288,8 @@ namespace sill {
   protected:
     // shortcuts from the base
     using base::compute_message;
+    using base::message;
+    using base::norm;
     using base::gm;
     using base::msg;
     using base::n_updates;
@@ -407,6 +409,7 @@ namespace sill {
 
   protected:
     // shortcuts from the base
+    using base::compute_message;
     using base::pass_flow;
     using base::gm;
     using base::message;
@@ -512,6 +515,8 @@ namespace sill {
 
   protected:
     // shortcuts from the base
+    using base::compute_message;
+    using base::norm;
     using base::pass_flow;
     using base::gm;
     using base::message;

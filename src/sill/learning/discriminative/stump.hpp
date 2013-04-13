@@ -172,7 +172,7 @@ namespace sill {
       // Find weight of classes 0,1
       std::vector<double> total_weights(2,0);
       for (size_t i = 0; i < ds.size(); i++)
-        total_weights[label(ds,i)] += ds.weight(i);
+        total_weights[base::label(ds,i)] += ds.weight(i);
       double total_weight = 0;
       foreach(double t, total_weights)
         total_weight += t;
@@ -198,7 +198,7 @@ namespace sill {
         foreach(std::vector<double>& w, weights)
           w.resize(label_->size());
         for (size_t i = 0; i < ds.size(); i++)
-          weights[ds.finite(i,v_index)][label(ds,i)] += ds.weight(i);
+          weights[ds.finite(i,v_index)][base::label(ds,i)] += ds.weight(i);
         // choose decision rule
         for (size_t j = 0; j < v->size(); j++) {
           double cur_objective;

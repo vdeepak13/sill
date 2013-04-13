@@ -13,11 +13,11 @@ int main() {
   uvec i = "1 3";
   
   assert(accu(a(i) == b) == b.size());
-  a.subvec(i) = b2;
+  a(i) = b2;
   assert(accu(a == a2) == a.size());
   
   cout << a(i) << endl;
-  a.subvec(i) += b2;
+  a(i) += b2;
   cout << a(i) << endl;
-  cout << a.subvec(span(0,1)) << endl;
+  cout << a(span(0,1)) << endl;
 }

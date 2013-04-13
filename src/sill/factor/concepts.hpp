@@ -187,6 +187,7 @@ namespace sill {
       sill::same_type(b, f.is_normalizable());
       sill::same_type(f.normalize(), f);
       r = f.norm_constant();
+      sill::same_type(r, r); // avoid unused-but-set-variable warning
 
       // entropy computations
       cf.entropy();

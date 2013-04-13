@@ -165,8 +165,8 @@ namespace sill {
     mm_set_array(&matcode);
     mm_set_real(&matcode);
 
-    std::ofstream fout(filepath.c_str());
-    if (!fout.good())
+    FILE* fout = fopen(filepath.c_str(), "w");
+    if (fout == NULL)
       return impl::errormsg("save_matrix_market could not open file.",
                             filepath);
 
@@ -178,7 +178,7 @@ namespace sill {
         fprintf(fout, "%.10g\n", m(i,j));
     }
 
-    fout.close();
+    fclose(fout);
     return 0;
 
   } // save_matrix_market(const arma::Mat<T>& m, const std::string& filepath)

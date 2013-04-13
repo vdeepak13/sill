@@ -99,7 +99,7 @@ namespace sill {
   typename F::collapse_type 
   sum(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support marginalization
-    return collapse_out(f, eliminate, sum_op, 0.0);
+    return collapse_out(f, eliminate, sum_op);
   }
 
   //! Returns the maximum of a factor over a subset of variabless
@@ -107,8 +107,7 @@ namespace sill {
   typename F::collapse_type
   max(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support maximization
-    return collapse_out(f, eliminate, max_op, 
-                        -std::numeric_limits<double>::infinity());
+    return collapse_out(f, eliminate, max_op);
   }
 
   //! Returns the minimum of a factor over a subset of variables
@@ -116,8 +115,7 @@ namespace sill {
   typename F::collapse_type
   min(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support minimization
-    return collapse_out(f, eliminate, min_op, 
-                        std::numeric_limits<double>::infinity());
+    return collapse_out(f, eliminate, min_op);
   }
 
   //! Inverts a factor expression

@@ -1,5 +1,10 @@
 
 add_executable(crf_parameter_learner_test crf_parameter_learner_test.cpp)
-target_link_libraries(crf_parameter_learner_test tcmalloc)
+
+find_package(TCMALLOC)
+if (TCMALLOC_FOUND)
+  target_link_libraries(crf_parameter_learner_test tcmalloc)
+endif()
+
 add_executable(pwl_crf_learner_test pwl_crf_learner_test.cpp)
 add_executable(pwl_gaussian_crf_learner_test pwl_gaussian_crf_learner_test.cpp)

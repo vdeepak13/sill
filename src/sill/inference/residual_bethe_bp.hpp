@@ -28,6 +28,7 @@ namespace sill {
     using base::pass_flow;
     using base::g;
     using base::message;
+    using base::compute_message;
 
     mutable_queue<edge, double> q; //< The queue of weights
 

@@ -164,7 +164,7 @@ namespace sill {
       foreach(const string_vecvec_pair& svvp, all_results_) {
         vec v(zeros<vec>(svvp.second.size()));
         assert(single_all_results_.count(svvp.first) &&
-               single_all_results_[svvp.first].size() == svvp.second.size());
+               safe_get(single_all_results_, svvp.first).size() == svvp.second.size());
         for (size_t i = 0; i < svvp.second.size(); ++i) {
           v[i] = generalized_deviation(svvp.second[i], run_combo_type);
         }

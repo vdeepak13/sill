@@ -4,6 +4,8 @@ subdirs(
   mpi
 )
 
+find_package(TCMALLOC)
+
 #add_executable(approximate_inference_engine approximate_inference_engine.cpp)
 add_executable(belief_propagation belief_propagation.cpp)
 add_executable(gibbs_sampler gibbs_sampler.cpp)
@@ -12,7 +14,6 @@ add_executable(junction_tree_inference junction_tree_inference.cpp)
 #add_executable(srs_denoise denoise.cpp)
 
 add_executable(protein_inference protein_inference.cpp)
-target_link_libraries(protein_inference tcmalloc)
 
 #add_executable(protein_cuts protein_cuts.cpp)
 #target_link_libraries(protein_cuts metis)
@@ -28,9 +29,15 @@ add_executable(line_graph_generator line_graph_generator.cpp)
 #add_executable(image_segmentation image_segmentation.cpp)
 
 add_executable(markov_logic markov_logic.cpp)
-target_link_libraries(markov_logic tcmalloc)
 
 add_executable(taueps_quant taueps_quant.cpp)
+
+
+if(TCMALLOC_FOUND) 
+  target_link_libraries(protein_inference tcmalloc)
+  target_link_libraries(markov_logic tcmalloc)
+endif()
+
 
 # add_executable(markov_logic markov_logic.cpp)
 # set_target_properties(markov_logic PROPERTIES COMPILE_FLAGS "-DBLF_SPLASH")

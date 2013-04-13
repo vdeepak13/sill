@@ -67,6 +67,9 @@ namespace sill {
   using arma::dot;
   using arma::norm;
 
+  // scalar (remove this eventually)
+  using arma::as_scalar;
+
   //============================================================================
 
   /**

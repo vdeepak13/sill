@@ -226,7 +226,7 @@ namespace sill {
     //! @todo This could be sped up by only running predict_raw() on the
     //!       labels which do not match the coloring of the true label.
     void compute_filter_distributionWL() {
-      my_predict_raws(o.current(), tmp_vector);
+      this->my_predict_raws(o.current(), tmp_vector);
       size_t y(label(o.current()));
       filter_weight = 0;
       wl_filter_weight = 0;
@@ -243,7 +243,7 @@ namespace sill {
 
     //! Set filter_weight, filter_distribution using current example in oracle.
     void compute_filter_distribution() {
-      my_predict_raws(o.current(), tmp_vector);
+      this->my_predict_raws(o.current(), tmp_vector);
       size_t y(label(o.current()));
       filter_weight = 0;
       for (size_t j = 0; j < nclasses_; ++j) {

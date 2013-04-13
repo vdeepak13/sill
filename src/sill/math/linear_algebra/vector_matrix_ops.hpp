@@ -520,7 +520,7 @@ namespace sill {
   template <typename T, typename SizeType>
   void
   operator-=(arma::subview<T> x, const sparse_vector<T,SizeType>& y) {
-    assert(x.size() == y.size());
+    assert(x.n_elem == y.size());
     for (SizeType i = 0; i < y.num_non_zeros(); ++i) {
       x[y.index(i)] -= y.value(i);
     }

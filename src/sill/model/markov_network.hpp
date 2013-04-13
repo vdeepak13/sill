@@ -372,7 +372,7 @@ namespace sill {
 
       // Remove the nodes for the restricted variables.
       foreach(variable_type* v, restricted_vars)
-        remove_node(v);
+        this->remove_node(v);
 
       return *this;
     }
