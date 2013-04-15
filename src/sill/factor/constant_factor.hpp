@@ -61,11 +61,11 @@ namespace sill {
     //! The value taken on by the factor.
     double value;
     
-    void serialize(oarchive & ar) const {
+    void save(oarchive& ar) const {
       ar << value;
     }
 
-    void deserialize(iarchive& ar) {
+    void load(iarchive& ar) {
       ar >> value;
     }
 

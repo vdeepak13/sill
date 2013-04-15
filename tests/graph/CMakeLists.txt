@@ -5,3 +5,6 @@ add_executable(graph_serialization graph_serialization.cpp)
 add_executable(undirected_graph undirected_graph.cpp)
 #add_executable(graph_traversal graph_traversal)
 add_executable(graph_memory graph_memory)
+
+add_test(directed_graph directed_graph)
+add_test(undirected_graph undirected_graph)

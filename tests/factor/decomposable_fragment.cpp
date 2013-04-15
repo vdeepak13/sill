@@ -1,6 +1,6 @@
-#include <iostream>
+#include <boost/test/unit_test.hpp>
 
-#include <boost/lexical_cast.hpp>
+#include <boost/bind.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/factor/table_factor.hpp>
@@ -10,49 +10,54 @@
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
 #include <sill/inference/junction_tree_inference.hpp>
-#include <sill/stl_io.hpp>
 
-#include <sill/macros_def.hpp>
+#include "predicates.hpp"
 
-int main(int argc, char** argv) {
-  using namespace sill;
-  using namespace std;
+using namespace boost::unit_test;
+using namespace sill;
+
+void test_marginal(size_t m, size_t n) {
+  assert(m * m >= 4); // we need at least 4 variables
 
   boost::mt19937 rng;
-
-  assert(argc==3);
-
-  // Loads a small tree-width model
-  size_t m = boost::lexical_cast<size_t>(argv[1]);
-  size_t n = boost::lexical_cast<size_t>(argv[2]);
-
   universe u;
 
-  cout << "Generating random model" << endl;
+  // generate a random model
   pairwise_markov_network< table_factor > mn;
-  finite_var_vector variables = u.new_finite_variables(m*n, 2);
+  finite_var_vector variables = u.new_finite_variables(m * n, 2);
   make_grid_graph(m, n, mn, variables);
   random_ising_model(mn, rng);
-  if (m<10) cout << mn;
 
-  cout << "Marginals using junction tree inference: " << endl;
+  // compute the corresponding decomposable fragment
   shafer_shenoy<table_factor> ss(mn);
   ss.calibrate();
   ss.normalize();
-  cout << ss.clique_beliefs() << endl;
-
-  cout << "The corresponding decomposable_fragment: " << endl;
   decomposable_fragment<table_factor> df(ss.clique_beliefs());
-  cout << df << endl;
 
-  finite_domain v03 = make_domain(variables[0], variables[3]);
-  decomposable_fragment<table_factor> df03 = df.marginal(v03);
-  cout << "Marginal over " << v03 << endl;
-  cout << df03 << endl;
-  cout << df03.flatten() << endl;
-
+  // compute the corresponding decomposable model
   decomposable<table_factor> dm;
   dm *= mn.factors();
-  cout << "Marginal over " << v03 << " using decomposable model: " << endl;
-  cout << dm.marginal(v03) << endl;
+
+  // compute the marginal over v0 and v3
+  finite_domain v03 = make_domain(variables[0], variables[3]);
+  decomposable_fragment<table_factor> df03 = df.marginal(v03);
+  table_factor tf03 = df03.flatten();
+  
+  BOOST_CHECK(are_close(tf03, dm.marginal(v03), 1e-5));
+}
+
+test_suite* init_unit_test_suite(int arc, char** argv) {
+  framework::master_test_suite().
+    add(BOOST_TEST_CASE(boost::bind(&test_marginal, 2, 2)));
+  framework::master_test_suite().
+    add(BOOST_TEST_CASE(boost::bind(&test_marginal, 3, 2)));
+  framework::master_test_suite().
+    add(BOOST_TEST_CASE(boost::bind(&test_marginal, 2, 3)));
+  framework::master_test_suite().
+    add(BOOST_TEST_CASE(boost::bind(&test_marginal, 3, 3)));
+  framework::master_test_suite().
+    add(BOOST_TEST_CASE(boost::bind(&test_marginal, 4, 4)));
+  framework::master_test_suite().
+    add(BOOST_TEST_CASE(boost::bind(&test_marginal, 5, 5)));
+  return 0;
 }

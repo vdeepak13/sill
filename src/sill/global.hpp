@@ -43,6 +43,16 @@ namespace sill {
   //! Type deduction will fail unless the arguments have the same type.
   template <typename T> void same_type(const T&, const T&) { }
 
+  //! Equality comparison for void_
+  inline bool operator==(const void_&, const void_&) {
+    return true;
+  }
+
+  //! Inequality comparison for void_
+  inline bool operator!=(const void_&, const void_&) {
+    return false;
+  }
+
 } // namespace sill
 
 #endif 

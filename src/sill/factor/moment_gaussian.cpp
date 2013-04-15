@@ -463,6 +463,16 @@ namespace sill {
     return out;
   }
 
+  double norm_inf(const moment_gaussian& x, const moment_gaussian& y) {
+    assert(x.marginal());
+    assert(x.head() == y.head());
+    double vec_norm =
+      norm(x.mean() - y.mean(x.head()), "inf");
+    double mat_norm =
+      norm(x.covariance() - y.covariance(x.head()), "inf");
+    return std::max(vec_norm, mat_norm);
+  }
+
   moment_gaussian
   combine(const moment_gaussian& x, const moment_gaussian& y, op_type op) {
     factor::check_supported(op, product_op);

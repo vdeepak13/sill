@@ -308,6 +308,33 @@ namespace sill {
     //! Returns a null vertex
     static vertex null_vertex() { return Vertex(); }
 
+    //! Compares the graph strucutre and the vertex & edge properties.
+    //! The property types must support operator!=()
+    bool operator==(const undirected_graph& other) const {
+      if (num_vertices() != other.num_vertices() ||
+          num_edges() != other.num_edges()) {
+        return false;
+      }
+      foreach(typename vertex_data_map::const_reference vp, data_map) {
+        const vertex_data* data_other = get_ptr(other.data_map, vp.first);
+        if (!data_other || vp.second.property != data_other->property) {
+          return false;
+        }
+        foreach(typename edge_property_map::const_reference ep, vp.second.neighbors) {
+          EdgeProperty* const* ep_other = get_ptr(data_other->neighbors, ep.first);
+          if (!ep_other || *ep.second != **ep_other) {
+            return false;
+          }
+        }
+      }
+      return true;
+    }
+
+    //! Inequality comparison
+    bool operator!=(const undirected_graph& other) const {
+      return !(*this == other);
+    }
+    
     // Modifications
     //==========================================================================
     /**

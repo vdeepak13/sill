@@ -1,31 +1,23 @@
-#include <iostream>
-#include <string>
-#include <iterator>
-#include <cmath>
-#include <sill/math/gdl_enum.hpp>
+#define BOOST_TEST_MODULE constant_factor
+#include <boost/test/unit_test.hpp>
+
 #include <sill/factor/constant_factor.hpp>
-#include <sill/copy_ptr.hpp>
 
-int main(int argc, char** argv) {
+#include "predicates.hpp"
 
-  using namespace sill;
-  using namespace std;
+using namespace sill;
 
-  // Create a constant factor with no arguments
+BOOST_AUTO_TEST_CASE(test_operations) {
   constant_factor f(1.0);
-  cout << "f=" << f << endl;
-
-  // Create another constant factor with no arguments.
   constant_factor g(2.0);
-  cout << "g=" << g << endl;
+  constant_factor fg = combine(f, g, product_op);
+  constant_factor h = fg.marginal(finite_domain());
 
-  // Multiply them together.
-  constant_factor fg = combine(f, g, product_op); // is operator= invoked?
-  cout << "fg=" << fg << endl;
+  BOOST_CHECK_EQUAL(fg.value, 2.0);
+  BOOST_CHECK_EQUAL(fg.value, h.value);
+}
 
-  // Collapse the product down.
-  constant_factor h = fg.collapse(sum_op, finite_domain());
-  cout << "sum(f)=" << h << endl;
-
-  return EXIT_SUCCESS;
+BOOST_AUTO_TEST_CASE(test_serialization) {
+  universe u;
+  BOOST_CHECK(serialize_deserialize(constant_factor(2.0), u));
 }

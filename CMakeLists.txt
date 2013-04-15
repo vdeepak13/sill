@@ -11,6 +11,8 @@ if(COMMAND cmake_policy)
 endif(COMMAND cmake_policy)
 
 
+enable_testing()
+
 # add a prefix to each element of a list
 function(add_prefix list_name prefix)
   # create empty list - necessary?
@@ -79,6 +81,7 @@ find_package(Boost 1.40 COMPONENTS
               iostreams
               date_time
               thread
+              unit_test_framework
 	      system REQUIRED)
 
 # MPI Support for parallel algorithms 

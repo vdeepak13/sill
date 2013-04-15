@@ -413,6 +413,9 @@ namespace sill {
                           const moment_gaussian& y,
                           op_type op);
 
+  //! \relates moment_gaussian
+  double norm_inf(const moment_gaussian& x, const moment_gaussian& y);
+
   template<> struct combine_result<moment_gaussian, moment_gaussian> {
     typedef moment_gaussian type;
   };

@@ -164,6 +164,21 @@ namespace sill {
   } // end of safe_get
 
   /**
+   * Returns a pointer to an element in a map if the value exists
+   * and NULL otherwise.
+   */
+  template <typename Map>
+  const typename Map::mapped_type*
+  get_ptr(const Map& map, const typename Map::key_type& key) {
+    typename Map::const_iterator it = map.find(key);
+    if (it == map.end()) {
+      return NULL;
+    } else {
+      return &it->second;
+    }
+  }
+
+  /**
    * Transform each key in the map using the key_map
    * transformation. The resulting map will have the form
    * output[key_map[i]] = map[i]
