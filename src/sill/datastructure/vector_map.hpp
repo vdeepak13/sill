@@ -3,8 +3,43 @@
 
 #include <vector>
 #include <utility>
+#include <algorithm>
 
 namespace sill {
+
+  namespace detail {
+
+    // less-than compares two entries in the vector map
+    template <typename TLess>
+    struct vector_map_less {
+      vector_map_less(TLess tless) : tless(tless) { }
+      template <typename K, typename T>
+      bool operator()(const std::pair<K, T>& a, const std::pair<K, T>& b) {
+        if (a.first == b.first) {
+          return tless(a.second, b.second);
+        } else {
+          return a.first < b.first;
+        }
+      }
+    private:
+      TLess tless;
+    };
+
+    // equality compares two entries in the vector map
+    template <typename TLess>
+    struct vector_map_equal {
+      vector_map_equal(TLess tless) : tless(tless) { }
+      template <typename K, typename T>
+      bool operator()(const std::pair<K, T>& a, const std::pair<K, T>& b) {
+        return a.first == b.first 
+          && !tless(a.second, b.second)
+          && !tless(b.second, a.second);
+      }
+    private:
+      TLess tless;
+    };
+
+  }
 
   //! A simple map based on std::vector
   //! \ingroup datastructure
@@ -59,7 +94,33 @@ namespace sill {
       base::push_back(value);
     }
 
+    //! Sorts the elements in the map by key and then using tless
+    //! invalidates the iterators
+    template <typename TLess>
+    void sort(TLess tless) const {
+      vector_map& b = const_cast<vector_map&>(*this);
+      std::sort(b.begin(), b.end(), detail::vector_map_less<TLess>(tless));
+      // this should really use a lambda function
+    }
+    
   }; // class vector_map
+
+
+  //! Returns true if the two maps are equal
+  //! invalidates the iterators
+  template <typename Key, typename T, typename TLess>
+  bool equal(const vector_map<Key, T>& a,
+             const vector_map<Key, T>& b,
+             TLess tless) {
+    if (a.size() != b.size()) {
+      return false;
+    }
+    a.sort(tless);
+    b.sort(tless);
+    return std::equal(a.begin(), a.end(), b.begin(),
+                      detail::vector_map_equal<TLess>(tless));
+    // use a lambda function here, too
+  }
 
 } // namespace sill
 

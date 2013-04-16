@@ -12,6 +12,7 @@
 #include <boost/unordered_map.hpp>
 
 #include <sill/global.hpp>
+#include <sill/base/stl_util.hpp>
 #include <sill/graph/undirected_edge.hpp>
 #include <sill/graph/boost_graph_helpers.hpp>
 #include <sill/iterator/map_key_iterator.hpp>

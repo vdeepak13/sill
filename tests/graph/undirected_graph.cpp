@@ -3,9 +3,13 @@
 
 #include <set>
 #include <map>
+
 #include <boost/array.hpp> 
+#include <boost/mpl/list.hpp>
 
 #include <sill/graph/undirected_graph.hpp>
+
+#include "predicates.hpp"
 
 #include <sill/macros_def.hpp>
 
@@ -247,4 +251,45 @@ BOOST_AUTO_TEST_CASE(test_num) {
   g.remove_vertex(0);
   BOOST_CHECK_EQUAL(g.num_vertices(), 9);
   BOOST_CHECK_EQUAL(g.num_edges(), 4);
+}
+
+
+typedef boost::mpl::list<int, double, void_> test_types;
+BOOST_AUTO_TEST_CASE_TEMPLATE(test_comparison, EP, test_types) {
+  typedef undirected_graph<size_t, int, EP> Graph;
+
+  Graph g1;
+  g1.add_vertex(1, 0);
+  g1.add_vertex(2, 1);
+  g1.add_vertex(3, 2);
+  g1.add_edge(1, 2);
+  g1.add_edge(2, 3);
+  
+  Graph g2;
+  g2.add_vertex(1, 0);
+  g2.add_vertex(3, 2);
+  g2.add_vertex(2, 1);
+  g2.add_edge(1, 2);
+  g2.add_edge(3, 2);
+
+  BOOST_CHECK_EQUAL(g1, g2);
+
+  Graph g3 = g2;
+  g3[1] = -1;
+  BOOST_CHECK_NE(g2, g3);
+
+  Graph g4 = g2;
+  g4.remove_edge(2, 3);
+  g4.add_edge(1, 3);
+  BOOST_CHECK_NE(g2, g3);
+}
+
+BOOST_AUTO_TEST_CASE(test_serialization) {
+  undirected_graph<int, std::string, double> g;
+  g.add_vertex(1, "hello");
+  g.add_vertex(2, "bye");
+  g.add_vertex(3, "maybe");
+  g.add_edge(1, 2, 1.5);
+  g.add_edge(2, 3, 2.5);
+  BOOST_CHECK(serialize_deserialize(g));
 }

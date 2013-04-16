@@ -1,7 +1,6 @@
-#include <iostream>
+#define BOOST_TEST_MODULE constrained_triangulation
+#include <boost/test/unit_test.hpp>
 
-#include <sill/global.hpp>
-#include <sill/functional.hpp>
 #include <sill/graph/triangulation.hpp>
 #include <sill/graph/undirected_graph.hpp>
 #include <sill/graph/grid_graphs.hpp>
@@ -9,6 +8,7 @@
 #include <sill/graph/constrained_elim_strategy.hpp>
 #include <sill/model/junction_tree.hpp>
 
+using namespace sill;
 
 //! A function object that extracts the elimination priority from a graph
 //! If needed, we could make this functor specific for graph_type below
@@ -20,13 +20,12 @@ struct elim_priority_functor {
   }
 };
 
-int main() {
-
-  using namespace sill;
-  using namespace std;
-
+BOOST_AUTO_TEST_CASE(test_triangulation) {
   // The graph type.  Each vertex is annotated with the elimination priority
   typedef undirected_graph<size_t, size_t> graph_type;
+
+  // The clique type
+  typedef std::set<size_t> node_set;
 
   // Build a 2 x n lattice.
   size_t n = 5;
@@ -40,39 +39,43 @@ int main() {
     for(size_t j = 0; j < n; j++)
       lattice[v[i][j]] = i;
 
-  // Write the graph out.
-  cout << "Graph: " << endl;
-  cout << lattice << endl;
-
   // Create a constrained elimination strategy (using min-degree as
   // the secondary strategy).
   constrained_elim_strategy<elim_priority_functor, min_degree_strategy> s;
 
-  // Create a junction tree using this elimination strategy.  (If we
-  // imagine vertices 0-4 as being discrete and vertices 5-9 as
+  // Create a junction tree using this elimination strategy.
+  // (If we imagine vertices 1-5 as being discrete and vertices 6-10 as
   // continuous random variables, then this creates a strongly-rooted
   // junction tree.)
   junction_tree<size_t> jt(lattice, s);
 
-  // Report the junction tree.
-  cout << "Junction tree: " << endl << jt << endl;
+  // Vertices
+  // 1: ({5 9 10}  0)
+  // 2: ({1 6 7}  0)
+  // 3: ({1 2 7 8}  0)
+  // 4: ({4 5 8 9}  0)
+  // 5: ({1 2 3 4 5 8}  0)
+  
+  // Edges
+  // 4 -- 5
+  // 3 -- 5
+  // 2 -- 3
+  // 1 -- 4
 
-  return EXIT_SUCCESS;
+  boost::array<size_t, 3> clique1 = {{5, 9, 10}};
+  boost::array<size_t, 3> clique2 = {{1, 6, 7}};
+  boost::array<size_t, 4> clique3 = {{1, 2, 7, 8}};
+  boost::array<size_t, 4> clique4 = {{4, 5, 8, 9}};
+  boost::array<size_t, 6> clique5 = {{1, 2, 3, 4, 5, 8}};
+
+  std::vector<node_set> cliques;
+  cliques.push_back(node_set(clique1.begin(), clique1.end()));
+  cliques.push_back(node_set(clique2.begin(), clique2.end()));
+  cliques.push_back(node_set(clique3.begin(), clique3.end()));
+  cliques.push_back(node_set(clique4.begin(), clique4.end()));
+  cliques.push_back(node_set(clique5.begin(), clique5.end()));
+  
+  junction_tree<size_t> jt2(cliques);
+  
+  BOOST_CHECK(jt == jt2);
 }
-
-/*
-
-Junction tree:
-v
-({0 5 6}  invalid)
-({4 8 9}  invalid)
-({3 4 7 8}  invalid)
-({0 1 6 7}  invalid)
-({0 1 2 3 4 7}  invalid)
-e
-2 4  ({3 4 7}  invalid)
-4 3  ({0 1 7}  invalid)
-0 3  ({0 6}  invalid)
-2 1  ({4 8}  invalid)
-
-*/

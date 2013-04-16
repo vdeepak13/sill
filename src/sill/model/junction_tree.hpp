@@ -73,6 +73,19 @@ namespace sill {
       }
 
     }; // struct jt_vertex_info
+    
+    //! Compares the clique and vertex property stored at two vertices
+    template <typename Node, typename VertexProperty>
+    bool operator==(const jt_vertex_info<Node, VertexProperty>& a,
+                    const jt_vertex_info<Node, VertexProperty>& b) {
+      return a.clique == b.clique && a.property == b.property;
+    }
+
+    template <typename Node, typename VertexProperty>
+    bool operator!=(const jt_vertex_info<Node, VertexProperty>& a,
+                    const jt_vertex_info<Node, VertexProperty>& b) {
+      return a.clique != b.clique || a.property != b.property;
+    }
 
     template <typename Node, typename VP>
     std::ostream& operator<<(std::ostream& out,
@@ -125,6 +138,18 @@ namespace sill {
       }
 
     }; // struct jt_edge_info
+
+    template <typename Node, typename EdgeProperty>
+    bool operator==(const jt_edge_info<Node, EdgeProperty>& a,
+                    const jt_edge_info<Node, EdgeProperty>& b) {
+      return a.separator == b.separator && a.property == b.property;
+    }
+
+    template <typename Node, typename EdgeProperty>
+    bool operator!=(const jt_edge_info<Node, EdgeProperty>& a,
+                    const jt_edge_info<Node, EdgeProperty>& b) {
+      return a.separator != b.separator || a.property != b.property;
+    }
 
     template <typename Node, typename EdgeProperty>
     std::ostream& operator<<(std::ostream& out,
@@ -535,6 +560,20 @@ namespace sill {
 
     //! Returns a null vertex
     static vertex null_vertex() { return graph_type::null_vertex(); }
+
+    /**
+     * Returns true if two junction trees are identical
+     * The vertices and vertex / edge properties must match,
+     * not only the cliques / separators.
+     */
+    bool operator==(const junction_tree& other) const {
+      return graph == other.graph;
+    }
+    
+    //! Inequality comparison
+    bool operator!=(const junction_tree& other) const {
+      return graph != other.graph;
+    }
 
     // Queries
     //==========================================================================

@@ -1,13 +1,20 @@
+// Warning: this test appears to be mostly a copy of directed_graph.cpp
+// we need to add edge multiplicity in most of the cases
 
-#include <iostream>
-#include <sill/macros_def.hpp>
+#define BOOST_TEST_MODULE 
+#include <boost/test/unit_test.hpp>
+
 #include <sill/graph/directed_multigraph.hpp>
 #include <sill/graph/graph_traversal.hpp>
-#include <vector>
+
 #include <algorithm>
 #include <set>
+#include <vector>
 
 #include <boost/array.hpp>
+
+#include "predicates.hpp"
+
 #include <sill/macros_def.hpp>
 
 using namespace sill;
@@ -19,69 +26,69 @@ typedef size_t edge_property;
 typedef directed_multigraph<V, vertex_property, edge_property> graph;
 typedef pair<V,V> E;
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::edge_iterator);
+BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::vertex_iterator);
+// see http://www.boost.org/doc/libs/1_53_0/libs/test/doc/html/utf/user-guide/test-output/test-log.html
 
-void test_directed_edge() {
-  cout << "Testing Directed Edge: " << endl;
+
+BOOST_AUTO_TEST_CASE(test_directed_edge) {
   directed_edge<V> e1, e2;
-  assert(e1 == e2);
-  assert(e1.source() == e2.source());
-  assert(e1.source() == e1.target());
+  BOOST_CHECK_EQUAL(e1, e2);
+  BOOST_CHECK_EQUAL(e1.source(), e2.source());
+  BOOST_CHECK_EQUAL(e1.source(), e1.target());
 }
 
 
-void test_constructors(){
-  cout << "Testng Constructors:" << endl;
-  cout << "Testing Default constructors:" << endl;
+BOOST_AUTO_TEST_CASE(test_constructors) {
+  // default constructor
   graph g1;
-  assert(g1.empty());
-  assert(g1.edges().first == g1.edges().second);
-  assert(g1.vertices().first == g1.vertices().second);
+  BOOST_CHECK(g1.empty());
+  BOOST_CHECK_EQUAL(g1.edges().first, g1.edges().second);
+  BOOST_CHECK_EQUAL(g1.vertices().first, g1.vertices().second);
   
-  cout << "Testing edge list constructor: " << endl;
+  // edge list constructor
   boost::array<E, 8> edges = 
     {{E(0, 2), E(1, 2), E(1, 3), E(1, 7), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1)}};
   graph g2(edges);
   foreach(E e, edges) {
-    assert(g2.contains(e.first));
-    assert(g2.contains(e.second));
-    assert(g2.contains(e.first, e.second));
-    assert( !g2.contains(e.second, e.first) );
+    BOOST_CHECK(g2.contains(e.first));
+    BOOST_CHECK(g2.contains(e.second));
+    BOOST_CHECK(g2.contains(e.first, e.second));
+    BOOST_CHECK(!g2.contains(e.second, e.first));
   }
-  assert( !g2.contains(8,2) );
-  assert( !g2.contains(8) );
+  BOOST_CHECK(!g2.contains(8, 2));
+  BOOST_CHECK(!g2.contains(8));
 
-  cout << "Testing copy constructor: " << endl;
-  graph g3 = g2;
+  // copy constructor
+  graph g3(g2);
   foreach(E e, edges) {
-    assert(g3.contains(e.first));
-    assert(g3.contains(e.second));
-    assert(g3.contains(e.first, e.second));
-    assert( !g3.contains(e.second, e.first) );
+    BOOST_CHECK(g3.contains(e.first));
+    BOOST_CHECK(g3.contains(e.second));
+    BOOST_CHECK(g3.contains(e.first, e.second));
+    BOOST_CHECK(!g3.contains(e.second, e.first));
   }
-  assert( !g3.contains(8,2) );
-  assert( !g3.contains(8) );
+  BOOST_CHECK(!g3.contains(8,2));
+  BOOST_CHECK(!g3.contains(8));
 }
 
-void test_vertices() {
-  cout << "Testing vertices(): " << endl;
+BOOST_AUTO_TEST_CASE(test_vertices) {
   graph g;
-  boost::array<V, 11> verts = {{0,1,2,3,4,5,6,7,8,9,10}};
+  boost::array<V, 11> verts = {{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}};
   std::map<V,V> vert_map;
   foreach(V v, verts) {
     vert_map[v] = v;
     g.add_vertex(v,v);
   }
   foreach(V v, g.vertices()) {
-    assert(vert_map.count(v) == 1);
-    assert(g[v] == vert_map[v]);
+    BOOST_CHECK_EQUAL(vert_map.count(v), 1);
+    BOOST_CHECK_EQUAL(g[v], vert_map[v]);
     vert_map.erase(v);
   }
-  assert(vert_map.empty());
+  BOOST_CHECK(vert_map.empty());
 }
 
-void test_edges() {
-  cout << "Testing edges(): " << endl;
+BOOST_AUTO_TEST_CASE(test_edges) {
   boost::array<E, 12> edges = 
     {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1),
@@ -95,11 +102,11 @@ void test_edges() {
     ++i;
   }
   foreach(graph::edge e, g.edges()) {
-    assert(data.count(make_pair(e.source(), e.target())) == 1);
-    assert(data[make_pair(e.source(), e.target())] == g[e]);
+    BOOST_CHECK_EQUAL(data.count(make_pair(e.source(), e.target())), 1);
+    BOOST_CHECK_EQUAL(data[make_pair(e.source(), e.target())], g[e]);
     data.erase(make_pair(e.source(), e.target()));
   }
-  assert(data.empty());
+  BOOST_CHECK(data.empty());
 
   // test edge removal
   g.remove_edge(1, 9);
@@ -111,15 +118,14 @@ void test_edges() {
     ++i;
   }  
   foreach(graph::edge e, g.edges()) {
-    assert(data.count(make_pair(e.source(), e.target())) == 1);
-    assert(data[make_pair(e.source(), e.target())] == g[e]);
+    BOOST_CHECK_EQUAL(data.count(make_pair(e.source(), e.target())), 1);
+    BOOST_CHECK_EQUAL(data[make_pair(e.source(), e.target())], g[e]);
     data.erase(make_pair(e.source(), e.target()));
   }
-  assert(data.empty());
+  BOOST_CHECK(data.empty());
 }
 
-void test_parents() {
-  cout << "Testing neighbors(): " << endl;
+BOOST_AUTO_TEST_CASE(test_parents) {
   boost::array<E, 12> edges = 
     {{E(0, 2), E(4, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(1, 4),
@@ -129,15 +135,14 @@ void test_parents() {
   std::set<V> vert_set;
   vert_set.insert(verts.begin(), verts.end());
   foreach(V v, g.parents(4)) {
-    assert(vert_set.count(v) == 1);
+    BOOST_CHECK_EQUAL(vert_set.count(v), 1);
     vert_set.erase(v);
   }
-  assert(vert_set.empty());
+  BOOST_CHECK(vert_set.empty());
 }
 
 
-void test_children() {
-  cout << "Testing neighbors(): " << endl;
+BOOST_AUTO_TEST_CASE(test_children) {
   boost::array<E, 12> edges = 
     {{E(0, 2), E(4, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1),
@@ -147,16 +152,15 @@ void test_children() {
   std::set<V> vert_set;
   vert_set.insert(verts.begin(), verts.end());
   foreach(V v, g.children(4)) {
-    assert(vert_set.count(v) == 1);
+    BOOST_CHECK_EQUAL(vert_set.count(v), 1);
     vert_set.erase(v);
   }
-  assert(vert_set.empty());
+  BOOST_CHECK(vert_set.empty());
 }
 
 
 
-void test_in_edges() {
-  cout << "Testing in_edges(): " << endl;
+BOOST_AUTO_TEST_CASE(test_in_edges) {
   boost::array<E, 12> edges = 
     {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1),
@@ -174,15 +178,14 @@ void test_in_edges() {
   }
   foreach(graph::edge edge, g.in_edges(3)) { 
     E e = make_pair(edge.source(), edge.target());
-    assert(edge_values.count(e) == 1);
-    assert(g[edge] == edge_values[e]);
+    BOOST_CHECK_EQUAL(edge_values.count(e), 1);
+    BOOST_CHECK_EQUAL(g[edge], edge_values[e]);
     edge_values.erase(e);
   }
-  assert(edge_values.empty());
+  BOOST_CHECK(edge_values.empty());
 }
 
-void test_out_edges() {
-  cout << "Testing in_edges(): " << endl;
+BOOST_AUTO_TEST_CASE(test_out_edges) {
   boost::array<E, 12> edges = 
     {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1),
@@ -200,34 +203,35 @@ void test_out_edges() {
   }
   foreach(graph::edge edge, g.out_edges(3)) { 
     E e = make_pair(edge.source(), edge.target());
-    assert(edge_values.count(e) == 1);
-    assert(g[edge] == edge_values[e]);
+    BOOST_CHECK_EQUAL(edge_values.count(e), 1);
+    BOOST_CHECK_EQUAL(g[edge], edge_values[e]);
     edge_values.erase(e);
   }
-  assert(edge_values.empty());
+  BOOST_CHECK(edge_values.empty());
 }
 
 
-void test_contains() {
-  cout << "Testing contains(): " << endl;
+BOOST_AUTO_TEST_CASE(test_contains) {
   boost::array<E, 12> edges = 
     {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1),
       E(2, 6), E(3, 5), E(7, 3), E(3, 8)}};
   graph g(edges);
-  assert(g.contains(0) & g.contains(1) & g.contains(2) & g.contains(3) &
-         g.contains(4) & g.contains(5) & g.contains(6) & g.contains(7) &
-         g.contains(8) & g.contains(9) & g.contains(10) & !g.contains(11));
-  foreach(E e, edges) {
-    assert(g.contains(e.first, e.second) & !g.contains(e.second, e.first));
-    assert(g.contains(g.get_edge(e.first,e.second)));
+  for (size_t i = 0; i <= 10; ++i) {
+    BOOST_CHECK(g.contains(i));
   }
-  assert(!g.contains(0,3) & !g.contains(2, 10));
+  BOOST_CHECK(!g.contains(11));
+  foreach(E e, edges) {
+    BOOST_CHECK(g.contains(e.first, e.second));
+    BOOST_CHECK(!g.contains(e.second, e.first));
+    BOOST_CHECK(g.contains(g.get_edge(e.first, e.second)));
+  }
+  BOOST_CHECK(!g.contains(0, 3));
+  BOOST_CHECK(!g.contains(2, 10));
 }
 
 
-void test_get_edge() {
-  cout << "Testing get_edge(): " << endl;
+BOOST_AUTO_TEST_CASE(test_get_edge) {
   boost::array<E, 12> edges = 
     {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1),
@@ -241,112 +245,119 @@ void test_get_edge() {
     ++i;
   }
   foreach(E e, edges) {
-    assert(g.get_edge(e.first, e.second).source() == e.first);
-    assert(g.get_edge(e.first, e.second).target() == e.second);
-    assert(g[g.get_edge(e.first, e.second)] == data[e]);
+    BOOST_CHECK_EQUAL(g.get_edge(e.first, e.second).source(), e.first);
+    BOOST_CHECK_EQUAL(g.get_edge(e.first, e.second).target(), e.second);
+    BOOST_CHECK_EQUAL(g[g.get_edge(e.first, e.second)], data[e]);
   }
 }
 
 
-void test_degree() {
-  cout << "Testing in degree" << endl;
+BOOST_AUTO_TEST_CASE(test_degree) {
   graph g;
   g.add_vertex(2,3);
-  assert(g.in_degree(2) == 0);
-  assert(g.out_degree(2) == 0);
-  assert(g.degree(2) == 0);
+  BOOST_CHECK_EQUAL(g.in_degree(2), 0);
+  BOOST_CHECK_EQUAL(g.out_degree(2), 0);
+  BOOST_CHECK_EQUAL(g.degree(2), 0);
 
   g.add_edge(1,2,3);
-  assert(g.in_degree(2) == 1);
-  assert(g.in_degree(1) == 0);
-  assert(g.out_degree(1) == 1);
-  assert(g.out_degree(2) == 0);
-  assert(g.degree(1) == 1);
-  assert(g.degree(2) == 1);
+  BOOST_CHECK_EQUAL(g.in_degree(2), 1);
+  BOOST_CHECK_EQUAL(g.in_degree(1), 0);
+  BOOST_CHECK_EQUAL(g.out_degree(1), 1);
+  BOOST_CHECK_EQUAL(g.out_degree(2), 0);
+  BOOST_CHECK_EQUAL(g.degree(1), 1);
+  BOOST_CHECK_EQUAL(g.degree(2), 1);
 
   boost::array<E, 12> edges = 
     {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1),
       E(2, 6), E(3, 5), E(7, 3), E(3, 8)}};
   graph g2(edges);
-  assert(g2.in_degree(3) == 3 &&
-	 g2.out_degree(4) == 2 &&
-	 g2.in_degree(3) + g2.out_degree(3) == g2.degree(3));
+  BOOST_CHECK_EQUAL(g2.in_degree(3), 3);
+  BOOST_CHECK_EQUAL(g2.out_degree(4), 2);
+  BOOST_CHECK_EQUAL(g2.in_degree(3) + g2.out_degree(3), g2.degree(3));
 }
 
 
-void test_num() {
-  cout << "Testing num_vertices() and num_edges(): " << endl;
+BOOST_AUTO_TEST_CASE(test_num) {
   boost::array<E, 12> edges = 
     {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
       E(2, 3), E(3, 4), E(4, 0), E(4, 1),
       E(2, 6), E(3, 5), E(7, 3), E(3, 8)}};
   graph g(edges);
-  assert(g.num_vertices() == 11);
-  assert(g.num_edges() == 12);
+  BOOST_CHECK_EQUAL(g.num_vertices(), 11);
+  BOOST_CHECK_EQUAL(g.num_edges(), 12);
   g.clear_in_edges(3);
-  assert(g.num_vertices() == 11);
-  assert(g.num_edges() == 9);
+  BOOST_CHECK_EQUAL(g.num_vertices(), 11);
+  BOOST_CHECK_EQUAL(g.num_edges(), 9);
   g.clear_out_edges(3);
-  assert(g.num_vertices() == 11);
-  assert(g.num_edges() == 6);
+  BOOST_CHECK_EQUAL(g.num_vertices(), 11);
+  BOOST_CHECK_EQUAL(g.num_edges(), 6);
 
   g.remove_vertex(3);
-  assert(g.num_vertices() == 10);
-  assert(g.num_edges() == 6);
+  BOOST_CHECK_EQUAL(g.num_vertices(), 10);
+  BOOST_CHECK_EQUAL(g.num_edges(), 6);
   g.remove_vertex(0);
-  assert(g.num_vertices() == 9);
-  assert(g.num_edges() == 4);
+  BOOST_CHECK_EQUAL(g.num_vertices(), 9);
+  BOOST_CHECK_EQUAL(g.num_edges(), 4);
 }
 
 
+BOOST_AUTO_TEST_CASE(test_comparison) {
+  typedef directed_multigraph<size_t, int, double> Graph;
 
-void test_large() {
-  size_t n = 100000;
-  size_t m = 100;
+  Graph g1;
+  g1.add_vertex(1, 0);
+  g1.add_vertex(2, 1);
+  g1.add_vertex(3, 2);
+  g1.add_edge(1, 2);
+  g1.add_edge(2, 3);
+  g1.add_edge(2, 3, 5.0);
   
-  cout << "Beginning Large Test" << endl;
-  directed_multigraph<size_t, size_t, size_t> g;
-  for(size_t u = 0; u < n; u++) {
-    g.add_vertex(u,u);
-    for(size_t v = 0; v < m; v++) {
-      g.add_vertex(v,v);
-      g.add_edge(u,v, u * v);
-    } 
-  }
-}
+  Graph g2;
+  g2.add_vertex(1, 0);
+  g2.add_vertex(3, 2);
+  g2.add_vertex(2, 1);
+  g2.add_edge(1, 2);
+  g2.add_edge(2, 3, 5.0);
+  g2.add_edge(2, 3);
 
-void test_partial_vertex_order() {
-  boost::array<E, 6> edges = 
-    {{E(0, 2), E(1, 2), E(1, 3), E(1, 7), 
-      E(2, 3), E(3, 4)}};
-  graph g(edges);
-  cout << "Testing directed_partial_vertex_order(): " << endl;
-  cout << "\t" << directed_partial_vertex_order(g) << endl;
-}
+  BOOST_CHECK_EQUAL(g1, g2);
 
-int main(int argc, char** argv) {
-  std::cout << "Testing Directed Graph" << std::endl;
-  test_directed_edge();
-  test_constructors();
-  test_vertices();
-  test_edges();
-  test_parents();
-  test_children();
-  test_in_edges();
-  test_out_edges();
-  test_contains();
-  test_get_edge();
-  test_degree();
-  test_num();
+  Graph g3 = g2;
+  g3[1] = -1;
+  BOOST_CHECK_NE(g2, g3);
 
-  // test_large();
-  // test_partial_vertex_order();
-
-  cout << "====================================================" << endl;
-  cout << "PASSED ALL TESTS!" << endl;
-
-  return(EXIT_SUCCESS);
+  Graph g4 = g2;
+  g4.remove_edge(2, 3);
+  BOOST_CHECK_NE(g2, g3);
 }
 
 
+BOOST_AUTO_TEST_CASE(test_serialization) {
+  directed_multigraph<int, std::string, double> g;
+  g.add_vertex(1, "hello");
+  g.add_vertex(2, "bye");
+  g.add_vertex(3, "maybe");
+  g.add_edge(1, 2, 1.5);
+  g.add_edge(2, 3, 2.5);
+  g.add_edge(3, 2, 3.5);
+  g.add_edge(1, 2, 0.5);
+  BOOST_CHECK(serialize_deserialize(g));
+}
+
+
+// This test is too slow for a unit test and does not
+// actually test anything
+// BOOST_AUTO_TEST_CASE(test_large) {
+//   size_t n = 100000;
+//   size_t m = 100;
+//   cout << "Beginning Large Test" << endl;
+//   directed_multigraph<size_t, size_t, size_t> g;
+//   for(size_t u = 0; u < n; u++) {
+//     g.add_vertex(u,u);
+//     for(size_t v = 0; v < m; v++) {
+//       g.add_vertex(v,v);
+//       g.add_edge(u,v, u * v);
+//     } 
+//   }
+// }

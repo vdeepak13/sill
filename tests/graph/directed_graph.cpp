@@ -9,6 +9,9 @@
 #include <set>
 
 #include <boost/array.hpp>
+#include <boost/mpl/list.hpp>
+
+#include "predicates.hpp"
 
 #include <sill/macros_def.hpp>
 
@@ -283,23 +286,46 @@ BOOST_AUTO_TEST_CASE(test_num) {
 }
 
 
-BOOST_AUTO_TEST_CASE(test_partial_vertex_order) {
-  boost::array<E, 6> edges = 
-    {{E(0, 2), E(1, 2), E(1, 3), E(1, 7), 
-      E(2, 3), E(3, 4)}};
-  graph g(edges);
-  std::vector<V> order_vec = directed_partial_vertex_order(g);
-  BOOST_CHECK_EQUAL(order_vec.size(), g.num_vertices());
+typedef boost::mpl::list<int, double, void_> test_types;
+BOOST_AUTO_TEST_CASE_TEMPLATE(test_comparison, EP, test_types) {
+  typedef directed_graph<size_t, int, EP> Graph;
 
-  std::map<V, size_t> order;
-  for (size_t i = 0; i < order_vec.size(); ++i) {
-    BOOST_CHECK(g.contains(order_vec[i]));
-    order[order_vec[i]] = i;
-  }
+  Graph g1;
+  g1.add_vertex(1, 0);
+  g1.add_vertex(2, 1);
+  g1.add_vertex(3, 2);
+  g1.add_edge(1, 2);
+  g1.add_edge(2, 3);
   
-  foreach(E e, edges) {
-    BOOST_CHECK_LT(order[e.first], order[e.second]);
-  }
+  Graph g2;
+  g2.add_vertex(1, 0);
+  g2.add_vertex(3, 2);
+  g2.add_vertex(2, 1);
+  g2.add_edge(1, 2);
+  g2.add_edge(2, 3);
+
+  BOOST_CHECK_EQUAL(g1, g2);
+
+  Graph g3 = g2;
+  g3[1] = -1;
+  BOOST_CHECK_NE(g2, g3);
+
+  Graph g4 = g2;
+  g4.remove_edge(2, 3);
+  g4.add_edge(1, 3);
+  BOOST_CHECK_NE(g2, g3);
+}
+
+
+BOOST_AUTO_TEST_CASE(test_serialization) {
+  directed_graph<int, std::string, double> g;
+  g.add_vertex(1, "hello");
+  g.add_vertex(2, "bye");
+  g.add_vertex(3, "maybe");
+  g.add_edge(1, 2, 1.5);
+  g.add_edge(2, 3, 2.5);
+  g.add_edge(3, 2, 3.5);
+  BOOST_CHECK(serialize_deserialize(g));
 }
 
 

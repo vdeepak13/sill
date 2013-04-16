@@ -5,6 +5,7 @@
 #include <list>
 #include <iterator>
 #include <iosfwd>
+#include <algorithm>
 
 #include <boost/unordered_map.hpp>
 #include <boost/graph/graph_traits.hpp>
@@ -307,7 +308,38 @@ namespace sill {
       else
         return *static_cast<edge_property*>(add_edge(u, v).first.m_property);
     }
-    
+
+    /**
+     * Compares the graph strucutre and the vertex & edge properties.
+     * The property type must support operator!= and additionally,
+     * the edge property type must support operator<.
+     * This operation invalidates any edge iterators.
+     */
+    bool operator==(const directed_multigraph& other) const {
+      if (num_vertices() != other.num_vertices() ||
+          num_edges() != other.num_edges()) {
+        return false;
+      }
+      foreach(typename vertex_data_map::const_reference vp, data_map) {
+        const vertex_data* data_other = get_ptr(other.data_map, vp.first);
+        if (!data_other || vp.second.property != data_other->property) {
+          return false;
+        }
+        if (!equal(vp.second.children,
+                   data_other->children,
+                   edge_property_less())) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    //! Inequality comparison
+    bool operator!=(const directed_multigraph& other) const {
+      return !(*this == other);
+    }
+
+
     // Modifications
     //==========================================================================
     /**
@@ -442,7 +474,7 @@ namespace sill {
       }
     }
 
-    // Private functions and serialization
+    // Private classes and functions
     //==========================================================================
   private: 
     const vertex_data& find_vertex_data(const vertex& v) const { 
@@ -459,6 +491,13 @@ namespace sill {
         //delete static_cast<edge_property*>(e.m_property);
       }
     }
+
+    //! Compares two edge properties by value
+    struct edge_property_less {
+      bool operator()(const EdgeProperty* a, const EdgeProperty* b) {
+        return *a < *b;
+      }
+    };
 
     // Public member classes
     //==========================================================================
