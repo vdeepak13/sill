@@ -1,34 +1,27 @@
-#include <cassert>
-#include <iostream>
+#define BOOST_TEST_MODULE dense_table
+#include <boost/test/unit_test.hpp>
+
 #include <functional>
 
 #include <boost/tuple/tuple.hpp>
-#include <boost/timer.hpp>
-
 #include <sill/datastructure/dense_table.hpp>
-#include <sill/functional.hpp>
-#include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>
 
-int main(int argc, char** argv) {
-  using namespace sill;
-  using namespace std;
+using namespace sill;
 
-  boost::timer t;
-  // Make sure we can time things.
-  //assert(clock() != static_cast<clock_t>(-1));
+typedef sill::dense_table<int> table_type;
+typedef std::vector<size_t> shape_type;
 
-  std::cerr << "Warning: optimization can make the times below inaccurate."
-            << std::endl;
+BOOST_AUTO_TEST_CASE(test_read_write) {
 
-  ////////////////////////////////////////////////////////
-
+#if 0
   // Create a native 12-d array of integers, and time how long it
   // takes to write and read each cell once.
   int a[3][3][3][3][3][3][3][3][3][3][3][3];
   int x = 0;
   double time;
+  boost::timer t;
   {
     for (int i0 = 0; i0 < 3; i0++)
       for (int i1 = 0; i1 < 3; i1++)
@@ -58,44 +51,33 @@ int main(int argc, char** argv) {
                           for (int i11 = 0; i11 < 3; i11++)
                             assert(a[i0][i1][i2][i3][i4][i5][i6][i7][i8][i9][i10][i11] == x++);
     time = t.elapsed();
-  }
-  std::cout << "Wrote and read 3^12 native array cells in "
-            << time << "s." << std::endl;
-
-  // Now do the same with multidimensional tables.
-  t.restart();
-
-  typedef sill::dense_table<int> table_type;
-  typedef std::vector<size_t> shape_type;
-
-  const int d = 12;
-  unsigned int dims[d] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
+ }
+#endif
+  
+  const int d = 10;
+  unsigned int dims[d] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
   table_type a_table(shape_type(dims, dims + d));
-  cout << a_table.shape() << endl;
-  {
-    // Number the elements uniquely.
-    int x = 0;
-    foreach(const table_type::shape_type& index, a_table.indices()) {
-      a_table(index) = x++;
-    }
-    // Check to make sure the elements are what we set them to.
-    x = 0;
-    foreach(const table_type::shape_type& index, a_table.indices())
-      assert(a_table(index) == x++);
-    time = t.elapsed();
+
+  // Number the elements uniquely.
+  int x = 0;
+  foreach(const table_type::shape_type& index, a_table.indices()) {
+    a_table(index) = x++;
   }
-  std::cout << "Wrote and read 3^12 multidimensional table cells in "
-            << time << "s." << std::endl;
+  // Check to make sure the elements are what we set them to.
+  x = 0;
+  foreach(const table_type::shape_type& index, a_table.indices())
+    BOOST_CHECK_EQUAL(a_table(index), x++);
+}
 
-  ////////////////////////////////////////////////////////
 
+BOOST_AUTO_TEST_CASE(test_operations) {
   // Perform a table sum using native arrays.
   const size_t p = 10;
   const size_t q = 8;
   const size_t r = 9;
   int e[p][q];
   int f[q][r];
-  x = 0;
+  int x = 0;
   for (size_t i = 0; i < p; i++)
     for (size_t j = 0; j < q; j++)
       e[i][j] = x++;
@@ -133,7 +115,7 @@ int main(int argc, char** argv) {
   for (index[0] = 0; index[0] < p; index[0]++)
     for (index[1] = 0; index[1] < q; index[1]++)
       for (index[2] = 0; index[2] < r; index[2]++)
-        assert(sum[index[0]][index[1]][index[2]] == g_table(index));
+        BOOST_CHECK_EQUAL(sum[index[0]][index[1]][index[2]], g_table(index));
 
   ////////////////////////////////////////////////////////
 
@@ -160,7 +142,5 @@ int main(int argc, char** argv) {
   // Check it is correct.
   for (index2[0] = 0; index2[0] < p; index2[0]++)
     for (index2[1] = 0; index2[1] < r; index2[1]++)
-      assert(agg[index2[0]][index2[1]] == h_table(index2));
-
-  return EXIT_SUCCESS;
+      BOOST_CHECK_EQUAL(agg[index2[0]][index2[1]], h_table(index2));
 }
