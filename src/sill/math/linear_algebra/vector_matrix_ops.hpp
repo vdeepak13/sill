@@ -351,12 +351,18 @@ namespace sill {
   /*****************************************************************************
    * Matrix Ops
    *  - normalize_columns
+   *  - normalize_columns_unit_variance
    ****************************************************************************/
 
   //! Normalize the columns of A so that each has L2 norm of 1.
   //! Any all-zero columns remain all-zero.
   template <typename T, typename I>
   void normalize_columns(csc_matrix<T,I>& A);
+
+  //! Normalize the columns of A so that each has L2 norm of 1.
+  //! Any all-zero columns remain all-zero.
+  template <typename T, typename I>
+  void normalize_columns(coo_matrix<T,I>& A);
 
   //! Normalize the columns of A so that each has L2 norm of 1.
   //! Any all-zero columns remain all-zero.
@@ -367,6 +373,11 @@ namespace sill {
   //! Any all-zero columns remain all-zero.
   template <typename T, typename I>
   void normalize_columns_unit_variance(csc_matrix<T,I>& A);
+
+  //! Normalize the columns of A so that each has unit variance.
+  //! Any all-zero columns remain all-zero.
+  template <typename T, typename I>
+  void normalize_columns_unit_variance(coo_matrix<T,I>& A);
 
   //! Normalize the columns of A so that each has unit variance.
   //! Any all-zero columns remain all-zero.
@@ -1018,6 +1029,17 @@ namespace sill {
     }
   }
 
+  template <typename T, typename I>
+  void normalize_columns(coo_matrix<T,I>& A) {
+    vec z(zeros<vec>(A.n_cols));
+    for (size_t k = 0; k < A.num_non_zeros(); ++k)
+      z[A.col_index(k)] += sqr(A.value(k));
+    for (size_t k = 0; k < A.num_non_zeros(); ++k) {
+      if (z[A.col_index(k)] != 0)
+        A.value(k) /= z[A.col_index(k)];
+    }
+  }
+
   template <typename T>
   void normalize_columns(arma::Mat<T>& A) {
     arma::Col<T> sqrt_AtA_diag = trans(sqrt(sum(A % A)));
@@ -1035,15 +1057,38 @@ namespace sill {
       for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k)
         mean_ += A.value(k);
       mean_ /= A.num_rows();
+
       T z = 0;
       for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k)
         z += sqr(A.value(k) - mean_);
-      z += (A.size() - A.col(j).num_non_zeros()) * sqr(mean_);
-      z = sqrt(z);
+      z += (A.n_rows - A.col(j).num_non_zeros()) * sqr(mean_);
+      z = sqrt(z / A.n_rows);
+
       if (z == 0)
         continue;
       for (size_t k = A.col_offsets()[j]; k < A.col_offsets()[j+1]; ++k)
         A.value(k) /= z;
+    }
+  }
+
+  template <typename T, typename I>
+  void normalize_columns_unit_variance(coo_matrix<T,I>& A) {
+    vec z;
+    {
+      vec m1(zeros<vec>(A.n_cols)); // first moment
+      vec m2(zeros<vec>(A.n_cols)); // second moment
+      for (size_t k = 0; k < A.num_non_zeros(); ++k) {
+        m1[A.col_index(k)] += A.value(k);
+        m2[A.col_index(k)] += sqr(A.value(k));
+      }
+      m1 /= A.n_rows;
+      m2 /= A.n_rows;
+      z = sqrt(m2 - (m1 % m1));
+    }
+
+    for (size_t k = 0; k < A.num_non_zeros(); ++k) {
+      if (z[A.col_index(k)] != 0)
+        A.value(k) /= z[A.col_index(k)];
     }
   }
 

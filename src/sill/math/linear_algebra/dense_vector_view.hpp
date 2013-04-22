@@ -54,6 +54,21 @@ namespace sill {
     // NO DESTRUCTOR.
     // This is a light view of data; it does not own the data.
 
+    //! Conversion to arma::Col<T>
+    operator arma::Col<T>() const {
+      if (pitch_ == 1) {
+        return arma::Col<T>(values_, n_);
+      } else {
+        arma::Col<T> tmp(n_);
+        size_type j = 0;
+        for (size_type i = 0; i < n_ * pitch_; i += pitch_) {
+          tmp[j] = values_[i];
+          ++j;
+        }
+        return tmp;
+      }
+    }
+
     // Getters and setters: dimensions
     //==========================================================================
 
