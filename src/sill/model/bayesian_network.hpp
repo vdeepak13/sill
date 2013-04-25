@@ -144,7 +144,7 @@ namespace sill {
       double ll = 0;
       foreach(const F& f, factors())
         ll += f.logv(a);
-      return ll / base;
+      return ll / std::log(base);
     }
 
     //! Log (base e) likelihood
@@ -158,7 +158,7 @@ namespace sill {
       double ll = 0;
       foreach(const F& f, factors())
         ll += f.logv(r);
-      return ll / base;
+      return ll / std::log(base);
     }
 
     //! Log (base e) likelihood
