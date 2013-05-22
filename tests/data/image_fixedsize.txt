@@ -1,0 +1,7 @@
+| Dataset for testing image_oracle.hpp (variable-sized images).
+*fixed_size=1
+
+img1
+2 3 1 2 3 4 5 6
+img2
+2 3 8 9 10 11 12 13

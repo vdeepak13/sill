@@ -1,0 +1,108 @@
+#include <prl/learning/dataset/record.hpp>
+
+#include <prl/macros_def.hpp>
+
+namespace prl {
+
+    // Getters and helpers
+    //==========================================================================
+
+    prl::finite_assignment record::finite_assignment() const {
+      prl::finite_assignment a;
+      foreach(const finite_var_index_pair& p, *finite_numbering_ptr) {
+        a[p.first] = fin_ptr->operator[](p.second);
+      }
+      return a;
+    }
+
+    prl::vector_assignment record::vector_assignment() const {
+      prl::vector_assignment a;
+      foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
+        vec v(p.first->size());
+        for(size_t j = 0; j < p.first->size(); ++j)
+          v[j] = vec_ptr->operator[](j+p.second);
+        a[p.first] = v;
+      }
+      return a;
+    }
+
+    finite_var_vector record::finite_list() const {
+      finite_var_vector flist(finite_numbering_ptr->size());
+      for (std::map<finite_variable*,size_t>::const_iterator it
+             = finite_numbering_ptr->begin();
+           it != finite_numbering_ptr->end();
+           ++it)
+        flist[it->second] = it->first;
+      return flist;
+    }
+
+    vector_var_vector record::vector_list() const {
+      vector_var_vector vlist(vector_numbering_ptr->size());
+      for (std::map<vector_variable*,size_t>::const_iterator it
+             = vector_numbering_ptr->begin();
+           it != vector_numbering_ptr->end();
+           ++it)
+        vlist[it->second] = it->first;
+      return vlist;
+    }
+
+    record& record::operator=(const record& rec) {
+      finite_numbering_ptr = rec.finite_numbering_ptr;
+      vector_numbering_ptr = rec.vector_numbering_ptr;
+      if (own) {
+        fin_ptr->resize(rec.fin_ptr->size());
+        for (size_t j(0); j < rec.fin_ptr->size(); ++j)
+          fin_ptr->operator[](j) = rec.fin_ptr->operator[](j);
+        vec_ptr->resize(rec.vec_ptr->size());
+        for (size_t j(0); j < rec.vec_ptr->size(); ++j)
+          vec_ptr->operator[](j) = rec.vec_ptr->operator[](j);
+      } else {
+        own = true;
+        fin_ptr = new std::vector<size_t>(*(rec.fin_ptr));
+        vec_ptr = new vec(*(rec.vec_ptr));
+      }
+      return *this;
+    }
+
+    // Mutating operations
+    //==========================================================================
+
+    void
+    record::reset
+    (copy_ptr<std::map<finite_variable*, size_t> > finite_numbering_ptr,
+     copy_ptr<std::map<vector_variable*, size_t> > vector_numbering_ptr,
+     size_t vector_dim) {
+      this->finite_numbering_ptr = finite_numbering_ptr;
+      this->vector_numbering_ptr = vector_numbering_ptr;
+      if (own) {
+        fin_ptr->resize(finite_numbering_ptr->size());
+        vec_ptr->resize(vector_dim);
+      } else {
+        own = true;
+        fin_ptr = new std::vector<size_t>(finite_numbering_ptr->size());
+        vec_ptr = new vec(vector_dim);
+      }
+    }
+
+    void record::copy_assignment(const prl::assignment& a) {
+      if (!own) {
+        fin_ptr = new std::vector<size_t>();
+        vec_ptr = new vec();
+        own = true;
+      }
+      fin_ptr->resize(finite_numbering_ptr->size());
+      vec_ptr->resize(vector_numbering_ptr->size());
+      const prl::finite_assignment& fa = a.finite();
+      foreach(const finite_var_index_pair& p, *finite_numbering_ptr)
+        fin_ptr->operator[](p.second) = safe_get(fa, p.first);
+      const prl::vector_assignment& va = a.vector();
+      foreach(const vector_var_index_pair& p, *vector_numbering_ptr) {
+        const vec& v = safe_get(va, p.first);
+        for (size_t j = 0; j < p.first->size(); ++j)
+          vec_ptr->operator[](p.second + j) = v[j];
+      }
+    }
+
+} // namespace prl
+
+#include <prl/macros_undef.hpp>

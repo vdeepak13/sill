@@ -1,0 +1,131 @@
+9,15c9,13
+< //#ifdef UNIX
+< //#include <cstdio>
+< //#else
+< //#include "StdAfx.h"
+< //#endif
+< 
+< #include <iostream>
+---
+> #ifdef UNIX
+> #include <stdio.h>
+> #else
+> #include "StdAfx.h"
+> #endif
+17c15
+< #include <cmath>
+---
+> #include <math.h>
+21c19
+< //#include <ctime>
+---
+> #include <time.h>
+84c82
+< //What about using real tabu list ???
+---
+> //What anout usimg real tabu list ???
+428c426
+< 	srand(clock());
+---
+> 	srand(0);
+457c455
+< 	bn = new RealNetwork(set[g], type[g]); //load the real net from file
+---
+> 	bn = new RealNetwork(set[g], type[g]);
+459c457
+< 	int	maxParent = bn->GetMaxParent(); //get max in-degree of the real net
+---
+> 	int	maxParent = bn->GetMaxParent();
+470c468
+< 	for (iterstat = 0; iterstat < nb_iterstat; iterstat ++) //for all training sets..
+---
+> 	for (iterstat = 0; iterstat < nb_iterstat; iterstat ++)
+483c481
+< 	for (iterstat = 0; iterstat < nb_iterstat; iterstat ++) //for all training sets..
+---
+> 	for (iterstat = 0; iterstat < nb_iterstat; iterstat ++)
+498c496
+< 		for ( iter = 0; iter < nb_iter; iter ++) //for several random retries
+---
+> 		for ( iter = 0; iter < nb_iter; iter ++)
+790,820d787
+< 
+< void GreedyAnalyse(char *trainStatsFileName, char *testStatsFileName, int timelimit, int search_depth, int deviation, int tabu_size, int rmin, int numCandidates, int	maxParent)
+< {
+< 	Statistics	*stats1;
+< 	Statistics	*stats2;
+< 	GreedySearch *search;
+< 	
+< 	State * maxState;
+< 	srand(0);
+< 
+<   stats1 = new Statistics(trainStatsFileName);
+<   stats2 = new Statistics(testStatsFileName);
+< 	
+<   assert( stats1->GetnumVariables() == stats2->GetnumVariables() );
+< 
+<   search = new GreedySearch( stats1->GetnumVariables(), maxParent+1, stats1, stats2, rmin, numCandidates);
+<   maxState = new State(stats1->GetnumVariables(), search);
+<   search->RandomRestartSearch(maxState,timelimit,deviation,tabu_size,search_depth);
+< 
+<   BOOL * Graph;
+<   Graph = new BOOL[stats1->GetnumVariables()*stats1->GetnumVariables()];
+<   maxState->GetGraph(Graph);
+<   // Graph is now a vectorized matrix where (i,j)=TRUE iff node i is a parent of node j
+< 
+<   //bn2->SetStructure(Graph);
+<   //bn2->LearnFromStatistics(stats1,1);
+< 
+< 
+< }
+< 
+< 
+823a791
+> 
+836,859c804,805
+< 
+< 
+<   if (argc != 5)
+< 	{
+< 		printf("Usage: train-stats test-stats maxparents timelimit\n");
+< 		return  0;
+< 	}
+< 
+<   char *train = argv[1];
+<   char *test = argv[2];
+<   int maxparents = atoi(argv[3]);
+<   int timelimit = atoi(argv[4]);
+<   int search_depth = 180;
+<   int deviation = 37;
+<   int tabu_size = 180;
+<   int rmin = 8;
+<   int ncand = UNDEF;
+<   PopulateCombin();
+<   //  std::cout << "calling GreedyAnalyse using train = " << train << ", test = " << test << ", timelimit = " << timelimit
+<   //            << ", maxparents = " << maxparents << std::endl;
+<   GreedyAnalyse( train, test,  timelimit,  search_depth,  deviation,  tabu_size, rmin, ncand, maxparents);
+< 
+< 
+< /*#ifdef MAKE_SCORE
+---
+> /*
+> #ifdef MAKE_SCORE
+870c816
+< /*#ifdef GREEDY_TIME_ANALYSE
+---
+> #ifdef GREEDY_TIME_ANALYSE
+889,894c835
+< 
+<   char *train = "stats12-00-00000100.stt";
+<   char *test = "stats12-00-00000100.stt.tst";
+< 
+<   GreedyAnalyse( train, test,  timelimit,  search_depth,  deviation,  tabu_size, rmin, ncand, 3);
+< //	GreedyTimeAnalyse( g,  numsamp, timelimit,  nb_iter,  nb_iterstat,  search_depth,  deviation,  tabu_size, rmin, ncand);
+---
+> 	GreedyTimeAnalyse( g,  numsamp, timelimit,  nb_iter,  nb_iterstat,  search_depth,  deviation,  tabu_size, rmin, ncand);
+918c859
+< #endif */
+---
+> #endif
+924d864
+< 

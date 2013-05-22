@@ -1,0 +1,2 @@
+add_executable(range range.cpp)
+add_executable(lexicographical_compare lexicographical_compare.cpp)

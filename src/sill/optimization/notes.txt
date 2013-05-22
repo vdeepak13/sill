@@ -1,0 +1,12 @@
+
+TO DO:
+- Add line search methods for non-convex problems (binary decreasing eta from 1)
+- For CRF factors, change the regularization_penalty() method to be
+  regularization() (adding instead of subtracting the regularization)?
+- Make optimization and learning classes' parameter structs include methods
+  for adding and parsing command-line options, and then use these to
+  consolidate code in tests like fmri_test_real.cpp.
+- Add vector_record_iterator (just as in finite_record).
+- Figure out why crf_parameter_leaner_test, when given a fixed random seed,
+  seems to generate the same model in different tests but gives different
+  train/test log likelihoods for the true model.

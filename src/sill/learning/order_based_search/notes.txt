@@ -1,0 +1,112 @@
+
+Liste.hpp:
+-List<T> (singly linked list)
+ -functions which require items to implement operator==()
+  -isInList
+  -Remove
+ -functions not implemented by STL lists:
+  -isInList
+  -Remove
+  -Apply
+  -SanityCheck
+  -SelfTest
+-SortedList : public List<T>
+ -requires operators < > ==
+ -functions above those in List:
+  -Insert
+  -isInList
+  -SanityCheck
+  -SelfTest
+
+Classes.h and Classes.cpp:
+-statically allocated memory
+ -Combin
+ -poolCount
+ -poolRecords
+ -poolCountPtr
+ -poolRecordsPtr
+-free functions
+ -dgamma
+ -ComputeCombin (n choose p)
+ -PopulateCombin
+ -NextAssignment
+ -NextAssignmentRight
+ -SetToPtr
+ -PtrToSet
+ -NextSet
+ -GetConnexity
+-class Var (finite variable)
+-class Factor (table factor)
+ -uses: Network
+ -functions not implemented by our table factors:
+  -SetScope ??
+  -isValidCPT (is a distribution)
+  -printComparison (print differences between 2 factors)
+-class Node : public Factor (1-variable node in Bayes net)
+ -uses: Statistics
+ -functions we haven't implemented (not exactly):
+  -Sample (sample the variable according to its CPT)
+  -LearnCPT (from statistics)
+  -printComparison
+  -getScore
+-class Network (Bayes net)
+ -variables: numVariables, Nodes (list of Nodes)
+ -functions which aren't obvious:
+  -GetTopologicalOrdering (returns list of node indices)
+  -ForwardSample (according to topological ordering)
+  -MakeStatistics (do a bunch of forward samples and write them to a file)
+  -LearnFromStatistics
+  -copy constructor for structure but not CPTs
+  -printComparison
+  -SetStructure (given graph)
+  -GetStructure (return graph)
+  -GetScore (given statistics)
+  -GetHDistance (given another Bayes net, do something??????????)
+  -GetMaxParent (get node with most parents)
+  -GetNumEdges
+-class RealNetwork : public Network
+ -variables: Name (name of network), VarNames, VarValues (all stored as strings)
+ -functions:
+  -copy constructor which copies only vars, domains, and labels, not structure/CPTs
+  -ToFile (print to file)
+-class Statistics
+ -variables: numVariables, numSamples, Domains, mProb, Samples
+ -functions:
+  -constructors
+   -from Network, using nb samples and various priors
+   -from a statistics file
+   -from RealNetwork and file (get vars from RealNetwork, get samples from file,
+                               compute stats, add in priors)
+  -GetAArity (get average arity of variables)
+  -toFile (print to file)
+
+-struct VaryNode (for ADTree)
+-class ADTree
+ -FIGURING OUT WHOLE STRUCTURE TO MAKE IT EASIER TO IMPORT IT TO PRL
+
+
+
+-class Var
+-class Factor
+ -uses: Network
+-class Node : public Factor
+ -uses: Statistics
+-class Network
+ -uses: Node, Statistics
+-class RealNetwork : public Network
+-class Statistics
+ -uses: Network, RealNetwork
+
+-struct VaryNode (for ADTree)
+-class ADTree
+-class Counter
+-struct Family
+-struct Operator
+-class State
+-struct ElemParent
+-class ListParent
+-struct Chain
+-class ListOp
+-class GreedySearch
+-class SetFamScores
+-class CClasses (?)

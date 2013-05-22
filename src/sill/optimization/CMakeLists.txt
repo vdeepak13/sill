@@ -1,0 +1,13 @@
+set(PRL_OPTIMIZATION_SOURCES
+   gradient_method
+   gradient_method_builder
+   line_search
+   line_search_builder
+   logreg_opt_vector
+   real_optimizer_builder
+   single_opt_step
+   single_opt_step_builder
+   stochastic_gradient
+   table_factor_opt_vector
+   PARENT_SCOPE
+   )

@@ -1,0 +1,4 @@
+add_executable(threadtests threadtests.cpp)
+add_executable(locktests locktests.cpp)
+add_executable(binned_mutable_queue_test binned_mutable_queue_test.cpp)
+add_executable(binned_scheduling_queue_test binned_scheduling_queue_test.cpp)

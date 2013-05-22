@@ -1,0 +1,15 @@
+jtest2
+50
+7
+2
+2
+3
+3
+2
+2
+2
+jtest2.txt.symbolic
+PREFIX=a
+INDEX_BASE=1
+SKIPLINES=2
+| Test dataset.

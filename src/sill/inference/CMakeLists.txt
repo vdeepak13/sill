@@ -1,0 +1,4 @@
+
+set(PRL_INFERENCE_SOURCES
+  gibbs_sampler
+  PARENT_SCOPE)
