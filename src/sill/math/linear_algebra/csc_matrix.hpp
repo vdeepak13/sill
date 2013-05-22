@@ -222,9 +222,9 @@ namespace sill {
       assert(k <= m * n);
       n_rows = m;
       n_cols = n;
-      col_offsets_.resize(k);
-      row_indices_.resize(k);
-      values_.resize(k);
+      col_offsets_.set_size(k);
+      row_indices_.set_size(k);
+      values_.set_size(k);
     }
 
     //! Same as resize(0,0).
