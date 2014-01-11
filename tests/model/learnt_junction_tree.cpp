@@ -1,27 +1,25 @@
-#include <iostream>
+#define BOOST_TEST_MODULE learnt_junction_tree
+#include <boost/test/unit_test.hpp>
+
 #include <functional>
 #include <set>
 
 #include <boost/array.hpp>
 
-#include <sill/functional.hpp>
-#include <sill/graph/grid_graphs.hpp>
 #include <sill/graph/undirected_graph.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
 #include <sill/graph/min_fill_strategy.hpp>
 #include <sill/model/learnt_junction_tree.hpp>
 
 
-int main() {
+using namespace sill;
 
-  using namespace sill;
-  using namespace std;
-
+BOOST_AUTO_TEST_CASE(test_mutation) {
   typedef undirected_graph<size_t> graph_type;
 
   // Build the graph.  Note that this graph must have no self-loops or
   // parallel edges.
-  typedef pair<size_t, size_t> E;
+  typedef std::pair<size_t, size_t> E;
   boost::array<E, 8> edges =
     {{E(0, 2), E(1, 2), E(1, 3), E(1, 5), E(2, 3), E(3, 4), E(4, 0), E(4, 1)}};
   graph_type g(edges);
@@ -29,24 +27,24 @@ int main() {
   // Build a junction tree for the graph.
   learnt_junction_tree<size_t> jt(g, min_degree_strategy());
 
-  // Print the graph.
-  cout << "Original jt:\n" << jt << endl;
-
-  std::set<size_t> c0;
-  c0.insert(0);
-  learnt_junction_tree<size_t>::vertex v0(jt.find_clique_cover(c0));
+  BOOST_CHECK_EQUAL(jt.num_vertices(), 3);
+  BOOST_CHECK_EQUAL(jt.num_edges(), 2);
+  jt.check_validity();
 
   // Make some changes.
-  cout << "Adding clique (0,6):" << endl;
+  std::set<size_t> c0;
+  c0.insert(0);
+  learnt_junction_tree<size_t>::vertex v0 = jt.find_clique_cover(c0);
+
   std::set<size_t> c06;
   c06.insert(0);
   c06.insert(6);
-  learnt_junction_tree<size_t>::vertex v06(jt.add_clique(c06));
-  cout << jt << endl;
+  learnt_junction_tree<size_t>::vertex v06 = jt.add_clique(c06);
 
-  cout << "Adding edge between clique (0,6) and a clique with 0 in it:" << endl;
   jt.add_edge(v0,v06);
-  cout << jt << endl;
 
-  return EXIT_SUCCESS;
+  // Test the changes
+  BOOST_CHECK_EQUAL(jt.num_vertices(), 4);
+  BOOST_CHECK_EQUAL(jt.num_edges(), 3);
+  jt.check_validity();
 }

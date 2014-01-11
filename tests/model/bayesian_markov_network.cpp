@@ -11,8 +11,6 @@
 
 #include "predicates.hpp"
 
-#include <sill/macros_def.hpp>
-
 using namespace sill;
 using boost::array;
 

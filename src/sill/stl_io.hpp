@@ -1,7 +1,7 @@
 #ifndef SILL_STL_IO_HPP
 #define SILL_STL_IO_HPP
 
-#include <iosfwd>
+#include <iostream>
 #include <utility> // for std::pair
 #include <vector>
 #include <list>
@@ -36,51 +36,51 @@ namespace sill
   std::basic_ostream<Char, Traits>&
   print_range(std::basic_ostream<Char,Traits>& out, 
 	      const Range& values,
-	      char opening, char delimeter, char closing) {
+	      char opening, char delimiter, char closing) {
     concept_assert((InputRange<Range>));
     typename Range::const_iterator it, end;
     out << opening;
     for(it = values.begin(), end = values.end(); it != end;) {
       out << *it;
-      if (++it != end) out << delimeter;
+      if (++it != end) out << delimiter;
     }
     out << closing;
     return out;
   }
 
-  #define SILL_PRINT_CONTAINER1(container, opening, delimeter, closing)	\
+  #define SILL_PRINT_CONTAINER1(container, opening, delimiter, closing)	\
   template <typename Char, typename Traits,				\
 	    typename A1, typename Allocator>				\
   std::basic_ostream<Char,Traits>&					\
   operator<<(std::basic_ostream<Char,Traits>& out,			\
 	     const container<A1, Allocator>& c) {			\
-    return print_range(out, c, opening, delimeter, closing);		\
+    return print_range(out, c, opening, delimiter, closing);		\
   }
   
-  #define SILL_PRINT_CONTAINER2(container, opening, delimeter, closing)	\
+  #define SILL_PRINT_CONTAINER2(container, opening, delimiter, closing)	\
   template <typename Char, typename Traits,				\
 	    typename A1, typename A2, typename Allocator>		\
   std::basic_ostream<Char,Traits>&					\
   operator<<(std::basic_ostream<Char,Traits>& out,			\
 	     const container<A1, A2, Allocator>& c) {			\
-    return print_range(out, c, opening, delimeter, closing);		\
+    return print_range(out, c, opening, delimiter, closing);		\
   }
   
-  #define SILL_PRINT_CONTAINER3(container, opening, delimeter, closing)	\
+  #define SILL_PRINT_CONTAINER3(container, opening, delimiter, closing)	\
   template <typename Char, typename Traits,				\
 	    typename A1, typename A2, typename A3, typename Allocator>	\
   std::basic_ostream<Char,Traits>&					\
   operator<<(std::basic_ostream<Char,Traits>& out,			\
 	     const container<A1, A2, A3, Allocator>& c) {		\
-    return print_range(out, c, opening, delimeter, closing);		\
+    return print_range(out, c, opening, delimiter, closing);		\
   }
   
-  SILL_PRINT_CONTAINER1(std::vector, '[', ' ', ']');
-  SILL_PRINT_CONTAINER1(std::list, '(', ' ', ')');
   SILL_PRINT_CONTAINER2(std::set, '{', ' ', '}');
   SILL_PRINT_CONTAINER2(std::multiset, '{', ' ', '}');
   SILL_PRINT_CONTAINER3(std::map, '{', ' ', '}');
   SILL_PRINT_CONTAINER3(std::multimap, '{', ' ', '}');
+  SILL_PRINT_CONTAINER1(std::vector, '[', ' ', ']');
+  SILL_PRINT_CONTAINER1(std::list, '(', ' ', ')');
   
   #undef SILL_PRINT_CONTAINER1
   #undef SILL_PRINT_CONTAINER2

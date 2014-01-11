@@ -62,31 +62,30 @@ namespace sill {
                      const VertexProperty& property = VertexProperty())
         : clique(clique), property(property), marked() { }
 
+      //! Compares the clique and vertex property stored at two vertices
+      bool operator==(const jt_vertex_info& other) const {
+        return clique == other.clique && property == other.property;
+      }
+
+      //! Compares the clique and vertex property stored at two vertices
+      bool operator!=(const jt_vertex_info& other) const {
+        return clique != other.clique || property != other.property;
+      }
+
       //! Serialize members
-      void save(oarchive & ar) const {
+      void save(oarchive& ar) const {
         ar << clique << property << marked;
+        // TODO: do not serialize marked?
       }
 
       //! Deserialize members
-      void load(iarchive & ar) {
-        ar >> clique >> property >> marked;
+      void load(iarchive& ar) {
+        ar >> clique >> property >> marked; 
+        // TODO: do not serialize marked?
       }
 
     }; // struct jt_vertex_info
     
-    //! Compares the clique and vertex property stored at two vertices
-    template <typename Node, typename VertexProperty>
-    bool operator==(const jt_vertex_info<Node, VertexProperty>& a,
-                    const jt_vertex_info<Node, VertexProperty>& b) {
-      return a.clique == b.clique && a.property == b.property;
-    }
-
-    template <typename Node, typename VertexProperty>
-    bool operator!=(const jt_vertex_info<Node, VertexProperty>& a,
-                    const jt_vertex_info<Node, VertexProperty>& b) {
-      return a.clique != b.clique || a.property != b.property;
-    }
-
     template <typename Node, typename VP>
     std::ostream& operator<<(std::ostream& out,
                              const jt_vertex_info<Node, VP>& info) {
@@ -123,33 +122,31 @@ namespace sill {
       //! Constructor
       jt_edge_info(const std::set<Node>& separator,
                    const EdgeProperty& property = EdgeProperty())
-        : separator(separator), property(property), marked(marked) { }
+        : separator(separator), property(property), marked(false) { }
+
+      bool operator==(const jt_edge_info& other) const {
+        return separator == other.separator && property == other.property;
+      }
+
+      bool operator!=(const jt_edge_info& other) const {
+        return separator != other.separator || property != other.property;
+      }
 
       //! Serialize members
-      void save(oarchive & ar) const {
+      void save(oarchive& ar) const {
         ar << separator << property << marked << forward_reachable
            << reverse_reachable;
+        // TODO: do not serialize marked and reachable?
       }
 
       //! Deserialize members
-      void load(iarchive & ar) {
+      void load(iarchive& ar) {
         ar >> separator >> property >> marked >> forward_reachable
            >> reverse_reachable;
+        // TODO: do not serialize marked and reachable?
       }
 
     }; // struct jt_edge_info
-
-    template <typename Node, typename EdgeProperty>
-    bool operator==(const jt_edge_info<Node, EdgeProperty>& a,
-                    const jt_edge_info<Node, EdgeProperty>& b) {
-      return a.separator == b.separator && a.property == b.property;
-    }
-
-    template <typename Node, typename EdgeProperty>
-    bool operator!=(const jt_edge_info<Node, EdgeProperty>& a,
-                    const jt_edge_info<Node, EdgeProperty>& b) {
-      return a.separator != b.separator || a.property != b.property;
-    }
 
     template <typename Node, typename EdgeProperty>
     std::ostream& operator<<(std::ostream& out,
@@ -429,6 +426,8 @@ namespace sill {
 
     //! Serialize members
     void save(oarchive & ar) const {
+      // TODO: do not serialize the index;
+      //       recreate it during deserialization
       ar << clique_index << graph << next_vertex;
     }
 

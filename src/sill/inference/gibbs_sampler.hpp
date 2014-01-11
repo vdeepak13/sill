@@ -63,7 +63,7 @@ namespace sill {
 
     //! Default constructor.
     gibbs_sampler()
-      : uniform_prob(0,1), last_v(NULL) { }
+      : uniform_prob(0,1), last_v(0) { }
 
     /**
      * Create a Gibbs sampler for the given model.

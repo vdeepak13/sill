@@ -5,7 +5,6 @@
 #include <set>
 #include <map>
 
-#include <boost/serialization/list.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 
@@ -16,6 +15,7 @@
 #include <sill/model/interfaces.hpp>
 #include <sill/range/transformed.hpp>
 #include <sill/range/joined.hpp>
+#include <sill/serialization/list.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -326,8 +326,24 @@ namespace sill {
       }
     }
 
+    bool operator==(const markov_network& other) {
+      return base::operator==(other) && factors_ == other.factors_;
+    }
+
     // Mutators
     //==========================================================================
+    //! Saves the network to an archive
+    void save(oarchive& ar) const {
+      base::save(ar);
+      ar << factors_;
+    }
+    
+    //! Loads the graph from an archive
+    void load(iarchive& ar) {
+      base::load(ar);
+      ar >> factors_;
+    }
+    
     void add_factor(const F& factor) {
       factors_.push_back(factor);
       base::add_clique(factor.arguments());

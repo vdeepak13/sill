@@ -10,6 +10,7 @@
 #include <iterator>
 #include <sstream>
 #include <stdexcept>
+#include <iostream>
 
 #include <sill/iterator/counting_output_iterator.hpp>
 #include <sill/iterator/map_value_iterator.hpp>

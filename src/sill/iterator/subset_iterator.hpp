@@ -10,6 +10,8 @@
 
 #include <set>
 
+#include <sill/base/stl_util.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {

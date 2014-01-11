@@ -1,90 +1,113 @@
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <fstream>
+#define BOOST_TEST_MODULE factor_graph_model
+#include <boost/test/unit_test.hpp>
 
 #include <boost/array.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_01.hpp>
 #include <boost/random/uniform_int.hpp>
 
-
+#include <sill/stl_io.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/random/random.hpp>
+#include <sill/range/algorithm.hpp>
 #include <sill/serialization/serialize.hpp>
+
+#include "predicates.hpp"
 
 #include <sill/macros_def.hpp>
 
 using namespace sill;
 
-typedef factor_graph_model<table_factor> factor_gm_type;
-typedef factor_gm_type::factor_type factor_type;
-typedef factor_gm_type::variable_type variable_type;
-typedef factor_gm_type::vertex_type vertex_type;
-
-/**
- * \file factor_graph_model.cpp Factor Graph Model test
- */
-int main() {
+struct fixture {
+  typedef factor_graph_model<table_factor> model_type;
+  typedef model_type::vertex_type vertex_type;
   
+  fixture() 
+    : nvars(10) {
+    // Random number generator
+    boost::mt19937 rng;
+    boost::uniform_01<boost::mt19937, double> unif01(rng);
 
-  using boost::array;
+    // Create some variables
+    x.resize(nvars);
+    for(size_t i = 0; i < nvars; ++i) {
+      x[i] = u.new_finite_variable("Variable: " + to_string(i), 2);
+    }
 
-  // Random number generator
-  boost::mt19937 rng;
-  boost::uniform_01<boost::mt19937, double> unif01(rng);
+    // Create some unary factors
+    for(size_t i = 0; i < nvars; ++i) {
+      finite_domain arguments = make_domain(x[i]);
+      fg.add_factor(random_discrete_factor<table_factor>(arguments, unif01));
+    }
+    
+    // For every two variables in a chain create a factor
+    for(size_t i = 0; i < x.size() - 1; ++i) {
+      finite_domain arguments = make_domain(x[i], x[i+1]);
+      fg.add_factor(random_discrete_factor<table_factor>(arguments, unif01));
+    }
+  }
 
-  // Create a universe.
   universe u;
- 
-  // Create an empty factor graph
-  factor_gm_type fg;
-  std::cout << "Empty factory graph: " << std::endl;
-  fg.print(std::cout);
+  size_t nvars;
+  std::vector<finite_variable*> x;
+  model_type fg;
+};
 
-  // Create some variables and factors
-  std::vector<variable_type*> x(10);
-  for(size_t i = 0; i < x.size(); ++i) 
-    x[i] = u.new_finite_variable("Variable: " + to_string(i), 2);
+struct domain_less {
+  template <typename Set>
+  bool operator()(const Set& a, const Set& b) {
+    return sill::lexicographical_compare(a, b);
+  }
+};
 
-  // Create some unary factors
-  for(size_t i = 0; i < x.size(); ++i) {
-    // Create the arguments
-    finite_domain arguments;  
-    arguments.insert(x[i]);
-    // Create the table factor and add it to the factor graph
-    fg.add_factor( random_discrete_factor<factor_type>(arguments, unif01));
-  }
-  
-  // For every two variables in a chain create a factor
-  for(size_t i = 0; i < x.size() - 1; ++i) {
-    // Create the arguments
-    finite_domain arguments;  
-    arguments.insert(x[i]);   arguments.insert(x[i+1]);
-    // Create the table factor and add it to the factor graph
-    fg.add_factor( random_discrete_factor<factor_type>(arguments, unif01));
-  }
-  std::ofstream out("factorgraph.xml");
-  oarchive oa(out);
-  oa << fg;
-  out.close();
-  
-  
-  std::cout << "Print the Factor graph model:" << std::endl;
-  fg.print(std::cout);
+BOOST_FIXTURE_TEST_CASE(test_structure, fixture) {
+  for (size_t i = 0; i < nvars; ++i) {
+    std::vector<finite_domain> args1;
+    args1.push_back(make_domain(x[i]));
+    if (i > 0) {
+      args1.push_back(make_domain(x[i-1], x[i]));
+    }
+    if (i < nvars - 1) {
+      args1.push_back(make_domain(x[i], x[i+1]));
+    }
 
-  std::cout << "Print all the factors associated with each node:" << std::endl;
-  foreach(finite_variable* var, fg.arguments()) {
-    std::cout << "============================================================" 
-              << std::endl
-              << "Variable: " << var <<std::endl
-              << "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"
-              << "Neighbors: " << std::endl;
-    vertex_type vert = fg.to_vertex(var);
-    foreach(const vertex_type& v, fg.neighbors(vert)  )
-      std::cout << v.factor() << std::endl; 
- 
+    std::vector<finite_domain> args2;
+    vertex_type vert = fg.to_vertex(x[i]);
+    foreach(const vertex_type& v, fg.neighbors(vert)) {
+      args2.push_back(v.factor().arguments());
+    }
+    
+    sill::sort(args1, domain_less());
+    sill::sort(args2, domain_less());
+    BOOST_CHECK_EQUAL(args1, args2);
   }
+}
+
+BOOST_FIXTURE_TEST_CASE(test_simplify, fixture) {
+  fg.simplify();
+  for (size_t i = 0; i < nvars; ++i) {
+    std::vector<finite_domain> args1;
+    if (i > 0) {
+      args1.push_back(make_domain(x[i-1], x[i]));
+    }
+    if (i < nvars - 1) {
+      args1.push_back(make_domain(x[i], x[i+1]));
+    }
+
+    std::vector<finite_domain> args2;
+    vertex_type vert = fg.to_vertex(x[i]);
+    foreach(const vertex_type& v, fg.neighbors(vert)) {
+      args2.push_back(v.factor().arguments());
+    }
+    
+    sill::sort(args1, domain_less());
+    sill::sort(args2, domain_less());
+    BOOST_CHECK_EQUAL(args1, args2);
+  }
+}
+
+BOOST_FIXTURE_TEST_CASE(test_serialization, fixture) {
+  BOOST_CHECK(serialize_deserialize(fg, u));
 }

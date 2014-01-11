@@ -112,9 +112,9 @@ namespace sill {
 
   //! Simpler log_det function for matrices with positive determinants.
   template <typename MatType>
-  typename MatType::value_type log_det(const MatType& m) {
-    typename MatType::value_type val;
-    typename MatType::value_type s;
+  typename MatType::elem_type log_det(const MatType& m) {
+    typename MatType::elem_type val;
+    typename MatType::elem_type s;
     arma::log_det(val, s, m);
     assert(s > 0);
     return val;

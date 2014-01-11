@@ -111,17 +111,16 @@ namespace sill {
       assert(false); return false;
     }
 
-    //! Equality test.
-    bool operator==(const assignment& a) const {
-      const finite_assignment& fa(a);
-      const vector_assignment& va(a);
-      return (*this) == fa && (*this) == va;
-    }
+    //  undefined for now because vector_assignment's operator== is undefined
+//     //! Equality test
+//     bool operator==(const assignment& a) const {
+//       return this->finite() == a.finite() && this->vector() == a.vector();
+//     }
 
-    //! Inequality test
-    bool operator!=(const assignment& a) const {
-      return !operator==(a);
-    }
+//     //! Inequality test
+//     bool operator!=(const assignment& a) const {
+//       return !operator==(a);
+//     }
 
     /*
     size_t& operator[](finite_variable* v) {
