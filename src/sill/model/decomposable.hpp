@@ -249,6 +249,14 @@ namespace sill {
       ar >> args >> jt;
     }
 
+    bool operator==(const decomposable& other) const {
+      return args == other.args && jt == other.jt;
+    }
+
+    bool operator!=(const decomposable& other) const {
+      return !operator==(other);
+    }
+
     // Graph accessors
     // =========================================================================
     //! Returns an ordered set of all vertices

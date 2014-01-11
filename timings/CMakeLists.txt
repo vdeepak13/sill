@@ -19,6 +19,7 @@ add_executable(sparse_linear_algebra sparse_linear_algebra.cpp)
 add_executable(time_chow_liu time_chow_liu.cpp)
 add_executable(time_table_factor time_table_factor.cpp)
 add_executable(time_message_discrete time_message_discrete.cpp)
-add_executable(triangulation triangulation.cpp)
+#commented out until we clean up the stl_io stuff
+#add_executable(triangulation triangulation.cpp)
 add_executable(variant_vs_int variant_vs_int.cpp)
 add_executable(virtual_function_timing virtual_function_timing.cpp)

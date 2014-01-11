@@ -158,12 +158,13 @@ namespace sill {
     }
 
     //! dimensionality of random vector
-    size_t n() const { return n_(); }
+    size_t n() const { return n_; }
 
     //! Shape parameters
-    const vec& alpha() const {
-      if (n > alpha_.size())
-        return vec(n, alpha_[0]);
+    // TODO: consider forcing alpha_.size() == n_ to make this more efficient
+    const vec alpha() const {
+      if (n_ > alpha_.size())
+        return vec(n_, alpha_[0]);
       else
         return alpha_;
     }

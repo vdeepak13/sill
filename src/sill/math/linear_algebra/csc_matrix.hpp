@@ -533,7 +533,7 @@ namespace sill {
     coo2csc_helper1
     (const coo_matrix<Tfrom, Idxfrom>& coomat,
      std::vector<std::vector<std::pair<Idxto, Tto> > >& i_val_per_column,
-     bool trans = false) {
+     bool trans) {
       typedef typename coo_matrix<Tfrom,Idxfrom>::const_index_iterator
         const_index_iterator;
       typedef typename coo_matrix<Tfrom,Idxfrom>::const_iterator const_iterator;

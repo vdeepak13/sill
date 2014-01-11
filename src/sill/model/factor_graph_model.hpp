@@ -144,6 +144,16 @@ public:
       rebuild_neighbors_and_indexes();
     }
 
+    // TODO: we should check the indices, too
+    //       but these are not preserved in serialization
+    bool operator==(const factor_graph_model& other) const {
+      return factors_ == other.factors_;
+    }
+
+    bool operator!=(const factor_graph_model& other) const {
+      return factors_ != other.factors_;
+    }
+
     void clear() {
       factors_.clear();
       neighbors_.clear();

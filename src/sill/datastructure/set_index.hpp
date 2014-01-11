@@ -11,6 +11,9 @@
 #include <sill/stl_concepts.hpp>
 #include <sill/iterator/counting_output_iterator.hpp>
 #include <sill/base/stl_util.hpp>
+#include <sill/serialization/list.hpp>
+#include <sill/serialization/map.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {

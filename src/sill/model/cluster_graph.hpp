@@ -50,6 +50,26 @@ namespace sill {
       cg_vertex_info(const std::set<Node>& cluster,
                      const VertexProperty& property = VertexProperty())
         : cluster(cluster), property(property) { }
+
+      //! Compares the cluster and vertex property stored at two vertices
+      bool operator==(const cg_vertex_info& other) const {
+        return cluster == other.cluster && property == other.property;
+      }
+
+      //! Compares the cluster and vertex property stored at two vertices
+      bool operator!=(const cg_vertex_info& other) const {
+        return cluster != other.cluster || property != other.property;
+      }
+
+      //! Serialize members
+      void save(oarchive& ar) const {
+        ar << cluster << property;
+      }
+
+      //! Deserialize members
+      void load(iarchive& ar) {
+        ar >> cluster >> property;
+      }
     };
 
     template <typename Node, typename VP>
@@ -83,6 +103,26 @@ namespace sill {
       cg_edge_info(const std::set<Node>& separator,
                    const EdgeProperty& property = EdgeProperty())
         : separator(separator), property(property) { }
+
+      bool operator==(const cg_edge_info& other) const {
+        return separator == other.separator && property == other.property;
+      }
+
+      bool operator!=(const cg_edge_info& other) const {
+        return separator != other.separator || property != other.property;
+      }
+
+      //! Serialize members
+      void save(oarchive& ar) const {
+        // TODO: do not serialize reachable
+        ar << separator << property << forward_reachable << reverse_reachable;
+      }
+
+      //! Deserialize members
+      void load(iarchive& ar) {
+        // TODO: do not serialize reachable
+        ar >> separator >> property >> forward_reachable >> reverse_reachable;
+      }
     };
 
     template <typename Node, typename EP>
@@ -195,6 +235,19 @@ namespace sill {
     operator std::string() const {
       std::ostringstream out; out << *this; return out.str();
     }
+
+    //! Serialize members
+    void save(oarchive & ar) const {
+      // TODO: do not serialize the index;
+      //       recreate it during deserialization
+      ar << cluster_index << graph << next_vertex;
+    }
+
+    //! Deserialize members
+    void load(iarchive & ar) {
+      ar >> cluster_index >> graph >> next_vertex;
+    }
+
 
     // Graph accessors
     // =========================================================================
@@ -317,6 +370,16 @@ namespace sill {
       return make_transformed(edges(), edge_property_functor(*this));
     }
 
+    //! Returns true if two cluster graphs are identical
+    bool operator==(const cluster_graph& other) const {
+      return graph == other.graph;
+    }
+
+    //! Returns true if two cluster graphs are not identical
+    bool operator!=(const cluster_graph& other) const {
+      return graph != other.graph;
+    }
+    
     // Queries
     //==========================================================================
 
