@@ -27,6 +27,4 @@ subdirs(
   )
 
 add_executable(copy_ptr copy_ptr.cpp)
-add_executable(tr1_test tr1_test.cpp)
-add_executable(tr1_unordered_map tr1_unordered_map.cpp)
 

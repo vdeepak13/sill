@@ -30,11 +30,11 @@ int main(int argc, char** argv)
   cout << "Raw pointer: " << n/t.elapsed()/1e3 << " MIPS." << endl;
   cout << result << endl;
   
-  shared_ptr<test> shared(new test());
+  boost::shared_ptr<test> shared(new test());
   t.restart();
   for(size_t i = 0; i < n; i++) 
     for(size_t j = 0; j < 1000; j++) {
-      shared_ptr<test> shared2 = shared;
+      boost::shared_ptr<test> shared2 = shared;
       result += shared2->f();
     }
   cout << "Shared pointer: " << n/t.elapsed()/1e3 << " MIPS." << endl;

@@ -130,7 +130,7 @@ namespace sill {
     typedef typename base::dense_matrix_type  dense_matrix_type;
 
   private:
-    static_assert(std::numeric_limits<double>::has_infinity);
+    BOOST_STATIC_ASSERT(std::numeric_limits<double>::has_infinity);
 
     // Virtual methods from base classes (*means pure virtual):
     //  From learner:

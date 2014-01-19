@@ -42,7 +42,7 @@ namespace sill {
 
     concept_assert((Factor<NodeF>));
     concept_assert((Factor<EdgeF>));
-    static_assert((boost::is_same<typename NodeF::variable_type,
+    BOOST_STATIC_ASSERT((boost::is_same<typename NodeF::variable_type,
                                   typename EdgeF::variable_type>::value));
 
     // Public type declarations

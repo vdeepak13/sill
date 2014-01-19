@@ -87,7 +87,7 @@ namespace sill {
   void vector_variable::serialize(Archive& ar, 
                                   const unsigned int /* file_version */) {
     using namespace boost::serialization;
-    static_assert((tracking_level<vector_variable>::value != track_never));
+    BOOST_STATIC_ASSERT((tracking_level<vector_variable>::value != track_never));
     ar & boost::serialization::base_object<variable>(*this);
     ar & size_;
   }

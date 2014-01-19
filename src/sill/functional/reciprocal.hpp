@@ -9,7 +9,7 @@ namespace sill {
   template <typename T>
   struct reciprocal_functor {
 
-    static_assert(std::numeric_limits<T>::has_infinity);
+    BOOST_STATIC_ASSERT(std::numeric_limits<T>::has_infinity);
 
     T operator()(const T& val) const {
       if (val != 0)
