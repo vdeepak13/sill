@@ -452,14 +452,14 @@ namespace sill {
 
   std::ostream& operator<<(std::ostream& out, const moment_gaussian& mg) {
     out << "#F(MG|" << mg.head() << "|\n"
-        << "      " << mg.mean() << "|\n"
-        << "      " << mg.covariance();
+        << mg.mean() << "|\n"
+        << mg.covariance();
     if (!mg.marginal()) {
       out << "|\n"
-          << "      " << mg.tail() << "|\n"
-          << "      " << mg.coefficients();
+          << mg.tail() << "|\n"
+          << mg.coefficients();
     }
-    out << "|\n      " << mg.norm_constant() << ")";
+    out << "|\n" << mg.norm_constant() << ")";
     return out;
   }
 

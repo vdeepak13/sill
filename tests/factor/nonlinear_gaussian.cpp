@@ -1,3 +1,6 @@
+#define BOOST_TEST_MODULE nonlinear_gaussian
+#include <boost/test/unit_test.hpp>
+
 #include <sill/base/universe.hpp>
 #include <sill/factor/approx/hybrid_conditional.hpp>
 #include <sill/factor/approx/integration_points.hpp>
@@ -5,25 +8,10 @@
 #include <sill/factor/operations.hpp>
 #include <sill/math/function/linear.hpp>
 
+#include "predicates.hpp"
 
-// This test will be fixed soon.
-int main() {
+BOOST_AUTO_TEST_CASE(test_multiplication) {
   using namespace sill;
-  using namespace std;
-
-  /*
-  mat p;
-  vec w;
-  boost::tie(p, w) = approx.points(2);
-  cout << p << endl;
-  cout << w << endl;
-  cout << sum(w) << endl;
-
-  boost::tie(p, w) = approx.points(3);
-  cout << p << endl;
-  cout << w << endl;
-  cout << sum(w) << endl;
-  */
 
   universe u;
   vector_variable* x = u.new_vector_variable("x", 1);
@@ -47,8 +35,8 @@ int main() {
   moment_gaussian joint_mg = prior * cpd_mg;
   moment_gaussian joint_ip = prior * cpd_ip;
   moment_gaussian joint_hybrid = prior * cpd_hybrid;
-  cout << joint_mg << endl;
-  cout << joint_ip << endl;
-  cout << joint_hybrid << endl;
-}
 
+  // compare the three distributions
+  BOOST_CHECK(are_close(joint_mg, joint_ip, 1e-10));
+  BOOST_CHECK(are_close(joint_mg, joint_hybrid, 0.3));
+}

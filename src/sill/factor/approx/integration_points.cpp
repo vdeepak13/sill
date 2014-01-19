@@ -15,30 +15,36 @@ namespace sill {
     vec w;
     boost::tie(p, w) = points(nt);
     size_t np = w.size();
-    mat a = real(sqrtm(prior.covariance(ng.tail_list())));
+    
+    vec eigval;
+    mat eigvec;
+    eig_sym(eigval, eigvec, prior.covariance(ng.tail_list()));
+    mat a = eigvec * diagmat(sqrt(eigval));
+
     // Alternatively: _lower_ triangular Cholesky decomposition
-    // (note that IT++ returns a lower-triangular matrix)
     mat xc = a * p;
     mat x  = xc + repmat(prior.mean(ng.tail_list()), 1, np);
 
     // compute the function output (y) on the integration points
     // and some useful statistics
     mat y(nh, np);
-    for(size_t i = 0; i < np; i++) 
-      y.set_column(i, ng.mean(x.col(i)));
-    vec meany = sum(elem_mult(y, repmat(w, nh, 1, true)), 1);
+    for(size_t i = 0; i < np; i++) {
+      y.col(i) = ng.mean(x.col(i));
+    }
+    //vec meany = sum(elem_mult(y, repmat(w, nh, 1, true)), 1);
+    vec meany = y * w;
     mat yc = y - repmat(meany, 1, np); // y centered
-    mat ycwt = elem_mult(yc.transpose(), repmat(w, 1, nh));
+    mat ycwt = yc.t() % repmat(w, 1, nh);
       
     // compute the moments of the joint distribution
-    irange rx(0, nt);
-    irange ry(nt, nh+nt);
-    vec mean = concat(prior.mean(ng.tail_list()), meany);
+    span rx(0, nt-1);
+    span ry(nt, nh+nt-1);
+    vec mean = join_cols(prior.mean(ng.tail_list()), meany);
     mat cov(ng.size(), ng.size());
-    cov.set_submatrix(rx, rx, prior.covariance(ng.tail_list()));
-    cov.set_submatrix(rx, ry, xc * ycwt);
-    cov.set_submatrix(ry, rx, cov(rx, ry).T());
-    cov.set_submatrix(ry, ry, yc * ycwt + ng.covariance());
+    cov(rx, rx) = prior.covariance(ng.tail_list());
+    cov(rx, ry) = xc * ycwt;
+    cov(ry, rx) = cov(rx, ry).t();
+    cov(ry, ry) = yc * ycwt + ng.covariance();
 
     /*
       using namespace std;
@@ -62,12 +68,12 @@ namespace sill {
     assert(d >= 0);
     using std::sqrt;
     double u = sqrt(3.0);
-    vec w0(1, 1+(d*d - 7*d)/18.0);
-    vec w1(2*d, (4-d)/18.0);
-    vec w2(2*(d-1)*d, 1/36.0);
-    mat p0 = zeros(d, 1);
-    mat p1 = concat_horizontal(u*identity(d), -u*identity(d));
-    mat p2 = zeros(d, 2*(d-1)*d);
+    vec w0(1);         w0.fill(1+(d*d - 7*d)/18.0);
+    vec w1(2*d);       w1.fill((4-d)/18.0);
+    vec w2(2*(d-1)*d); w2.fill(1/36.0);
+    mat p0 = zeros<mat>(d, 1);
+    mat p1 = join_horiz(u*eye<mat>(d, d), -u*eye<mat>(d, d));
+    mat p2 = zeros<mat>(d, 2*(d-1)*d);
     // fill out p2
     std::size_t k = 0;
     for(int i = 0; i < d-1; i++) {
@@ -83,8 +89,8 @@ namespace sill {
         k += 4;
       }
     }
-    return std::make_pair(concat_horizontal(concat_horizontal(p0, p1), p2),
-                          concat(w0, w1, w2));
+    return std::make_pair(join_horiz(join_horiz(p0, p1), p2),
+                          join_vert(join_vert(w0, w1), w2));
   }
 
 } // namespace sill

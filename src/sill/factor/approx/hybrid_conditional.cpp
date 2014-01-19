@@ -26,7 +26,11 @@ namespace sill {
   }
 
   moment_gaussian hybrid_conditional_approximator::
-  operator()(const nonlinear_gaussian& ng, const moment_gaussian& prior) const {
+  operator()(const nonlinear_gaussian& ng, const moment_gaussian& prior1) const {
+    // temporary hack
+    moment_gaussian prior = prior1;
+    prior.normalize();
+
     using std::sqrt;
     assert(prior.arguments().count(split_var));
     double stdev = sqrt(prior.covariance(split_var)(0,0));
@@ -66,7 +70,7 @@ namespace sill {
         norm += restricted.norm_constant();
       }
       assert(norm > 0);
-      mix *= constant_factor(prior.norm_constant() / norm);
+      mix *= constant_factor(1.0 / norm);
       //std::cout << mix << std::endl;
       for(size_t i = 0; i < mix.size(); i++)
         std::cerr << p[i] << ':' << mix[i].norm_constant() << ' ';
