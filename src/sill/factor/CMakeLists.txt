@@ -1,5 +1,5 @@
 set(PRL_FACTOR_SOURCES
-#  approx/integration_points
+  approx/integration_points
   approx/hybrid_conditional
   canonical_gaussian
   gaussian_crf_factor
