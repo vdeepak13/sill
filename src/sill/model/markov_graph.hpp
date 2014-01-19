@@ -69,7 +69,7 @@ namespace sill {
     markov_graph(const markov_graph<Node, VP, EP>& g)  {
       // Prevent accidental instantiations when the standard copy constructor
       // ought to be used
-      static_assert((!boost::is_same<VertexProperty, VP>::value ||
+      BOOST_STATIC_ASSERT((!boost::is_same<VertexProperty, VP>::value ||
                      !boost::is_same<EdgeProperty, EP>::value));
       foreach(Node v, g.nodes()) 
 	base::add_vertex(v);

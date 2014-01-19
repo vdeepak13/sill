@@ -61,7 +61,7 @@ namespace sill {
    */
   template <typename F>
   struct factor_wrapper : public factor_placeholder {
-    static_assert((boost::is_base_of<factor, F>::value));
+    BOOST_STATIC_ASSERT((boost::is_base_of<factor, F>::value));
 
     F f;
 

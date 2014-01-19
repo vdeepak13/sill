@@ -40,7 +40,7 @@ namespace sill {
    */
   template <typename T>
   class logarithmic {
-    static_assert(std::numeric_limits<T>::has_infinity);
+    BOOST_STATIC_ASSERT(std::numeric_limits<T>::has_infinity);
 
     //! The underlying representation
     typedef T value_type;

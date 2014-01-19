@@ -3,6 +3,5 @@
 
 #undef foreach
 #undef revforeach
-#undef static_assert
 #undef concept_assert
 #undef concept_usage

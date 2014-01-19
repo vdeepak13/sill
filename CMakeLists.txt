@@ -99,10 +99,14 @@ find_package(SuiteSparse)
 # If OpenCV is not found, projects/qsgm/vision/ compiles to throw an error.
 find_package(OpenCV)
 
+# Armadillo
+find_package(Armadillo REQUIRED)
+
 # set include path for this and all subdirs
 include_directories(
   ${SILL_SOURCE_DIR}/src
   ${Boost_INCLUDE_DIR}
+  ${ARMADILLO_INCLUDE_DIRS}
   )
 
 link_directories(
@@ -113,7 +117,7 @@ link_libraries(
   # ${Boost_LIBRARIES}
   # Boost libraries these are now included in tests/ etc. to ensure proper
   # ordering libraries in static linking.
-  armadillo
+  ${ARMADILLO_LIBRARIES}
   #  mpichcxx
   #  mpich
   bz2

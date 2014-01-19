@@ -203,7 +203,7 @@ namespace sill {
     //! Returns the underlying factor, converted to the specified type
     template <typename Factor>
     Factor get() const {
-      static_assert((boost::is_base_of<factor, Factor>::value));
+      BOOST_STATIC_ASSERT((boost::is_base_of<factor, Factor>::value));
       Factor result;
       binary(get(), result).convert(get(), result); 
       return result;

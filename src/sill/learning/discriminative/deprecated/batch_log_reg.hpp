@@ -57,7 +57,7 @@ namespace sill {
     //! Type of data source
     typedef dataset data_type;
 
-    static_assert(std::numeric_limits<double>::has_infinity);
+    BOOST_STATIC_ASSERT(std::numeric_limits<double>::has_infinity);
 
   public:
     /**

@@ -27,7 +27,7 @@ namespace sill {
    */
   template <class V>
   struct Variable {
-    static_assert((boost::is_base_of<variable, V>::value));
+    BOOST_STATIC_ASSERT((boost::is_base_of<variable, V>::value));
 
     //! The type of values assigned to this variable
     typedef typename V::value_type value_type;
@@ -66,7 +66,7 @@ namespace sill {
    */
   template <typename P>
   struct Process {
-    static_assert((boost::is_base_of<process, P>::value));
+    BOOST_STATIC_ASSERT((boost::is_base_of<process, P>::value));
     
     //! The type of variables used by this process
     typedef typename P::variable_type variable_type;

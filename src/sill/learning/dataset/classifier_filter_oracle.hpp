@@ -25,7 +25,7 @@ namespace sill {
    */
   class classifier_filter_oracle : public oracle {
 
-    static_assert(std::numeric_limits<double>::has_infinity);
+    BOOST_STATIC_ASSERT(std::numeric_limits<double>::has_infinity);
 
     // Public type declarations
     //==========================================================================

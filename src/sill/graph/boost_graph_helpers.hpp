@@ -109,13 +109,13 @@ namespace sill {
   ///////////////
   template <typename G>
   typename G::vertex add_vertex(G& g, typename G::vertex* = 0) {
-    static_assert(sizeof(G)==0); // unsupported function
+    BOOST_STATIC_ASSERT(sizeof(G)==0); // unsupported function
   }
 
   template <typename G, typename VertexProperty>
   typename G::vertex 
   add_vertex(const VertexProperty& p, G& g, typename G::vertex* = 0) {
-    static_assert(sizeof(G)==0); // unsupported function
+    BOOST_STATIC_ASSERT(sizeof(G)==0); // unsupported function
   }
 
   template <typename G>
@@ -188,7 +188,7 @@ namespace sill {
 //   map<typename G::vertex, size_t>
 //   get(boost::vertex_index_t&, const G& g, typename G::vertex* = 0) {
 //     return make_index_map(g.vertices());
-//     // static_assert(sizeof(G)==0); // not implemented yet
+//     // BOOST_STATIC_ASSERT(sizeof(G)==0); // not implemented yet
 //   }
 
 } // namespace sill

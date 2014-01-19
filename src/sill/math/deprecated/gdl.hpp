@@ -55,7 +55,7 @@ namespace sill {
    */
   template <typename T, typename OpTag>
   struct binary_op {
-    static_assert(sizeof(T)==0);
+    BOOST_STATIC_ASSERT(sizeof(T)==0);
     // If your compilation fails here, it means that you did not 
     // specialize the op template to the appropriate tag.
   };
