@@ -46,12 +46,12 @@ namespace sill {
     template <typename F>
     struct decomposable_extra_normalization {
       static const bool value = false;
-    }; // struct decomposable_extra_normalization<F>
+    };
 
     template <>
     struct decomposable_extra_normalization<table_factor> {
       static const bool value = true;
-    }; // struct decomposable_extra_normalization<table_factor>
+    };
 
   } // namespace impl
 
@@ -141,11 +141,6 @@ namespace sill {
                           typename FactorRange::iterator* = 0) {
       initialize(factors);
     }
-
-  #ifdef SWIG
-    // SWIG-compatible declaration of the above constructor
-    decomposable(const std::vector<F>& factors);
-  #endif
 
     //! Virtual destructor to support approx_decomposable (experimental).
     virtual ~decomposable() { }
@@ -562,7 +557,7 @@ namespace sill {
       // Now we want to compute the product of the factors in the
       // vector and sum out all variables we don't need.  Use variable
       // elimination.
-      return variable_elimination(marginals, vars, sum_product,
+      return variable_elimination(marginals, vars, sum_product<F>(),
                                   min_degree_strategy());
     }
 
@@ -620,7 +615,7 @@ namespace sill {
       // Now we want to compute the product of the factors in the
       // vector and sum out all variables we don't need.  Use variable
       // elimination.
-      output = variable_elimination(marginals, vars, sum_product,
+      output = variable_elimination(marginals, vars, sum_product<F>(),
                                     min_degree_strategy());
     } // marginal()
 
@@ -646,7 +641,7 @@ namespace sill {
       }
       // Sum out variables in the subtree which are not in 'vars'
       std::vector<F> new_marginals;
-      variable_elimination(orig_marginals, vars, sum_product,
+      variable_elimination(orig_marginals, vars, sum_product<F>(),
                            min_degree_strategy(), back_inserter(new_marginals));
       output *= new_marginals;
     }
@@ -1159,10 +1154,6 @@ namespace sill {
       args.swap(new_args);
     }
 
-  #ifdef SWIG
-    void add_cliques(const std::vector<domain_type>& cliques);
-  #endif
-
     /**
      * Restructures this decomposable model so that it has a clique
      * that covers the supplied variables, and returns the vertex
@@ -1291,10 +1282,6 @@ namespace sill {
       return *this;
     }
 
-  #ifdef SWIG
-    void operator*=(const std::vector<F>& factors);
-  #endif
-
     /**
      * Multiplies the supplied factor into this decomposable model and
      * renormalizes the model.
@@ -1341,9 +1328,9 @@ namespace sill {
       concept_assert((ReadableForwardRangeConvertible<Range, F>));
 
       foreach(const edge& e, edges())
-        jt[e] = 1.;
+        jt[e] = F(1);
       foreach(const vertex& v, vertices())
-        jt[v] = 1.;
+        jt[v] = F(1);
 
       // We do not use F for iteration since Range may be over a different
       // factor type that is merely convertible to F.
@@ -1678,8 +1665,7 @@ namespace sill {
         // Compute the new separator potential using u and
         // update v's potential with ratio of the new and the old separator
         dm.jt[v] /= dm.jt[e];
-//        dm.jt[u].marginal(dm.jt[e], dm.separator(e));
-        dm.jt[u].collapse_unnormalized(sum_op, dm.separator(e), dm.jt[e]);
+        dm.jt[u].marginal_unnormalized(dm.separator(e), dm.jt[e]);
         dm.jt[v] *= dm.jt[e];
 
         if (require_normalizable) {

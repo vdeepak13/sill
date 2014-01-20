@@ -10,7 +10,6 @@
 
 #include <sill/global.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/constant_factor.hpp>
 #include <sill/graph/property_functors.hpp>
 #include <sill/model/interfaces.hpp>
 #include <sill/range/transformed.hpp>
@@ -383,7 +382,7 @@ namespace sill {
       if (new_factors.empty())
         new_factors.push_back(F(const_f));
       else
-        new_factors.front() *= constant_factor(const_f);
+        new_factors.front() *= const_f;
       factors_.swap(new_factors);
 
       // Remove the nodes for the restricted variables.

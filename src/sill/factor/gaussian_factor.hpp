@@ -36,14 +36,14 @@ namespace sill {
     //! implements Factor::domain_type
     typedef vector_domain domain_type;
 
-    typedef vector_var_vector var_vector_type;
-    typedef vector_var_map    var_map_type;
-
     //! implements Factor::assignment_type
     typedef vector_assignment assignment_type;
 
     //! implements Factor::record_type
     typedef vector_record<dense_linear_algebra<> > record_type;
+
+    typedef vector_var_vector var_vector_type;
+    typedef vector_var_map    var_map_type;
 
     // Protected member data and member functions
     //==========================================================================

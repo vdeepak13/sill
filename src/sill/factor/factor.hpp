@@ -1,11 +1,8 @@
-
 #ifndef SILL_FACTOR_HPP
 #define SILL_FACTOR_HPP
 
 #include <sill/base/string_functions.hpp>
 #include <sill/global.hpp>
-#include <sill/math/gdl_enum.hpp>
-#include <sill/factor/traits.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -39,19 +36,7 @@ namespace sill {
     // Public static functions
     // =========================================================================
   public:
-    //! Throws an exception if the operation is not supported
-    static void check_supported(op_type op, unsigned supported_ops) {
-      if (!(supported_ops & (1 << op)))
-        throw std::invalid_argument
-          (std::string("Unsupported operation: ") + to_string(op));
-    }
-
-    //! Throws an exception if the operation is not as given
-    static void check_supported(op_type op, op_type supported_op) {
-      if (op != supported_op)
-        throw std::invalid_argument
-          (std::string("Unsupported operation: ") + to_string(op));
-    }
+    virtual ~factor() { }
   };
 
 } // namespace sill
@@ -59,5 +44,3 @@ namespace sill {
 #include <sill/macros_undef.hpp>
 
 #endif // #ifndef SILL_FACTOR_HPP
-
-

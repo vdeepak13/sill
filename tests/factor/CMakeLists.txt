@@ -1,6 +1,5 @@
 subdirs(random)
 
-add_executable(constant_factor constant_factor.cpp)
 add_executable(decomposable_fragment decomposable_fragment.cpp)
 add_executable(gaussian_crf_factor_test gaussian_crf_factor_test.cpp)
 add_executable(gaussian_factors gaussian_factors.cpp)
@@ -9,7 +8,6 @@ add_executable(mixture mixture.cpp)
 add_executable(table_factor table_factor.cpp)
 add_executable(nonlinear_gaussian nonlinear_gaussian.cpp)
 
-add_test(constant_factor constant_factor)
 add_test(decomposable_fragment decomposable_fragment)
 add_test(gaussian_factors gaussian_factors)
 add_test(mixture mixture)

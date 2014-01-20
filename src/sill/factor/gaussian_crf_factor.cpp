@@ -209,9 +209,6 @@ namespace sill {
     reset_ov(cg);
   } // gaussian_crf_factor(cg, head_vars, tail_vars, Y, X)
 
-  gaussian_crf_factor::gaussian_crf_factor(const constant_factor& cf)
-    : base(), fixed_records_(false), conditioned_f(cf), relabeled(false) { }
-
   gaussian_crf_factor::gaussian_crf_factor(double c)
     : base(), fixed_records_(false), conditioned_f(c), relabeled(false) { }
 
@@ -639,83 +636,6 @@ namespace sill {
     assert(total_ds_weight > 0);
     return (val / total_ds_weight);
   }
-
-  gaussian_crf_factor&
-  gaussian_crf_factor::combine_in(const gaussian_crf_factor& other, op_type op){
-    if (arguments().size() > 0) {
-      throw std::runtime_error
-        ("gaussian_crf_factor::combine_in NOT YET FULLY IMPLEMENTED!");
-    }
-    switch (op) {
-    case no_op:
-      break;
-    case sum_op:
-    case minus_op:
-    case product_op:
-      throw std::runtime_error
-        ("gaussian_crf_factor::combine_in NOT FULLY IMPLEMENTED!");
-      break;
-    case divides_op:
-      {
-        throw std::runtime_error
-          ("gaussian_crf_factor::combine_in NOT FULLY IMPLEMENTED!");
-        // This is wrong--and it can't even be done in most cases
-        // using this representation.
-        double myval = this->v(vector_assignment());
-        this->operator=(other);
-//        ov.reciprocal();
-//        ov *= myval;
-        ov *= -myval;
-      }
-      break;
-    case max_op:
-    case min_op:
-    case and_op:
-    case or_op:
-      throw std::runtime_error
-        ("gaussian_crf_factor::combine_in NOT FULLY IMPLEMENTED!");
-      break;
-    default:
-      assert(false);
-    }
-    return *this;
-  }
-
-  gaussian_crf_factor&
-  gaussian_crf_factor::combine_in(const constant_factor& other, op_type op) {
-    throw std::runtime_error
-      ("gaussian_crf_factor::combine_in NOT FULLY IMPLEMENTED!");
-  }
-
-  /*
-  gaussian_crf_factor&
-  gaussian_crf_factor::combine_in_left(const constant_factor& cf, op_type op) {
-    switch (op) {
-    case no_op:
-      break;
-    case sum_op:
-    case minus_op:
-    case product_op:
-      throw std::runtime_error
-        ("gaussian_crf_factor::combine_in_left NOT FULLY IMPLEMENTED!");
-      break;
-    case divides_op:
-      ov.reciprocal();  // Is this correct?
-      ov *= cf;
-      break;
-    case max_op:
-    case min_op:
-    case and_op:
-    case or_op:
-      throw std::runtime_error
-        ("gaussian_crf_factor::combine_in_left NOT FULLY IMPLEMENTED!");
-      break;
-    default:
-      assert(false);
-    }
-    return *this;
-  }
-  */
 
   gaussian_crf_factor& gaussian_crf_factor::square_root() {
     ov /= 2;

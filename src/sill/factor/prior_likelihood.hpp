@@ -3,7 +3,7 @@
 
 #include <sill/global.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/constant_factor.hpp>
+#include <sill/factor/operations.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>
@@ -54,12 +54,6 @@ namespace sill
     //! implements Factor::collapse_type
     typedef prior_likelihood collapse_type;
 
-    //! implements Factor::collapse_ops
-    static const unsigned collapse_ops = 1 << sum_op;
-
-    //! implements Factor::combine_ops
-    static const unsigned combine_ops = 1 << product_op;
-
     // Private data members
     //==========================================================================
   private:
@@ -76,22 +70,22 @@ namespace sill
     prior_likelihood() : prior_(F(1)), likelihood_(G(1)) { }
 
     //! Constructor with optional likelihood
-    //! This constructor can also act as a conversion constructor from F
+    //! \todo Ideally, this would be explicit
     prior_likelihood(const F& prior, const G& likelihood = G(1))
       : prior_(prior), likelihood_(likelihood) {
       assert(includes(prior.arguments(), likelihood.arguments()));
     }
 
-    //! Constant factor conversion constructor
-    prior_likelihood(const constant_factor& factor)
-      : prior_(1), likelihood_(factor.value) { }
+    //! Constructor with a constant value for the likelihood
+    explicit prior_likelihood(double val)
+      : prior_(1), likelihood_(val) { }
 
-    //! Constant factor conversion operator
-    //! returns likelihood(), converted to a constant_factor
-    operator constant_factor() {
-      assert(this->arguments().empty());
-      return likelihood_;
-    }
+//     //! Constant factor conversion operator
+//     //! returns likelihood(), converted to a constant_factor
+//     operator constant_factor() {
+//       assert(this->arguments().empty());
+//       return likelihood_;
+//     }
 
     //! Conversion to human-readable representation
     operator std::string() const {
@@ -135,19 +129,29 @@ namespace sill
       return prior_ == other.prior_ && likelihood_ == other.likelihood_;
     }
 
-    //! Returns true if
-    bool operator<(const prior_likelihood& other) const {
-      if (prior_ == other.prior_)
-        return likelihood_ < other.likelihood_;
-      else
-        return prior_ < other.prior_;
+    //! Returns true if two PL factors are not equal
+    bool operator!=(const prior_likelihood& other) const {
+      return !operator==(other);
     }
 
     // Factor operations
     //==========================================================================
+
+    //! Multiplies by a constant
+    prior_likelihood& operator*=(double val) {
+      likelihood_ *= val;
+      return *this;
+    }
+
+    //! Multiplies a likelihood factor into this PL factor
+    prior_likelihood& operator*=(const G& likelihood) {
+      assert(includes(arguments(), likelihood.arguments()));
+      likelihood_ *= likelihood;
+      return *this;
+    }
+
     //! Multiplies in another prior-likelihood factor into this PL factor
-    prior_likelihood& combine_in(const prior_likelihood& x, op_type op) {
-      check_supported(op, combine_ops);
+    prior_likelihood& operator*=(const prior_likelihood& x) {
       if(includes(arguments(), x.arguments())) {
         likelihood_ *= x.likelihood;
       } else {
@@ -156,26 +160,8 @@ namespace sill
       return *this;
     }
 
-    //! Multiplies a likelihood factor into this PL factor
-    prior_likelihood& combine_in(const G& likelihood, op_type op) {
-      check_supported(op, combine_ops);
-      assert(includes(arguments(), likelihood.arguments()));
-      likelihood_ *= likelihood;
-      return *this;
-    }
-
-    //! Multiplies in a constant factor
-    prior_likelihood&
-    combine_in(const constant_factor& likelihood, op_type op) {
-      check_supported(op, combine_ops);
-      assert(includes(arguments(), likelihood.arguments()));
-      likelihood_ *= likelihood;
-      return *this;
-    }
-
-    //! implements Factor::collapse
-    prior_likelihood collapse(op_type op, const domain_type& retain) const {
-      check_supported(op, collapse_ops);
+    //! Computes a marginal of the PL factor
+    prior_likelihood marginal(const domain_type& retain) const {
       if (likelihood().arguments().empty()) {
         return prior_likelihood(prior().marginal(retain), likelihood());
       } else {
@@ -196,11 +182,6 @@ namespace sill
       prior_.subst_args(map);
       likelihood_.subst_args(map);
       return *this;
-    }
-
-    //! implements DistributionFactor::marginal
-    prior_likelihood marginal(const domain_type& retain) const {
-      return collapse(sum_op, retain);
     }
 
     //! Transfers the likelihood from another P-L factor to this factor
@@ -225,13 +206,14 @@ namespace sill
 
   }; // class prior_likelihood
 
-  //! implements Factor::combine for multiplication
+  // Free functions
+  //============================================================================
+
+  //! multiplies two PL factors
   //! \relates prior_likelihood
   template <typename F, typename G>
   prior_likelihood<F,G>
-  combine(const prior_likelihood<F,G>& x,
-          const prior_likelihood<F,G>& y, op_type op) {
-    factor::check_supported(op, product_op);
+  operator*(const prior_likelihood<F,G>& x, const prior_likelihood<F,G>& y) {
     // Handle the special cases more efficiently
     // (when the domain of one prior is a superset of the other)
     if (includes(x.arguments(), y.arguments())) {
@@ -246,26 +228,19 @@ namespace sill
     }
   }
 
-  //! combination of a PL factor and a likelihood
-  //! \relates prior_likelihood
+  //! multiplies a PL factor with a likelihood
   template <typename F, typename G>
-  struct combine_result< prior_likelihood<F,G>, prior_likelihood<F,G> > {
-    typedef prior_likelihood<F, G> type;
-  };
+  prior_likelihood<F,G>
+  operator*(prior_likelihood<F,G> x, const G& likelihood) {
+    return x *= likelihood;
+  }
 
-  //! combination of a PL factor and a likelihood
-  //! \relates prior_likelihood
+  //! multiplies a PL factor with a likelihood
   template <typename F, typename G>
-  struct combine_result< prior_likelihood<F,G>, G > {
-    typedef prior_likelihood<F, G> type;
-  };
-
-  //! combination of a PL factor and a likelihood
-  //! \relates prior_likelihood
-  template <typename F, typename G>
-  struct combine_result< G, prior_likelihood<F,G> > {
-    typedef prior_likelihood<F, G> type;
-  };
+  prior_likelihood<F,G>
+  operator*(const G& likelihood, prior_likelihood<F,G> x) {
+    return x *= likelihood;
+  }
 
   //! Outputs a PL factor to a stream
   //! \relates prior_likelihood

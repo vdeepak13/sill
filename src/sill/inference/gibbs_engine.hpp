@@ -21,7 +21,6 @@
 // PRL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/norms.hpp>
-#include <sill/math/gdl_enum.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
 #include <sill/inference/bp_convergence_measures.hpp>
@@ -124,7 +123,7 @@ namespace sill {
           bool combined_in = false;
           foreach(factor_type* inner_factor, var2factors[v]){
             if(set_union(inner_factor->arguments(), factor.arguments()).size() < MAX_JOIN_FACTOR_DOMAIN_SIZE_){
-              inner_factor->combine_in(factor, sill::product_op);
+              (*inner_factor) *= factor;
               combined_in = true;
               break;
             }

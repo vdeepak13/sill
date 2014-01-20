@@ -1,4 +1,3 @@
-
 #ifndef SILL_LOG_TABLE_FACTOR_HPP
 #define SILL_LOG_TABLE_FACTOR_HPP
 
@@ -14,7 +13,6 @@
 #include <sill/math/logarithmic.hpp>
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/global.hpp>
-#include <sill/factor/constant_factor.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/table_factor.hpp>
 
@@ -31,14 +29,11 @@ namespace sill {
   /**
    * A table factor represents a function of a set of finite variables.
    *
-   * @tparam Table A type that implements the sill::Table concept.
-   *
    * \ingroup factor_types
    * \see Factor
    */
   class log_table_factor : public factor {
-    //    concept_assert((sill::Table));
-
+ 
     // Public type declarations
     //==========================================================================
   public:
@@ -129,33 +124,30 @@ namespace sill {
     void load(iarchive & ar);
 
     //! Default constructor for a factor with no arguments, i.e.,  a constant.
-    log_table_factor(double default_value = 0.0) {
+    explicit log_table_factor(double default_value = 0.0) {
       initialize(this->arguments(), result_type(default_value));
     }
 
-    log_table_factor(result_type default_value) {
+    explicit log_table_factor(result_type default_value) {
       initialize(this->arguments(), default_value);
     }
 
     //! Creates a factor with the specified arguments. The table
     //! geometry will respect the specified order of arguments.
     log_table_factor(const forward_range<finite_variable*>& arguments,
-                 result_type default_value)
+                     result_type default_value)
       : args(boost::begin(arguments), boost::end(arguments)) {
       initialize(arguments, default_value);
     }
 
-    ~log_table_factor() { }
-    //! SWIG constructor
     explicit log_table_factor(const finite_var_vector& arguments,
                           result_type default_value = 0.0)
       : args(arguments.begin(), arguments.end()) {
       initialize(arguments, default_value);
     }
 
-    //! SWIG constructor
     log_table_factor(const finite_var_vector& arguments,
-                 const std::vector<result_type>& values)
+                     const std::vector<result_type>& values)
       : args(arguments.begin(), arguments.end()) {
       initialize(arguments, 0);
       assert(table().size() == values.size());
@@ -166,14 +158,8 @@ namespace sill {
       (*this) = factor;
     }
 
-    //! Conversion from a constant_factor
-    log_table_factor(const constant_factor& factor) {
-      initialize(arguments(), factor.value);
-    }
 
     //! Conversion from a table_factor.
-    //! Joseph: This is explicit to prevent unnoticed inefficiencies,
-    //!         but it's fine with me if someone wants to change that.
     explicit log_table_factor(const table_factor& f)
       : args(f.arguments()), arg_seq(f.arg_list()),
         table_data(f.table().shape()) {
@@ -183,17 +169,17 @@ namespace sill {
       sill::copy(f.table(), table_data.begin());
     }
 
-    //! Conversion to a constant factor. The argument set of this factor
-    //! must be empty (otherwise, an assertion violation is thrown).
-    operator constant_factor() const {
-      assert(this->arguments().empty());
-      return constant_factor(*table_data.begin());
-    }
+//     //! Conversion to a constant factor. The argument set of this factor
+//     //! must be empty (otherwise, an assertion violation is thrown).
+//     operator constant_factor() const {
+//       assert(this->arguments().empty());
+//       return constant_factor(*table_data.begin());
+//     }
 
-    //! Conversion to human-readable representation
-    operator std::string() const {
-      std::ostringstream out; out << *this; return out.str();
-    }
+//     //! Conversion to human-readable representation
+//     operator std::string() const {
+//       std::ostringstream out; out << *this; return out.str();
+//     }
 
     //! Exchanges the content of two factors
     void swap(log_table_factor& f);
@@ -371,7 +357,6 @@ namespace sill {
       set_v(i, logarithmic<double>(v, log_tag()));
     }
 
-
     //! Returns true if the two factors have the same argument sets and values
     bool operator==(const log_table_factor& other) const;
 
@@ -389,10 +374,10 @@ namespace sill {
       return !(*this == other);
     }
 
-    //! Returns true if *this precedes other in the lexicographical ordering
-    //! The lexicographical ordering first compares the arguments and then
-    //! the values in the natural order of the arguments.
-    bool operator<(const log_table_factor& other) const;
+//     //! Returns true if *this precedes other in the lexicographical ordering
+//     //! The lexicographical ordering first compares the arguments and then
+//     //! the values in the natural order of the arguments.
+//     bool operator<(const log_table_factor& other) const;
 
     /**
      * Applies the supplied functor to all values of the factor.  Note
@@ -493,26 +478,9 @@ namespace sill {
                          result_type initialvalue) const {
       return table_data.aggregate(agg_op, initialvalue);
     }
-
-    /** An overload of collapse() which takes in an op_type instead 
-      * of a functor
-      */
-    log_table_factor collapse(op_type op, const finite_domain& retained) const;
-    
-    
-    /** An overload of collapse() which takes in an op_type instead 
-      * of a functor
-      */
-    result_type collapse(op_type op) const;
-    
+  
     //! implements Factor::restrict
     log_table_factor restrict(const finite_assignment& a) const;
-
-    //! implements Factor::combine_in
-    log_table_factor& combine_in(const log_table_factor& y, op_type op);
-
-    //! combines a constant factor into this factor
-    log_table_factor& combine_in(const constant_factor& y, op_type op);
 
     //! implements Factor::subst_args
     //! \todo Strengthen the requirement on var_map
@@ -629,7 +597,6 @@ namespace sill {
     //! \todo Stano: can we document this function more? Does it belong here?
     double bp_msg_derivative_ub(variable_type* x, variable_type* y) const;
 
-  #ifndef SWIG // std::pair<variable, log_table_factor> not supported at the moment
     /**
      * Unrolls the factor to be over a single variable new_v (created within
      * the given universe).
@@ -645,7 +612,6 @@ namespace sill {
      * @see create_indicator_factor, roll_up
      */
     std::pair<finite_variable*, log_table_factor > unroll(universe& u) const;
-  #endif
 
     /**
      * Rolls up a factor (which was unrolled to be over a single variable)
@@ -801,13 +767,6 @@ namespace sill {
   //! \relates log_table_factor
   std::ostream& operator<<(std::ostream& out, const log_table_factor& f);
 
-  //! Combines two table factors
-  //! \relates log_table_factor
-  
-  log_table_factor combine(const log_table_factor& x,
-                              const log_table_factor& y,
-                              op_type op);
-
   //! Returns the L1 distance between two factors
   
   double norm_1(const log_table_factor& x, const log_table_factor& y);
@@ -863,8 +822,8 @@ namespace sill {
     return factor;
   }
 
-// Operator Overloads
-//============================================================================
+  // Operator Overloads
+  //============================================================================
 
   /** Elementwise addition of two table factors. 
    *   X = A + B
@@ -944,7 +903,6 @@ namespace sill {
     return log_table_factor::combine(x, y, minimum<log_table_factor::result_type>());
   }
 
-  //typedef log_table_factor tablef;
 } // namespace sill
 
 

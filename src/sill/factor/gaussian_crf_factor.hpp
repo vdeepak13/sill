@@ -219,11 +219,6 @@ namespace sill {
                         const vector_domain& X);
 
     /**
-     * Constructor from a constant factor.
-     */
-    explicit gaussian_crf_factor(const constant_factor& cf);
-
-    /**
      * Constructor from a constant.
      */
     explicit gaussian_crf_factor(double c);
@@ -426,18 +421,6 @@ namespace sill {
      * This uses real-space; i.e., the log of this factor is in log-space.
      */
     double log_expected_value(const dataset<la_type>& ds) const;
-
-    //! implements Factor::combine_in
-    gaussian_crf_factor&
-    combine_in(const gaussian_crf_factor& other, op_type op);
-
-    //! combines a constant factor into this factor
-    gaussian_crf_factor&
-    combine_in(const constant_factor& other, op_type op);
-
-    //! Combine with constant factor via op(f, *this).
-    //! @return This modified factor.
-//  gaussian_crf_factor& combine_in_left(const constant_factor& cf, op_type op);
 
     //! Set this factor to the square root of its value.
     gaussian_crf_factor& square_root();

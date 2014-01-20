@@ -4,8 +4,6 @@
 #include <stack>
 #include <map>
 
-#include <boost/serialization/vector.hpp>
-
 #include <sill/global.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/prior_likelihood.hpp>
@@ -60,26 +58,20 @@ namespace sill {
     //! The result of a collapse operation
     typedef decomposable_fragment collapse_type;
 
-    //! implements Factor::collapse_ops
-    static const unsigned collapse_ops = 1 << sum_op;
-
-    //! implements Factor::combine_ops
-    static const unsigned combine_ops = 1 << product_op;
+    //! The type of the constituent factor
+    typedef prior_likelihood<F, G> factor_type;
 
     // Private data members
     //==========================================================================
   private:
-
     //! The type that stores factors in this fragment
     typedef std::vector<prior_likelihood<F,G> > pl_vector;
     
-    //! The type of the constituent factor
-    typedef prior_likelihood<F, G> factor_type;
-
     //! The argument set of this factor
     domain_type args;
 
-    // The collection of factors that forms this fragment
+    //! The collection of factors that forms this fragment
+    //! \todo: deprecate the copy_ptr
     copy_ptr<pl_vector> pls;
 
     // Constructors and conversion operators
@@ -98,51 +90,44 @@ namespace sill {
     //! Default constructor
     decomposable_fragment() : pls(new pl_vector()) { }
 
-  #ifndef SWIG
     //! Singleton constructor
-    decomposable_fragment(const prior_likelihood<F,G>& pl) 
-      : args(pl.arguments()), pls(new pl_vector(1, pl)) { }
-  #endif
+    explicit decomposable_fragment(const prior_likelihood<F,G>& pl) 
+      : args(pl.arguments()),
+        pls(new pl_vector(1, pl)) { }
 
     //! Converts a prior to a decomposable fragment. 
     //! Care must be taken when F == G that decomposable_fragment is not
     //! constructed with a likelihood alone.
-    decomposable_fragment(const F& prior)
-      : args(prior.arguments()), pls(new pl_vector(1, prior)) { }
+    explicit decomposable_fragment(const F& prior)
+      : args(prior.arguments()),
+        pls(new pl_vector(1, factor_type(prior))) { }
 
     //! Conversion constructor
-    decomposable_fragment(const constant_factor& factor)
-      : pls(new pl_vector(1, factor)) { }
+    explicit decomposable_fragment(double val)
+      : pls(new pl_vector(1, factor_type(val))) { }
 
-    //! Constructs a model fragment factor 
-    //! @param Range a collection of prior marginals or prior-likelihoods.
-    template <typename FactorRange>
-    explicit decomposable_fragment(const FactorRange& factors) {
-      concept_assert((InputRangeConvertible<FactorRange, factor_type>));
+    //! Constructs a decomposable fragment for a collection of PL factors 
+    //! The argument set will be the union of all of factors' argument sets
+    template <typename Range>
+    explicit decomposable_fragment(const Range& factors) {
+      concept_assert((InputRangeConvertible<Range, factor_type>));
       pls.reset(new pl_vector(boost::begin(factors), boost::end(factors)));
-      args.clear();
-      foreach(const domain_type &a, cliques()) {
-        args = set_union(args, a);
-      }
+      args = sill::arguments(*pls); // from factor/opereations.hpp
     }
 
-    //! Construct a model fragment factor with given arguments
-    //! @param Range a collection of prior marginals or prior-likelihoods
-    template <typename FactorRange>
-    decomposable_fragment(const FactorRange& factors, const domain_type& args) 
+    //! Construct a decomposable fragment for a collection of PL factors
+    template <typename Range>
+    explicit decomposable_fragment(const Range& factors, const domain_type& args)
       : args(args) {
+      concept_assert((InputRangeConvertible<Range, factor_type>));
       pls.reset(new pl_vector(boost::begin(factors), boost::end(factors)));
     }
 
-  #ifdef SWIG
-    decomposable_fragment(const std::vector<F>& priors);
-  #endif
-      
-    //! Conversion to a constant factor. \todo For now, always returns 1
-    operator constant_factor() const {
-      assert(arguments().empty());
-      return 1;
-    }
+//     //! Conversion to a constant factor. \todo For now, always returns 1
+//     operator constant_factor() const {
+//       assert(arguments().empty());
+//       return 1;
+//     }
 
     //! Converts this factor to the prior type; equivalent to calling flatten()
     operator F() const {
@@ -171,12 +156,10 @@ namespace sill {
       return pls->size();
     }
 
-  #ifndef SWIG    
     //! Returns the collection of prior-likelihoods, contained in this fragment
     const pl_vector& factors() const {
       return *pls;
     }
-  #endif
 
     //! Returns the collection of priors, contained in this fragment
     forward_range<const F&> priors() const {
@@ -207,17 +190,6 @@ namespace sill {
       return !operator==(other);
     }
 
-    //! Returns true if this factor precedes the other in the lexicographical
-    //! ordering
-    bool operator<(const decomposable_fragment& other) const {
-      assert(pls);
-      assert(other.pls);
-      if (arguments() != other.arguments())
-        return arguments() < other.arguments();
-      else
-        return sill::lexicographical_compare(*pls, *other.pls);
-    }
-
     //! Converts this decomposable fragment to a decomposable model.
     //! \param thin if true, thins the decomposable model as necessary
     decomposable<F> to_decomposable(bool thin = true) const {
@@ -239,25 +211,17 @@ namespace sill {
 
     // Factor operations
     //==========================================================================
-    //! implements Factor::operator()
-    result_type operator()(const assignment_type& a) const {
-      assert(false);
-      return 0;
-    }
 
-    //! implements Factor::combine_in for multiplication
-    decomposable_fragment&
-    combine_in(const decomposable_fragment& x, op_type op) {
-      check_supported(op, combine_ops);
+    //! multiplies in another decomposable fragment
+    decomposable_fragment& operator*=(const decomposable_fragment& x) {
       append(*pls, x.factors());
       args.insert(x.arguments());
       return *this;
     }
 
-    //! implements Factor::combine_in for multiplication
-    decomposable_fragment&
-    combine_in(const G& likelihood, op_type op) {
-      check_supported(op, combine_ops);
+    //! multiplies in a likelihood
+    //! the arguments of the likelihood must be covered by at least one clique
+    decomposable_fragment& operator*=(const G& likelihood) {
       foreach(factor_type& pl, *pls) {
         if (includes(pl.arguments(), likelihood.arguments())) {
           pl *= likelihood;
@@ -267,18 +231,16 @@ namespace sill {
       throw std::invalid_argument("The arguments of the likelihood are not covered by any prior");
     }
 
-    //! implements Factor::combine_in for multiplication
-    decomposable_fragment&
-    combine_in(const constant_factor& other, op_type op) {
-      check_supported(op, combine_ops);
+    //! multiplies in a constant
+    decomposable_fragment& operator*=(result_type val) {
       assert(!pls->empty());
-      pls->front() *= other;
+      pls->front() *= val;
       return *this;
     }
 
-    //! implements Factor::collapse for summation
-    decomposable_fragment collapse(op_type op, const domain_type& retain) const{
-      check_supported(op, collapse_ops);
+    //! computes a marginal over set of variables
+    //! this is a lazy operations: as many cliques are pruned as possible
+    decomposable_fragment marginal(const domain_type& retain) const {
       if (includes(retain, arguments())) return *this; // not much to do
       
       // Construct the canonical tree
@@ -330,55 +292,33 @@ namespace sill {
       return *this;
     }
 
-    //! implements DistributionFactor::marginal
-    decomposable_fragment marginal(const domain_type& retain) const {
-      return collapse(sum_op, retain);
-    }
-
   }; // class decomposable_fragment
 
-  //! Combines two decomposable fragments
+  //! Multiplies two decomposable fragments
   //! \relates decomposable_fragment
   template <typename F, typename G>
   decomposable_fragment<F,G>
-  combine(const decomposable_fragment<F,G>& x, 
-          const decomposable_fragment<F,G>& y, op_type op) {
-    factor::check_supported(op, product_op);
+  operator*(const decomposable_fragment<F,G>& x,
+            const decomposable_fragment<F,G>& y) {
     return decomposable_fragment<F,G>(make_joined(x.factors(), y.factors()),
-				      x.arguments() + y.arguments());
+				      set_union(x.arguments(), y.arguments()));
   }
 
-  //! Combines a decomposable fragment and a likelihood
+  //! Multiplies a decomposable fragment and a likelihood
   //! \relates decomposable_fragment
   template <typename F, typename G>
   decomposable_fragment<F,G>
-  combine(decomposable_fragment<F,G> x, const G& likelihood, op_type op) {
-    return x.combine_in(likelihood, op);
+  operator*(decomposable_fragment<F,G> x, const G& likelihood) {
+    return x *= likelihood;
   }
 
-  //! Combines a decomposable fragment and a likelihood
+  //! Multiplies a decomposable fragment and a likelihood
   //! \relates decomposable_fragment
   template <typename F, typename G>
   decomposable_fragment<F,G>
-  combine(const G& likelihood, decomposable_fragment<F,G> x, op_type op) {
-    return x.combine_in(likelihood, op);
+  operator*(const G& likelihood, decomposable_fragment<F,G> x) {
+    return x *= likelihood;
   }
-
-  template <typename F, typename G>
-  struct combine_result<decomposable_fragment<F,G>, decomposable_fragment<F,G> >
-  {
-    typedef decomposable_fragment<F,G> type;
-  };
-
-  template <typename F, typename G>
-  struct combine_result<decomposable_fragment<F,G>, G > {
-    typedef decomposable_fragment<F,G> type;
-  };
-
-  template <typename F, typename G>
-  struct combine_result<G, decomposable_fragment<F,G> > {
-    typedef decomposable_fragment<F,G> type;
-  };
 
   //! Prints a model fragment to a stream
   //! relates decomposable_fragment

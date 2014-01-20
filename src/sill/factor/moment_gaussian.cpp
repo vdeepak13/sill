@@ -90,10 +90,6 @@ namespace sill {
     initialize(head_list, tail_list);
   }
 
-  moment_gaussian::moment_gaussian(const constant_factor& factor)
-    : likelihood(factor.value) {
-  }
-
   moment_gaussian::moment_gaussian(const canonical_gaussian& cg)
     : gaussian_factor(cg.arguments()), head_list(cg.arg_list),
       coeff(cg.eta.size(),0), likelihood(cg.log_multiplier(), log_tag()) {
@@ -113,14 +109,14 @@ namespace sill {
     }
   }
 
-  moment_gaussian::operator constant_factor() const {
-    assert(this->arguments().empty());
-    return constant_factor(likelihood);
-  }
+//   moment_gaussian::operator constant_factor() const {
+//     assert(this->arguments().empty());
+//     return constant_factor(likelihood);
+//   }
 
-  moment_gaussian::operator std::string() const {
-    std::ostringstream out; out << *this; return out.str();
-  }
+//   moment_gaussian::operator std::string() const {
+//     std::ostringstream out; out << *this; return out.str();
+//   }
 
   // Serialization
   //==========================================================================
@@ -201,30 +197,30 @@ namespace sill {
   }
 
   moment_gaussian&
-  moment_gaussian::combine_in(const moment_gaussian& x, op_type op) {
-    return (*this = combine(*this, x, op));
+  moment_gaussian::operator*=(const moment_gaussian& x) {
+    return (*this = (*this) * x);
   }
 
   moment_gaussian&
-  moment_gaussian::combine_in(const constant_factor& x, op_type op) {
-    check_supported(op, combine_ops);
-    switch (op) {
-    case product_op: likelihood *= x.value; break;
-    case divides_op: likelihood /= x.value; break;
-    default: check_supported(op, 0);
-    }
+  moment_gaussian::operator*=(logarithmic<double> x) {
+    likelihood *= x;
+    return *this;
+  }
+
+  moment_gaussian&
+  moment_gaussian::operator/=(logarithmic<double> x) {
+    likelihood /= x;
     return *this;
   }
 
   moment_gaussian
-  moment_gaussian::collapse(op_type op, const vector_domain& retain) const {
-    check_supported(op, collapse_ops);
+  moment_gaussian::marginal(const vector_domain& retain) const {
     // collapse must not eliminate any tail variables
     //assert(vector_domain(tail_list).subset_of(retain));
-    assert(includes(retain,vector_domain(tail_list.begin(), tail_list.end())));
+    assert(includes(retain, vector_domain(tail_list.begin(), tail_list.end())));
     
     vector_domain new_head =
-      set_intersect(retain,vector_domain(head_list.begin(), head_list.end()));
+      set_intersect(retain, vector_domain(head_list.begin(), head_list.end()));
     vector_var_vector new_head_list = make_vector(new_head);
     uvec ih = indices(new_head_list);
     uvec it = indices(tail_list);
@@ -427,8 +423,8 @@ namespace sill {
   //==========================================================================
 
   moment_gaussian
-  moment_gaussian::direct_combination(const moment_gaussian& x,
-                                      const moment_gaussian& y) {
+  moment_gaussian::direct_multiplication(const moment_gaussian& x,
+                                         const moment_gaussian& y) {
     assert(x.marginal());
     vector_domain args = set_union(x.arguments(), y.arguments());
     moment_gaussian result(args, x.likelihood * y.likelihood);
@@ -445,7 +441,7 @@ namespace sill {
     result.cov(xh, yh) = trans(covyx);
     result.cov(yh, yh) = covyy;
     return result;
-  } // direct_combination
+  }
 
   // Free functions
   //============================================================================
@@ -474,18 +470,17 @@ namespace sill {
   }
 
   moment_gaussian
-  combine(const moment_gaussian& x, const moment_gaussian& y, op_type op) {
-    factor::check_supported(op, product_op);
+  operator*(const moment_gaussian& x, const moment_gaussian& y) {
     if (x.marginal() &&
         set_disjoint(vector_domain(y.head().begin(), y.head().end()),
                      x.args))
-      return moment_gaussian::direct_combination(x, y);
+      return moment_gaussian::direct_multiplication(x, y);
     else if (y.marginal() &&
              set_disjoint(vector_domain(x.head().begin(), x.head().end()),
                           y.args))
-      return moment_gaussian::direct_combination(y, x);
+      return moment_gaussian::direct_multiplication(y, x);
     else
-      throw std::invalid_argument("Cannot directly combine moment Gaussians");
+      throw std::invalid_argument("Cannot directly multiply moment Gaussians");
   }
 
 } // namespace sill

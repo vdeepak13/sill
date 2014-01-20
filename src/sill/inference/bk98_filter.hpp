@@ -109,7 +109,7 @@ namespace sill {
 //                << "factor size " << maxsize << ", "
 //                << "tree width " << joint.tree_width() << endl;
           
-          F marginal = variable_elimination(factors, clique_t1, sum_product,
+          F marginal = variable_elimination(factors, clique_t1, sum_product<F>(),
                                             min_degree_strategy());
           marginal.subst_args(advance_var_map);
           marginals.push_back(marginal);

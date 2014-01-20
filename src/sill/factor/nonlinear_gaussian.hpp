@@ -44,12 +44,6 @@ namespace sill {
     //! implements Factor::collapse_type
     typedef nonlinear_gaussian collapse_type;
     
-    //! implements Factor::collapse_ops
-    static const unsigned collapse_ops = 0; // the CPD cannot be collapsed
-
-    //! implements Factor::combine_ops
-    static const unsigned combine_ops = 1 << product_op;
-
     // Private data members and accessors
     //==========================================================================
   private:
@@ -177,66 +171,51 @@ namespace sill {
       assert(false); // TODO
       return 0;
     }
+    
+    //! multiplies in another nonlinear Gaussian (unsupported operation)
+    nonlinear_gaussian& operator*=(const nonlinear_gaussian& other);
 
-    //! implements the binary combine operation
-    moment_gaussian combine_with(const moment_gaussian& mg, op_type op) const;
+    //! computes a marginal over a subset of variables (unsupported operation)
+    nonlinear_gaussian marginal(const vector_domain& retain) const;
 
-    //! implements Factor::combine_in
-    nonlinear_gaussian& combine_in(const nonlinear_gaussian& other, op_type op);
-
-    //! implements Factor::collapse
-    nonlinear_gaussian collapse(op_type op, const vector_domain& retain) const;
-
-    //! implements Factor::restrict
+    //! restricts (conditions) the factor to an assignment
     //! \todo this function needs to be tested
     nonlinear_gaussian restrict(const vector_assignment& a) const;
     
     //! implements Factor::subst_args
     nonlinear_gaussian& subst_args(const vector_var_map& map);
 
+  private:
+    //! multiplies this factor with a marginal moment Gaussian
+    moment_gaussian multiply_with(const moment_gaussian& mg) const;
+
+    friend moment_gaussian 
+    operator*(const nonlinear_gaussian&, const moment_gaussian&);
+
+    friend moment_gaussian
+    operator*(const moment_gaussian&, const nonlinear_gaussian&);
+
   }; // class nonlinear_gaussian
 
-  //! \relates nonlinear_gaussian, moment_gaussian
+  // Free functions
+  //============================================================================
+
+  //! \relates nonlinear_gaussian
   std::ostream& operator<<(std::ostream& out, const nonlinear_gaussian& cpd);
 
-  // Factor combinations
-  //============================================================================
-  // the default implementation of
-  // combine(nonlinear_gaussian, nonlinear_gaussian) works
-
+  //! linearizes nonlinear_gaussian with mg and returns the product
   //! \relates nonlinear_gaussian, moment_gaussian
-  inline moment_gaussian combine(const nonlinear_gaussian& cpd, 
-                                 const moment_gaussian& mg,
-                                 op_type op) {
-    return cpd.combine_with(mg, op);
+  inline moment_gaussian 
+  operator*(const nonlinear_gaussian& cpd, const moment_gaussian& mg) {
+    return cpd.multiply_with(mg);
   }
   
+  //! linearizes nonlienar_gaussian with mg and retursn the product
   //! \relates nonlinear_gaussian, moment_gaussian
-  inline moment_gaussian combine(const moment_gaussian& mg,
-                                 const nonlinear_gaussian& cpd,
-                                 op_type op) {
-    return cpd.combine_with(mg, op);
+  inline moment_gaussian
+  operator*(const moment_gaussian& mg, const nonlinear_gaussian& cpd) {
+    return cpd.multiply_with(mg);
   }
-
-  template<> struct combine_result<nonlinear_gaussian, nonlinear_gaussian> {
-    typedef nonlinear_gaussian type;
-  };
-  
-  template<> struct combine_result<moment_gaussian, nonlinear_gaussian> {
-    typedef moment_gaussian type;
-  };
-  
-  template<> struct combine_result<nonlinear_gaussian, moment_gaussian> {
-    typedef moment_gaussian type;
-  };
-
-  template<> struct combine_result<canonical_gaussian, nonlinear_gaussian> {
-    typedef moment_gaussian type;
-  };
-  
-  template<> struct combine_result<nonlinear_gaussian, canonical_gaussian> {
-    typedef moment_gaussian type;
-  };
 
 } // namespace sill
 

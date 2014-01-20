@@ -42,8 +42,7 @@ namespace sill {
   }
 
   canonical_gaussian::
-  canonical_gaussian(const vector_domain& args,
-                     double value)
+  canonical_gaussian(const vector_domain& args, double value)
     : gaussian_factor(args), log_mult(std::log(value)) {
     initialize(make_vector(args), true);
   }
@@ -78,10 +77,6 @@ namespace sill {
   }
 
 
-  canonical_gaussian::
-  canonical_gaussian(const constant_factor& factor)
-    : log_mult(std::log(factor.value)) { }
-
   canonical_gaussian::canonical_gaussian(const moment_gaussian& mg) {
     size_t nhead = mg.size_head();
     size_t ntail = mg.size_tail();
@@ -97,7 +92,6 @@ namespace sill {
     compute_indices(arg_list);
 
     // Initialize the matrices
-    // TODO: deal with empty head or tail
     span ih(0, nhead-1);
     span it(nhead, n-1);
     mat invcov = inv(mg.cov);
@@ -120,26 +114,10 @@ namespace sill {
               + as_scalar(trans(mg.cmean) * invcov * mg.cmean));
   }
 
-  /*
-  canonical_gaussian&
-  canonical_gaussian::operator=(const canonical_gaussian& other) {
-    var_span = other.var_span;
-    args = other.args;
-    arg_list = other.arg_list;
-    lambda = other.lambda;
-    eta = other.eta;
-    log_mult = other.log_mult;
-    return *this;
-  }
-  */
-
-  canonical_gaussian::operator constant_factor() const {
-    assert(this->arguments().empty());
-    return constant_factor(exp(log_mult));
-  }
-
   canonical_gaussian::operator std::string() const {
-    std::ostringstream out; out << *this; return out.str();
+    std::ostringstream out;
+    out << *this;
+    return out.str();
   }
 
   void canonical_gaussian::reset(const vector_var_vector& args,
@@ -277,25 +255,66 @@ namespace sill {
     return - 0.5*as_scalar(trans(v) * lambda * v) + dot(v, eta) + log_mult;
   }
 
+  canonical_gaussian& canonical_gaussian::operator*=(const canonical_gaussian& x) {
+    return combine_in(x, 1.0);
+  }
+
+  canonical_gaussian& canonical_gaussian::operator/=(const canonical_gaussian& x) {
+    return combine_in(x, -1.0);
+  }
+
+  canonical_gaussian& canonical_gaussian::operator*=(logarithmic<double> val) {
+    log_mult += log(val);
+    return *this;
+  }
+
+  canonical_gaussian& canonical_gaussian::operator/=(logarithmic<double> val) {
+    log_mult -= log(val);
+    return *this;
+  }
+
   canonical_gaussian
-  canonical_gaussian::collapse(op_type op, const vector_domain& retain) const {
+  canonical_gaussian::marginal(const vector_domain& retain) const {
     canonical_gaussian cg;
-    collapse(op, retain, cg);
+    marginal(retain, cg);
     return cg;
   }
 
-  void canonical_gaussian::collapse(op_type op,
-                                    const vector_domain& retain,
-                                    canonical_gaussian& cg) const {
-    collapse_(op, retain, true, cg);
-  } // collapse(op, retain, cg)
+  void
+  canonical_gaussian::marginal(const vector_domain& retain,
+                               canonical_gaussian& cg) const {
+    marginal(retain, true, cg);
+  }
 
   void
-  canonical_gaussian::collapse_unnormalized(op_type op,
-                                            const vector_domain& retain,
+  canonical_gaussian::marginal_unnormalized(const vector_domain& retain,
                                             canonical_gaussian& cg) const {
-    collapse_(op, retain, false, cg);
-  } // collapse_unnormalized
+    marginal(retain, false, cg);
+  }
+
+  canonical_gaussian
+  canonical_gaussian::maximum(const vector_domain& retain) const {
+    vector_assignment a;
+    vector_assignment means(arg_max()); // This could be more efficient.
+    foreach(vector_variable* v, arg_list)
+      if (retain.count(v) == 0)
+        a[v] = means[v];
+    return restrict(a);
+  }
+
+  vector_assignment canonical_gaussian::arg_max() const {
+    mat cov;
+    if (lambda.size() == 0)
+      return vector_assignment();
+    bool result = inv(cov, lambda);
+    if (!result) {
+      std::cerr << "In canonical_gaussian::arg_max, could not invert lambda =\n"
+                << lambda << std::endl;
+      throw invalid_operation("The canonical_gaussian does not represent a valid marginal distribution.");
+    }
+    vec mu(cov * eta);
+    return make_assignment(arg_list, mu);
+  }
 
   canonical_gaussian
   canonical_gaussian::restrict(const vector_assignment& a) const {
@@ -397,17 +416,6 @@ namespace sill {
   }
 
   canonical_gaussian
-  canonical_gaussian::marginal(const vector_domain& retain) const {
-    return collapse(sum_op, retain);
-  }
-
-  void
-  canonical_gaussian::
-  marginal(canonical_gaussian& cg, const vector_domain& retain) const {
-    collapse(sum_op, retain, cg);
-  }
-
-  canonical_gaussian
   canonical_gaussian::conditional(const vector_domain& B) const {
     assert(includes(arguments(), B));
     canonical_gaussian PB(marginal(B));
@@ -447,30 +455,6 @@ namespace sill {
     return *this;
   }
 
-  canonical_gaussian
-  canonical_gaussian::maximum(const vector_domain& retain) const {
-    vector_assignment a;
-    vector_assignment means(arg_max()); // This could be more efficient.
-    foreach(vector_variable* v, arg_list)
-      if (retain.count(v) == 0)
-        a[v] = means[v];
-    return restrict(a);
-  }
-
-  vector_assignment canonical_gaussian::arg_max() const {
-    mat cov;
-    if (lambda.size() == 0)
-      return vector_assignment();
-    bool result = inv(cov, lambda);
-    if (!result) {
-      std::cerr << "In canonical_gaussian::arg_max, could not invert lambda =\n"
-                << lambda << std::endl;
-      throw invalid_operation("The canonical_gaussian does not represent a valid marginal distribution.");
-    }
-    vec mu(cov * eta);
-    return make_assignment(arg_list, mu);
-  }
-
   double canonical_gaussian::entropy(double base) const {
     size_t N = eta.size();
     return (N + ((N*std::log(2.0 * pi()) - log_det(lambda)) / std::log(base)))/2.0;
@@ -505,9 +489,7 @@ namespace sill {
   //==========================================================================
 
   canonical_gaussian&
-  canonical_gaussian::combine_in(const canonical_gaussian& x, op_type op) {
-    check_supported(op, combine_ops);
-    double sign = (op == product_op) ? 1 : -1;
+  canonical_gaussian::combine_in(const canonical_gaussian& x, double sign) {
     if (!includes(arguments(), x.arguments())) {
 //       size_t n(eta.size());
 //       for (vector_domain::const_iterator it(x.args.begin());
@@ -521,7 +503,7 @@ namespace sill {
 //       }
 //       lambda.resize(n, n, true);
 //       eta.resize(n, true);
-      *this = combine(*this, x, op);
+      *this = combine(*this, x, sign);
       return *this;
     }
     uvec indx;
@@ -565,12 +547,9 @@ namespace sill {
     }
   }
 
-  void canonical_gaussian::collapse_(op_type op,
-                                     const vector_domain& retain,
-                                     bool renormalize,
-                                     canonical_gaussian& cg) const {
-    check_supported(op, collapse_ops);
-
+  void canonical_gaussian::marginal(const vector_domain& retain,
+                                    bool renormalize,
+                                    canonical_gaussian& cg) const {
     if (retain.empty()) {
       cg.var_span.clear();
       cg.args.clear();
@@ -631,16 +610,13 @@ namespace sill {
         cg.log_mult = log_norm_constant() - cg.log_norm_constant();
       }
     }
-  } // collapse_
+  } // marginal
 
   // Free functions
   //==========================================================================
-  canonical_gaussian combine(const canonical_gaussian& x,
-                             const canonical_gaussian& y,
-                             op_type op) {
-    factor::check_supported(op, canonical_gaussian::combine_ops);
-    double sign = (op == product_op) ? 1 : -1;
-
+  inline canonical_gaussian combine(const canonical_gaussian& x,
+                                    const canonical_gaussian& y,
+                                    double sign) {
     vector_domain args = set_union(x.arguments(), y.arguments());
     canonical_gaussian result(args, 0);
     uvec indx = result.indices(x.arg_list);
@@ -653,6 +629,16 @@ namespace sill {
     result.log_mult = x.log_mult + sign * y.log_mult;
 
     return result;
+  }
+
+  canonical_gaussian operator*(const canonical_gaussian& x,
+                               const canonical_gaussian& y) {
+    return combine(x, y, +1.0);
+  }
+
+  canonical_gaussian operator/(const canonical_gaussian& x,
+                               const canonical_gaussian& y) {
+    return combine(x, y, -1.0);
   }
 
   double norm_inf(const canonical_gaussian& x, const canonical_gaussian& y) {
@@ -684,6 +670,13 @@ namespace sill {
       return f1;
     else
       return pow(f1, 1-a) * pow(f2, a);
+  }
+
+  canonical_gaussian invert(const canonical_gaussian& cg) {
+    return canonical_gaussian(cg.argument_list(),
+                              -cg.inf_matrix(),
+                              -cg.inf_vector(),
+                              -cg.log_multiplier());
   }
 
   std::ostream& operator<<(std::ostream& out, const canonical_gaussian& cg) {

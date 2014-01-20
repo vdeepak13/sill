@@ -4,6 +4,7 @@
 #include <iosfwd>
 #include <sstream>
 
+#include <sill/base/universe.hpp>
 #include <sill/model/markov_network.hpp>
 
 #include <sill/macros_def.hpp>

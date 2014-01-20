@@ -12,7 +12,6 @@
 #include <sill/global.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
 //#include <sill/learning/dataset/dataset.hpp>
-#include <sill/math/gdl_enum.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/stl_concepts.hpp>
 
@@ -87,18 +86,8 @@ namespace sill {
     typedef typename F::assignment_type assignment_type;
 
     
-    /**
-     * The supported combine operations.
-     * Similarly, this flag represents the supported combine operations
-     * between F and other factor types.
-     */
-//    static const unsigned combine_ops = F::combine_ops;
-
     //! Returns the arguments of the factor
     const domain_type& arguments() const;
-
-    //! Combines the given factor into this factor with a binary operation
-    F& combine_in(const F& f, op_type op);
 
     //! Returns a new factor which represents the result of restricting this
     //! factor to an assignment to one or more of its variables
@@ -127,11 +116,9 @@ namespace sill {
 
       // member functions
       sill::same_type(cf.arguments(), d);
-      sill::same_type(f.combine_in(f, product_op), f);
       sill::same_type(f.subst_args(vm), f);
 
       // static functions
-      sill::same_type(combine(cf, cf, product_op), f);
       f.restrict(a);
     }
 
@@ -148,9 +135,6 @@ namespace sill {
 
     //! Multiplies this factor by another factor
     F& operator*=(const F& f);
-
-    //! Divides this factor by another factor
-    F& operator/=(const F& f);
 
     //! Computes a marginal (sum) over a factor expression
     F marginal(const typename F::domain_type& retain) const;
@@ -181,8 +165,7 @@ namespace sill {
       const F& cf = f;
 
       // factor operations
-//      sill::same_type(f, f*=f); // TO DO: THESE ARE DISABLED B/C THESE OPERATIONS NEED TO BE PART OF THE FACTOR INTERFACE, NOT FREE FUNCTIONS; GET RID OF THE FREE FUNCTIONS IN operations.hpp
-//      sill::same_type(f, f/=f);
+      sill::same_type(f, f*=f);
       sill::same_type(f, f.marginal(typename F::domain_type()));
       sill::same_type(b, f.is_normalizable());
       sill::same_type(f.normalize(), f);

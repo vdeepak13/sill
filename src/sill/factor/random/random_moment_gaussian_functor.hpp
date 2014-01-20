@@ -1,6 +1,7 @@
 #ifndef SILL_RANDOM_MOMENT_GAUSSIAN_FUNCTOR_HPP
 #define SILL_RANDOM_MOMENT_GAUSSIAN_FUNCTOR_HPP
 
+#include <sill/base/universe.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/random/random_factor_functor_i.hpp>
 

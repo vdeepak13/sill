@@ -2,7 +2,6 @@
 #define ROUND_ROBIN_ENGINE
 
 
-// STL includes
 #include <map>
 #include <set>
 #include <vector>
@@ -11,17 +10,14 @@
 #include <sstream>
 #include <limits>
 
-// PRL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/norms.hpp>
-#include <sill/math/gdl_enum.hpp>
-#include <sill/factor/table_factor.hpp>
+#include <sill/inference/commutative_semiring.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
-
-
 
 // This include should always be last
 #include <sill/macros_def.hpp>
+
 namespace sill {
 
   template<typename F>
@@ -79,9 +75,6 @@ namespace sill {
     //! level of damping 1.0 is fully damping and 0.0 is no damping
     double damping_;
 
-    //! the commutative semiring for updates (typically sum_product)
-    commutative_semiring csr_;
-
     //! output stream code
     std::ofstream updates_out_;
     std::ofstream likelihood_out_;
@@ -106,7 +99,6 @@ namespace sill {
       splash_size_(splash_size), 
       bound_(bound), 
       damping_(damping),
-      csr_(sum_product),
       updates_out_("updates.txt"),
       likelihood_out_("likeli.txt"),
       rounds_(0),
@@ -199,7 +191,6 @@ namespace sill {
       }
     } // End of roundrobin
 
-
     inline void update_message(const vertex_type& source,
                                const vertex_type& target,
                                const message_type& new_msg) {
@@ -210,8 +201,8 @@ namespace sill {
       message_type& original_msg = messages_[source][target];
       belief_type prevblf = beliefs_[target];
       belief_type& blf = beliefs_[target];
-      blf.combine_in(original_msg, divides_op);
-      blf.combine_in(new_msg, csr_.dot_op);
+      blf /= original_msg;
+      blf *= new_msg;
       blf.normalize();
       //      assert(blf.minimum() > 0.0);
       original_msg = new_msg;
@@ -274,17 +265,14 @@ namespace sill {
       belief_type& blf = beliefs_[source];
 
       // Construct the cavity
-      belief_type cavity = combine(blf, 
-                                   messages_[target][source], 
-                                   divides_op);
+      belief_type cavity = blf / messages_[target][source];
       cavity.normalize();
       // Marginalize out any other variables
       domain_type domain = make_domain(source.is_variable()?
                                        &(source.variable()) :
                                        &(target.variable()));
-      //! TODO: 0.0 is probably incorrect
-      message_type new_msg = cavity.collapse(to_functor(csr_.cross_op), 
-                                              0.0, domain);
+      message_type new_msg = cavity.marginal(domain);
+
       // Normalize the message
       new_msg.normalize();
       // Damp messages form factors to variables
@@ -323,12 +311,8 @@ namespace sill {
 
   }; // End of class round_robin_bp
 
+} // end of namespace
 
-
-
-}; // end of namespace
 #include <sill/macros_undef.hpp>
-
-
 
 #endif

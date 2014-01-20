@@ -13,7 +13,6 @@
 // PRL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/norms.hpp>
-#include <sill/math/gdl_enum.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
 #include <sill/inference/bp_convergence_measures.hpp>
@@ -71,7 +70,7 @@ namespace sill {
     double damping_;
 
     //! the commutative semiring for updates (typically sum_product)
-    commutative_semiring csr_;
+    boost::shared_ptr<commutative_semiring<F> > csr_;
 
       //! output stream code
     //! maximum allowed number of splash updates. negative value means unlimited
@@ -110,7 +109,7 @@ namespace sill {
       factor_graph_(factor_graph),
       splash_size_(splash_size),
       damping_(damping),
-      csr_(sum_product), update_count_(0), splash_count_(0){
+      csr_(new sum_product<F>()), update_count_(0), splash_count_(0){
 
       convergence_indicator_ = new residual_splash_convergence_measure(bound);
       own_convergence_indicator_ = true;
@@ -131,7 +130,7 @@ namespace sill {
       factor_graph_(factor_graph),
       splash_size_(splash_size),
       damping_(damping),
-      csr_(sum_product),
+      csr_(new sum_product<F>()),
       convergence_indicator_(convergence_indicator),
       own_convergence_indicator_(false), update_count_(0), splash_count_(0){
       std::cout << "Running Residual Splash BP" << std::endl;
@@ -347,7 +346,7 @@ namespace sill {
         // if this is not the dest_v
         if(other != target) {
           // Combine the in_msg with the destination factor
-          new_msg.combine_in( messages_[other][source], csr_.dot_op);
+          csr_->combine_in(new_msg, messages_[other][source]);
           // Here we normalize after each iteration for numerical
           // stability.  This could be very costly for large factors.
           new_msg.normalize();
@@ -357,7 +356,7 @@ namespace sill {
       // must marginalize out all variables except the the target
       // variable.
       if(source.is_factor()) {
-        new_msg = new_msg.collapse(csr_.cross_op, make_domain(&target.variable()));
+        new_msg = csr_->collapse(new_msg, make_domain(&target.variable()));
       }
       // Normalize the message
       new_msg.normalize();
@@ -384,7 +383,7 @@ namespace sill {
       foreach(const vertex_type& other,
               factor_graph_->neighbors(vertex)) {
         // Combine the in_msg with the destination factor
-        blf.combine_in( messages_[other][vertex], csr_.dot_op);
+        csr_->combine_in(blf, messages_[other][vertex]);
         // Here we normalize after each iteration for numerical
         // stability.  This could be very costly for large factors.
        blf.normalize();
@@ -412,7 +411,7 @@ namespace sill {
         foreach(const vertex_type& other,
               factor_graph_->neighbors(u)) {
           // Combine the in_msg with the destination factor
-          blf.combine_in( messages_[other][u], csr_.dot_op);
+          csr_->combine_in(blf, messages_[other][u]);
         }
         blf.normalize();
         beliefs[u] = blf;

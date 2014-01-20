@@ -51,7 +51,7 @@ namespace sill {
     assert(prior.marginal());
     assert(includes(prior.arguments(), make_domain(tail)));
     moment_gaussian marginal = prior.marginal(make_domain(tail));
-    moment_gaussian joint = combine_with(marginal, product_op);
+    moment_gaussian joint = multiply_with(marginal);
     canonical_gaussian likelihood = canonical_gaussian(joint) / marginal;
     // enforce that likelihood is PSD
     likelihood.enforce_psd(joint.mean(likelihood.argument_list()));
@@ -67,27 +67,16 @@ namespace sill {
 
   // Factor operations
   //============================================================================
-  moment_gaussian
-  nonlinear_gaussian::combine_with(const moment_gaussian& mg, op_type op) const{
-    factor::check_supported(op, product_op);
-    assert(mg.marginal());
-    vector_domain head_set(head.begin(), head.end());
-    vector_domain tail_set(tail.begin(), tail.end());
-    assert(tail_set == mg.arguments()); // for now
-    assert(set_disjoint(head_set, mg.arguments()));
-    return approx()(*this, mg);
-  }
-
   nonlinear_gaussian&
-  nonlinear_gaussian::combine_in(const nonlinear_gaussian& other, op_type op) {
+  nonlinear_gaussian::operator*=(const nonlinear_gaussian& other) {
     throw std::invalid_argument
-      ("nonlinear_gaussian can only be combined with a Gaussian factor");
+      ("nonlinear_gaussian can only be multiplied with a Gaussian factor");
   }
 
   nonlinear_gaussian
-  nonlinear_gaussian::collapse(op_type op, const vector_domain& retain) const {
+  nonlinear_gaussian::marginal(const vector_domain& retain) const {
     throw std::invalid_argument
-      ("nonlinear_gaussian does not support the collapse operation");
+      ("nonlinear_gaussian does not support the marginalization operation");
   }
 
   nonlinear_gaussian
@@ -138,6 +127,16 @@ namespace sill {
 
     assignment_ = rekey(assignment_, map);
     return *this;
+  }
+
+  moment_gaussian
+  nonlinear_gaussian::multiply_with(const moment_gaussian& mg) const{
+    assert(mg.marginal());
+    vector_domain head_set(head.begin(), head.end());
+    vector_domain tail_set(tail.begin(), tail.end());
+    assert(tail_set == mg.arguments()); // for now
+    assert(set_disjoint(head_set, mg.arguments()));
+    return approx()(*this, mg);
   }
 
   // Free functions

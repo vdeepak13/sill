@@ -13,7 +13,6 @@
 #include <sill/base/finite_assignment_iterator.hpp>
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/global.hpp>
-#include <sill/factor/constant_factor.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/functional.hpp>
 #include <sill/learning/dataset/finite_record.hpp>
@@ -27,22 +26,13 @@
 
 namespace sill {
 
-  // Forward declarations
-  template <typename F>
-  typename combine_result<F, F>::type
-  combine(F f1, const F& f2, op_type op);
-
-
   /**
    * A table factor represents a function of a set of finite variables.
-   *
-   * @tparam Table A type that implements the sill::Table concept.
    *
    * \ingroup factor_types
    * \see Factor
    */
   class table_factor : public factor {
-    //    concept_assert((sill::Table));
 
     // Public type declarations
     //==========================================================================
@@ -91,13 +81,12 @@ namespace sill {
 
     //! Creates a factor with the specified arguments. The table
     //! geometry will respect the specified order of arguments.
-    table_factor(const forward_range<finite_variable*>& arguments,
+    explicit table_factor(const forward_range<finite_variable*>& arguments,
                  result_type default_value = 0.0)
       : args(boost::begin(arguments), boost::end(arguments)) {
       initialize(arguments, default_value);
     }
 
-    //! SWIG constructor
     explicit table_factor(const finite_var_vector& arguments,
                           result_type default_value = 0.0)
       : args(arguments.begin(), arguments.end()) {
@@ -113,28 +102,21 @@ namespace sill {
       sill::copy(values, table_data.begin());
     }
 
-    table_factor(const table_factor& factor) {
-      (*this) = factor;
-    }
+//     table_factor(const table_factor& factor) {
+//       (*this) = factor;
+//     }
 
-    //! Conversion from a constant_factor
-    explicit table_factor(const constant_factor& factor) {
-      initialize(arguments(), factor.value);
-    }
+//     //! Conversion to a constant factor. The argument set of this factor
+//     //! must be empty (otherwise, an assertion violation is thrown).
+//     operator constant_factor() const {
+//       assert(this->arguments().empty());
+//       return constant_factor(*table_data.begin());
+//     }
 
-    ~table_factor() { }
-
-    //! Conversion to a constant factor. The argument set of this factor
-    //! must be empty (otherwise, an assertion violation is thrown).
-    operator constant_factor() const {
-      assert(this->arguments().empty());
-      return constant_factor(*table_data.begin());
-    }
-
-    //! Conversion to human-readable representation
-    operator std::string() const {
-      std::ostringstream out; out << *this; return out.str();
-    }
+//     //! Conversion to human-readable representation
+//     operator std::string() const {
+//       std::ostringstream out; out << *this; return out.str();
+//     }
 
     //! Exchanges the content of two factors
     void swap(table_factor& f);
@@ -355,10 +337,10 @@ namespace sill {
       return !(*this == other);
     }
 
-    //! Returns true if *this precedes other in the lexicographical ordering
-    //! The lexicographical ordering first compares the arguments and then
-    //! the values in the natural order of the arguments.
-    bool operator<(const table_factor& other) const;
+//     //! Returns true if *this precedes other in the lexicographical ordering
+//     //! The lexicographical ordering first compares the arguments and then
+//     //! the values in the natural order of the arguments.
+//     bool operator<(const table_factor& other) const;
 
     /**
      * Applies the supplied functor to all values of the factor.  Note
@@ -471,27 +453,6 @@ namespace sill {
       }
     }
 
-    /**
-     * An overload of collapse() which takes an op_type instead of a functor.
-     */
-    result_type collapse(op_type op) const;
-
-    /**
-     * An overload of collapse() which takes an op_type instead of a functor.
-     */
-    table_factor collapse(op_type op, const finite_domain& retained) const;
-
-    /**
-     * An overload of collapse() which takes an op_type instead of a functor.
-     *
-     * This version stores the result in the factor f
-     * and avoids reallocation if possible.
-     * This does the same thing as collapse(); it exists for compatibility.
-     */
-    void collapse_unnormalized(op_type op,
-                               const finite_domain& retained,
-                               table_factor& f) const;
-
     //! implements Factor::restrict
     table_factor restrict(const finite_assignment& a) const;
 
@@ -575,12 +536,6 @@ namespace sill {
                         finite_variable* retain_v,
                         table_factor& f) const;
 
-    //! implements Factor::combine_in
-    table_factor& combine_in(const table_factor& y, op_type op);
-
-    //! combines a constant factor into this factor
-    table_factor& combine_in(const constant_factor& y, op_type op);
-
     //! implements Factor::subst_args
     //! \todo Strengthen the requirement on var_map
     table_factor& subst_args(const finite_var_map& var_map);
@@ -592,7 +547,11 @@ namespace sill {
 
     //! Computes marginal, storing result in factor f.
     //! If f is pre-allocated, this avoids reallocation.
-    void marginal(table_factor& f, const finite_domain& retain) const;
+    void marginal(const finite_domain& retain, table_factor& f) const;
+
+    //! Computes the marginal without doing explicit normalization
+    //! Same as marginal()
+    void marginal_unnormalized(const finite_domain& retain, table_factor& f) const;
 
     //! If this factor represents P(A,B), then this returns P(A|B).
     //! @todo Make this more efficient.
@@ -943,10 +902,14 @@ namespace sill {
      */
     table_factor& operator+=(double b);
 
-    /**
-     * Multiply all values in the table factor by a constant.
-     */
+    //! Subtract a constant frmo all values in the table factor
+    table_factor& operator-=(double b);
+
+    //! Multiply all values in the table factor by a constant
     table_factor& operator*=(double b);
+
+    //! Divide all values in the table factor by a constant
+    table_factor& operator/=(double b);
 
     // Private types
     //==========================================================================
@@ -1100,19 +1063,12 @@ namespace sill {
   }; // class table_factor
 
 
-
   // Free functions
   //============================================================================
 
   //! Writes a human-readable representation of the table factor
   //! \relates table_factor
   std::ostream& operator<<(std::ostream& out, const table_factor& f);
-
-  //! Combines two table factors
-  //! \relates table_factor
-  table_factor combine(const table_factor& x,
-                       const table_factor& y,
-                       op_type op);
 
   //! Returns the L1 distance between two factors
   double norm_1(const table_factor& x, const table_factor& y);
@@ -1128,7 +1084,6 @@ namespace sill {
   double norm_1_log(const table_factor& x,
                     const table_factor& y);
 
-
   //! Returns \f$(1-a)f_1 + a f_2\f$
   table_factor weighted_update(const table_factor& f1,
                                const table_factor& f2,
@@ -1143,6 +1098,9 @@ namespace sill {
   //! Returns an assignment that achieves the minimum value
   finite_assignment arg_min(const table_factor& f);
 
+  //! Returns the inverse of a factor
+  table_factor invert(table_factor f);
+  
   /**
    * Constructs a dense table factor filled by the given value vector.
    *
@@ -1163,8 +1121,8 @@ namespace sill {
     return factor;
   }
 
-// Operator Overloads
-//============================================================================
+  // Operator Overloads
+  //============================================================================
 
   /** Elementwise addition of two table factors. 
    *   X = A + B
@@ -1226,7 +1184,7 @@ namespace sill {
    *   The resulting table_factor will have arguments union(arg(A), arg(B))
    */
   inline table_factor max(const table_factor& x, 
-                              const table_factor& y) {
+                          const table_factor& y) {
     return table_factor::combine(x, y, maximum<double>());
   }
   
@@ -1236,19 +1194,17 @@ namespace sill {
    *   The resulting table_factor will have arguments union(arg(A), arg(B))
    */
   inline table_factor min(const table_factor& x, 
-                              const table_factor& y) {
+                          const table_factor& y) {
     return table_factor::combine(x, y, minimum<double>());
   }
 
   /**
    * Multiplication of all elements in a table factor by a constant.
    */
-  inline table_factor operator*(const table_factor& x, double b) {
-    table_factor y(x);
-    return y.combine_in(constant_factor(b), product_op);
+  inline table_factor operator*(table_factor x, double b) {
+    return x *= b;
   }
 
-  //typedef table_factor tablef;
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
