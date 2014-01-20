@@ -9,6 +9,7 @@
 #include <set>
 
 #include <sill/factor/combine_iterator.hpp>
+#include <sill/inference/commutative_semiring.hpp>
 #include <sill/model/markov_graph.hpp>
 #include <sill/graph/elimination.hpp>
 #include <sill/copy_ptr.hpp>
@@ -101,7 +102,7 @@ namespace sill {
             typename OutIt>
   OutIt variable_elimination(const std::vector<F>& in_factors,
                              const typename F::domain_type& retain,
-                             commutative_semiring csr,
+                             const commutative_semiring<F>& csr,
                              Strategy elim_strategy,
                              OutIt output) {
     typedef markov_graph<typename F::variable_type*> mg_type;
@@ -128,7 +129,7 @@ namespace sill {
     // Eliminate the variables
     foreach(variable_type* elim_var, elim_order) {
       // Combine all factors that have this variable as an argument.
-      combine_iterator<F> combine_it(csr.dot_op);
+      combine_iterator<F,inplace_combination<F> > combine_it(csr.combine_init(), &csr);
       typename std::list<F>::iterator it = factors.begin();
       //unsigned erased = 0, n = factors.size();
       while(it != factors.end()) {
@@ -144,8 +145,9 @@ namespace sill {
       // Now we have created the elimination factor.  Collapse out the
       // elimination variable from it, and then add it back to the
       // list of factors.
-      factors.push_front
-        (collapse_out(combine_it.result(), make_domain(elim_var), csr.cross_op));
+      typename F::domain_type args = combine_it.result().arguments();
+      args.erase(elim_var);
+      factors.push_front(csr.collapse(combine_it.result(), args));
       //std::cerr << "new result " << combine(factors, product_tag()) << std::endl;
     }
     // Report the remaining factors.
@@ -179,14 +181,13 @@ namespace sill {
    *
    * \ingroup inference
    */
-  template <typename F,
-            typename Strategy>
+  template <typename F, typename Strategy>
   F variable_elimination(const std::vector<F>& in_factors,
                          const typename F::domain_type& retain,
-                         commutative_semiring csr,
+                         const commutative_semiring<F>& csr,
                          Strategy elim_strategy) {
     concept_assert((Factor<F>));
-    combine_iterator<F> out(csr.dot_op);
+    combine_iterator<F, inplace_combination<F> > out(csr.combine_init(), &csr);
     return variable_elimination(in_factors, retain, csr, elim_strategy, out)
       .result();
   }

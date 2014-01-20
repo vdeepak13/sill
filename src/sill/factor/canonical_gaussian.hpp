@@ -2,10 +2,10 @@
 #define SILL_CANONICAL_GAUSSIAN_HPP
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/constant_factor.hpp>
 #include <sill/factor/gaussian_factor.hpp>
 #include <sill/factor/invalid_operation.hpp>
 #include <sill/factor/moment_gaussian.hpp>
+#include <sill/factor/operations.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 
@@ -32,18 +32,12 @@ namespace sill {
     //! implements Factor::collapse_type
     typedef canonical_gaussian collapse_type;
 
-    //! implements Factor::collapse_ops
-    static const unsigned collapse_ops = 1 << sum_op;
-
-    //! implements Factor::combine_ops
-    static const unsigned combine_ops = 1 << product_op | 1 << divides_op;
-
     // Constructors and conversion operators
     //==========================================================================
   public:
 
     //! Constructs a canonical Gaussian factor with no arguments
-    canonical_gaussian(double value = 1) : log_mult(std::log(value)) { }
+    explicit canonical_gaussian(double value = 1) : log_mult(std::log(value)) { }
 
     /**
      * Constructs a canonical Gaussian factor with a given set of
@@ -88,22 +82,8 @@ namespace sill {
                        const vec& eta,
                        double log_mult = 0);
 
-    //! Conversion from constant_factor
-    canonical_gaussian(const constant_factor& factor);
-
     //! Conversion from a moment_gaussian
     canonical_gaussian(const moment_gaussian& mg);
-
-    //! Assignment operator.
-    //    canonical_gaussian& operator=(const canonical_gaussian& other);
-
-    /**
-     * Converts to a constant factor. The conversion is only supported
-     * when the factor has no arguments; otherwise, a run-time assertion
-     * is thrown.
-     * @see a note on conversion operators in table_factor::o()
-     */
-    operator constant_factor() const;
 
     //! conversion to human-readable representation
     operator std::string() const;
@@ -190,28 +170,44 @@ namespace sill {
     //! Returns the log-likelihood of the factor
     double logv(const record_type& r) const;
 
+
+    //! multiplies in another factor
+    canonical_gaussian& operator*=(const canonical_gaussian& x);
+
+    //! divides by another factor
+    canonical_gaussian& operator/=(const canonical_gaussian& x);
+
+    //! multiplies the factor by the given constant
+    canonical_gaussian& operator*=(logarithmic<double> val);
+
+    //! divides the factor by the given constant
+    canonical_gaussian& operator/=(logarithmic<double> val);
+
     /**
-     * implements Factor::collapse
+     * computes marginal over a subset of variables
      * \throws invalid_operation if the information matrix over the retained
      *         variables is singular.
-     * \todo fix the log-likelihood
      */
-    canonical_gaussian collapse(op_type op, const vector_domain& retain) const;
-//    canonical_gaussian collapse(const vector_domain& retain, op_type op) const;
+    canonical_gaussian marginal(const vector_domain& retain) const;
 
-    //! Performs a collapse operation, storing result in factor cg.
+    //! Computes marginal, storing result in the given factor.
     //! Avoids reallocation if possible.
-    void collapse(op_type op, const vector_domain& retain,
-                  canonical_gaussian& cg) const;
+    void marginal(const vector_domain& retain, canonical_gaussian& cg) const;
 
-    //! Performs a collapse operation, storing result in factor cg.
+    //! Computes marginal, storing result in the given factor.
     //! Avoids reallocation if possible.
     //! This version does not update the normalization constant.
-    void collapse_unnormalized(op_type op,
-                               const vector_domain& retain,
+    void marginal_unnormalized(const vector_domain& retain,
                                canonical_gaussian& cg) const;
 
-    //! implements Factor::restrict
+    //! Computes the maximum for each assignment to the given variables
+    canonical_gaussian maximum(const vector_domain& retain) const;
+
+    //! Returns an assignment that achieves the maximum value (i.e., the mean).
+    //! @todo Move free functions into this class (and same for other factors).
+    vector_assignment arg_max() const;
+
+    //! Restricts (conditions) the variable for the given assignment
     canonical_gaussian restrict(const vector_assignment& a) const;
   
     /**
@@ -239,13 +235,6 @@ namespace sill {
     //! implements Factor::subst_args
     canonical_gaussian& subst_args(const vector_var_map& map);
 
-    //! implements DistributionFactor::marginal
-    canonical_gaussian marginal(const vector_domain& retain) const;
-
-    //! Computes marginal, storing result in factor f.
-    //! If f is pre-allocated, this avoids reallocation.
-    void marginal(canonical_gaussian& cg, const vector_domain& retain) const;
-
     //! If this factor represents P(A,B), then this returns P(A|B).
     //! @todo Make this more efficient.
     canonical_gaussian conditional(const vector_domain& B) const;
@@ -261,13 +250,6 @@ namespace sill {
 
     //! implements Distribution::normalize
     canonical_gaussian& normalize();
-
-    //! Computes the maximum for each assignment to the given variables
-    canonical_gaussian maximum(const vector_domain& retain) const;
-
-    //! Returns an assignment that achieves the maximum value (i.e., the mean).
-    //! @todo Move free functions into this class (and same for other factors).
-    vector_assignment arg_max() const;
 
     /**
      * Returns a sample from the factor, which is assumed to be normalized
@@ -304,12 +286,6 @@ namespace sill {
     //! Note: This factor must be a marginal distribution.
     double mutual_information(const vector_domain& d1,
                               const vector_domain& d2) const;
-
-    // Factor operations: combining factors
-    //==========================================================================
-
-    //! implements Factor::combine_in
-    canonical_gaussian& combine_in(const canonical_gaussian& x, op_type op);
 
     // Other operations
     //==========================================================================
@@ -350,57 +326,53 @@ namespace sill {
     void initialize(const forward_range<vector_variable*>& args,
                     bool use_default);
 
+    void marginal(const vector_domain& retain,
+                  bool renormalize,
+                  canonical_gaussian& cg) const;
+
+    canonical_gaussian& combine_in(const canonical_gaussian& x, double sign);
+    
     friend canonical_gaussian combine(const canonical_gaussian& x,
                                       const canonical_gaussian& y,
-                                      op_type op);
+                                      double sign);
 
-    void collapse_(op_type op,
-                   const vector_domain& retain,
-                   bool renormalize,
-                   canonical_gaussian& cg) const;
 
   }; // class canonical_gaussian
 
   //! \relates canonical_gaussian
   std::ostream& operator<<(std::ostream& out, const canonical_gaussian& cg);
 
-
-  //! Combines two canonical Gaussian factors
   //! \relates canonical_gaussian
-  canonical_gaussian combine(const canonical_gaussian& x,
-                             const canonical_gaussian& y,
-                             op_type op);
+  canonical_gaussian 
+  operator*(const canonical_gaussian& x, const canonical_gaussian& y);
 
-  // TODO: this line should be below (but can't)
-  // either remove the default implementation of combine(F,F)
-  // or add a default template specialization fo combine_result<F,F>
-  template<> struct combine_result<canonical_gaussian, canonical_gaussian> {
-    typedef canonical_gaussian type;
-  };
-
-  //! Combines a moment and a canonical Gaussian factor
   //! \relates canonical_gaussian
-  inline canonical_gaussian combine(const moment_gaussian& mg,
-                                    const canonical_gaussian& cg,
-                                    op_type op) {
-    return combine(canonical_gaussian(mg), cg, op);
+  canonical_gaussian
+  operator/(const canonical_gaussian& x, const canonical_gaussian& y);
+
+  //! \relates canonical_gaussian
+  inline canonical_gaussian
+  operator*(const moment_gaussian& mg, const canonical_gaussian& cg) {
+    return canonical_gaussian(mg) * cg;
+  }
+
+  //! \relates canonical_gaussian
+  inline canonical_gaussian
+  operator*(const canonical_gaussian& cg, const moment_gaussian& mg) {
+    return cg * canonical_gaussian(mg);
   }
   
-  //! Combines a moment and a canonical Gaussian factor
   //! \relates canonical_gaussian
-  inline canonical_gaussian combine(const canonical_gaussian& cg,
-                                    const moment_gaussian& mg,
-                                    op_type op) {
-    return combine(cg, canonical_gaussian(mg), op);
+  inline canonical_gaussian
+  operator/(const moment_gaussian& mg, const canonical_gaussian& cg) {
+    return canonical_gaussian(mg) / cg;
   }
-  
-  template<> struct combine_result<moment_gaussian, canonical_gaussian> {
-    typedef canonical_gaussian type;
-  };
 
-  template<> struct combine_result<canonical_gaussian, moment_gaussian> {
-    typedef canonical_gaussian type;
-  };
+  //! \relates canonical_gaussian
+  inline canonical_gaussian
+  operator/(const canonical_gaussian& cg, const moment_gaussian& mg) {
+    return cg / canonical_gaussian(mg);
+  }
   
   //! Computes the L-infinity norm of the parameters of two canonical Gaussians
   //! \relates canonical_gaussian
@@ -417,7 +389,10 @@ namespace sill {
   canonical_gaussian weighted_update(const canonical_gaussian& f1,
                                      const canonical_gaussian& f2,
                                      double a);
-
+  
+  //! Returns the inverse of the factor (flips the sign on information vec & mat)
+  canonical_gaussian invert(const canonical_gaussian& f);
+  
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

@@ -52,18 +52,18 @@ namespace sill {
     else return false;
   }
 
-  bool log_table_factor::operator<(const log_table_factor& other) const {
-    if (this->arguments() < other.arguments()) return true;
+//   bool log_table_factor::operator<(const log_table_factor& other) const {
+//     if (this->arguments() < other.arguments()) return true;
 
-    if (this->arguments() == other.arguments()) {
-      // we need to always perform the combine, even if the argument sequences
-      // are the same, in order to traverse the table in the right order
-      boost::optional< std::pair<result_type,result_type> > values =
-        combine_find(*this, other, std::not_equal_to<result_type>());
-      return values && (values->first < values->second);
-    }
-    else return false;
-  }
+//     if (this->arguments() == other.arguments()) {
+//       // we need to always perform the combine, even if the argument sequences
+//       // are the same, in order to traverse the table in the right order
+//       boost::optional< std::pair<result_type,result_type> > values =
+//         combine_find(*this, other, std::not_equal_to<result_type>());
+//       return values && (values->first < values->second);
+//     }
+//     else return false;
+//   }
 
 
   log_table_factor
@@ -87,36 +87,6 @@ namespace sill {
                            make_restrict_map(arg_seq, a),
                            make_dim_map(factor.arg_seq, var_index));
     return factor;
-  }
-
-  log_table_factor&
-  log_table_factor::combine_in(const log_table_factor& y, op_type op) {
-    switch(op) {
-      case sum_op:
-        return (*this) += y;
-      case minus_op:
-        return (*this) -= y;
-      case product_op:
-        return (*this) *= y;
-      case divides_op:
-        return (*this) /= y;
-      case max_op:
-        return this->max(y);
-      case min_op:
-        return this->min(y);
-      case and_op:
-        return this->logical_and(y);
-      case or_op:
-        return this->logical_or(y);
-      default:
-        assert(false);
-    }
-  }
-
-  log_table_factor&
-  log_table_factor::combine_in(const constant_factor& y, op_type op) {
-    table_data.update(boost::bind(to_functor(op),  _1, y.value));
-    return *this;
   }
 
   log_table_factor&
@@ -323,91 +293,6 @@ namespace sill {
     out << f.table();
     return out;
   }
-
-  // Combine and collapse operations
-  //==========================================================================
-
-  log_table_factor log_table_factor::collapse(op_type op, 
-                                       const finite_domain& retained) const {
-    switch(op) {
-      case sum_op:
-        return collapse(std::plus<result_type>(), 0.0, retained);
-      case minus_op:
-        /* not well defined */
-        return collapse(std::minus<result_type>(), 0.0, retained);
-      case product_op:
-        return collapse(std::multiplies<result_type>(), 1.0, retained);
-      case divides_op:
-        /* not well defined */
-        return collapse(safe_divides<result_type>(), 1.0, retained);
-      case max_op:
-        return collapse(sill::maximum<result_type>(), 
-                        -std::numeric_limits<double>::infinity(), retained);
-      case min_op:
-        return collapse(sill::minimum<result_type>(), 
-                        std::numeric_limits<double>::infinity(), retained);
-      case and_op:
-        return collapse(sill::logical_and<result_type>(), 1.0, retained);
-      case or_op:
-        return collapse(sill::logical_or<result_type>(), 0.0, retained);
-      default:
-        assert(false); /* Should never reach here */
-        return *this;
-    }
-  }
-  log_table_factor::result_type log_table_factor::collapse(op_type op) const {
-    switch(op) {
-      case sum_op:
-        return collapse(std::plus<result_type>(), 0.0);
-      case minus_op:
-        /* not well defined */
-        return collapse(std::minus<result_type>(), 0.0); 
-      case product_op:
-        return collapse(std::multiplies<result_type>(), 1.0);
-      case divides_op:
-        /* not well defined */
-        return collapse(safe_divides<result_type>(), 1.0);
-      case max_op:
-        return collapse(sill::maximum<result_type>(), 
-                         -std::numeric_limits<double>::infinity());
-      case min_op:
-        return collapse(sill::minimum<result_type>(), 
-                         std::numeric_limits<double>::infinity());
-      case and_op:
-        return collapse(sill::logical_and<result_type>(), 1.0);
-      case or_op:
-        return collapse(sill::logical_or<result_type>(), 0.0);
-      default:
-        assert(false); /* Should never reach here */
-        return 0.0;
-    }
-  }
-
-  log_table_factor combine(const log_table_factor& x,
-                              const log_table_factor& y,
-                              op_type op) {
-    switch(op) {
-      case sum_op:
-        return x + y;
-      case minus_op:
-        return x - y;
-      case product_op:
-        return x * y;
-      case divides_op:
-        return x / y;
-      case max_op:
-        return max(x, y);
-      case min_op:
-        return min(x, y);
-      case and_op:
-        return x && y;
-      case or_op:
-        return x || y;
-      default:
-        assert(false);
-    }
-  }
-
 
   double norm_1(const log_table_factor& x, const log_table_factor& y) {
     return log_table_factor::combine_collapse

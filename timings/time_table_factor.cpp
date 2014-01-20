@@ -11,7 +11,6 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/math/gdl_enum.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/copy_ptr.hpp>
 #include <sill/factor/random/random.hpp>

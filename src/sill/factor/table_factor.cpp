@@ -52,18 +52,18 @@ namespace sill {
     else return false;
   }
 
-  bool table_factor::operator<(const table_factor& other) const {
-    if (this->arguments() < other.arguments()) return true;
+//   bool table_factor::operator<(const table_factor& other) const {
+//     if (this->arguments() < other.arguments()) return true;
 
-    if (this->arguments() == other.arguments()) {
-      // we need to always perform the combine, even if the argument sequences
-      // are the same, in order to traverse the table in the right order
-      boost::optional< std::pair<result_type,result_type> > values =
-        combine_find(*this, other, std::not_equal_to<result_type>());
-      return values && (values->first < values->second);
-    }
-    else return false;
-  }
+//     if (this->arguments() == other.arguments()) {
+//       // we need to always perform the combine, even if the argument sequences
+//       // are the same, in order to traverse the table in the right order
+//       boost::optional< std::pair<result_type,result_type> > values =
+//         combine_find(*this, other, std::not_equal_to<result_type>());
+//       return values && (values->first < values->second);
+//     }
+//     else return false;
+//   }
 
 
   table_factor
@@ -293,36 +293,6 @@ namespace sill {
   } // restrict_other(r, retain_v, f)
 
   table_factor&
-  table_factor::combine_in(const table_factor& y, op_type op) {
-    switch(op) {
-      case sum_op:
-        return (*this) += y;
-      case minus_op:
-        return (*this) -= y;
-      case product_op:
-        return (*this) *= y;
-      case divides_op:
-        return (*this) /= y;
-      case max_op:
-        return this->max(y);
-      case min_op:
-        return this->min(y);
-      case and_op:
-        return this->logical_and(y);
-      case or_op:
-        return this->logical_or(y);
-      default:
-        assert(false);
-    }
-  }
-
-  table_factor&
-  table_factor::combine_in(const constant_factor& y, op_type op) {
-    table_data.update(boost::bind(to_functor(op),  _1, y.value));
-    return *this;
-  }
-
-  table_factor&
   table_factor::subst_args(const finite_var_map& var_map) {
     args = subst_vars(args, var_map);
     // Compute the new var_index of the arguments, so it matches up
@@ -335,7 +305,13 @@ namespace sill {
   }
 
   void
-  table_factor::marginal(table_factor& f, const finite_domain& retain) const {
+  table_factor::marginal(const finite_domain& retain, table_factor& f) const {
+    collapse(std::plus<result_type>(), 0, retain, f);
+  }
+
+  void
+  table_factor::marginal_unnormalized(const finite_domain& retain,
+                                      table_factor& f) const {
     collapse(std::plus<result_type>(), 0, retain, f);
   }
 
@@ -594,99 +570,6 @@ namespace sill {
     return out;
   }
 
-  // Combine and collapse operations
-  //==========================================================================
-
-  table_factor::result_type table_factor::collapse(op_type op) const {
-    switch(op) {
-      case sum_op:
-        return collapse(std::plus<result_type>(), 0.0);
-      case minus_op:
-        /* not well defined */
-        return collapse(std::minus<result_type>(), 0.0); 
-      case product_op:
-        return collapse(std::multiplies<result_type>(), 1.0);
-      case divides_op:
-        /* not well defined */
-        return collapse(safe_divides<result_type>(), 1.0);
-      case max_op:
-        return collapse(sill::maximum<result_type>(), 
-                        -std::numeric_limits<double>::infinity());
-      case min_op:
-        return collapse(sill::minimum<result_type>(), 
-                        std::numeric_limits<double>::infinity());
-      case and_op:
-        return collapse(sill::logical_and<result_type>(), 1.0);
-      case or_op:
-        return collapse(sill::logical_or<result_type>(), 0.0);
-      default:
-        assert(false); /* Should never reach here */
-        return 0.0;
-    }
-  }
-
-  table_factor table_factor::collapse(op_type op, 
-                                      const finite_domain& retained) const {
-    switch(op) {
-      case sum_op:
-        return collapse(std::plus<result_type>(), 0.0, retained);
-      case minus_op:
-        /* not well defined */
-        return collapse(std::minus<result_type>(), 0.0, retained);
-      case product_op:
-        return collapse(std::multiplies<result_type>(), 1.0, retained);
-      case divides_op:
-        /* not well defined */
-        return collapse(safe_divides<result_type>(), 1.0, retained);
-      case max_op:
-        return collapse(sill::maximum<result_type>(), 
-                        -std::numeric_limits<double>::infinity(), retained);
-      case min_op:
-        return collapse(sill::minimum<result_type>(), 
-                        std::numeric_limits<double>::infinity(), retained);
-      case and_op:
-        return collapse(sill::logical_and<result_type>(), 1.0, retained);
-      case or_op:
-        return collapse(sill::logical_or<result_type>(), 0.0, retained);
-      default:
-        assert(false); /* Should never reach here */
-        return *this;
-    }
-  }
-
-  void table_factor::collapse_unnormalized(op_type op,
-                                           const finite_domain& retained,
-                                           table_factor& f) const {
-    // TO DO: AVOID REALLOCATION
-    f = collapse(op, retained);
-  }
-
-  table_factor combine(const table_factor& x,
-                              const table_factor& y,
-                              op_type op) {
-    switch(op) {
-      case sum_op:
-        return x + y;
-      case minus_op:
-        return x - y;
-      case product_op:
-        return x * y;
-      case divides_op:
-        return x / y;
-      case max_op:
-        return max(x, y);
-      case min_op:
-        return min(x, y);
-      case and_op:
-        return x && y;
-      case or_op:
-        return x || y;
-      default:
-        assert(false);
-    }
-  }
-
-
   double norm_1(const table_factor& x, const table_factor& y) {
     return table_factor::combine_collapse
       (x, y, abs_difference<table_factor::result_type>(), 
@@ -717,16 +600,13 @@ namespace sill {
          std::plus<table_factor::result_type>(), 0.0);
   }
 
-
-  
   table_factor weighted_update(const table_factor& f1,
-                                      const table_factor& f2,
-                                      double a) {
+                               const table_factor& f2,
+                               double a) {
     return table_factor::combine(f1, f2, 
            weighted_plus<table_factor::result_type>(1-a, a));
   }
 
-  
   table_factor pow(const table_factor& f, double a) {
     using std::pow;
     table_factor result(f);
@@ -744,6 +624,11 @@ namespace sill {
   finite_assignment arg_min(const table_factor& f) {
     table_factor::table_type::const_iterator it = min_element(f.values());
     return f.assignment(f.table().index(it));
+  }
+
+  table_factor invert(table_factor f) {
+    f.table().update(boost::bind(std::divides<double>(), 1.0, _1));
+    return f;
   }
 
   // Operator Overloads
@@ -846,13 +731,23 @@ namespace sill {
     return *this;
   }
 
-  table_factor& table_factor::operator+=(double b) {
-    combine_in(constant_factor(b), sum_op);
+  table_factor& table_factor::operator+=(double val) {
+    table_data.update(boost::bind(std::plus<double>(), _1, val));
     return *this;
   }
 
-  table_factor& table_factor::operator*=(double b) {
-    combine_in(constant_factor(b), product_op);
+  table_factor& table_factor::operator-=(double val) {
+    table_data.update(boost::bind(std::minus<double>(), _1, val));
+    return *this;
+  }
+
+  table_factor& table_factor::operator*=(double val) {
+    table_data.update(boost::bind(std::multiplies<double>(), _1, val));
+    return *this;
+  }
+
+  table_factor& table_factor::operator/=(double val) {
+    table_data.update(boost::bind(std::divides<double>(), _1, val));
     return *this;
   }
 

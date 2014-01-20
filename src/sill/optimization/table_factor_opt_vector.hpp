@@ -1,4 +1,3 @@
-
 #ifndef SILL_TABLE_FACTOR_OPT_VECTOR_HPP
 #define SILL_TABLE_FACTOR_OPT_VECTOR_HPP
 
@@ -160,7 +159,7 @@ namespace sill {
     double dot(const table_factor_opt_vector& other) const {
       return table_factor::combine_collapse(f, other.f,
                                             std::multiplies<double>(),
-                                            std::plus<double>(), 0.);
+                                            std::plus<double>(), 0.0);
     }
 
     //! Element-wise multiplication with another value of the same size.

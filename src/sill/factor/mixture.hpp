@@ -7,7 +7,6 @@
 #include <map>
 
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/constant_factor.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
@@ -46,18 +45,13 @@ namespace sill {
     //! implements Factor::domain_type
     typedef typename F::domain_type domain_type;
 
+
     typedef typename F::var_vector_type var_vector_type;
     typedef typename F::var_map_type    var_map_type;
 
     //! The result of a collapse operation
     typedef mixture collapse_type;
 
-    //! implements Factor::collapse_ops
-    static const unsigned collapse_ops = 1 << sum_op;
-
-    //! implements Factor::combine_ops
-    static const unsigned combine_ops = F::combine_ops;
-    
     //! The base type
     typedef factor base;
 
@@ -86,9 +80,6 @@ namespace sill {
     }
 
     //! Constructs a mixture with a single component
-    explicit mixture(const constant_factor& c) : comps(1, c) { }
-
-    //! Constructs a mixture with a single component
     explicit mixture(const F& x) : comps(1, x) { }
 
     //! Conversion to a single component
@@ -97,14 +88,14 @@ namespace sill {
       return comps[0];
     }
 
-    //! Conversion to a constant (the mixture must have no arguments)
-    operator constant_factor() const {
-      assert(this->arguments().empty());
-      double result = 0;
-      for(size_t i = 0; i < comps.size(); i++) 
-        result += constant_factor(comps[i]).value;
-      return result;
-    }
+//     //! Conversion to a constant (the mixture must have no arguments)
+//     operator constant_factor() const {
+//       assert(this->arguments().empty());
+//       double result = 0;
+//       for(size_t i = 0; i < comps.size(); i++) 
+//         result += constant_factor(comps[i]).value;
+//       return result;
+//     }
 
     //! Conversion to human-readable representation
     operator std::string() const {
@@ -182,38 +173,40 @@ namespace sill {
       return std::log(operator()(a));
     }
 
-    /*
-    //! implements element-wise factor combination
-    mixture& combine_in(const F& factor, op_type op) {
-      args.insert(factor.arguments());
-      foreach(F& comp, comps) comp.combine_in(factor, op);
-      return *this;
-    }
-    */
-
-    //! implements Factor::combine_in
-    mixture& combine_in(const constant_factor& other, op_type op) {
-      for(size_t i = 0; i < comps.size(); i++)
-        comps[i].combine_in(other, op);
+    //! multiplies each component by a constant
+    mixture& operator*=(result_type val) {
+      foreach(F& factor, comps) { factor *= val; }
       return *this;
     }
 
-    //! implements Factor::combine_in
-    //! \todo For now, the combination is element-wise; this will change
-    mixture& combine_in(const mixture& other, op_type op) {
-      if (size() != other.size()) {
-        throw std::runtime_error
-          ("mixture::combine_in(other,op) given other with mismatched size.");
-      }
-      for(size_t i = 0; i < other.size(); i++)
-        comps[i].combine_in(other[i], op);
+    //! divides each component by a constant
+    mixture& operator/=(result_type val) {
+      foreach(F& factor, comps) { factor /= val; }
       return *this;
     }
 
-    //! implements Factor::collapse
-    mixture collapse(op_type op, const domain_type& retained) const {
-      check_supported(op, collapse_ops);
+    //! multiplies each component by a factor
+    mixture& operator*=(const F& factor) {
+      return componentwise_op<inplace_multiplies<F> >(factor);
+    }
 
+    //! divides each component by a facotr
+    mixture& operator/=(const F& factor) {
+      return componentwise_op<inplace_divides<F> >(factor);
+    }
+
+    //! component-wise multiplication
+    mixture& operator*=(const mixture& other) {
+      return componentwise_op<inplace_multiplies<F> >(other);
+    }
+
+    //! component-wise division
+    mixture& operator/=(const mixture& other) {
+      return componentwise_op<inplace_divides<F> >(other);
+    }
+
+    //! Computes a marginal of the mixture over a subset of variables
+    mixture marginal(const domain_type& retained) const {
       // If the retained arguments contain the arguments of this factor,
       // we can simply return a copy
       if (includes(retained, arguments()))
@@ -222,21 +215,19 @@ namespace sill {
       // Collapse the individual components
       mixture m(size(), set_intersect(retained, arguments()));
       for(size_t i = 0; i < size(); i++)
-        m.comps[i] = comps[i].collapse(op, retained);
+        m.comps[i] = comps[i].marginal(retained);
 
       return m;
     }
 
-    //! Performs a collapse operation, storing result in factor m.
-    //! Avoids reallocation if possible.
+    //! Computes a marginal, storing the result in m.
     //! This version does not update the normalization constant.
-    void collapse_unnormalized(op_type op,
-                               const domain_type& retain,
-                               mixture& m) const {
+    //! Todo: actually avoid reallocation if possible
+    void marginal_unnormalized(const domain_type& retain, mixture& m) const {
       // Collapse the individual components
       m = mixture(size());
       for(size_t i = 0; i < size(); i++)
-        comps[i].collapse_unnormalized(op, retain, m.comps[i]);
+        comps[i].marginal_unnormalized(retain, m.comps[i]);
     }
 
     //! implements Factor::restrict
@@ -273,11 +264,6 @@ namespace sill {
       return *this;
     }
 
-    //! implements DistributionFactor::marginal
-    mixture marginal(const domain_type& retain) const {
-      return collapse(sum_op, retain);
-    }
-
     //! implements DistributionFactor::is_normalizable
     bool is_normalizable() const {
       foreach(const F& factor, comps)
@@ -299,37 +285,37 @@ namespace sill {
     mixture& normalize() {
       if (comps.size() > 0) {
         double p = norm_constant();
-        assert(p>0);
+        assert(p > 0);
         foreach(F& factor, comps)
-          factor /= constant_factor(p);
+          factor /= p;
       }
       return *this;
     }
 
-    //! Computes the maximum for each assignment to the given variables
-    mixture maximum(const vector_domain& retain) const {
-      assert(false); return mixture(); // not supported yet - hard to do exactly
-    }
+//     //! Computes the maximum for each assignment to the given variables
+//     mixture maximum(const vector_domain& retain) const {
+//       assert(false); return mixture(); // not supported yet - hard to do exactly
+//     }
 
-    //! implements DistributionFactor::entropy
-    double entropy() const {
-      assert(false); return 0; // not supported yet - hard to do exactly
-    }
+//     //! implements DistributionFactor::entropy
+//     double entropy() const {
+//       assert(false); return 0; // not supported yet - hard to do exactly
+//     }
 
-    //! implements DistributionFactor::relative_entropy
-    double relative_entropy(const mixture& other) const {
-      assert(false); return 0; // not supported yet - hard to do exactly
-    }
+//     //! implements DistributionFactor::relative_entropy
+//     double relative_entropy(const mixture& other) const {
+//       assert(false); return 0; // not supported yet - hard to do exactly
+//     }
 
-    //! this will be moved elsewhere
-    assignment_type arg_max() const {
-      assert(false); return assignment_type(); // not supported
-    }
+//     //! this will be moved elsewhere
+//     assignment_type arg_max() const {
+//       assert(false); return assignment_type(); // not supported
+//     }
 
-    //! this will be moved elsewhere
-    assignment_type arg_min() const {
-      assert(false); return assignment_type(); // not supported
-    }
+//     //! this will be moved elsewhere
+//     assignment_type arg_min() const {
+//       assert(false); return assignment_type(); // not supported
+//     }
 
     //! Sample from the mixture.
     template <typename Engine>
@@ -348,6 +334,28 @@ namespace sill {
     //! The mixture components
     std::vector<F> comps;
 
+    template <typename Op>
+    mixture& componentwise_op(const F& factor) {
+      Op op;
+      foreach(F& comp, comps) {
+        op(comp, factor);
+      }
+      return *this;
+    }
+
+    template <typename Op>
+    mixture& componentwise_op(const mixture& other) {
+      if (size() != other.size()) {
+        throw std::runtime_error
+          ("mixture::combine_in(other,op) given other with mismatched size.");
+      }
+      Op op;
+      for(size_t i = 0; i < other.size(); i++) {
+        op(comps[i], other[i]);
+      }
+      return *this;
+    }
+
   }; // class mixture
 
   //! \relates mixture
@@ -362,39 +370,63 @@ namespace sill {
 
   // Mixture combinations
   //============================================================================
+
+  //! Multiplies the mixture by a constant
   //! \relates mixture
   template <typename F>
-  mixture<F> combine(mixture<F> x, const mixture<F>& y, op_type op) {
-    return x.combine_in(y, op);
+  mixture<F> operator*(mixture<F> x, typename F::result_type val) {
+    return x *= val;
   }
 
+  //! Multiplies the mixture by a constant
   //! \relates mixture
   template <typename F>
-  mixture<F> combine(mixture<F> x, const F& y, op_type op) {
-    return x.combine_in(y, op);
+  mixture<F> operator*(typename F::result_type val, mixture<F> x) {
+    return x *= val;
   }
 
+  //! Divides the mixture by a constant
   //! \relates mixture
   template <typename F>
-  mixture<F> combine(const F& x, mixture<F> y, op_type op) {
-    return y.combine_in(x, op);
+  mixture<F> operator/(mixture<F> x, typename F::result_type val) {
+    return x /= val;
+  }
+
+  //! Multiplies the mixture by a factor
+  //! \relates mixture
+  template <typename F>
+  mixture<F> operator*(mixture<F> x, const F& factor) {
+    return x *= factor;
+  }
+
+  //! Multiplies the mixture by a factor
+  //! \relates mixture
+  template <typename F>
+  mixture<F> operator*(const F& factor, mixture<F> x) {
+    return x *= factor;
+  }
+
+  //! Divides the mixture by a factor
+  //! \relates mixture
+  template <typename F>
+  mixture<F> operator/(mixture<F> x, const F& factor) {
+    return x /= factor;
   }
   
+  //! Multiplies two mixtures component-wise
+  //! \relates mixture
   template <typename F>
-  struct combine_result< mixture<F>, mixture<F> > {
-    typedef mixture<F> type;
-  };
+  mixture<F> operator*(mixture<F> x, const mixture<F>& y) {
+    return x *= y;
+  }
 
+  //! Divides two mixtures component-wise
+  //! \relates mixture
   template <typename F>
-  struct combine_result< mixture<F>, F > {
-    typedef mixture<F> type;
-  };
-
-  template <typename F>
-  struct combine_result< F, mixture<F> > {
-    typedef mixture<F> type;
-  };
-
+  mixture<F> operator/(mixture<F> x, const mixture<F>& y) {
+    return x /= y;
+  }
+    
   // Free functions
   //============================================================================
   class moment_gaussian;

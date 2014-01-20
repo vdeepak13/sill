@@ -5,9 +5,9 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <sill/factor/constant_factor.hpp>
 #include <sill/factor/gaussian_factor.hpp>
 #include <sill/factor/invalid_operation.hpp>
+#include <sill/factor/operations.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
 #include <sill/range/forward_range.hpp>
@@ -35,12 +35,6 @@ namespace sill {
 
     //! implements Factor::collapse_type
     typedef moment_gaussian collapse_type;
-
-    //! implements Factor::collapse_ops
-    static const unsigned collapse_ops = 1 << sum_op;
-
-    //! implements Factor::combine_ops
-    static const unsigned combine_ops = 1 << product_op | 1 << divides_op;
 
     // Private data members and methods
     //==========================================================================
@@ -71,16 +65,12 @@ namespace sill {
     void initialize(const vector_var_vector& head,
                     const vector_var_vector& tail);
 
-    friend moment_gaussian combine(const moment_gaussian& x,
-                                   const moment_gaussian& y,
-                                   op_type op);
-
     // Constructors and conversion operators
     //==========================================================================
   public:
 
     //! Constructs a moment Gaussian factor with no arguments
-    moment_gaussian(double value = 1)
+    explicit moment_gaussian(double value = 1)
       : likelihood(value) { }
 
     //! Constructs a Gaussian for the specified collection of variables
@@ -121,19 +111,16 @@ namespace sill {
      */
     explicit moment_gaussian(const canonical_gaussian& cg);
 
-    //! Conversion from constant_factor
-    moment_gaussian(const constant_factor& factor);
+//     /**
+//      * Conversion to a constant factor. The conversion is only supported
+//      * when the factor has no arguments; otherwise, a run-time assertion
+//      * is thrown.
+//      * @see a note on conversion operators in table_factor::o()
+//      */
+//     operator constant_factor() const;
 
-    /**
-     * Conversion to a constant factor. The conversion is only supported
-     * when the factor has no arguments; otherwise, a run-time assertion
-     * is thrown.
-     * @see a note on conversion operators in table_factor::o()
-     */
-    operator constant_factor() const;
-
-    //! conversion to human-readable representation
-    operator std::string() const;
+//     //! conversion to human-readable representation
+//     operator std::string() const;
 
     // Serialization
     //==========================================================================
@@ -271,14 +258,17 @@ namespace sill {
       return operator()(a).log_value();
     }
 
-    //! implements Factor::combine_in for multiplication
-    moment_gaussian& combine_in(const moment_gaussian& x, op_type op);
+    //! multiplies in another factor
+    moment_gaussian& operator*=(const moment_gaussian& x);
 
-    //! multiplies or divides the factor by the given constant
-    moment_gaussian& combine_in(const constant_factor& x, op_type op);
+    //! multiplies the factor by the given constant
+    moment_gaussian& operator*=(logarithmic<double> val);
 
-    //! implements Factor::collapse
-    moment_gaussian collapse(op_type op, const vector_domain& retain) const;
+    //! divides the factor by the given constant
+    moment_gaussian& operator/=(logarithmic<double> val);
+
+    //! computes the marginal of the factor over the given variables
+    moment_gaussian marginal(const vector_domain& retain) const;
 
     /**
      * implements Factor::restrict
@@ -292,11 +282,6 @@ namespace sill {
       
     //! implements Factor::subst_args
     moment_gaussian& subst_args(const vector_var_map& map);
-
-    //! implements DistributionFactor::marginal
-    moment_gaussian marginal(const vector_domain& retain) const {
-      return collapse(sum_op, retain);
-    }
 
     //! If this factor represents P(A,B|C), then this returns P(A|B,C).
     moment_gaussian conditional(const vector_domain& B) const;
@@ -397,7 +382,10 @@ namespace sill {
      * Lauritzen & Jensen (1999).
      */
     static moment_gaussian 
-    direct_combination(const moment_gaussian& x, const moment_gaussian& y);
+    direct_multiplication(const moment_gaussian& x, const moment_gaussian& y);
+
+    friend moment_gaussian
+    operator*(const moment_gaussian& x, const moment_gaussian& y);
 
   }; // class moment_gaussian
 
@@ -409,16 +397,10 @@ namespace sill {
   std::ostream& operator<<(std::ostream& out, const moment_gaussian& mg);
   
   //! \relates moment_gaussian
-  moment_gaussian combine(const moment_gaussian& x,
-                          const moment_gaussian& y,
-                          op_type op);
+  moment_gaussian operator*(const moment_gaussian& x, const moment_gaussian& y);
 
   //! \relates moment_gaussian
   double norm_inf(const moment_gaussian& x, const moment_gaussian& y);
-
-  template<> struct combine_result<moment_gaussian, moment_gaussian> {
-    typedef moment_gaussian type;
-  };
 
 } // namespace sill
 

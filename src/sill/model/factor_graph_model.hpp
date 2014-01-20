@@ -314,7 +314,7 @@ public:
          //while we are not out of factors along this dimension
 
          if(intersection_result != NULL){
-           intersection_result->combine_in(factor, product_op);
+           (*intersection_result) *= factor;
            intersection_result->normalize();
            redundant_factors.insert(&factor);
            foreach(variable_type* vi, factor.arguments())
@@ -461,7 +461,7 @@ public:
         //while we are not out of factors along this dimension
 
         if(intersection_result >=0){
-          num2factor[intersection_result]->combine_in(factor, product_op);
+          (*num2factor[intersection_result]) *= factor;
           num2factor[intersection_result]->normalize();
           redundant_factors.insert(&factor);
 

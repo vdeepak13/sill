@@ -1,8 +1,6 @@
 #ifndef BLF_RESIDUAL_SPLASH_BP_HPP
 #define BLF_RESIDUAL_SPLASH_BP_HPP
 
-
-// STL includes
 #include <map>
 #include <set>
 #include <vector>
@@ -11,18 +9,14 @@
 #include <sstream>
 #include <limits>
 
-// PRL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/norms.hpp>
-#include <sill/math/gdl_enum.hpp>
-#include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/inference/commutative_semiring.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
-
-
 
 // This include should always be last
 #include <sill/macros_def.hpp>
+
 namespace sill {
 
   template<typename F>
@@ -31,9 +25,9 @@ namespace sill {
     // typedefs
   public:
     typedef F factor_type;
-    typedef factor_type message_type;
-    typedef factor_type belief_type;
-    typedef typename factor_type::domain_type domain_type;
+    typedef F message_type;
+    typedef F belief_type;
+    typedef typename F::domain_type domain_type;
 
     typedef factor_graph_model<factor_type>     factor_graph_type;
     typedef typename factor_graph_type::variable_type    variable_type;
@@ -86,7 +80,7 @@ namespace sill {
     double max_time_;
 
     //! the commutative semiring for updates (typically sum_product)
-    commutative_semiring csr_;
+    boost::shared_ptr<commutative_semiring<F> > csr_;
 
     //! number of updates
     size_t update_count_;
@@ -119,7 +113,7 @@ namespace sill {
       bound_(bound), 
       damping_(damping),
       max_time_(max_time),
-      csr_(sum_product),
+      csr_(new sum_product<F>()),
       update_count_(0),
       edge_update_count_(0),
       splash_count_(0) {
@@ -305,8 +299,8 @@ namespace sill {
       // Update the new belief by dividing out the old message and
       // multiplying in the new message.
       belief_type& blf = beliefs_[target];
-      blf.combine_in(original_msg, divides_op);
-      blf.combine_in(new_msg, csr_.dot_op);
+      blf /= original_msg;
+      blf *= new_msg;
 
       // Ensure that the belief remains normalized
       blf.normalize();
@@ -364,15 +358,14 @@ namespace sill {
       belief_type& blf = beliefs_[source];
 
       // Construct the cavity
-      belief_type cavity = combine(blf, 
-                                   message(target, source), 
-                                   divides_op);
+      belief_type cavity = blf / message(target, source);
+
       cavity.normalize();
       // Marginalize out any other variables
       domain_type domain = make_domain(source.is_variable()?
                                        &(source.variable()) :
                                        &(target.variable()));
-      message_type new_msg = cavity.collapse(csr_.cross_op, domain);
+      message_type new_msg = cavity.marginal(domain);
 
       // Normalize the message
       new_msg.normalize();

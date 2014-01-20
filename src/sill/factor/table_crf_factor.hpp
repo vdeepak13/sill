@@ -123,7 +123,7 @@ namespace sill {
     }
 
     //! Constructor from a constant factor.
-    table_crf_factor(const constant_factor& other)
+    table_crf_factor(double other)
       : f(table_factor_opt_vector::size_type(), other), log_space_(false) {
     }
 
@@ -276,15 +276,8 @@ namespace sill {
      */
     double log_expected_value(const dataset<la_type>& ds) const;
 
-    //! implements Factor::combine_in
-    table_crf_factor& combine_in(const table_crf_factor& other, op_type op);
-
-    //! combines a constant factor into this factor
-    table_crf_factor& combine_in(const constant_factor& other, op_type op);
-
-    //! Combine with constant factor via op(f, *this).
-    //! @return This modified factor.
-//    table_crf_factor& combine_in_left(const constant_factor& cf, op_type op);
+    //! Divides this factor by another one
+    table_crf_factor& operator/=(const table_crf_factor& other);
 
     //! Set this factor to the square root of its value.
     table_crf_factor& square_root();

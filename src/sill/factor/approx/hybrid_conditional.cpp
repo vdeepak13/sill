@@ -70,7 +70,7 @@ namespace sill {
         norm += restricted.norm_constant();
       }
       assert(norm > 0);
-      mix *= constant_factor(1.0 / norm);
+      mix /= norm;
       //std::cout << mix << std::endl;
       for(size_t i = 0; i < mix.size(); i++)
         std::cerr << p[i] << ':' << mix[i].norm_constant() << ' ';

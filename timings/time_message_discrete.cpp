@@ -11,7 +11,7 @@ finite_variable* x;
 finite_variable* y;
 
 sill::table_factor compute_message(const std::vector<sill::table_factor>& factors) {
-  return sill::combine(factors,sill::product_op).marginal(make_domain(y));
+  return sill::prod_all(factors).marginal(make_domain(y));
 }
 
 int main(int argc, char* argv[])

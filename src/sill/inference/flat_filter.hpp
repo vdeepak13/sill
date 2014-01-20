@@ -43,7 +43,7 @@ namespace sill {
     flat_filter(const dynamic_bayesian_network<F>& dbn) 
       : dbn(dbn) {
       // the belief is simply the product of all factors at the first time step
-      belief_ = combine(dbn.prior_model().factors(), product_op);
+      belief_ = prod_all(dbn.prior_model().factors());
       advance_var_map = 
         make_process_var_map(dbn.processes(), next_step, current_step);
     }

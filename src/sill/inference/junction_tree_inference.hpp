@@ -3,7 +3,6 @@
 
 #include <map>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/constant_factor.hpp>
 
 #include <sill/graph/bidirectional.hpp>
 #include <sill/graph/min_fill_strategy.hpp>
@@ -76,10 +75,10 @@ namespace sill {
     //! A class that normalizes the factor along a directed edge
     //! \todo We should use F::result_type here
     struct normalizer {
-      double zinv;
-      normalizer(double z) : zinv(1/z) {}
+      double z;
+      normalizer(double z) : z(z) {}
       void operator()(edge e, jt_type& jt) { 
-        jt[e].directed(e) *= constant_factor(zinv);
+        jt[e].directed(e) /= z;
       }
     };
 
@@ -170,7 +169,7 @@ namespace sill {
         // and every message in the direction from the root
         double z = belief(*jt.edges().first).norm_constant();
         assert(is_positive_finite(z));
-        jt[root] *= constant_factor(1/z);
+        jt[root] /= z;
         pre_order_traversal(jt, root, normalizer(z));
       } else {
         // There is only one vertex, so all the factors are at the root

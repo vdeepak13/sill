@@ -127,7 +127,7 @@ namespace sill {
     }
     foreach(finite_variable* v, Y_other)
       Ydomain_.erase(v);
-    f.f.marginal(new_f, set_union(Ydomain_, *Xdomain_ptr_));
+    f.f.marginal(set_union(Ydomain_, *Xdomain_ptr_), new_f);
     f.f = new_f;
     optimize_variable_order();
     return *this;
@@ -189,46 +189,17 @@ namespace sill {
   }
 
   table_crf_factor&
-  table_crf_factor::combine_in(const table_crf_factor& other, op_type op) {
+  table_crf_factor::operator/=(const table_crf_factor& other) {
     if (arguments().size() > 0) {
       throw std::runtime_error
         ("table_crf_factor::combine_in NOT YET FULLY IMPLEMENTED!");
     }
-    switch (op) {
-    case no_op:
-      break;
-    case sum_op:
-    case minus_op:
-    case product_op:
-      throw std::runtime_error
-        ("table_crf_factor::combine_in NOT FULLY IMPLEMENTED!");
-      break;
-    case divides_op:
-      {
-        double myval = this->v(finite_assignment());
-        this->operator=(other);
-        f.reciprocal();
-        f *= myval;
-      }
-      break;
-    case max_op:
-    case min_op:
-    case and_op:
-    case or_op:
-      throw std::runtime_error
-        ("table_crf_factor::combine_in NOT FULLY IMPLEMENTED!");
-      break;
-    default:
-      assert(false);
-    }
+    double myval = this->v(finite_assignment());
+    this->operator=(other);
+    f.reciprocal();
+    f *= myval;
     optimize_variable_order();
     return *this;
-  }
-
-  table_crf_factor&
-  table_crf_factor::combine_in(const constant_factor& other, op_type op) {
-    throw std::runtime_error
-      ("table_crf_factor::combine_in NOT FULLY IMPLEMENTED!");
   }
 
   table_crf_factor& table_crf_factor::square_root() {

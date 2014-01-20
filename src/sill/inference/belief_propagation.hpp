@@ -14,6 +14,7 @@
 
 #include <sill/factor/norms.hpp>
 #include <sill/factor/random/random.hpp>
+#include <sill/inference/commutative_semiring.hpp>
 #include <sill/global.hpp>
 
 #include <sill/datastructure/mutable_queue.hpp>
@@ -44,31 +45,6 @@ namespace sill {
     typedef std::pair<vertex, vertex> vertex_pair;
 
   protected:
-    //! A base class for a function that computes the message
-    struct message_functor
-      : public std::binary_function<edge, const loopy_bp_engine&, F>{
-      virtual F operator()(edge e, const loopy_bp_engine& lbp) = 0;
-      virtual ~message_functor() {}
-    };
-
-    //! A functor that computes the message using standard CSR operations
-    class csr_functor : public message_functor {
-      commutative_semiring csr;
-    public:
-      csr_functor (commutative_semiring csr) : csr(csr) { }
-      F operator()(edge e, const loopy_bp_engine& lbp) {
-        const GM& gm = lbp.graphical_model();
-        vertex u = e.source(), v = e.target();
-        F f = gm[u];
-        foreach(vertex w, gm.adjacent_vertices(u)) {
-          if (w != v) f.combine_in(lbp.message(w, u), csr.dot_op);
-        }
-        return combine(f, gm[e], csr.dot_op).
-          collapse(csr.cross_op, make_domain(v)).
-          normalize();
-      }
-    };
-
     //! A collection of messages
     typedef std::map<vertex_pair, F> message_map;
 
@@ -79,8 +55,9 @@ namespace sill {
     //! A map that stores the messages (mutable since we may insert defaults)
     mutable message_map msg;
 
-    //! A functor that computes the message
-    boost::shared_ptr<message_functor> msgf;
+    //! The commutative semiring used by the engine
+    //! \todo Make this a unique_ptr
+    boost::shared_ptr<commutative_semiring<F> > csr;
 
     //! The norm used to evaluate the change in messages
     factor_norm<F>& norm;
@@ -90,7 +67,12 @@ namespace sill {
 
     //! Computes the message from one node to another
     F compute_message(edge e) const {
-      return (*msgf)(e, *this);
+      vertex u = e.source(), v = e.target();
+      F f = gm[u];
+      foreach(vertex w, gm.adjacent_vertices(u)) {
+        if (w != v) csr->combine_in(f, message(w, u));
+      }
+      return csr->collapse(csr->combine(f, gm[e]), make_domain(v)).normalize();
     }
 
     //! Passes flow from one node to another
@@ -147,7 +129,7 @@ namespace sill {
     loopy_bp_engine(const GM& gm, const factor_norm<F>& norm,
                     double perturb = 0)
       : gm(gm),
-        msgf(new csr_functor(sum_product)),
+        csr(new sum_product<F>()),
         norm(*norm.clone()),
         n_updates(0) {
       // Preallocate normalized uniform prior messages + perturbation
@@ -160,8 +142,8 @@ namespace sill {
     const GM& graphical_model() const { return gm; }
 
     //! Sets the engine to use the specified commutative semiring
-    void set_csr(commutative_semiring csr) {
-      msgf.reset(new csr_functor(csr));
+    void set_csr(commutative_semiring<F>* csr) {
+      this->csr.reset(csr);
     }
 
     /**
