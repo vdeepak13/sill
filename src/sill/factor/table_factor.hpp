@@ -69,10 +69,10 @@ namespace sill {
   public:
 
     //! Serialize members
-    void save(oarchive & ar) const;
+    void save(oarchive& ar) const;
 
     //! Deserialize members
-    void load(iarchive & ar);
+    void load(iarchive& ar);
 
     //! Default constructor for a factor with no arguments, i.e., a constant.
     explicit table_factor(result_type default_value = 0.0) {
@@ -147,6 +147,14 @@ namespace sill {
     //! Returns the arguments of the factor in the natural order
     const finite_var_vector& arg_list() const {
       return arg_seq;
+    }
+
+    table_type::const_iterator begin() const {
+      return table_data.begin();
+    }
+
+    table_type::const_iterator end() const {
+      return table_data.end();
     }
 
     //! Returns the values of the factor in a linear order
@@ -870,6 +878,9 @@ namespace sill {
      *  The resulting table_factor will have arguments union(arg(A), arg(B))
      */
     table_factor& logical_and(const table_factor& y);
+    table_factor& operator&=(const table_factor& y) {
+      return logical_and(y);
+    }
   
     /** Elementwise logical OR of two table factors. 
      *  i.e. 
@@ -878,6 +889,9 @@ namespace sill {
      *  The resulting table_factor will have arguments union(arg(A), arg(B))
      */
     table_factor& logical_or(const table_factor& y);
+    table_factor& operator|=(const table_factor& y) {
+      return logical_or(y);
+    }
 
     /** Elementwise maximum of two table factors. 
      *  i.e. 
@@ -1165,7 +1179,7 @@ namespace sill {
    *   will perform the operation X(i,j,k...) = A(i,j,k...) && B(i,j,k,...)
    *   The resulting table_factor will have arguments union(arg(A), arg(B))
    */
-  inline table_factor operator&&(const table_factor& x, const table_factor& y) {
+  inline table_factor operator&(const table_factor& x, const table_factor& y) {
     return table_factor::combine(x, y, logical_and<double>());
   }
   
@@ -1174,7 +1188,7 @@ namespace sill {
    *   will perform the operation X(i,j,k...) = A(i,j,k...) || B(i,j,k,...)
    *   The resulting table_factor will have arguments union(arg(A), arg(B))
    */
-  inline table_factor operator||(const table_factor& x, const table_factor& y) {
+  inline table_factor operator|(const table_factor& x, const table_factor& y) {
     return table_factor::combine(x, y, logical_or<double>());
   }
 
@@ -1198,11 +1212,42 @@ namespace sill {
     return table_factor::combine(x, y, minimum<double>());
   }
 
-  /**
-   * Multiplication of all elements in a table factor by a constant.
-   */
-  inline table_factor operator*(table_factor x, double b) {
-    return x *= b;
+  //! Negates the factor
+  table_factor operator-(table_factor x);
+
+  //! Identity operation
+  inline const table_factor& operator+(const table_factor& x) {
+    return x;
+  }
+
+  //! Addition of all the elements by a constant
+  inline table_factor operator+(table_factor x, double a) {
+    return x += a;
+  }
+
+  //! Addition of all the elements by a constant
+  inline table_factor operator+(double a, table_factor x) {
+    return x += a;
+  }
+
+  //! Subtracts a constant from all the elements
+  inline table_factor operator-(table_factor x, double a) {
+    return x -= a;
+  }
+
+  //! Multiplication of all elements in a table factor by a constant
+  inline table_factor operator*(table_factor x, double a) {
+    return x *= a;
+  }
+
+  //! Multiplication of all elements in a table factor by a constant
+  inline table_factor operator*(double a, table_factor x) {
+    return x *= a;
+  }
+
+  //! Division of all elements in a table factor by a constant
+  inline table_factor operator/(table_factor x, double a) {
+    return x /= a;
   }
 
 } // namespace sill

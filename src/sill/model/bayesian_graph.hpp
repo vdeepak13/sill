@@ -126,7 +126,8 @@ namespace sill {
     //! Adds a collection of nodes
     void add_nodes(const node_set& nodes, bool allow_duplicates = false) { 
       foreach(Node v, nodes) {
-	if (!allow_duplicates || !base::contains(v)) 
+        // TODO: should not this be be if (allow_duplicates ...)?
+	if (!allow_duplicates || !base::contains(v))
           base::add_vertex(v);
       }
     }

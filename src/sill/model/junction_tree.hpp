@@ -920,8 +920,10 @@ namespace sill {
         in_edge_iterator it1, end;
         for (boost::tie(it1, end)=in_edges(v); it1!=end; ++it1) {
           in_edge_iterator it2 = it1;
-          while (++it2!=end)
-            c.insert(reachable(*it1).intersect(reachable(*it2)));
+          while (++it2 != end) {
+            node_set common = set_intersect(reachable(*it1), reachable(*it2));
+            c.insert(common.begin(), common.end());
+          }
         }
         set_clique(v, c);
       }
