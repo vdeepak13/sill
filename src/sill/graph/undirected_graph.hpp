@@ -211,7 +211,6 @@ namespace sill {
                             out_edge_iterator(u, vdata.neighbors.end()));
     }
 
-
     //! Returns true iff the graph contains the given vertex
     bool contains(const vertex& u) const {
       return data_map.find(u) != data_map.end();

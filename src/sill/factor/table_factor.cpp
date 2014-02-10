@@ -751,6 +751,11 @@ namespace sill {
     return *this;
   }
 
+  table_factor operator-(table_factor f) {
+    f.table().update(boost::bind(std::minus<double>(), 0.0, _1));
+    return f;
+  }
+
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

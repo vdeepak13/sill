@@ -223,6 +223,13 @@ namespace sill {
       return data_map.find(u) != data_map.end();
     }
     
+    //! Returns true iff the graph contains the given vertices
+    bool contains(const std::set<vertex>& vertices) const {
+      foreach(vertex v, vertices)
+        if (!contains(v)) return false;
+      return true;
+    }
+    
     //! Returns true if the graph contains a directed edge (u, v)
     bool contains(const vertex& source, const vertex& target) const {
       typename vertex_data_map::const_iterator it = data_map.find(source);
