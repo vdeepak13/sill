@@ -7,6 +7,7 @@
 
 #include <sill/math/is_finite.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
+#include <sill/math/operations.hpp>
 
 #include <sill/macros_def.hpp>
 
