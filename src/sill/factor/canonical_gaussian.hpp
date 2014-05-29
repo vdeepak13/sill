@@ -338,17 +338,16 @@ namespace sill {
 
 
   }; // class canonical_gaussian
-
+  
   //! \relates canonical_gaussian
   std::ostream& operator<<(std::ostream& out, const canonical_gaussian& cg);
+
+  // Mulitplication and division
+  //==========================================================================
 
   //! \relates canonical_gaussian
   canonical_gaussian 
   operator*(const canonical_gaussian& x, const canonical_gaussian& y);
-
-  //! \relates canonical_gaussian
-  canonical_gaussian
-  operator/(const canonical_gaussian& x, const canonical_gaussian& y);
 
   //! \relates canonical_gaussian
   inline canonical_gaussian
@@ -361,7 +360,23 @@ namespace sill {
   operator*(const canonical_gaussian& cg, const moment_gaussian& mg) {
     return cg * canonical_gaussian(mg);
   }
+
+  //! \relates canonical_gaussian
+  inline canonical_gaussian
+  operator*(canonical_gaussian cg, logarithmic<double> x) {
+    return cg *= x;
+  }
+
+  //! \relates canonical_gaussian
+  inline canonical_gaussian
+  operator*(logarithmic<double> x, canonical_gaussian cg) {
+    return cg *= x;
+  }
   
+  //! \relates canonical_gaussian
+  canonical_gaussian
+  operator/(const canonical_gaussian& x, const canonical_gaussian& y);
+
   //! \relates canonical_gaussian
   inline canonical_gaussian
   operator/(const moment_gaussian& mg, const canonical_gaussian& cg) {
@@ -373,7 +388,22 @@ namespace sill {
   operator/(const canonical_gaussian& cg, const moment_gaussian& mg) {
     return cg / canonical_gaussian(mg);
   }
+
+  //! \relates canonical_gaussian
+  inline canonical_gaussian
+  operator/(canonical_gaussian cg, logarithmic<double> x) {
+    return cg /= x;
+  }
   
+  //! \relates canonical_gaussian
+  inline canonical_gaussian
+  operator/(logarithmic<double> x, const canonical_gaussian& cg) {
+    return canonical_gaussian(x) /= cg;
+  }
+  
+  // Other functions
+  //==========================================================================
+
   //! Computes the L-infinity norm of the parameters of two canonical Gaussians
   //! \relates canonical_gaussian
   double norm_inf(const canonical_gaussian& x, const canonical_gaussian& y);

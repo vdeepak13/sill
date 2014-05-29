@@ -1,5 +1,5 @@
 #ifndef SILL_GRAPH_CONNECTED_HPP
-#define PLR_GRAPH_CONNECTED_HPP
+#define SILL_GRAPH_CONNECTED_HPP
 
 #include <queue>
 #include <map>

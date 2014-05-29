@@ -18,6 +18,14 @@ namespace sill {
     return a;
   }
 
+  inline oarchive& operator<<(oarchive& a, const std::vector<bool>& vec) {
+    a << vec.size();
+    for (size_t i = 0; i < vec.size(); ++i) {
+      a << bool(vec[i]);
+    }
+    return a;
+  }
+
   /**
     deserializes a vector
     Returns true on success, false on failure  */

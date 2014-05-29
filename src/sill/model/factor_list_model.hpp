@@ -107,8 +107,8 @@ namespace sill {
       if (new_factors.empty())
         new_factors.push_back(F(const_f));
       else
-        new_factors.front() *= //.combine_in(
-            constant_factor(const_f); //, product_op );
+        new_factors.front() *= const_f;
+
       factors_.swap(new_factors);
 
       args.remove(restricted_vars);
