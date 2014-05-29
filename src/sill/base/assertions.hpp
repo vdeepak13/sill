@@ -66,14 +66,14 @@
 #ifndef _ASSERTIONS_H_
 #define _ASSERTIONS_H_
 
-#include <stdarg.h>
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdarg>
+#include <cstdlib>
+#include <cstdio>
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>    // for write()
 #endif
-#include <string.h>    // for strlen(), strcmp()
-#include <assert.h>
+#include <cstring>    // for strlen(), strcmp()
+#include <cassert>
 #include <errno.h>     // for errno
 #include <sstream>
 #include <cassert>
