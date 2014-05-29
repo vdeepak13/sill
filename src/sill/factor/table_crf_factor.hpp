@@ -123,7 +123,7 @@ namespace sill {
     }
 
     //! Constructor from a constant factor.
-    table_crf_factor(double other)
+    explicit table_crf_factor(double other)
       : f(table_factor_opt_vector::size_type(), other), log_space_(false) {
     }
 
@@ -480,6 +480,37 @@ namespace sill {
     void optimize_variable_order();
 
   };  // class table_crf_factor
+
+  // Multiplication and division
+  inline table_crf_factor
+  operator*(table_crf_factor a, const table_crf_factor& b) {
+    return a *= b;
+  }
+
+  inline table_crf_factor
+  operator*(table_crf_factor a, double b) {
+    return a *= table_crf_factor(b);
+  }
+
+  inline table_crf_factor
+  operator*(double a, table_crf_factor b) {
+    return b *= table_crf_factor(a);
+  }
+
+  inline table_crf_factor
+  operator/(table_crf_factor a, const table_crf_factor& b) {
+    return a /= b;
+  }
+
+  inline table_crf_factor
+  operator/(table_crf_factor a, double b) {
+    return a /= table_crf_factor(b);
+  }
+
+  inline table_crf_factor
+  operator/(double a, const table_crf_factor& b) {
+    return table_crf_factor(a) /= b;
+  }
 
 }  // namespace sill
 

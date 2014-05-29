@@ -838,6 +838,38 @@ namespace sill {
   canonical_gaussian
   gaussian_crf_factor::get_gaussian<canonical_gaussian>() const;
 
+  // Multiplication
+  inline gaussian_crf_factor
+  operator*(gaussian_crf_factor a, const gaussian_crf_factor& b) {
+    return a *= b;
+  }
+
+  inline gaussian_crf_factor
+  operator*(gaussian_crf_factor a, double b) {
+    return a *= gaussian_crf_factor(b);
+  }
+
+  inline gaussian_crf_factor
+  operator*(double a, gaussian_crf_factor b) {
+    return b *= gaussian_crf_factor(a);
+  }
+  
+  // Division (currently unsupported)
+  inline gaussian_crf_factor
+  operator/(gaussian_crf_factor a, const gaussian_crf_factor& b) {
+    assert(false);
+  }
+
+  inline gaussian_crf_factor
+  operator/(gaussian_crf_factor a, double b) {
+    assert(false);
+  }
+
+  inline gaussian_crf_factor
+  operator/(double a, const gaussian_crf_factor& b) {
+    assert(false);
+  }
+
 }  // namespace sill
 
 #include <sill/macros_undef.hpp>

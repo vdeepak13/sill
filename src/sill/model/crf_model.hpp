@@ -601,7 +601,7 @@ namespace sill {
     //! Returns the factor at the given vertex.
     //! This asserts false if the vertex does not contain a factor.
     const crf_factor& factor(const vertex& u) const {
-      assert(is_factor_vertex(u));
+      assert(this->is_factor_vertex(u));
       return *(this->operator[](u));
     }
 
@@ -951,7 +951,7 @@ namespace sill {
       typename crf_factor::output_factor_type f(make_domain(Yi), 1);
       typename crf_factor::output_factor_type tmpf;
       foreach(const typename crf_graph_type::vertex& neighbor_v,
-              neighbors(Yi)){
+              this->neighbors(Yi)){
         const typename crf_factor::output_factor_type& neighbor_f =
           this->operator[](neighbor_v)->condition(a);
         neighbor_f.restrict
