@@ -1,6 +1,12 @@
+0. more tests?
 1. move domain, assignment, etc. to separate data structures
 2. move to Armadillo's sparse matrices 
 3. move to C++11
 4. remove much of the custom code like forward_range, range-based algorithms, operator std::string
 5. variable values, not pointers
 6. general code cleanup
+   - simplify design wherever possible
+   - parallel-friendly
+   - performance (speed + memory) - 
+   - facebook formatting guidelines wrt the newline after ( +
+   - trailing underscore for member vars
