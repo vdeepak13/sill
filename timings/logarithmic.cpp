@@ -1,5 +1,4 @@
 #include <iostream>
-#include <sstream>
 #include <string>
 
 #include <sill/math/logarithmic.hpp>
@@ -15,36 +14,6 @@ int main(int argc, char** argv)
   using namespace boost;
 
   typedef sill::logarithmic<double> log_double;
-
-  // Create some log values.
-  log_double x, y, z;
-
-  // Assignment from standard values converts into log space.
-  x = 1.0;
-  y = 2.0;
-  z = 3.0;
-
-  // Add x and y in log space.
-  log_double xpy = x + y;
-
-  // Write out the result of the computation in the original space.
-  cout << double(x) << " + " << double(y) << " = "
-       << double(xpy) << " = " << double(z) << endl;
-
-  // Use the STL operator.
-  log_double xpy2 = plus<log_double>()(x, y);
-  cout << xpy << " " << xpy2 << endl;
-
-  // Test reading and writing.
-  ostringstream out;
-  out << " " << xpy;
-  cout << "Wrote " << xpy << " and got " << out.str() << endl;
-  istringstream in(out.str());
-  in >> xpy;
-  cout << "Read " << xpy << endl;
-  istringstream in2(string(" 0.5"));
-  in2 >> xpy;
-  cout << "Read 0.5 as " << xpy << endl;
 
   // Compare the time required for addition/multiplication in the
   // regular and log spaces.
