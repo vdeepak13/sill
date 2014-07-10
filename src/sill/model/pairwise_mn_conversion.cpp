@@ -11,7 +11,6 @@ namespace sill {
   fm2pairwise_markov_network
   (const factorized_model<table_factor>& fm, universe& u) {
     typedef table_factor factor_type;
-    typedef factorized_model<factor_type> fm_type;
     typedef pairwise_markov_network<factor_type> pmn_type;
     finite_domain vars(fm.arguments());
     std::list<factor_type> factor_list;

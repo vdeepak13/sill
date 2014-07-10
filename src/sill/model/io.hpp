@@ -28,7 +28,6 @@ namespace sill {
                   pairwise_markov_network<F>& mn,
                   universe& u) {
     using namespace std;
-    typedef typename F::variable_type variable_type;
 
     string line;
     string dummy;    

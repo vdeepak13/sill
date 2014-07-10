@@ -240,12 +240,9 @@ namespace sill {
    crf_model<CRFfactor>& YgivenXmodel) {
 
     typedef typename CRFfactor::output_variable_type output_variable_type;
-    typedef typename CRFfactor::input_variable_type input_variable_type;
-    typedef typename CRFfactor::output_domain_type output_domain_type;
     typedef typename CRFfactor::input_domain_type input_domain_type;
     typedef typename CRFfactor::output_var_vector_type output_var_vector_type;
     typedef typename CRFfactor::input_var_vector_type input_var_vector_type;
-    typedef typename CRFfactor::output_factor_type output_factor_type;
 
     assert(model_structure == "chain" || model_structure == "tree" ||
            model_structure == "star");
@@ -712,7 +709,6 @@ namespace sill {
    const std::map<typename CRFGraphType::output_variable_type*, copy_ptr<typename CRFGraphType::input_domain_type> >& Y2X_map) {
 
     typedef typename CRFGraphType::output_variable_type output_variable_type;
-    typedef typename CRFGraphType::input_variable_type input_variable_type;
     typedef typename CRFGraphType::variable_type variable_type;
 
     generative_structure.clear();

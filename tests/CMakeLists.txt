@@ -1,6 +1,9 @@
 project(tests)
-
 link_libraries(sill ${Boost_LIBRARIES})
+
+if(CYGWIN)
+add_definitions(-DBOOST_TEST_DYN_LINK)
+endif(CYGWIN)
 
 # Disable unused variable warnings in tests
 if(CMAKE_COMPILER_IS_GNUCXX)

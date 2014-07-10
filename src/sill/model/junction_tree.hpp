@@ -662,7 +662,6 @@ namespace sill {
      * @param  set the set of nodes for which a separator cover is sought
      */
     edge find_separator_cover(const node_set& set) const {
-      typedef std::pair<node_set, vertex> clique_vertex_pair;
       // std::cerr << "Searching for separator cover for " << set << std::endl;
       std::vector<vertex> candidate_vertices;
       clique_index.find_supersets(set, std::back_inserter(candidate_vertices));
@@ -940,7 +939,6 @@ namespace sill {
      */
     void initialize_edges() {
       assert(graph.num_edges() == 0);
-      typedef std::pair<node_set, vertex> clique_vertex_pair;
 
       if (empty()) return;
 

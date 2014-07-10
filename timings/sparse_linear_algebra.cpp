@@ -53,7 +53,7 @@ void time_dm_pe_outer_product_dv_sv(int argc) {
 
 void time_dv_pe_dm_times_sv() {
   // Timing: dense vector += dense matrix * sparse vector
-  size_t m = 10;
+  // size_t m = 10;
   assert(false); // TO DO
 }
 

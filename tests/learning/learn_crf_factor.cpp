@@ -98,10 +98,8 @@ test_learn_crf_factor
   using namespace std;
   using namespace sill;
 
-  typedef typename F::input_variable_type input_variable_type;
   typedef typename F::input_domain_type input_domain_type;
   typedef typename F::output_variable_type output_variable_type;
-  typedef typename F::output_domain_type output_domain_type;
 
   boost::uniform_int<unsigned>
     unif_int(0,std::numeric_limits<unsigned>::max());
@@ -159,11 +157,6 @@ test_crf_parameter_learner
 
   using namespace std;
   using namespace sill;
-
-  typedef typename F::input_variable_type input_variable_type;
-  typedef typename F::input_domain_type input_domain_type;
-  typedef typename F::output_variable_type output_variable_type;
-  typedef typename F::output_domain_type output_domain_type;
 
   boost::uniform_int<unsigned>
     unif_int(0,std::numeric_limits<unsigned>::max());

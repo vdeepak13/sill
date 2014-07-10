@@ -78,7 +78,7 @@ endif(MSVC)
 
 find_package(Boost 1.40 COMPONENTS 
               program_options 
-              iostreams
+              iostreams  # deprecate together with MPI
               date_time
               thread
               unit_test_framework
@@ -120,8 +120,11 @@ link_libraries(
   ${ARMADILLO_LIBRARIES}
   #  mpichcxx
   #  mpich
-  bz2
   )
+
+if(!MINGW)
+link_libraries(bz2)
+endif(!MINGW)
 
 if (SUITESPARSE_FOUND)
   include_directories(${SUITESPARSE_INCLUDE_DIRS})

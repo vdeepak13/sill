@@ -5,16 +5,18 @@
 
 #include <boost/foreach.hpp>
 #include <boost/static_assert.hpp>
-#include <boost/concept_check.hpp>
-#include <boost/serialization/nvp.hpp>
 
 // Shortcut macro definitions
 //! see http://www.boost.org/doc/html/foreach.html
 #define foreach BOOST_FOREACH
 #define revforeach BOOST_REVERSE_FOREACH
 
-//! new Boost concept checking framework
-#define concept_assert BOOST_CONCEPT_ASSERT
-
-//! new Boost concept checking framework
-#define concept_usage BOOST_CONCEPT_USAGE
+//! use Boost concept checking framework to check concepts
+#ifdef SILL_CHECK_CONCEPTS
+  #include <boost/concept_check.hpp>
+  #define concept_assert BOOST_CONCEPT_ASSERT
+  #define concept_usage BOOST_CONCEPT_USAGE
+#else
+  #define concept_assert(X)
+  #define concept_usage(X) void usage()
+#endif

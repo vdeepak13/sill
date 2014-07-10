@@ -185,6 +185,7 @@ int main(int argc, char* argv[]) {
     return EXIT_FAILURE;
   }
   adjonly = vm.count("adjonly") > 0;
+  (void)adjonly; // to avoid warnings
 
   cout << "==========================================================" << endl
        << "Program Settings: " << endl
