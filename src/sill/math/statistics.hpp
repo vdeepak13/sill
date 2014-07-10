@@ -234,7 +234,7 @@ namespace sill {
     //! Return standard error of the mean, or 0 if no items have been added.
     //! The standard deviation of the sample is normalized by N (count),
     //! not by N-1.
-    T stderr() const {
+    T stderror() const {
       if (cnt == 0) return 0;
       return std::sqrt(((sum2 / cnt) - sqr(mean())) / cnt);
     }

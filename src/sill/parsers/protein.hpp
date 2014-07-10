@@ -53,7 +53,6 @@ namespace sill{
                      factor_graph_model<F>& fg,
                      const std::string& filename) {
 
-    typedef typename F::table_type table_type;
     typedef typename factor_graph_model<F>::variable_type variable_type;
 
     binary_input_stream bis(filename.c_str());

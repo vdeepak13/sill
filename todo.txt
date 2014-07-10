@@ -10,3 +10,4 @@
    - performance (speed + memory) - 
    - facebook formatting guidelines wrt the newline after ( +
    - trailing underscore for member vars
+7. Drop dependence on Boost for the main template library (keep it for Python bindings and test)

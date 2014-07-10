@@ -145,7 +145,7 @@ namespace sill {
       // Now we have created the elimination factor.  Collapse out the
       // elimination variable from it, and then add it back to the
       // list of factors.
-      typename F::domain_type args = combine_it.result().arguments();
+      domain_type args = combine_it.result().arguments();
       args.erase(elim_var);
       factors.push_front(csr.collapse(combine_it.result(), args));
       //std::cerr << "new result " << combine(factors, product_tag()) << std::endl;

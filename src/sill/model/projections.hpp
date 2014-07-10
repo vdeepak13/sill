@@ -79,7 +79,6 @@ namespace sill {
             the new edge potential
     */
     typedef typename F::variable_type   variable_type;
-    typedef typename F::assignment_type assignment_type;
     typedef std::pair<double, F> edge_mi_pot;
     typedef undirected_graph<variable_type*, void_, edge_mi_pot> ig_type;
     ig_type g;

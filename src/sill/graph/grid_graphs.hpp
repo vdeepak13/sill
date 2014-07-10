@@ -17,7 +17,6 @@ namespace sill {
   template <typename VP, typename EP>
   boost::multi_array<size_t,2>
   make_grid_graph(size_t m, size_t n, undirected_graph<size_t, VP, EP>& g) {
-    typedef undirected_graph<size_t, VP, EP> graph_type;
     size_t ind = 1;
     
     // create the vertices

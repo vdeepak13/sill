@@ -68,3 +68,4 @@ BOOST_AUTO_TEST_CASE(test_projection) {
                                   logarithmic<double>(0.693147, log_tag()));
   BOOST_CHECK(are_close(project(mix), projection_true, 1e-5));
 }
+

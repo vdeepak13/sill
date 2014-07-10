@@ -24,7 +24,7 @@ int main(int argc, char** argv) {
   }
 
   size_t n = boost::lexical_cast<size_t>(argv[1]);
-  size_t BUFFER_SIZE = boost::lexical_cast<size_t>(argv[2]);
+  //  size_t BUFFER_SIZE = boost::lexical_cast<size_t>(argv[2]);
 
   {
     ofstream out("serialization.tmp");

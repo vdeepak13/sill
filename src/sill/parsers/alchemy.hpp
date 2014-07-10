@@ -345,6 +345,8 @@ namespace sill {
 //               << " on line " << min_value_line << std::endl;
 //     std::cout << "Total variables: " << fg.arguments().size()
 //               << std::endl;
+    (void)max_value_line;
+    (void)min_value_line;
 
     return true; // Parsing successful
   } // end of parse_alchemy method
@@ -561,12 +563,14 @@ namespace sill {
     fin.close();
 
     // Extra output
-//     std::cout << "Max Value: " << max_value
-//               << " on line " << max_value_line << std::endl;
-//     std::cout << "Min Value: " << min_value
-//               << " on line " << min_value_line << std::endl;
-//     std::cout << "Total variables: " << fg.arguments().size()
-//               << std::endl;
+    // std::cout << "Max Value: " << max_value
+    //           << " on line " << max_value_line << std::endl;
+    // std::cout << "Min Value: " << min_value
+    //           << " on line " << min_value_line << std::endl;
+    // std::cout << "Total variables: " << fg.arguments().size()
+    //           << std::endl;
+    (void)max_value_line;
+    (void)min_value_line;
 
     return true; // Parsing successful
   } // end of parse_alchemy method

@@ -27,6 +27,12 @@
  */
 
 
+#if defined(_WIN32) || defined(__CYGWIN__)
+
+void __print_back_trace() { }
+
+#else
+
 #include <execinfo.h>
 #include <cstdio>
 #include <cstdlib>
@@ -42,3 +48,5 @@ void __print_back_trace() {
   backtrace_symbols_fd(array, size, STDERR_FILENO);
   // backtrace_symbols_fd(array, size, STDOUT_FILENO);
 }
+
+#endif
