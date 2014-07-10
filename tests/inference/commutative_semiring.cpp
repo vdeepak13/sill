@@ -1,3 +1,5 @@
+// TODO: convert the old gdl test to commutative_semiring
+
 #include <cassert>
 #include <iostream>
 #include <vector>

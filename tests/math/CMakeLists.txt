@@ -1,14 +1,13 @@
+subdirs(linear_algebra)
 
-subdirs(function linear_algebra)
-
-add_executable(geometry geometry.cpp)
-
-#add_executable(gdl gdl.cpp)
+add_executable(functions functions.cpp)
+add_executable(logarithmic logarithmic.cpp)
 add_executable(multinomial_distribution multinomial_distribution.cpp)
-#add_executable(quaternion quaternion.cpp)
-add_executable(test_matrix test_matrix.cpp)
-add_executable(test_vector test_vector.cpp)
 
 if (SUITESPARSE_FOUND)
   add_executable(suitesparse_test suitesparse_test.cpp)
 endif (SUITESPARSE_FOUND)
+
+add_test(functions functions)
+add_test(logarithmic logarithmic)
+add_test(multinomial_distribution multinomial_distribution)
