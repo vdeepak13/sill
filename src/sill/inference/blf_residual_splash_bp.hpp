@@ -11,7 +11,7 @@
 
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/norms.hpp>
-#include <sill/inference/commutative_semiring.hpp>
+#include <sill/factor/commutative_semiring.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
 
 // This include should always be last

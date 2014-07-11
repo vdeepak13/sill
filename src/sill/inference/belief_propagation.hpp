@@ -14,7 +14,7 @@
 
 #include <sill/factor/norms.hpp>
 #include <sill/factor/random/random.hpp>
-#include <sill/inference/commutative_semiring.hpp>
+#include <sill/factor/commutative_semiring.hpp>
 #include <sill/global.hpp>
 
 #include <sill/datastructure/mutable_queue.hpp>

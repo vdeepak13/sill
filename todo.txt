@@ -1,7 +1,7 @@
 0. more unit tests
 1. move to Armadillo's sparse matrices 
 2. move to C++11
-3. Drop dependence on Boost for the main template library (keep it for Python bindings and test)
+3. drop dependence on Boost for the main template library (keep it for Python bindings and tests)
 4. remove much of the custom code like forward_range, range-based algorithms, operator std::string
 5. move domain, assignment, etc. to separate data structures
 6. variable values, not pointers

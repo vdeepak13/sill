@@ -640,9 +640,9 @@ namespace sill {
           orig_marginals.push_back(invert(jt[e]));
       }
       // Sum out variables in the subtree which are not in 'vars'
-      std::vector<F> new_marginals;
+      std::list<F> new_marginals;
       variable_elimination(orig_marginals, vars, sum_product<F>(),
-                           min_degree_strategy(), back_inserter(new_marginals));
+                           min_degree_strategy(), new_marginals);
       output *= new_marginals;
     }
 
