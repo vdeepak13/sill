@@ -120,23 +120,6 @@ namespace sill {
     }
   };
 
-  //! An inplace operation that performs the combine operation of
-  //! of a commutative semiring.
-  template <typename F>
-  struct inplace_combination : public inplace_op<F> {
-    //! permits implicit conversions from commutative_semiring
-    inplace_combination(const commutative_semiring<F>* csr)
-      : csr(csr) { }
-
-    F& operator()(F& x, const F& y) {
-      csr->combine_in(x, y);
-      return x;
-    }
-
-  private:
-    const commutative_semiring<F>* csr;
-  };
-  
 } // namespace sill
 
 #endif

@@ -1,10 +1,8 @@
 #ifndef SILL_FACTOR_OPERATIONS_HPP
 #define SILL_FACTOR_OPERATIONS_HPP
 
-#include <sill/factor/combine_iterator.hpp>
+#include <sill/factor/commutative_semiring.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/traits.hpp>
-#include <sill/functional/inplace.hpp>
 #include <sill/stl_concepts.hpp>
 
 #include <sill/macros_def.hpp>
@@ -44,30 +42,16 @@ namespace sill {
   // Functions on collections of factors
   // ===========================================================================
 
-  /**
-   * Combines a collection of factors.
-   *
-   * @param factors
-   *        A collection that models the Boost SinglePassRange
-   *        concept. The elements of the collection must
-   *        satisfy the Factor concept.
-   * @tparam Op inplace operation applied to the sequence
-   */
-  template <typename Op, typename Range>
-  typename Range::value_type
-  combine_all(const Range& factors, const typename Range::value_type& init) {
-    concept_assert((InputRange<Range>));
-    typedef typename Range::value_type factor_type;
-    Op op;
-    return sill::copy(factors, combine_iterator<factor_type, Op>(init, op)).result();
-  }
-
   //! Multiplies a collection of factors that support operator*=
   template <typename Range>
   typename Range::value_type
   prod_all(const Range& factors) {
     typedef typename Range::value_type factor_type;
-    return combine_all<inplace_multiplies<factor_type> >(factors, factor_type(1));
+    factor_type result(1);
+    foreach(const factor_type& f, factors) {
+      result *= f;
+    }
+    return result;
   }
 
   //! Sums a collection of factors that support operator+=
@@ -75,7 +59,25 @@ namespace sill {
   typename Range::value_type
   sum_all(const Range& factors) {
     typedef typename Range::value_type factor_type;
-    return combine_all<inplace_plus<factor_type> >(factors, factor_type(0));
+    factor_type result(0);
+    foreach(const factor_type& f, factors) {
+      result += f;
+    }
+    return result;
+  }
+
+  //! Combines a collection of factors using the specified commutative semiring
+  template <typename Range>
+  typename Range::value_type
+  combine_all(const Range& factors,
+              const commutative_semiring<typename Range::value_type>& csr) {
+    concept_assert((InputRange<Range>));
+    typedef typename Range::value_type factor_type;
+    factor_type result = csr.combine_init();
+    foreach(const factor_type& f, factors) {
+      csr.combine_in(result, f);
+    }
+    return result;
   }
 
   //! Returns the union of arguments of a collection of factors

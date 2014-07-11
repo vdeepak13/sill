@@ -1,5 +1,4 @@
 #define BOOST_TEST_MODULE functions
-
 #include <boost/test/unit_test.hpp>
 
 #include <sill/math/function/logistic_discrete.hpp>
