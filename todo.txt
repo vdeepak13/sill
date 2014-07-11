@@ -1,13 +1,14 @@
-0. more tests?
-1. move domain, assignment, etc. to separate data structures
-2. move to Armadillo's sparse matrices 
-3. move to C++11
+0. more unit tests
+1. move to Armadillo's sparse matrices 
+2. move to C++11
+3. Drop dependence on Boost for the main template library (keep it for Python bindings and test)
 4. remove much of the custom code like forward_range, range-based algorithms, operator std::string
-5. variable values, not pointers
-6. general code cleanup
+5. move domain, assignment, etc. to separate data structures
+6. variable values, not pointers
+7. general code cleanup
    - simplify design wherever possible
    - parallel-friendly
    - performance (speed + memory) - 
    - facebook formatting guidelines wrt the newline after ( +
    - trailing underscore for member vars
-7. Drop dependence on Boost for the main template library (keep it for Python bindings and test)
+   - allow edge creation outside of the graph
