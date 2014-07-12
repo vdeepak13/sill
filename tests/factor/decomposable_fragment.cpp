@@ -5,7 +5,7 @@
 
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/decomposable_fragment.hpp>
-#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/grid_graph.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
@@ -25,7 +25,7 @@ void test_marginal(size_t m, size_t n) {
   // generate a random model
   pairwise_markov_network< table_factor > mn;
   finite_var_vector variables = u.new_finite_variables(m * n, 2);
-  make_grid_graph(m, n, mn, variables);
+  make_grid_graph(variables, m, n, mn);
   random_ising_model(mn, rng);
 
   // compute the corresponding decomposable fragment

@@ -13,7 +13,7 @@
 #include <sill/factor/xml/gaussian_factors.hpp>
 #include <sill/factor/xml/decomposable_fragment.hpp>
 
-#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/grid_graph.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
 #include <sill/inference/junction_tree_inference.hpp>

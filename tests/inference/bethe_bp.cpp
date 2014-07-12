@@ -4,7 +4,7 @@
 #include <sill/inference/asynchronous_bethe_bp.hpp>
 #include <sill/inference/residual_bethe_bp.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/grid_graph.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
 #include <sill/model/decomposable.hpp>
@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
   finite_var_vector variables = u.new_finite_variables(m*n, 2);
   cout << "Generating random model" << endl;
   pairwise_markov_network<table_factor> mn;
-  make_grid_graph(m, n, mn, variables);
+  make_grid_graph(variables, m, n, mn);
   random_ising_model(0.5, 1, mn, rng);
   if(m<10) cout << mn; 
   

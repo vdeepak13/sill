@@ -19,5 +19,5 @@ add_test(cluster_graph cluster_graph)
 add_test(decomposable decomposable)
 add_test(factor_graph_model factor_graph_model)
 add_test(junction_tree junction_tree)
-add_test(learnt_decomposable learnt_decomposable) # the test is flaky
+add_test(learnt_decomposable learnt_decomposable) # this test is flaky
 add_test(learnt_junction_tree learnt_junction_tree)

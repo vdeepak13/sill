@@ -5,7 +5,7 @@
 #include <functional>
 #include <set>
 
-#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/grid_graph.hpp>
 #include <sill/stl_io.hpp>
 #include <sill/graph/triangulation.hpp>
 #include <sill/graph/min_degree_strategy.hpp>

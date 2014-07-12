@@ -2,7 +2,7 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/grid_graph.hpp>
 #include <sill/inference/gibbs_sampler.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/random.hpp>
@@ -26,7 +26,7 @@ int main(int argc, char* argv[]) {
 
   finite_var_vector variables = u.new_finite_variables(m*m, 2);
   pairwise_markov_network<table_factor> mn;
-  make_grid_graph(m, m, mn, variables);
+  make_grid_graph(variables, m, m, mn);
   random_ising_model(0.5, 1, mn, rng);
 
   cout << "Generated random " << m << " x " << m << "pairwise Markov network."
