@@ -64,8 +64,6 @@ namespace sill {
    * this method efficiently combines the factors and collapses the result
    * to the desired arguments.
    *
-   * \todo Check that the range value is a factor.
-   *
    * @tparam F
    *         Factor type.
    * @tparam Strategy

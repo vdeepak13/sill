@@ -9,7 +9,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/factor/table_factor.hpp>
-#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/grid_graph.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
 
   cout << "Generating random model" << endl;
   mn_type mn;
-  make_grid_graph(m, n, mn, variables);
+  make_grid_graph(variables, m, n, mn);
   random_ising_model(mn, rng);
   if (m<10) cout << mn;
 

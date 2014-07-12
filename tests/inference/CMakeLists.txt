@@ -18,9 +18,12 @@ add_executable(markov_logic markov_logic.cpp)
 #target_link_libraries(protein_cuts metis)
 add_executable(protein_inference protein_inference.cpp)
 add_executable(taueps_quant taueps_quant.cpp)
+add_executable(variable_elimination variable_elimination.cpp)
 
 find_package(TCMALLOC)
 if(TCMALLOC_FOUND) 
   target_link_libraries(markov_logic tcmalloc)
   target_link_libraries(protein_inference tcmalloc)
 endif()
+
+add_test(variable_elimination variable_elimination)

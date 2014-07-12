@@ -6,7 +6,7 @@
 #include <sill/inference/bethe.hpp>
 
 #include <sill/factor/table_factor.hpp>
-#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/grid_graph.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
 #include <sill/model/decomposable.hpp>
@@ -34,8 +34,7 @@ int main(int argc, char** argv) {
   finite_var_vector variables = u.new_finite_variables(m*n, 2);
   cout << "Generating random model" << endl;
   pairwise_markov_network<table_factor> mn;
-  boost::multi_array<finite_variable*, 2> vars = 
-    make_grid_graph(m, n, mn, variables);
+  arma::field<finite_variable*> vars = make_grid_graph(variables, m, n, mn);
   random_ising_model(0.5, 1, mn, rng);
   if (m < 10) cout << mn;
   
@@ -54,7 +53,7 @@ int main(int argc, char** argv) {
     for(size_t i = 0; i < m-1; i++)
       for(size_t j = 0; j < n-1; j++) {
         finite_domain cluster = 
-          make_domain(vars[i][j], vars[i+1][j], vars[i][j+1], vars[i+1][j+1]);
+          make_domain(vars(i,j), vars(i+1,j), vars(i,j+1), vars(i+1,j+1));
         root_clusters.push_back(cluster);
       }
     kikuchi(root_clusters, rg);

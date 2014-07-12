@@ -6,7 +6,7 @@
 #include <boost/timer.hpp>
 
 #include <sill/functional.hpp>
-#include <sill/graph/grid_graphs.hpp>
+#include <sill/graph/grid_graph.hpp>
 #include <sill/graph/undirected_graph.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
 #include <sill/graph/min_fill_strategy.hpp>
