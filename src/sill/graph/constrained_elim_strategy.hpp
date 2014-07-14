@@ -1,6 +1,7 @@
 #ifndef SILL_CONSTRAINED_ELIM_STRATEGY_HPP
 #define SILL_CONSTRAINED_ELIM_STRATEGY_HPP
 
+#include <sill/global.hpp>
 #include <sill/graph/concepts.hpp>
 
 #include <sill/macros_def.hpp>

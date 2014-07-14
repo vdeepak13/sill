@@ -423,7 +423,7 @@ namespace sill {
       typedef std::pair<vertex, edge_property*> edge_tuple;
       edge_count -= data.neighbors.size();
       foreach(edge_tuple e, data.neighbors) {
-        data_map[e.first].neighbors.erase(u);
+        if(e.first != u) data_map[e.first].neighbors.erase(u);
         if(e.second != NULL) delete e.second;
       }
       data.neighbors.clear();

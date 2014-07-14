@@ -1,11 +1,11 @@
 #define BOOST_TEST_MODULE constrained_triangulation
 #include <boost/test/unit_test.hpp>
 
-#include <sill/graph/triangulation.hpp>
-#include <sill/graph/undirected_graph.hpp>
+#include <sill/graph/constrained_elim_strategy.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
-#include <sill/graph/constrained_elim_strategy.hpp>
+#include <sill/graph/triangulation.hpp>
+#include <sill/graph/undirected_graph.hpp>
 #include <sill/model/junction_tree.hpp>
 
 using namespace sill;
