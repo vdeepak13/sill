@@ -93,8 +93,11 @@ namespace sill {
       // Eliminate the vertex.
       eliminate(u, graph);
       // Update the priorities of those vertices whose priority may have changed
-      foreach(vertex v, recompute_priority)
-        pq.update(v, elim_strategy.priority(v, graph));
+      foreach(vertex v, recompute_priority) {
+        if (v != u) {
+          pq.update(v, elim_strategy.priority(v, graph));
+        }
+      }
     }
   }
 
