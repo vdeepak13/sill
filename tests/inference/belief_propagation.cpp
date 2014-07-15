@@ -1,57 +1,60 @@
+#define BOOST_TEST_MODULE belief_propagation
+#include <boost/test/unit_test.hpp>
+
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/random/random_canonical_gaussian_functor.hpp>
 #include <sill/graph/grid_graph.hpp>
-#include <sill/model/markov_network.hpp>
-#include <sill/model/random.hpp>
 #include <sill/inference/belief_propagation.hpp>
+#include <sill/model/markov_network.hpp>
 
-#include <sill/factor/table_factor.hpp>
-#include <sill/datastructure/dense_table.hpp>
-
-#include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <vector>
-#include <iostream>
+#include <sill/macros_def.hpp>
 
-boost::mt19937 rng;
+using namespace sill;
+typedef pairwise_markov_network<canonical_gaussian> model_type;
 
-int main(int argc, char* argv[])
-{
-  using namespace sill;
-  using std::cout;
-  using std::endl;
-  typedef pairwise_markov_network<table_factor> mn_type;
+void test(loopy_bp_engine<model_type>* engine,
+          size_t niters,
+          const moment_gaussian& joint,
+          double error) {
+  engine->iterate(niters);
 
-  if (argc!=5 && argc!=6) {
-    cout << "Usage: belief_propagation m n engine n_iterations [eta]" << endl;
-    return 1;
+  // check that the marginal means have converged to the true means
+  foreach(vector_variable* v, joint.arguments()) {
+    moment_gaussian belief(engine->belief(v));
+    BOOST_CHECK_LE(std::abs(belief.mean()[0] - joint.mean(v)[0]), error);
   }
 
-  size_t m         = boost::lexical_cast<size_t>(argv[1]);
-  size_t n         = boost::lexical_cast<size_t>(argv[2]);
-  size_t engine_id = boost::lexical_cast<size_t>(argv[3]);
-  size_t niters    = boost::lexical_cast<size_t>(argv[4]);
-  double eta       = (argc==5) ? 1 : boost::lexical_cast<double>(argv[5]);
-
-  universe u;
-  finite_var_vector variables = u.new_finite_variables(m*n, 2);
-
-  cout << "Generating random model" << endl;
-  mn_type mn;
-  make_grid_graph(variables, m, n, mn);
-  //mn.extend_domains();
-  //randomize_factors(mn, rng);
-  random_ising_model(mn, rng);
-  if(m<10) cout << mn;
-
-  cout << "Running GBP" << endl;
-  boost::shared_ptr<  loopy_bp_engine<mn_type>  > p_engine;
-  switch(engine_id) {
-  case 0: p_engine.reset(new asynchronous_loopy_bp<mn_type>(mn)); break;
-  case 1: p_engine.reset(new residual_loopy_bp<mn_type>(mn)); break;
-  default: assert(false);
+  // check that the edge marginals agree on the shared variable
+  const model_type& gm = engine->graphical_model();
+  foreach(model_type::vertex v, gm.vertices()) {
+    canonical_gaussian nbelief = engine->belief(v);
+    foreach(model_type::edge e, gm.in_edges(v)) {
+      canonical_gaussian ebelief = engine->belief(e).marginal(make_domain(v));
+      BOOST_CHECK_LE(std::abs(norm_inf(nbelief, ebelief)), error);
+    }
   }
-  p_engine->iterate(niters, eta);
-  //if(m<10) cout << p_engine->node_beliefs() << endl;
-  cout << p_engine->node_beliefs() << endl;
-  cout << "Average L1 norm: " << p_engine->average_residual() << endl;
+  delete engine;
 }
+
+BOOST_AUTO_TEST_CASE(test_convergence) {
+  size_t m = 5;
+  size_t n = 4;
+
+  // construct a grid network with attractive Gaussian potentials
+  universe u;
+  vector_var_vector variables = u.new_vector_variables(m*n, 1);
+  model_type model;
+  make_grid_graph(variables, m, n, model);
+  random_canonical_gaussian_functor gen;
+  foreach(model_type::edge e, model.edges()) {
+    model[e] = gen.generate_marginal(model.nodes(e));
+  }
+  moment_gaussian joint(prod_all(model.factors()));
+  
+  test(new synchronous_loopy_bp<model_type>(model), 10, joint, 1e-5);
+  test(new asynchronous_loopy_bp<model_type>(model), 10, joint, 1e-5);
+  test(new residual_loopy_bp<model_type>(model), m*n*10, joint, 1e-5);
+}
+

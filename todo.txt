@@ -12,3 +12,7 @@
    - facebook formatting guidelines wrt the newline after ( +
    - trailing underscore for member vars
    - allow edge creation outside of the graph
+   - rename random_table_factor_functor to table_factor_generator
+   - change the function signatures from generate_xxx to operator()
+     so that the generator can be used directly e.g in loopy bp 
+     without adapters

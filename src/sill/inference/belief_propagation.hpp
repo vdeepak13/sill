@@ -8,12 +8,10 @@
 
 #include <boost/function.hpp>
 #include <boost/random/lagged_fibonacci.hpp>
-#include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/exponential_distribution.hpp>
 
 #include <sill/factor/norms.hpp>
-#include <sill/factor/random/random.hpp>
 #include <sill/factor/commutative_semiring.hpp>
 #include <sill/global.hpp>
 
@@ -62,6 +60,9 @@ namespace sill {
     //! The norm used to evaluate the change in messages
     factor_norm<F>& norm;
 
+    //! The functor used to initialize the messages
+    boost::function<F(vertex)> init_functor;
+
     //! The total number of updates applied (possibly fewer than computed)
     unsigned long n_updates;
 
@@ -87,33 +88,15 @@ namespace sill {
 
   public:
 
-    /**
-     * Resets all messages of BP engine.
-     * @param perturb Randomly perturbs initial messages to be within
-     *                [1 - perturb, 1 + perturb] (before normalization).
-     *                This value must be within [0,1).
-     */
-    virtual void reset(double perturb = 0) {
-      assert(perturb >= 0 && perturb < 1);
-      if (perturb == 0)
-        foreach(edge e, gm.edges()) {
-          message(e.source(), e.target()) =
-            F(make_domain(e.target()), 1).normalize();
-          message(e.target(), e.source()) =
-            F(make_domain(e.source()), 1).normalize();
-        }
-      else {
-        assert(perturb < 1);
-        boost::mt19937 generator;
-        double lower = 1 - perturb;
-        double upper = 1 + perturb;
-        foreach(edge e, gm.edges()) {
-          message(e.source(), e.target()) =
-            random_range_discrete_factor<F>
-            (make_domain(e.target()), generator, lower, upper).normalize();
-          message(e.target(), e.source()) =
-            random_range_discrete_factor<F>
-            (make_domain(e.source()), generator, lower, upper).normalize();
+    //! Resets all the messages using the init_functor, if present
+    virtual void reset() {
+      foreach(vertex v, gm.vertices()) {
+        foreach(edge e, gm.in_edges(v)) {
+          if (init_functor) {
+            message(e) = init_functor(v).normalize();
+          } else {
+            message(e) = F(make_domain(v), 1).normalize();
+          }
         }
       }
     }
@@ -122,18 +105,13 @@ namespace sill {
      * Constructs a loopy bp engine for the given graph.
      * @param gm      graphical model
      * @param norm    norm used to compute residuals
-     * @param perturb Randomly perturbs initial messages to be within
-     *                [1 - perturb, 1 + perturb] (before normalization).
-     *                This value must be within [0,1).
      */
-    loopy_bp_engine(const GM& gm, const factor_norm<F>& norm,
-                    double perturb = 0)
+    loopy_bp_engine(const GM& gm, const factor_norm<F>& norm)
       : gm(gm),
         csr(new sum_product<F>()),
         norm(*norm.clone()),
         n_updates(0) {
-      // Preallocate normalized uniform prior messages + perturbation
-      reset(perturb);
+      reset();
     }
 
     virtual ~loopy_bp_engine() { delete &norm; }
@@ -144,6 +122,11 @@ namespace sill {
     //! Sets the engine to use the specified commutative semiring
     void set_csr(commutative_semiring<F>* csr) {
       this->csr.reset(csr);
+    }
+
+    //! Sets the init functor
+    void set_init_functor(const boost::function<F(vertex)>& fnc) {
+      init_functor = fnc;
     }
 
     /**
@@ -308,15 +291,11 @@ namespace sill {
      *                 update: The message is updated with probability
      *                 norm(m,m_old)^exponent.
      * @param norm     norm used to compute residuals
-     * @param perturb  Randomly perturbs initial messages to be within
-     *                 [1 - perturb, 1 + perturb] (before normalization).
-     *                 This value must be within [0,1).
      */
     synchronous_loopy_bp(const GM& gm,
                          double exponent = 0,
-                         const factor_norm<F>& norm = factor_norm_inf<F>(),
-                         double perturb = 0)
-      : base(gm, norm, perturb), exponent(exponent) { }
+                         const factor_norm<F>& norm = factor_norm_inf<F>())
+      : base(gm, norm), exponent(exponent) { }
 
     double iterate1(double eta) {
       using std::max;
@@ -352,14 +331,10 @@ namespace sill {
      * Constructs an asynchronous loopy bp engine for the given graph.
      * @param gm      graphical model
      * @param norm    norm used to compute residuals
-     * @param perturb Randomly perturbs initial messages to be within
-     *                [1 - perturb, 1 + perturb] (before normalization).
-     *                This value must be within [0,1).
      */
     asynchronous_loopy_bp(const GM& gm,
-                          const factor_norm<F>& norm = factor_norm_inf<F>(),
-                          double perturb = 0)
-      : base(gm, norm, perturb) { }
+                          const factor_norm<F>& norm = factor_norm_inf<F>())
+      : base(gm, norm) { }
 
     double iterate1(double eta) {
       using std::max;
@@ -407,15 +382,11 @@ namespace sill {
     }
 
   public:
-
     /**
      * Resets all messages of BP engine.
-     * @param perturb Randomly perturbs initial messages to be within
-     *                [1 - perturb, 1 + perturb] (before normalization).
-     *                This value must be within [0,1).
      */
-    void reset(double perturb = 0) {
-      base::reset(perturb);
+    void reset() {
+      base::reset();
       foreach(edge e, gm.edges()) {
         update_residual(e);
         update_residual(gm.reverse(e));
@@ -426,14 +397,10 @@ namespace sill {
      * Constructs a residual loopy bp engine for the given graph.
      * @param gm      graphical model
      * @param norm    norm used to compute residuals
-     * @param perturb Randomly perturbs initial messages to be within
-     *                [1 - perturb, 1 + perturb] (before normalization).
-     *                This value must be within [0,1).
      */
     residual_loopy_bp(const GM& gm,
-                      const factor_norm<F>& norm = factor_norm_inf<F>(),
-                      double perturb = 0)
-      : base(gm, norm, perturb) {
+                      const factor_norm<F>& norm = factor_norm_inf<F>())
+      : base(gm, norm) {
       // Pass the flow along each directed edge
       foreach(edge e, gm.edges()) {
         pass_flow(e);
@@ -531,12 +498,9 @@ namespace sill {
 
     /**
      * Resets all messages of BP engine.
-     * @param perturb Randomly perturbs initial messages to be within
-     *                [1 - perturb, 1 + perturb] (before normalization).
-     *                This value must be within [0,1).
      */
-    void reset(double perturb = 0) {
-      base::reset(perturb);
+    void reset() {
+      base::reset();
       foreach(edge e, gm.edges()) {
         update_residual(e);
         update_residual(gm.reverse(e));
@@ -549,15 +513,11 @@ namespace sill {
      * @param exponent The exponent of the residual that affects how close we
      *                 get to the max
      * @param norm     norm used to compute residuals
-     * @param perturb  Randomly perturbs initial messages to be within
-     *                 [1 - perturb, 1 + perturb] (before normalization).
-     *                 This value must be within [0,1).
      */
     exponential_loopy_bp(const GM& gm,
                          double exponent = 1,
-                         const factor_norm<F>& norm = factor_norm_inf<F>(),
-                         double perturb = 0)
-      : base(gm, norm, perturb), exponent(exponent), current_time(0) {
+                         const factor_norm<F>& norm = factor_norm_inf<F>())
+      : base(gm, norm), exponent(exponent), current_time(0) {
       foreach(edge e, gm.edges()) {
         update_residual(e);
         update_residual(gm.reverse(e));
