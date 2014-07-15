@@ -26,4 +26,5 @@ if(TCMALLOC_FOUND)
   target_link_libraries(protein_inference tcmalloc)
 endif()
 
+add_test(belief_propagation belief_propagation)
 add_test(variable_elimination variable_elimination)
