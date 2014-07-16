@@ -1,4 +1,5 @@
 0. more unit tests
+   - verify BOOST_CHECK_SMALL vs BOOST_CHECK_CLOSE
 1. move to Armadillo's sparse matrices 
 2. move to C++11
 3. drop dependence on Boost for the main template library (keep it for Python bindings and tests)
@@ -12,7 +13,17 @@
    - facebook formatting guidelines wrt the newline after ( +
    - trailing underscore for member vars
    - allow edge creation outside of the graph
-   - rename random_table_factor_functor to table_factor_generator
-   - change the function signatures from generate_xxx to operator()
+   - rename random_table_factor_functor to table_factor_generator and
+     change the function signatures from generate_xxx to operator(),
      so that the generator can be used directly e.g in loopy bp 
      without adapters
+   - get rid of the SWIG nonsense
+   - make sure triangulation does not construct properties
+   - get rid of Factor::collapse_type
+   - clean up record or merge it with assignment
+   - replace template arguments for optimization objective/gradient
+     with std::function
+   - fix table_factor::operator=(double)
+
+Python:
+- change many asserts to exceptions

@@ -32,7 +32,7 @@ void test(loopy_bp_engine<model_type>* engine,
     canonical_gaussian nbelief = engine->belief(v);
     foreach(model_type::edge e, gm.in_edges(v)) {
       canonical_gaussian ebelief = engine->belief(e).marginal(make_domain(v));
-      BOOST_CHECK_LE(std::abs(norm_inf(nbelief, ebelief)), error);
+      BOOST_CHECK_LE(norm_inf(nbelief, ebelief), error);
     }
   }
   delete engine;

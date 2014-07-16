@@ -27,4 +27,5 @@ if(TCMALLOC_FOUND)
 endif()
 
 add_test(belief_propagation belief_propagation)
+add_test(gbp gbp)
 add_test(variable_elimination variable_elimination)

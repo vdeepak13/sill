@@ -1,5 +1,5 @@
-#ifndef SILL_GBP_HPP
-#define SILL_GBP_HPP
+#ifndef SILL_GBP_PC_HPP
+#define SILL_GBP_PC_HPP
 
 #include <algorithm> // for std::max
 #include <set>
@@ -72,6 +72,11 @@ namespace sill {
     }
 
     virtual ~gbp_pc() { }
+
+    //! Returns the underlying region graph
+    const region_graph<variable_type*, F>& graphical_model() const {
+      return graph;
+    }
 
     //! Initializes the messages to 1
     void initialize_messages() {

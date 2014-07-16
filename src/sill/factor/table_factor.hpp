@@ -324,16 +324,6 @@ namespace sill {
     //! Returns true if the two factors have the same argument sets and values
     bool operator==(const table_factor& other) const;
 
-    //! Assignment operator
-    table_factor& operator=(const table_factor& other) {
-      args = other.args;
-      var_index = other.var_index;
-      arg_seq = other.arg_seq;
-      table_data = other.table_data;
-      index = other.index;
-      return *this;
-    }
-
     //! Assigns the given value to all elements in this factor.
     table_factor& operator=(double val) {
       table_data.update(make_constant(val));
