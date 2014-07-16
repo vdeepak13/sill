@@ -17,7 +17,7 @@
 namespace sill {
 
   /**
-   * A class thatimplements generalized synchronous generalized belief
+   * A class that implements generalized synchronous generalized belief
    * propagation.
    *
    * @tparam F A type that implements the Factor concept.
@@ -141,7 +141,8 @@ namespace sill {
     //! Passes a message from region u to region v
     //! u and v must be adjacent
     double pass_message(size_t u, size_t v, double eta) {
-      double br = beta(u);
+      // compute beta for the child
+      double br = graph.contains(u, v) ? beta(v) : beta(u);
 
       // compute the pseudo message (this is m0 in the Yedidia paper)
       F m0 = pow(graph[u], graph.counting_number(u));
@@ -172,7 +173,9 @@ namespace sill {
       F new_msg;
       new_msg  = pow(pseudo_message(u, v), br);
       new_msg *= pow(pseudo_message(v, u), br - 1);
-      new_msg = new_msg.normalize();
+      // new_msg = new_msg.normalize();
+      // this causes a bug in pre-C++11 OS X STL
+      new_msg.normalize();
 //       foreach(double& x, new_msg.values()) 
 //         if (x != x) {
 //           using namespace std;

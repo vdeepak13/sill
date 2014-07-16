@@ -1,5 +1,5 @@
-#ifndef SILL_ASYNCHRONOUS_GBP_HPP
-#define SILL_ASYNCHRONOUS_GBP_HPP
+#ifndef SILL_ASYNCHRONOUS_GBP_PC_HPP
+#define SILL_ASYNCHRONOUS_GBP_PC_HPP
 
 #include <sill/inference/gbp_pc.hpp>
 #include <sill/graph/graph_traversal.hpp>
@@ -37,7 +37,7 @@ namespace sill {
       return residual;
     }
     
-  }; // class asynchronous_gbp
+  }; // class asynchronous_gbp_pc
 
 } // namespace sill
 
