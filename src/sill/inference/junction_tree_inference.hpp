@@ -129,10 +129,6 @@ namespace sill {
       initialize_potentials(factors);
     }
 
-  #ifdef SWIG
-    shafer_shenoy(const std::vector<F>& factors);
-  #endif
-
     /** 
      * Constructs a Shafer-Shenoy engine for a given junction tree.
      */
@@ -381,12 +377,10 @@ namespace sill {
       foreach(edge e, jt.edges()) jt[e].normalize();
     } 
 
-  #ifndef SWIG    
     //! Returns the junction tree
     const jt_type& tree() const {
       return jt;
     }
-  #endif
     
     //! Mutable access to vertex potential
     //! The caller must not extend the arguments of the factor beyond the clique

@@ -28,5 +28,6 @@ endif()
 
 add_test(belief_propagation belief_propagation)
 add_test(gbp gbp)
+add_test(junction_tree_inference junction_tree_inference)
 add_test(kikuchi kikuchi)
 add_test(variable_elimination variable_elimination)
