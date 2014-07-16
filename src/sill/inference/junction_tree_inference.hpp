@@ -173,10 +173,14 @@ namespace sill {
       }
     }
 
-    //! Conditions the inference on an assignment to one or more variables
-    //! This is a mutable operation
+    /**
+     * Conditions the inference on an assignment to one or more variables
+     * This is a mutable operation.
+     * Note that calibrate() needs to be called after this to ensure 
+     * that beliefs are indeed marginals of the conditional distribution.
+     */
     void condition(const assignment_type& a) {
-      domain_type vars = a.keys();
+      domain_type vars = keys(a);
 
       // Find all cliques that contain an old variable
       typename std::vector<vertex> vertices;
@@ -186,12 +190,12 @@ namespace sill {
       foreach(vertex v, vertices) {
         jt[v] = jt[v].restrict(a);
         foreach(edge e, jt.out_edges(v)) {
-          if (jt[e].forward.arguments().meets(vars)) 
+          if (!set_disjoint(jt.separator(e), vars)) {
             jt[e].forward = jt[e].forward.restrict(a);
-          if (jt[e].reverse.arguments().meets(vars))
             jt[e].reverse = jt[e].reverse.restrict(a);
+          }
         }
-        jt.set_clique(v, jt.clique(v) - vars);
+        jt.set_clique(v, set_difference(jt.clique(v), vars));
       }
     }
 

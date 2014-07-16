@@ -5,9 +5,6 @@
 #include <set>
 #include <map>
 
-#include <boost/type_traits/is_same.hpp>
-#include <boost/utility/enable_if.hpp>
-
 #include <sill/global.hpp>
 #include <sill/factor/concepts.hpp>
 #include <sill/graph/property_functors.hpp>
@@ -25,40 +22,33 @@ namespace sill {
    * Note: the user must ensure that the arguments of edge and node factors
    * remain valid
    *
-   * \param NodeF 
+   * \param F
    *        The type of factors associated with the nodes of the markov network.
-   *        Must satisfy the Factor concept.
-   * \param EdgeF
-   *        The type of factors associated with the edges of the markov network.
    *        Must satisfy the Factor concept.
    *
    * \ingroup model
    */
-  template <typename NodeF, typename EdgeF = NodeF> 
+  template <typename F> 
   class pairwise_markov_network 
-    : public markov_graph<typename NodeF::variable_type*, NodeF, EdgeF>,
-      public graphical_model<NodeF> {
+    : public markov_graph<typename F::variable_type*, F, F>,
+      public graphical_model<F> {
 
-    concept_assert((Factor<NodeF>));
-    concept_assert((Factor<EdgeF>));
-    BOOST_STATIC_ASSERT((boost::is_same<typename NodeF::variable_type,
-                                  typename EdgeF::variable_type>::value));
-
+    concept_assert((Factor<F>));
+  
     // Public type declarations
     //==========================================================================
   public:
     //! The type of variables that form the factor's domain
-    typedef typename NodeF::variable_type variable_type;
+    typedef typename F::variable_type variable_type;
 
     //! The domain type of the factor
-    typedef typename NodeF::domain_type domain_type;
+    typedef typename F::domain_type domain_type;
 
     //! The assignment type of the factor
-    typedef std::map<variable_type*, typename variable_type::value_type> 
-      assignment_type;
+    typedef typename F::assignment_type assignment_type;
 
     //! The base class
-    typedef sill::markov_graph<variable_type*, NodeF, EdgeF> base;
+    typedef sill::markov_graph<variable_type*, F, F> base;
 
     // Shortcuts
     typedef typename base::vertex vertex;
@@ -83,24 +73,11 @@ namespace sill {
                             const EdgeRange& edges)
       : base(variables, edges) { }
 
-    /*
-    #ifndeg SWIG
-    //! Constructs a Markov network with the given graph structure
-    template <typename VP, typename EP, typename Tag>
-    pairwise_markov_network(const markov_graph<VP, EP, Tag>& g) : base(g) { }
-    #endif
-    */
-    /*
-    //! Constructs a Markov network with the given graph structure
-    template <typename Graph, typename VariableMap>
-    pairwise_markov_network(const Graph& g, VariableMap m) : base(g, m) { }
-    */
-
     //! Conversion to human-readable representation
     operator std::string() const {
       std::ostringstream out; out << *this; return out.str(); 
     }
-
+  
     // Accessors
     //==========================================================================
     //! Returns the arguments of the model
@@ -108,49 +85,41 @@ namespace sill {
       return base::nodes();
     }
 
-    //! Returns the factor associated with a vertex or edge
-    const NodeF& factor(const vertex v) const {
-      return base::operator[](v);
-    }
-    const EdgeF& factor(const edge e) const {
-      return base::operator[](e);
+    //! Returns the factor associated with the node
+    const F& factor(vertex v) const {
+      return this->operator[](v);
     }
 
-    NodeF& factor(const vertex v) {
-      return base::operator[](v);
+    //! Returns the factor associated with the node
+    F& factor(vertex v) {
+      return this->operator[](v);
+    }
+    
+    //! Returns the factor associated with the edge
+    const F& factor(edge e) const {
+      return this->operator[](e);
     }
 
-    EdgeF& factor(const edge e) {
-      return base::operator[](e);
+    //! Returns the factor associated with the edge
+    F& factor(edge e) {
+      return this->operator[](e);
     }
 
-    forward_range<const NodeF&> node_factors() const {
+    //! Returns the factors associated with the nodes
+    forward_range<const F&> node_factors() const {
       return make_transformed(vertices(), vertex_property_functor(*this));
     }
 
-    forward_range<const EdgeF&> edge_factors() const {
-      return make_transformed(edges(), edge_property_functor(*this));
-    }
-
-    // GraphicalModel interface
-    forward_range<NodeF&> node_factors() {
-      return make_transformed(vertices(), vertex_property_functor(*this));
-    }
-
-    forward_range<EdgeF&> edge_factors() {
+    //! Returns the factors associated with the edges
+    forward_range<const F&> edge_factors() const {
       return make_transformed(edges(), edge_property_functor(*this));
     }
 
     //! Returns the factors associated with this graphical model
-    //! This function is only supported if NodeF is the same type as EdgeF
-    forward_range<const NodeF&> factors() const {
-      if (boost::is_same<NodeF, EdgeF>::value) {
-        return make_joined
-          (make_transformed(vertices(), vertex_property_functor(*this)),
-           make_transformed(edges(), edge_property_functor(*this)));
-      } else {
-        assert(false); // unsupported
-      }
+    forward_range<const F&> factors() const {
+      return make_joined
+        (make_transformed(vertices(), vertex_property_functor(*this)),
+         make_transformed(edges(), edge_property_functor(*this)));
     }
     
     // Queries
@@ -160,10 +129,9 @@ namespace sill {
     double log_likelihood(const assignment_type& a) const {
       using std::log;
       double result = 0;
-      foreach(vertex v, vertices()) 
-        result += factor(v).logv(a);
-      foreach(edge e, edges())
-        result += factor(e).logv(a);
+      foreach(const F& factor, factors()) {
+        result += factor.logv(a);
+      }
       return result;
     }
 
@@ -180,14 +148,14 @@ namespace sill {
     sill::markov_graph<variable_type*> markov_graph() const {
       return sill::markov_graph<variable_type*>(*this);
     }
-
+  
     //! Throws an assertion violation if the MRF is not valid
     void check() const {
-      foreach(vertex v, vertices())
-        assert( factor(v).arguments() == node(v) );
+      foreach(vertex v, vertices()) {
+        assert(factor(v).arguments() == make_domain(v));
+      }
       foreach(edge e, edges()) {
-        domain_type args = make_domain(source_node(e), target_node(e));
-        assert( factor(e).arguments() == args );
+        assert(factor(e).arguments() == nodes(e));
       }
     }
 
@@ -197,30 +165,41 @@ namespace sill {
     void extend_domains() {
       foreach(vertex v, vertices())
         if (!factor(v).arguments().count(v))
-          factor(v) *= NodeF(make_domain(v), 1);
+          factor(v) *= F(make_domain(v), 1);
       foreach(edge e, edges())
         if (!includes(factor(e).arguments(), nodes(e)))
-          factor(e) *= EdgeF(nodes(e), 1);
+          factor(e) *= F(nodes(e), 1);
     }
 
     //! Adds a factor to the graphical model and creates the vertices and edges
-    template<typename Factor>
-    void add_factor(const Factor& f) {
-      domain_type vars = f.arguments();
+    void add_factor(const F& factor) {
+      const domain_type& vars = factor.arguments();
       assert(vars.size() == 1 || vars.size() == 2);
-      this->add_clique(vars);
       switch (vars.size()) {
         case 1:
-	  base::add_vertex((*vars.begin()), f);
+	  this->add_vertex(*vars.begin(), factor);
           break;
         case 2:
-	  base::add_edge((*vars.begin()), (*boost::next(vars.begin(), 1)), f);
+	  this->add_edge(*vars.begin(), *++vars.begin(), factor);
           break;
         default:
           assert(false);
       }
     }
 
+    //! Conditions the model on an assignment
+    void condition(const assignment_type& a) {
+      foreach(typename assignment_type::const_reference p, a) {
+        variable_type* u = p.first;
+        if (this->contains(u)) {
+          foreach(edge e, this->out_edges(u)) {
+            factor(e.target()) *= factor(e).restrict(a);
+          }
+          this->remove_vertex(u);
+        }
+      }
+    }
+    
   }; // class pairwise_markov_network
 
   /**
