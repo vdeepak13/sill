@@ -75,7 +75,7 @@ namespace sill {
     //! Initializes the factors to 1
     void initialize_factors() {
       foreach(size_t v, graph.vertices()) {
-        graph[v] = 1;
+        graph[v] = F(1);
 //         using namespace std;
 //         cerr << graph.cluster(v) << ": " << beta(v) << endl;
       }

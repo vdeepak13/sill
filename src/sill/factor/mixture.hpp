@@ -108,13 +108,6 @@ namespace sill {
       comps.swap(f.comps);
     }
 
-    //! Assignment operator: from constant
-    mixture& operator=(double val) {
-      foreach(F& f, comps)
-        f = val;
-      return *this;
-    }
-
     void save(oarchive & ar) const {
       ar << comps;
     }
@@ -191,7 +184,7 @@ namespace sill {
       return componentwise_op<inplace_multiplies<F> >(factor);
     }
 
-    //! divides each component by a facotr
+    //! divides each component by a factor
     mixture& operator/=(const F& factor) {
       return componentwise_op<inplace_divides<F> >(factor);
     }

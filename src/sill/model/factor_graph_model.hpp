@@ -510,24 +510,10 @@ public:
      * Normalize all factors
      */
     void normalize() {
-      result_type maxval = -std::numeric_limits<double>::max();
-      result_type minval = std::numeric_limits<double>::max();
-      bool start = true;
       foreach(factor_type& f, factors_) {
         f.normalize();
-        if (start) {
-          maxval = f.maximum();
-          minval = f.minimum();
-          start = false;
-        } else {
-	        maxval = std::max(maxval,f.maximum());
-          minval = std::min(minval,f.minimum());
-        }
       }
-      std::cout << "Factor max val: " << maxval << std::endl;
-      std::cout << "Factor min val: " << minval << std::endl;
-    } // end of normalize
-
+    }
 
     /**
      * Returns the number of neighbors of a vertex.  This will also
@@ -686,13 +672,13 @@ public:
       return factors_;
     }
 
-    virtual void integrate_evidence(const finite_assignment &asg) {
+    virtual void integrate_evidence(const assignment_type& asg) {
       neighbors_.clear();
       vertices_.clear();
       factor2id_.clear();
       variable2id_.clear();
-      std::set<finite_variable*> asgkeys = keys(asg);
-      args_ = set_difference(args_,asgkeys);
+      std::set<variable_type*> asgkeys = keys(asg);
+      args_ = set_difference(args_, asgkeys);
       foreach(factor_type& f, factors_) {
         if (is_subset(f.arguments(), asgkeys)) continue;
         f = f.restrict(asg);
@@ -881,7 +867,7 @@ public:
 
     }
 
-    virtual double bethe(const std::map<vertex_type, factor_type> &beliefs) {
+    virtual double bethe(const std::map<vertex_type, factor_type>& beliefs) {
       double U = 0;
       double H = 0;
       foreach (factor_type &f, factors_) {

@@ -32,6 +32,11 @@ namespace sill {
   inline bool operator!=(const void_&, const void_&) {
     return false;
   }
+  
+  //! less than comparison for void_
+  inline bool operator<(const void_&, const void_&) {
+    return false;
+  }
 
   //! i/o
   inline std::ostream& operator<<(std::ostream& out, void_) {

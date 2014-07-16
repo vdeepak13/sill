@@ -87,7 +87,7 @@ namespace sill {
     void initialize_potentials(const Range& factors) {
       // Initialize the clique potentials to unity
       foreach(vertex v, jt.vertices())
-        jt[v] = 1;
+        jt[v] = F(1);
 
       // Multiply the factors of gm to cliques that cover them
       foreach(const typename Range::value_type& factor, factors) {
@@ -135,7 +135,7 @@ namespace sill {
     shafer_shenoy(const junction_tree<variable_type*, F>& factor_jt) 
       : calibrated(false) {
       foreach(vertex v, factor_jt.vertices()) {
-        assert(factor_jt.clique(v).superset_of(factor_jt[v].arguments()));
+        assert(includes(factor_jt.clique(v), factor_jt[v].arguments()));
         jt.add_clique(v, factor_jt.clique(v), factor_jt[v]);
       }
       foreach(edge e, factor_jt.edges()) {
@@ -289,9 +289,9 @@ namespace sill {
     template <typename Range>
     void initialize_potentials(const Range& factors) {
       foreach(vertex v, jt.vertices())
-        jt[v] = 1; // initialize vertex potentials to unity
+        jt[v] = F(1); // initialize vertex potentials to unity
       foreach(edge e, jt.edges())
-        jt[e] = 1; // initialize the edge potentials to unity
+        jt[e] = F(1); // initialize the edge potentials to unity
       foreach(const F& factor, factors)
         jt[jt.find_clique_cover(factor.arguments())] *= factor;
     }

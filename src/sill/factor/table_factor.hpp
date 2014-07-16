@@ -555,6 +555,10 @@ namespace sill {
     //! @todo Make this more efficient.
     table_factor conditional(const finite_domain& B) const;
 
+    //! Returns true if this factor represents a conditional distribution
+    //! p(rest | parents)
+    bool is_conditional(const finite_domain& tail, double tol = 1e-8) const;
+
     //! implements DistributionFactor::is_normalizable
     bool is_normalizable() const {
       return is_positive_finite(norm_constant());
@@ -571,15 +575,25 @@ namespace sill {
     //! Computes the maximum for each assignment to the given variables
     table_factor maximum(const finite_domain& retain) const {
       return collapse(sill::maximum<result_type>(), 
-                       -std::numeric_limits<double>::infinity(),
-                       retain);
+                      -std::numeric_limits<double>::infinity(),
+                      retain);
     }
 
     //! Computes the minimum for each assignment to the given variables
     table_factor minimum(const finite_domain& retain) const {
       return collapse(sill::minimum<result_type>(), 
-                       std::numeric_limits<double>::infinity(),
-                       retain);
+                      std::numeric_limits<double>::infinity(),
+                      retain);
+    }
+
+    //! Computes the logical and for each assignment to the given variables
+    table_factor logical_and(const finite_domain& retain) const {
+      return collapse(sill::logical_and<result_type>(), 1, retain);
+    }
+
+    //! Computes the logical or for each assignment to the given variables
+    table_factor logical_or(const finite_domain& retain) const {
+      return collapse(sill::logical_or<result_type>(), 0, retain);
     }
 
     //! Returns the maximum value in the factor
@@ -863,25 +877,19 @@ namespace sill {
 
     /** Elementwise logical AND of two table factors. 
      *  i.e. 
-     *  A.logical_and(B)
+     *  A &= B
      *  will perform the operation A(i,j,k...) = A(i,j,k...) && B(i,j,k,...)
      *  The resulting table_factor will have arguments union(arg(A), arg(B))
      */
-    table_factor& logical_and(const table_factor& y);
-    table_factor& operator&=(const table_factor& y) {
-      return logical_and(y);
-    }
+    table_factor& operator&=(const table_factor& y);
   
     /** Elementwise logical OR of two table factors. 
      *  i.e. 
-     *  A.logical_or(B)
+     *  A |= B
      *  will perform the operation A(i,j,k...) = A(i,j,k...) || B(i,j,k,...)
      *  The resulting table_factor will have arguments union(arg(A), arg(B))
      */
-    table_factor& logical_or(const table_factor& y);
-    table_factor& operator|=(const table_factor& y) {
-      return logical_or(y);
-    }
+    table_factor& operator|=(const table_factor& y);
 
     /** Elementwise maximum of two table factors. 
      *  i.e. 

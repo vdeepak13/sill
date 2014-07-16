@@ -20,6 +20,9 @@ typedef size_t V;
 typedef undirected_graph<V, size_t, size_t> graph;
 typedef std::pair<V, V> E;
 
+template class undirected_graph<size_t>;
+template class undirected_graph<size_t, double, double>;
+
 BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::edge_iterator);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::vertex_iterator);
 // see http://www.boost.org/doc/libs/1_53_0/libs/test/doc/html/utf/user-guide/test-output/test-log.html

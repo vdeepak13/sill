@@ -2,6 +2,7 @@
 
 #include <sill/base/stl_util.hpp>
 #include <sill/base/universe.hpp>
+#include <sill/factor/operations.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/macros_def.hpp>
@@ -315,6 +316,7 @@ namespace sill {
     collapse(std::plus<result_type>(), 0, retain, f);
   }
 
+  // TODO: this is awfully inefficient at the moment
   table_factor table_factor::conditional(const finite_domain& B) const {
     assert(includes(arguments(), B));
     table_factor cond(*this);
@@ -322,6 +324,10 @@ namespace sill {
     foreach(const finite_assignment& fa, assignments())
       cond(fa) /= PB(fa);
     return cond;
+  }
+
+  bool table_factor::is_conditional(const finite_domain& tail, double tol) const {
+    return norm_inf(sum(*this, tail), table_factor(1.0)) <= tol;
   }
 
   table_factor& table_factor::normalize() {
@@ -682,7 +688,7 @@ namespace sill {
     return *this;
   }
 
-  table_factor& table_factor::logical_and(const table_factor& y) { 
+  table_factor& table_factor::operator&=(const table_factor& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
@@ -695,7 +701,7 @@ namespace sill {
   }
 
 
-  table_factor& table_factor::logical_or(const table_factor& y) { 
+  table_factor& table_factor::operator|=(const table_factor& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),

@@ -3,6 +3,7 @@
 
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/random/random_canonical_gaussian_functor.hpp>
+#include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/inference/belief_propagation.hpp>
 #include <sill/model/markov_network.hpp>
@@ -12,9 +13,18 @@
 #include <sill/macros_def.hpp>
 
 using namespace sill;
-typedef pairwise_markov_network<canonical_gaussian> model_type;
+typedef pairwise_markov_network<canonical_gaussian> cg_model_type;
+typedef pairwise_markov_network<table_factor> tf_model_type;
 
-void test(loopy_bp_engine<model_type>* engine,
+template class synchronous_loopy_bp<cg_model_type>;
+template class asynchronous_loopy_bp<cg_model_type>;
+template class residual_loopy_bp<cg_model_type>;
+
+template class synchronous_loopy_bp<tf_model_type>;
+template class asynchronous_loopy_bp<tf_model_type>;
+template class residual_loopy_bp<tf_model_type>;
+
+void test(loopy_bp_engine<cg_model_type>* engine,
           size_t niters,
           const moment_gaussian& joint,
           double error) {
@@ -27,10 +37,10 @@ void test(loopy_bp_engine<model_type>* engine,
   }
 
   // check that the edge marginals agree on the shared variable
-  const model_type& gm = engine->graphical_model();
-  foreach(model_type::vertex v, gm.vertices()) {
+  const cg_model_type& gm = engine->graphical_model();
+  foreach(cg_model_type::vertex v, gm.vertices()) {
     canonical_gaussian nbelief = engine->belief(v);
-    foreach(model_type::edge e, gm.in_edges(v)) {
+    foreach(cg_model_type::edge e, gm.in_edges(v)) {
       canonical_gaussian ebelief = engine->belief(e).marginal(make_domain(v));
       BOOST_CHECK_LE(norm_inf(nbelief, ebelief), error);
     }
@@ -45,16 +55,16 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   // construct a grid network with attractive Gaussian potentials
   universe u;
   vector_var_vector variables = u.new_vector_variables(m*n, 1);
-  model_type model;
+  cg_model_type model;
   make_grid_graph(variables, m, n, model);
   random_canonical_gaussian_functor gen;
-  foreach(model_type::edge e, model.edges()) {
+  foreach(cg_model_type::edge e, model.edges()) {
     model[e] = gen.generate_marginal(model.nodes(e));
   }
   moment_gaussian joint(prod_all(model.factors()));
   
-  test(new synchronous_loopy_bp<model_type>(model), 10, joint, 1e-5);
-  test(new asynchronous_loopy_bp<model_type>(model), 10, joint, 1e-5);
-  test(new residual_loopy_bp<model_type>(model), m*n*10, joint, 1e-5);
+  test(new synchronous_loopy_bp<cg_model_type>(model), 10, joint, 1e-5);
+  test(new asynchronous_loopy_bp<cg_model_type>(model), 10, joint, 1e-5);
+  test(new residual_loopy_bp<cg_model_type>(model), m*n*10, joint, 1e-5);
 }
 

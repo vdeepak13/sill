@@ -576,14 +576,14 @@ namespace sill {
       // Look for a separator that covers the variables.
       edge e = find_separator_cover(vars);
       if (e != edge()) {
-        jt[e].marginal(output, vars);
+        jt[e].marginal(vars, output);
         return;
       }
 
       // Look for a clique that covers the variables.
       vertex v = find_clique_cover(vars);
       if (v) {
-        jt[v].marginal(output, vars);
+        jt[v].marginal(vars, output);
         return;
       }
 
@@ -1032,13 +1032,13 @@ namespace sill {
 
     /**
      * Returns 1 if this predicts all variable values correctly and 0 otherwise.
-     * @param a    an assignment to Y,X
      */
     size_t accuracy(const assignment_type& a) const {
       assignment_type pred(max_prob_assignment());
       foreach(variable_type* v, args) {
-        if (pred[v] != safe_get(a, v))
+        if (!equal(pred[v],safe_get(a, v))) {
           return 0;
+        }
       }
       return 1;
     }
@@ -1499,7 +1499,7 @@ namespace sill {
         if (overlapping.empty()) break;
         vertex v = overlapping.front();
         // Remove vars from this clique.
-        jt.set_clique(v, clique(v) - vars);
+        jt.set_clique(v, set_difference(clique(v), vars));
         // at this point, the variables have been removed from the separators
         jt[v] =  jt[v].marginal(clique(v));
 
@@ -1514,7 +1514,7 @@ namespace sill {
         remove_if_nonmaximal(v);
       }
       // Update the arguments.
-      args.remove(vars);
+      args.erase(vars.begin(), vars.end());
       #ifdef SILL_VERBOSE
         std::cerr << "Result: " << *this << std::endl;
       #endif
@@ -1825,9 +1825,9 @@ namespace sill {
       }
 
       //! Postfix increment (creates a temporary)
-      potential_iterator operator++(int) const {
+      potential_iterator operator++(int) {
         potential_iterator temp(*this);
-        ++(*this);
+        operator++();
         return temp;
       }
 

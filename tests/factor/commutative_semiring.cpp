@@ -4,14 +4,24 @@
 #include <vector>
 
 #include <sill/base/universe.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/commutative_semiring.hpp>
 #include <sill/factor/table_factor.hpp>
 
 #include <sill/factor/random/random_table_factor_functor.hpp>
 
-BOOST_AUTO_TEST_CASE(test_ops) {
-  using namespace sill;
+using namespace sill;
 
+template class sum_product<table_factor>;
+template class max_product<table_factor>;
+template class min_sum<table_factor>;
+template class max_sum<table_factor>;
+template class boolean<table_factor>;
+
+template class sum_product<canonical_gaussian>;
+template class max_product<canonical_gaussian>;
+
+BOOST_AUTO_TEST_CASE(test_ops) {
   size_t nvars = 3;
   size_t arity = 2;
 

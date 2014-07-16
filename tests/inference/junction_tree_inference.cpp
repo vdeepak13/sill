@@ -3,6 +3,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
+#include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
@@ -14,6 +15,12 @@
 #include <sill/macros_def.hpp>
 
 using namespace sill;
+
+template class shafer_shenoy<table_factor>;
+template class hugin<table_factor>;
+
+template class shafer_shenoy<canonical_gaussian>;
+template class hugin<canonical_gaussian>;
 
 struct fixture {
   fixture() {

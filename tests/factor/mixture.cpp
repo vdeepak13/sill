@@ -10,6 +10,9 @@
 
 using namespace sill;
 
+// commented out until we have factor traits
+//template class mixture<moment_gaussian>;
+
 struct fixture {
   fixture()
     : v(u.new_vector_variables(2, 1)),

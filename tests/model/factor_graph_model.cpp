@@ -8,9 +8,10 @@
 
 #include <sill/stl_io.hpp>
 #include <sill/base/universe.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/random/random.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/random/random.hpp>
 #include <sill/range/algorithm.hpp>
 #include <sill/serialization/serialize.hpp>
 
@@ -19,6 +20,9 @@
 #include <sill/macros_def.hpp>
 
 using namespace sill;
+
+template class factor_graph_model<table_factor>;
+//template class factor_graph_model<canonical_gaussian>;
 
 struct fixture {
   typedef factor_graph_model<table_factor> model_type;

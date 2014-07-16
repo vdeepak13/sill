@@ -4,6 +4,7 @@
 #include <sill/graph/constrained_elim_strategy.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
+#include <sill/graph/min_fill_strategy.hpp>
 #include <sill/graph/triangulation.hpp>
 #include <sill/graph/undirected_graph.hpp>
 #include <sill/model/junction_tree.hpp>
@@ -19,6 +20,9 @@ struct elim_priority_functor {
     return graph[v];
   }
 };
+
+template class constrained_elim_strategy<elim_priority_functor, min_degree_strategy>;
+template class constrained_elim_strategy<elim_priority_functor, min_fill_strategy>;
 
 BOOST_AUTO_TEST_CASE(test_triangulation) {
   // The graph type.  Each vertex is annotated with the elimination priority
