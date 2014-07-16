@@ -26,9 +26,8 @@
    - fix table_factor::operator=(double)
    - rename shafer_shenoy and hugin to something more memorable
      and split junction tree inference to two files
-   - remove the second argument in pairwise_markov_network
-     and possibly merge the class with markov_network
-
+   - possibly merge the class with markov_network
+   - clean up the factor_graph template
 
 Python:
 - change many asserts to exceptions
