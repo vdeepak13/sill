@@ -119,19 +119,10 @@ namespace sill {
      */
     void check() const {
       foreach(vertex v, vertices()) {
-        // 1)
-        domain_type p(boost::begin(this->parents(v)), boost::end(this->parents(v)));
-        assert( factor(v).arguments() == set_union(p, v) );
-        // 2)
-        F f(factor(v));
-        foreach(const finite_assignment& fa, assignments(p)) {
-          double normconst = f.restrict(fa).norm_constant();
-          if (fabs(normconst - 1.) > .0001) {
-            std::cerr << "CPT in Bayes Net normalizes to " << normconst
-                      << " instead of 1!" << std::endl;
-            assert(false);
-          }
-        }
+        domain_type parents(boost::begin(this->parents(v)),
+                            boost::end(this->parents(v)));
+        assert(factor(v).arguments() == set_union(parents, v));
+        assert(factor(v).is_conditional(parents));
       }
     }
 

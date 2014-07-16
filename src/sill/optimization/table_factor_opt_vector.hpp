@@ -207,10 +207,10 @@ namespace sill {
       f.update(square_root<double>());
     }
 
-    //! Element-wise k^th root. (I.e., raise to the (1/k)^th power.)
+    //! Element-wise k^th root. (i.e., raise to the (1/k)^th power.)
     void elem_kth_root(double k) {
-      assert(k > 0);
-      f.update(kth_root<double>(k));
+      assert(k > 0.0);
+      f.update(exponentiated<double>(1.0 / k));
     }
 
     //! Print info about this vector (for debugging).

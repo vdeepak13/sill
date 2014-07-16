@@ -24,7 +24,7 @@ namespace sill {
     T value;
   public:
     typedef T result_type;
-    constant(T value) : value(value) { }
+    explicit constant(T value) : value(value) { }
     T operator[](size_t i) const {
       return value;
     }
@@ -62,15 +62,13 @@ namespace sill {
     T operator()(const T& value) { return sqrt(value); }
   };
 
-  //! A functor that computes the k^th root of a value
+  //! A functor that computes the value raised to the given exponent
   //! (i.e., raises the value to the power of 1/k)
   template <typename T>
-  struct kth_root : std::unary_function<T,T> {
-    double k;
-    kth_root(double k) : k(k) { assert(k > 0); }
-    T operator()(const T& value) { return std::pow(value, k); }
-  private:
-    kth_root() { }
+  struct exponentiated : std::unary_function<T,T> {
+    double exponent;
+    explicit exponentiated(double exponent) : exponent(exponent) { }
+    T operator()(const T& value) { return std::pow(value, exponent); }
   };
 
   //! A functor which computes the sign of a value (-1, 0, 1).
@@ -144,7 +142,7 @@ namespace sill {
     double logbase;
   public:
     //! Constructor which uses base e.
-    entropy_operator() : logbase(1.) { }
+    entropy_operator() : logbase(1.0) { }
 
     //! Constructor which uses the given base.
     explicit entropy_operator(double base) {
@@ -168,32 +166,9 @@ namespace sill {
    * operator concept.  
    */
   template <typename T>
-  struct maximum : public std::binary_function<T, T, T>
-  {
+  struct maximum : public std::binary_function<T, T, T> {
     T operator()(const T& a, const T& b) const { return std::max<T>(a, b); }
   };
-
-
-  /**
-   * The conjunction operator, which models the symmetric binary
-   * operator concept. 
-   */
-  template <typename T>
-  struct logical_and : public std::binary_function<T, T, T>
-  {
-    T operator()(const T& a, const T& b) const { return a && b; }
-  };
-
-
- /** The disjunction operator, which models the symmetric binary
-   * operator concept. 
-   */
-  template <typename T>
-  struct logical_or : public std::binary_function<T, T, T>
-  {
-    T operator()(const T& a, const T& b) const { return a && b; }
-  };
-
 
   /**
    * The minimization operator, which models the symmetric binary
@@ -203,6 +178,24 @@ namespace sill {
   struct minimum : public std::binary_function<T, T, T>
   {
     T operator()(const T& a, const T& b) const { return std::min<T>(a, b); }
+  };
+
+  /**
+   * The conjunction operator, which models the symmetric binary
+   * operator concept. 
+   */
+  template <typename T>
+  struct logical_and : public std::binary_function<T, T, T> {
+    T operator()(const T& a, const T& b) const { return a && b; }
+  };
+
+
+ /** The disjunction operator, which models the symmetric binary
+   * operator concept. 
+   */
+  template <typename T>
+  struct logical_or : public std::binary_function<T, T, T> {
+    T operator()(const T& a, const T& b) const { return a && b; }
   };
 
   /**
@@ -272,7 +265,6 @@ namespace sill {
 			return res;
     }
   };
-
 
 
   /**

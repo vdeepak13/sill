@@ -215,7 +215,7 @@ namespace sill {
     if (log_space_)
       f /= k;
     else
-      f.elem_square_root();
+      f.elem_square_root(); // TODO: bug
     return *this;
   }
 

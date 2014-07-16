@@ -214,8 +214,8 @@ namespace sill {
 
     //! multiplies in another decomposable fragment
     decomposable_fragment& operator*=(const decomposable_fragment& x) {
-      append(*pls, x.factors());
-      args.insert(x.arguments());
+      pls->insert(pls->begin(), x.pls->begin(), x.pls->end());
+      args.insert(x.args.begin(), x.args.end());
       return *this;
     }
 

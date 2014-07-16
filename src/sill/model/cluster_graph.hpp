@@ -9,19 +9,17 @@
 #include <boost/bind.hpp>
 
 #include <sill/global.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/datastructure/set_index.hpp>
-#include <sill/graph/undirected_graph.hpp>
-#include <sill/graph/tree_traversal.hpp>
 #include <sill/graph/connected.hpp>
-#include <sill/graph/test_tree.hpp>
+#include <sill/graph/property_functors.hpp>
 #include <sill/graph/subgraph.hpp>
-
+#include <sill/graph/test_tree.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/range/algorithm.hpp>
 #include <sill/range/concepts.hpp>
-#include <sill/range/transformed.hpp>
 #include <sill/range/forward_range.hpp>
 #include <sill/range/io.hpp>
-
+#include <sill/range/transformed.hpp>
 #include <sill/stl_concepts.hpp>
 
 #include <sill/macros_def.hpp>
@@ -486,8 +484,8 @@ namespace sill {
     add_separator(vertex u, vertex v,
                   const node_set& separator,
                   const EdgeProperty& ep = EdgeProperty()) {
-      assert(separator.subset_of(cluster(u)));
-      assert(separator.subset_of(cluster(v)));
+      assert(includes(cluster(u), separator));
+      assert(includes(cluster(v), separator));
       return graph.add_edge(u, v, edge_info(separator, ep));
     }
 
@@ -521,8 +519,8 @@ namespace sill {
 
     //! Sets the separator associated with an edge.
     void set_separator(edge e, const node_set& separator) {
-      assert(separator.subset_of(cluster(e.source())));
-      assert(separator.subset_of(cluster(e.target())));
+      assert(includes(cluster(e.source()), separator));
+      assert(includes(cluster(e.target()), separator));
       graph[e].separator = separator;
     }
 

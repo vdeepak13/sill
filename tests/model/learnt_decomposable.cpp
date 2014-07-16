@@ -1,9 +1,14 @@
 #define BOOST_TEST_MODULE learnt_decomposable
 #include <boost/test/unit_test.hpp>
 
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/table_factor.hpp>
 #include <sill/model/learnt_decomposable.hpp>
 
 #include "basic_fixture.hpp"
+
+template class learnt_decomposable<canonical_gaussian>;
+template class learnt_decomposable<table_factor>;
 
 BOOST_FIXTURE_TEST_CASE(test_mutation, basic_fixture) {
   typedef learnt_decomposable<table_factor>::vertex vertex;

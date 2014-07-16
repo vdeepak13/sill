@@ -3,6 +3,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
+#include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 
@@ -20,6 +21,12 @@
 #include <sill/macros_def.hpp>
 
 using namespace sill;
+
+template class asynchronous_gbp<table_factor>;
+template class asynchronous_gbp_pc<table_factor>;
+
+template class asynchronous_gbp<canonical_gaussian>;
+template class asynchronous_gbp_pc<canonical_gaussian>;
 
 template <typename Engine>
 void test(const pairwise_markov_network<table_factor>& model,

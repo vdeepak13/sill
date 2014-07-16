@@ -10,6 +10,9 @@
 
 using namespace sill;
 
+template class cluster_graph<finite_variable*>;
+template class cluster_graph<vector_variable*>;
+
 struct fixture {
   fixture()
     : v(u.new_finite_variables(6, 2)) {

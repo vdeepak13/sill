@@ -4,6 +4,7 @@
 #include <boost/array.hpp>
 
 #include <sill/base/universe.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/model/bayesian_network.hpp>
@@ -13,6 +14,16 @@
 
 using namespace sill;
 using boost::array;
+
+template class bayesian_network<table_factor>;
+template class markov_network<table_factor>;
+
+template class bayesian_network<canonical_gaussian>;
+template class markov_network<canonical_gaussian>;
+
+template class bayesian_network<moment_gaussian>;
+
+// TODO: check bayesian network conditioning
 
 struct fixture {
   fixture()
@@ -78,7 +89,7 @@ BOOST_FIXTURE_TEST_CASE(test_conditioning, fixture) {
   mn.condition(a);
 
   markov_network<table_factor> mn2;
-  mn2.add_factor(f0.restrict(a));
+  //mn2.add_factor(f0.restrict(a));
   mn2.add_factor(f1.restrict(a));
   mn2.add_factor(f12.restrict(a));
   mn2.add_factor(f123.restrict(a));

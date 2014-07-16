@@ -8,6 +8,9 @@
 
 #include <sill/math/logarithmic.hpp>
 
+template class sill::logarithmic<double>;
+template class sill::logarithmic<float>;
+
 BOOST_AUTO_TEST_CASE(test_operations) {
   typedef sill::logarithmic<double> log_double;
   using sill::log_tag;

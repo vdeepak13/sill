@@ -194,12 +194,12 @@ namespace sill
     }
 
     //! Serialize / deserialize members
-    void serialize(oarchive& ar) const {
+    void save(oarchive& ar) const {
       ar << prior_;
       ar << likelihood_;
     }
     
-    void deserialize(iarchive& ar) {
+    void load(iarchive& ar) {
       ar >> prior_;
       ar >> likelihood_;
     }

@@ -286,6 +286,9 @@ namespace sill {
     //! If this factor represents P(A,B|C), then this returns P(A|B,C).
     moment_gaussian conditional(const vector_domain& B) const;
 
+    //! Returns true if this factor represents the conditional p(rest | tail)
+    bool is_conditional(const vector_domain& tail) const;
+
     //! implements DistributionFactor::is_normalizable
     bool is_normalizable() const {
       return true;  // FIXME is_positive_finite(norm_constant()); 

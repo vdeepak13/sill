@@ -3,18 +3,22 @@
 #include <boost/bind.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/factor/table_factor.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/decomposable_fragment.hpp>
+#include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
+#include <sill/inference/junction_tree_inference.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
-#include <sill/inference/junction_tree_inference.hpp>
 
 #include "predicates.hpp"
 
 using namespace boost::unit_test;
 using namespace sill;
+
+template class decomposable_fragment<table_factor>;
+template class decomposable_fragment<canonical_gaussian>;
 
 void test_marginal(size_t m, size_t n) {
   assert(m * m >= 4); // we need at least 4 variables

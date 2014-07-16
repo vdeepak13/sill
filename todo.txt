@@ -1,5 +1,6 @@
 0. more unit tests
    - verify BOOST_CHECK_SMALL vs BOOST_CHECK_CLOSE
+   - improve the tests for core data structures (such as table_factor)
 1. move to Armadillo's sparse matrices 
 2. move to C++11
 3. drop dependence on Boost for the main template library (keep it for Python bindings and tests)
@@ -28,6 +29,14 @@
      and split junction tree inference to two files
    - possibly merge the class with markov_network
    - clean up the factor_graph template
+   - decomposable - move the extra normalization out of the impl namespace
+   - test if we can eliminate the marginal with pre-allocated output
+   - clean up the concepts especially factors
+   - remove extra typedefs from table_factor and other factor classes
+   - implement d-separation in Markov network and Bayesian network classes
+   - get rid of member functions in decomposable that create functors
+   - remove the second argument in decomposable_fragment
+   - factor traits
 
 Python:
 - change many asserts to exceptions

@@ -170,7 +170,6 @@ namespace sill {
     //! Returns the log-likelihood of the factor
     double logv(const record_type& r) const;
 
-
     //! multiplies in another factor
     canonical_gaussian& operator*=(const canonical_gaussian& x);
 
@@ -239,6 +238,10 @@ namespace sill {
     //! @todo Make this more efficient.
     canonical_gaussian conditional(const vector_domain& B) const;
 
+    //! Returns true if this factor represents the conditional p(rest | tail)
+    //! @return true for now (TODO: figure out if we can test this)
+    bool is_conditional(const vector_domain& tail) const { return true; }
+    
     //! implements DistributionFactor::is_normalizable
     bool is_normalizable() const;
 

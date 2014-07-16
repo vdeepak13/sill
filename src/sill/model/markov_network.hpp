@@ -216,6 +216,9 @@ namespace sill {
     // Public type declarations
     //==========================================================================
   public:
+    //! The type of the factor values
+    typedef typename F::result_type result_type;
+
     //! The type of variables that form the factor's domain
     typedef typename F::variable_type variable_type;
 
@@ -223,8 +226,7 @@ namespace sill {
     typedef typename F::domain_type domain_type;
 
     //! The assignment type of the factor
-    typedef std::map<variable_type*, typename variable_type::value_type> 
-      assignment_type;
+    typedef typename F::assignment_type assignment_type;
 
     //! The base class
     typedef sill::markov_graph<variable_type*> base;
@@ -328,45 +330,41 @@ namespace sill {
     }
 
     /**
-     * Conditions this Markov net on an assignment to one or
+     * Conditions this Markov network on an assignment to one or
      * more of its variables. This is a mutable operation.
-     * Note this does not normalize the distribution.
+     * Note this operation does not preserve the normalization constant.
      *
      * @param a
      *        An assignment to some variables.  This assignment is
      *        instantiated in each factor.
-     * \todo Should we combine factors which now have the same argument sets?
+     *
+     * TODO: unit test this function
      */
     markov_network& condition(const assignment_type& a) {
-
       // Compute the variables that are conditioned on.
       domain_type restricted_vars = set_intersect(keys(a), arguments());
-      if (restricted_vars.empty())
+      if (restricted_vars.empty()) {
         return *this;
+      }
 
       // For each factor which includes a variable which is being restricted,
       // (handling factors which no longer have any arguments via const_f)
-      double const_f = 1;
-      std::list<F> new_factors;
-      foreach(F& f, factors_) {
-        if (set_disjoint(f.arguments(), restricted_vars))
-          new_factors.push_back(f);
-        else {
-          if (includes(keys(a), f.arguments()))
-            const_f *= f.v(a);
-          else
-            new_factors.push_back(f.restrict(a));
+      typename std::list<F>::iterator it = factors_.begin();
+      while (it != factors_.end()) {
+        if (set_disjoint(restricted_vars, it->arguments())) {
+          ++it;
+        } else if (includes(restricted_vars, it->arguments())) {
+          factors_.erase(it++);
+        } else {
+          *it = it->restrict(a);
+          ++it;
         }
       }
-      if (new_factors.empty())
-        new_factors.push_back(F(const_f));
-      else
-        new_factors.front() *= const_f;
-      factors_.swap(new_factors);
 
       // Remove the nodes for the restricted variables.
-      foreach(variable_type* v, restricted_vars)
+      foreach(variable_type* v, restricted_vars) {
         this->remove_node(v);
+      }
 
       return *this;
     }

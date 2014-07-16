@@ -378,6 +378,10 @@ namespace sill {
                            new_tail, cov_ab_cov_b_inv, 1);
   } // conditional
 
+  bool moment_gaussian::is_conditional(const vector_domain& tail) const {
+    return make_domain(tail_list) == tail;
+  }
+
   double moment_gaussian::entropy(double base) const {
     if (!marginal())
       throw std::runtime_error
