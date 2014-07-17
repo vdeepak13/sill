@@ -1,5 +1,4 @@
-#define BOOST_TEST_MODULE gibbs_sampler
-#include <boost/test/unit_test.hpp>
+#include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
 #include <sill/graph/grid_graph.hpp>
@@ -22,13 +21,13 @@ double get_error(const std::vector<table_factor>& var_marginals,
   return error / var_marginals.size();
 }
 
-BOOST_AUTO_TEST_CASE(test_convergence) {
+int main(int argc, char* argv[]) {
   using namespace std;
 
   size_t m = 4;
   size_t n = 4;
 
-  size_t nsamples = 500000;
+  size_t nsamples = 10000000;
   unsigned random_seed = 2390249;
 
   universe u;
@@ -57,6 +56,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   }
 
   std::vector<std::pair<size_t, double> > avg_L1_errors;
+  boost::timer t;
   for (size_t i = 0; i < nsamples; ++i) {
     const finite_record& sample = sampler.next_sample();
     for (size_t j = 0; j < variables.size(); ++j) {
@@ -66,6 +66,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
       cout << i << "\t" << get_error(var_marginals, approx_var_marginals) << endl;
     }
   }
+  cout << nsamples << " samples done in " << t.elapsed() << " seconds." << endl;
 
-  BOOST_CHECK_LE(get_error(var_marginals, approx_var_marginals), 0.01);
+  return EXIT_SUCCESS;
 }
