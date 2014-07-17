@@ -42,9 +42,6 @@ namespace sill {
     typedef typename factor_type::result_type    result_type;
     typedef typename factor_type::variable_type  variable_type;
     typedef typename factor_type::domain_type    domain_type;
-    // ASSERT that collapse_type = factor_type;
-    // TODO we should concept assert this
-    typedef typename factor_type::collapse_type  collapse_type;
 
     typedef factor_graph_model<factor_type> factor_graph_model_type;
     typedef typename factor_graph_model_type::vertex_type vertex_type;

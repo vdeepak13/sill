@@ -33,7 +33,7 @@ namespace sill
     //! The base factor type.
     typedef factor base;
 
-    //! Tyhe type of values stored in the factor
+    //! The type of values stored in the factor
     typedef typename F::result_type result_type;
 
     //! implements Factor::domain_type
@@ -47,9 +47,6 @@ namespace sill
 
     //! implements Factor::record_type
     typedef typename F::record_type record_type;
-
-    //! implements Factor::collapse_type
-    typedef prior_likelihood collapse_type;
 
     // Private data members
     //==========================================================================

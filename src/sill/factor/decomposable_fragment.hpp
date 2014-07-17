@@ -47,14 +47,10 @@ namespace sill {
     typedef typename F::variable_type variable_type;
 
     //! the assignment type of the factor
-    typedef std::map<variable_type*, typename variable_type::value_type> 
-      assignment_type;
+    typedef typename F::assignment_type assignment_type;
 
     //! implements Factor::record_type
     typedef typename F::record_type record_type;
-
-    //! The result of a collapse operation
-    typedef decomposable_fragment collapse_type;
 
     //! The type of the constituent factor
     typedef prior_likelihood<F> factor_type;

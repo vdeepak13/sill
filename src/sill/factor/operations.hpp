@@ -17,24 +17,21 @@ namespace sill {
 
   //! Returns the sum (integral) of a factor over a subset of variables
   template <typename F>
-  typename F::collapse_type 
-  sum(const F& f, const typename F::domain_type& eliminate) {
+  F sum(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support marginalization
     return f.marginal(set_difference(f.arguments(), eliminate));
   }
 
   //! Returns the maximum of a factor over a subset of variabless
   template <typename F>
-  typename F::collapse_type
-  max(const F& f, const typename F::domain_type& eliminate) {
+  F max(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support maximization
     return f.maximum(set_difference(f.arguments(), eliminate));
   }
 
   //! Returns the minimum of a factor over a subset of variables
   template <typename F>
-  typename F::collapse_type
-  min(const F& f, const typename F::domain_type& eliminate) {
+  F min(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support minimization
     return f.minimum(set_difference(f.arguments(), eliminate));
   }

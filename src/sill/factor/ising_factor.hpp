@@ -66,9 +66,6 @@ namespace sill {
     //! implements Factor::record_type
     typedef finite_record record_type;
 
-    //! implements Factor::collapse_type
-    typedef ising_factor collapse_type;
-
     // Constructors and conversion operators
     //==========================================================================
   public:

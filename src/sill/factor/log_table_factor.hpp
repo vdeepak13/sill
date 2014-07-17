@@ -54,9 +54,6 @@ namespace sill {
     //! implements Factor::record_type
     typedef finite_record record_type;
 
-    //! implements Factor::collapse_type
-    typedef log_table_factor collapse_type;
-
     // Private data members
     //==========================================================================
   private:

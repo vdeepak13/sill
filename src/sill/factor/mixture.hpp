@@ -47,22 +47,15 @@ namespace sill {
     //! implements Factor::domain_type
     typedef typename F::domain_type domain_type;
 
+    //! The type of assignments used in this factor
+    typedef typename F::assignment_type assignment_type;
+
+    //! implements Factor::record_type
+    typedef typename F::record_type record_type;
 
     typedef typename F::var_vector_type var_vector_type;
     typedef typename F::var_map_type    var_map_type;
 
-    //! The result of a collapse operation
-    typedef mixture collapse_type;
-
-    //! The base type
-    typedef factor base;
-
-    //! The type of assignments used in this factor
-    typedef std::map<variable_type*, typename variable_type::value_type> 
-      assignment_type;
-
-    //! implements Factor::record_type
-    typedef typename F::record_type record_type;
 
     // Constructors, conversion operators, and serialization
     //==========================================================================

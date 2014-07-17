@@ -36,15 +36,15 @@ namespace sill {
     //! implements Factor::result_type
     typedef double result_type; // TODO (Stano): is this correct?
     
-    //! implements Factor::domain_type
-    typedef vector_domain domain_type;
-
     //! implements Factor::variable_type
     typedef vector_variable variable_type;
 
-    //! implements Factor::collapse_type
-    typedef nonlinear_gaussian collapse_type;
-    
+    //! implements Factor::domain_type
+    typedef vector_domain domain_type;
+
+    //! implements Factor::assignment_Type
+    typedef vector_assignment assignment_type;
+
     // Private data members and accessors
     //==========================================================================
   private:
