@@ -6,6 +6,7 @@
 #include <sill/factor/invalid_operation.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
+#include <sill/factor/traits.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 
@@ -425,6 +426,35 @@ namespace sill {
   
   //! Returns the inverse of the factor (flips the sign on information vec & mat)
   canonical_gaussian invert(const canonical_gaussian& f);
+
+  // Traits
+  //============================================================================
+
+  //! \addtogroup factor_traits
+  //! @{
+
+  template <>
+  struct has_multiplies<canonical_gaussian> : public boost::true_type { };
+
+  template <>
+  struct has_multiplies_assign<canonical_gaussian> : public boost::true_type { };
+
+  template <>
+  struct has_divides<canonical_gaussian> : public boost::true_type { };
+
+  template <>
+  struct has_divides_assign<canonical_gaussian> : public boost::true_type { };
+
+  template <>
+  struct has_marginal<canonical_gaussian> : public boost::true_type { };
+
+  template <>
+  struct has_maximum<canonical_gaussian> : public boost::true_type { };
+
+  template <>
+  struct has_arg_max<canonical_gaussian> : public boost::true_type { };
+
+  //! @}
   
 } // namespace sill
 

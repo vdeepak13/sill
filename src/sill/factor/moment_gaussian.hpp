@@ -8,6 +8,7 @@
 #include <sill/factor/gaussian_factor.hpp>
 #include <sill/factor/invalid_operation.hpp>
 #include <sill/factor/operations.hpp>
+#include <sill/factor/traits.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
 #include <sill/range/forward_range.hpp>
@@ -405,6 +406,23 @@ namespace sill {
   //! \relates moment_gaussian
   double norm_inf(const moment_gaussian& x, const moment_gaussian& y);
 
+  // Traits
+  //============================================================================
+
+  //! \addtogroup factor_traits
+  //! @{
+
+  template <>
+  struct has_multiplies<moment_gaussian> : public boost::true_type { };
+
+  template <>
+  struct has_multiplies_assign<moment_gaussian> : public boost::true_type { };
+
+  template <>
+  struct has_marginal<moment_gaussian> : public boost::true_type { };
+
+  //! @}
+  
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

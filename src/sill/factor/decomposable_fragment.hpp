@@ -7,6 +7,7 @@
 #include <sill/global.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/prior_likelihood.hpp>
+#include <sill/factor/traits.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/range/joined.hpp>
 
@@ -328,6 +329,23 @@ namespace sill {
     out << "#F(DF|" << df.arguments() << "|" << df.cliques() << ")";
     return out;
   }
+
+  // Traits
+  //============================================================================
+
+  //! \addtogroup factor_traits
+  //! @{
+
+  template <typename F>
+  struct has_multiplies<decomposable_fragment<F> > : public boost::true_type { };
+
+  template <typename F>
+  struct has_multiplies_assign<decomposable_fragment<F> > : public boost::true_type { };
+
+  template <typename F>
+  struct has_marginal<decomposable_fragment<F> > : public boost::true_type { };
+  
+  //! @}
 
 } // namespace sill
 

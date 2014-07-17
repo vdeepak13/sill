@@ -10,7 +10,7 @@
 
 using namespace sill;
 
-// commented out until we have factor traits
+//commented until we switch to C++11, which will let us remove operators easily
 //template class mixture<moment_gaussian>;
 
 struct fixture {

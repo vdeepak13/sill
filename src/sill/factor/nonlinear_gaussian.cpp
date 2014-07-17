@@ -67,18 +67,6 @@ namespace sill {
 
   // Factor operations
   //============================================================================
-  nonlinear_gaussian&
-  nonlinear_gaussian::operator*=(const nonlinear_gaussian& other) {
-    throw std::invalid_argument
-      ("nonlinear_gaussian can only be multiplied with a Gaussian factor");
-  }
-
-  nonlinear_gaussian
-  nonlinear_gaussian::marginal(const vector_domain& retain) const {
-    throw std::invalid_argument
-      ("nonlinear_gaussian does not support the marginalization operation");
-  }
-
   nonlinear_gaussian
   nonlinear_gaussian::restrict(const vector_assignment& a) const {
     vector_domain bound_vars = keys(a);

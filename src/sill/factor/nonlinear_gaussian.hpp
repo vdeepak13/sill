@@ -4,6 +4,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include <sill/factor/factor.hpp>
+#include <sill/factor/traits.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/approx/interfaces.hpp>
 #include <sill/math/function/interfaces.hpp>
@@ -172,12 +173,6 @@ namespace sill {
       return 0;
     }
     
-    //! multiplies in another nonlinear Gaussian (unsupported operation)
-    nonlinear_gaussian& operator*=(const nonlinear_gaussian& other);
-
-    //! computes a marginal over a subset of variables (unsupported operation)
-    nonlinear_gaussian marginal(const vector_domain& retain) const;
-
     //! restricts (conditions) the factor to an assignment
     //! \todo this function needs to be tested
     nonlinear_gaussian restrict(const vector_assignment& a) const;

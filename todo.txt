@@ -36,7 +36,6 @@
    - implement d-separation in Markov network and Bayesian network classes
    - get rid of member functions in decomposable that create functors
    - remove the second argument in decomposable_fragment
-   - factor traits
 
 Python:
 - change many asserts to exceptions

@@ -14,6 +14,7 @@
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/global.hpp>
 #include <sill/factor/factor.hpp>
+#include <sill/factor/traits.hpp>
 #include <sill/functional.hpp>
 #include <sill/learning/dataset/finite_record.hpp>
 #include <sill/math/is_finite.hpp>
@@ -1247,6 +1248,86 @@ namespace sill {
   inline table_factor operator/(table_factor x, double a) {
     return x /= a;
   }
+
+  // Traits
+  //============================================================================
+
+  //! \addtogroup factor_traits
+  //! @{
+
+  template <>
+  struct has_plus<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_plus_assign<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_minus<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_minus_assign<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_negate<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_multiplies<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_multiplies_assign<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_divides<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_divides_assign<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_max<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_max_assign<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_min<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_min_assign<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_bit_and<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_bit_and_assign<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_bit_or<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_bit_or_assign<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_marginal<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_maximum<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_minimum<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_logical_and<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_logical_or<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_arg_max<table_factor> : public boost::true_type { };
+
+  template <>
+  struct has_arg_min<table_factor> : public boost::true_type { };
+
+  //! @}
 
 } // namespace sill
 

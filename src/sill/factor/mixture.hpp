@@ -10,6 +10,7 @@
 #include <sill/factor/factor.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
+#include <sill/factor/traits.hpp>
 #include <sill/functional/inplace.hpp>
 #include <sill/global.hpp>
 #include <sill/serialization/serialize.hpp>
@@ -179,22 +180,30 @@ namespace sill {
       return *this;
     }
 
-    //! multiplies each component by a factor
+    //! multiplies each component by a factor (defined if F supports multiplication)
+//     template <typename G=F,
+//               typename boost::enable_if<has_multiplies_assign<F> >::type* = NULL>
     mixture& operator*=(const F& factor) {
       return componentwise_op<inplace_multiplies<F> >(factor);
     }
 
-    //! divides each component by a factor
+    //! divides each component by a factor (defined if F supports division)
+//     template <typename G=F,
+//               typename boost::enable_if<has_divides_assign<F> >::type* = NULL>
     mixture& operator/=(const F& factor) {
       return componentwise_op<inplace_divides<F> >(factor);
     }
 
-    //! component-wise multiplication
+    //! component-wise multiplication (defined if F supports multiplication)
+//     template <typename G=F,
+//               typename boost::enable_if<has_multiplies_assign<F> >::type* = NULL>
     mixture& operator*=(const mixture& other) {
       return componentwise_op<inplace_multiplies<F> >(other);
     }
 
-    //! component-wise division
+    //! component-wise division (defined if F supports division)
+//     template <typename G=F,
+//               typename boost::enable_if<has_divides_assign<F> >::type* = NULL>
     mixture& operator/=(const mixture& other) {
       return componentwise_op<inplace_divides<F> >(other);
     }
@@ -286,31 +295,6 @@ namespace sill {
       return *this;
     }
 
-//     //! Computes the maximum for each assignment to the given variables
-//     mixture maximum(const vector_domain& retain) const {
-//       assert(false); return mixture(); // not supported yet - hard to do exactly
-//     }
-
-//     //! implements DistributionFactor::entropy
-//     double entropy() const {
-//       assert(false); return 0; // not supported yet - hard to do exactly
-//     }
-
-//     //! implements DistributionFactor::relative_entropy
-//     double relative_entropy(const mixture& other) const {
-//       assert(false); return 0; // not supported yet - hard to do exactly
-//     }
-
-//     //! this will be moved elsewhere
-//     assignment_type arg_max() const {
-//       assert(false); return assignment_type(); // not supported
-//     }
-
-//     //! this will be moved elsewhere
-//     assignment_type arg_min() const {
-//       assert(false); return assignment_type(); // not supported
-//     }
-
     //! Sample from the mixture.
     template <typename Engine>
     assignment_type sample(Engine& rng) const {
@@ -386,35 +370,35 @@ namespace sill {
     return x /= val;
   }
 
-  //! Multiplies the mixture by a factor
+  //! Multiplies the mixture by a factor (defined if F supports multiplication)
   //! \relates mixture
   template <typename F>
   mixture<F> operator*(mixture<F> x, const F& factor) {
     return x *= factor;
   }
 
-  //! Multiplies the mixture by a factor
+  //! Multiplies the mixture by a factor (defined if F supports multiplication)
   //! \relates mixture
   template <typename F>
   mixture<F> operator*(const F& factor, mixture<F> x) {
     return x *= factor;
   }
 
-  //! Divides the mixture by a factor
+  //! Divides the mixture by a factor (defined if F supports division)
   //! \relates mixture
   template <typename F>
   mixture<F> operator/(mixture<F> x, const F& factor) {
     return x /= factor;
   }
   
-  //! Multiplies two mixtures component-wise
+  //! Multiplies two mixtures component-wise (defined if F supports multiplication)
   //! \relates mixture
   template <typename F>
   mixture<F> operator*(mixture<F> x, const mixture<F>& y) {
     return x *= y;
   }
 
-  //! Divides two mixtures component-wise
+  //! Divides two mixtures component-wise (defined if F supports division)
   //! \relates mixture
   template <typename F>
   mixture<F> operator/(mixture<F> x, const mixture<F>& y) {
@@ -434,6 +418,29 @@ namespace sill {
   //! using moment matching.
   //! \relates mixture
   moment_gaussian project(const mixture_gaussian& mixture);
+
+  // Traits
+  //============================================================================
+
+  //! \addtogroup factor_traits
+  //! @{
+
+  template <typename F>
+  struct has_multiplies<mixture<F> > : public has_multiplies_assign<F> { };
+
+  template <typename F>
+  struct has_multiplies_assign<mixture<F> > : public has_multiplies_assign<F> { };
+
+  template <typename F>
+  struct has_divides<mixture<F> > : public has_divides_assign<F> { };
+
+  template <typename F>
+  struct has_divides_assign<mixture<F> > : public has_divides_assign<F> { };
+
+  template <typename F>
+  struct has_marginal<mixture<F > > : public boost::true_type { };
+
+  //! @}
 
 } // namespace sill
 
