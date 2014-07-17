@@ -4,6 +4,7 @@
 #include <sill/global.hpp>
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/operations.hpp>
+#include <sill/factor/traits.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>
@@ -249,6 +250,21 @@ namespace sill
     out << "(" << pl.prior() << "|" << pl.likelihood() << ")";
     return out;
   }
+
+  // Traits
+  //============================================================================
+
+  //! \addtogroup factor_traits
+  //! @{
+
+  template <typename F>
+  struct has_multiplies<prior_likelihood<F> > : public boost::true_type { };
+
+  template <typename F>
+  struct has_multiplies_assign<prior_likelihood<F> > : public boost::true_type { };
+
+  template <typename F>
+  struct has_marginal<prior_likelihood<F> > : public boost::true_type { };
 
 }
 
