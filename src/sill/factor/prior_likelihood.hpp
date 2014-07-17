@@ -18,17 +18,14 @@ namespace sill
    * that the two priors are neighbors in the external junction tree,
    * and performs implicit division of the prior separator.
    *
-   * @tparam F the prior factor type
-   * @tparam G the likelihood factor type
-   *        The result of combining F and G must be convertible to F
+   * @tparam F the prior and likelihood factor type
    *
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename F, typename G = F>
+  template <typename F>
   class prior_likelihood : public factor {
     concept_assert((DistributionFactor<F>));
-    concept_assert((DistributionFactor<G>));
 
     // Public type declarations
     //==========================================================================
@@ -46,8 +43,7 @@ namespace sill
     typedef typename F::variable_type variable_type;
 
     //! the assignment type of the factor
-    typedef std::map<variable_type*, typename variable_type::value_type>
-      assignment_type;
+    typedef typename F::assignment_type assignment_type;
 
     //! implements Factor::record_type
     typedef typename F::record_type record_type;
@@ -62,17 +58,17 @@ namespace sill
     F prior_;
 
     //! The likelihood factor
-    G likelihood_;
+    F likelihood_;
 
     // Constructors and conversion operators
     //==========================================================================
   public:
     //! Default constructor
-    prior_likelihood() : prior_(F(1)), likelihood_(G(1)) { }
+    prior_likelihood() : prior_(F(1)), likelihood_(F(1)) { }
 
     //! Constructor with optional likelihood
     //! \todo Ideally, this would be explicit
-    prior_likelihood(const F& prior, const G& likelihood = G(1))
+    prior_likelihood(const F& prior, const F& likelihood = F(1))
       : prior_(prior), likelihood_(likelihood) {
       assert(includes(prior.arguments(), likelihood.arguments()));
     }
@@ -107,7 +103,7 @@ namespace sill
     }
 
     //! Returns the likelihood
-    const G& likelihood() const {
+    const F& likelihood() const {
       return likelihood_;
     }
 
@@ -145,7 +141,7 @@ namespace sill
     }
 
     //! Multiplies a likelihood factor into this PL factor
-    prior_likelihood& operator*=(const G& likelihood) {
+    prior_likelihood& operator*=(const F& likelihood) {
       assert(includes(arguments(), likelihood.arguments()));
       likelihood_ *= likelihood;
       return *this;
@@ -212,41 +208,41 @@ namespace sill
 
   //! multiplies two PL factors
   //! \relates prior_likelihood
-  template <typename F, typename G>
-  prior_likelihood<F,G>
-  operator*(const prior_likelihood<F,G>& x, const prior_likelihood<F,G>& y) {
+  template <typename F>
+  prior_likelihood<F>
+  operator*(const prior_likelihood<F>& x, const prior_likelihood<F>& y) {
     // Handle the special cases more efficiently
     // (when the domain of one prior is a superset of the other)
     if (includes(x.arguments(), y.arguments())) {
-      return prior_likelihood<F,G>(x.prior(), x.likelihood()*y.likelihood());
+      return prior_likelihood<F>(x.prior(), x.likelihood()*y.likelihood());
     }
     else if (includes(y.arguments(), x.arguments())) {
-      return prior_likelihood<F,G>(y.prior(), x.likelihood()*y.likelihood());
+      return prior_likelihood<F>(y.prior(), x.likelihood()*y.likelihood());
     }
     else {
       F prior = x.prior() * y.prior() / x.prior().marginal(y.arguments());
-      return prior_likelihood<F,G>(prior, x.likelihood()*y.likelihood());
+      return prior_likelihood<F>(prior, x.likelihood()*y.likelihood());
     }
   }
 
   //! multiplies a PL factor with a likelihood
-  template <typename F, typename G>
-  prior_likelihood<F,G>
-  operator*(prior_likelihood<F,G> x, const G& likelihood) {
+  template <typename F>
+  prior_likelihood<F>
+  operator*(prior_likelihood<F> x, const F& likelihood) {
     return x *= likelihood;
   }
 
   //! multiplies a PL factor with a likelihood
-  template <typename F, typename G>
-  prior_likelihood<F,G>
-  operator*(const G& likelihood, prior_likelihood<F,G> x) {
+  template <typename F>
+  prior_likelihood<F>
+  operator*(const F& likelihood, prior_likelihood<F> x) {
     return x *= likelihood;
   }
 
   //! Outputs a PL factor to a stream
   //! \relates prior_likelihood
-  template <typename F, typename G>
-  std::ostream& operator<<(std::ostream& out, const prior_likelihood<F,G>& pl) {
+  template <typename F>
+  std::ostream& operator<<(std::ostream& out, const prior_likelihood<F>& pl) {
     out << "(" << pl.prior() << "|" << pl.likelihood() << ")";
     return out;
   }
