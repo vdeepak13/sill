@@ -1,62 +1,64 @@
-#include <boost/lexical_cast.hpp>
-#include <boost/random/mersenne_twister.hpp>
+#define BOOST_TEST_MODULE bethe_bp
+#include <boost/test/unit_test.hpp>
 
-#include <sill/inference/asynchronous_bethe_bp.hpp>
-#include <sill/inference/residual_bethe_bp.hpp>
+#include <iostream>
+
+#include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/random/random_canonical_gaussian_functor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
+#include <sill/inference/asynchronous_bethe_bp.hpp>
+#include <sill/inference/residual_bethe_bp.hpp>
 #include <sill/model/markov_network.hpp>
-#include <sill/model/random.hpp>
-#include <sill/model/decomposable.hpp>
 
-int main(int argc, char** argv) {
-  using namespace std;
-  using namespace sill;
+#include <sill/macros_def.hpp>
 
-  if (argc < 4) {
-    cout << "Usage: belief_propagation m n niters engine [eta]" << endl;
-    return 1;
+// TODO: deal with cliques larger than 2
+
+using namespace sill;
+template class asynchronous_bethe_bp<canonical_gaussian>;
+template class residual_bethe_bp<canonical_gaussian>;
+
+template class asynchronous_bethe_bp<table_factor>;
+template class residual_bethe_bp<table_factor>;
+
+void test(bethe_bp<canonical_gaussian>* engine,
+          size_t niters,
+          const moment_gaussian& joint,
+          double tol) {
+  for (size_t it = 0; it < niters; ++it) {
+    engine->iterate(1.0);
   }
 
-  size_t m         = boost::lexical_cast<size_t>(argv[1]);
-  size_t n         = boost::lexical_cast<size_t>(argv[2]);
-  size_t niters    = boost::lexical_cast<size_t>(argv[3]);
-  size_t engine_id = (argc <= 4) ? 1 : boost::lexical_cast<size_t>(argv[4]);
-  double eta       = (argc <= 5) ? 1 : boost::lexical_cast<double>(argv[5]);
-
-  boost::mt19937 rng;
-  universe u;
-
-  finite_var_vector variables = u.new_finite_variables(m*n, 2);
-  cout << "Generating random model" << endl;
-  pairwise_markov_network<table_factor> mn;
-  make_grid_graph(variables, m, n, mn);
-  random_ising_model(0.5, 1, mn, rng);
-  if(m<10) cout << mn; 
+  // check that the marginal means have converged to the true means
+  double maxerror = 0.0;
+  foreach(vector_variable* v, joint.arguments()) {
+    moment_gaussian belief(engine->belief(make_domain(v)));
+    double error = std::abs(belief.mean()[0] - joint.mean(v)[0]);
+    maxerror = std::max(maxerror, error);
+    BOOST_CHECK_LE(error, tol);
+  }
   
-  bethe_bp<table_factor>* engine;
+  std::cout << "Maximum error: " << maxerror << std::endl;
 
-  switch(engine_id) {
-  case 1: engine = new asynchronous_bethe_bp<table_factor>(mn); break;
-  case 2: engine = new residual_bethe_bp<table_factor>(mn); break;
-  default: assert(false);
-  }
+  delete engine;
+}
 
-  for(size_t i = 0; i < niters; i++) {
-    double error = engine->iterate(eta);
-    cout << "Iteration " << i << ": residual " << error << endl;
-  }
+BOOST_AUTO_TEST_CASE(test_convergence) {
+  size_t m = 5;
+  size_t n = 4;
 
-  // Compute the exact answer and compare
-  decomposable<table_factor> dm;
-  dm *= mn.factors();
-  double total_error = 0;
-  for(size_t i = 0; i < variables.size(); i++) {
-    table_factor exact = dm.marginal(make_domain(variables[i]));
-    table_factor approx = engine->belief(make_domain(variables[i]));
-    double error = norm_inf(exact, approx);
-    total_error += error;
-    cout << "Variable " << i << ": error " << error << endl;
+  // construct a grid network with attractive Gaussian potentials
+  universe u;
+  vector_var_vector variables = u.new_vector_variables(m*n, 1);
+  pairwise_markov_network<canonical_gaussian> model;
+  make_grid_graph(variables, m, n, model);
+  random_canonical_gaussian_functor gen;
+  foreach(undirected_edge<vector_variable*> e, model.edges()) {
+    model[e] = gen.generate_marginal(model.nodes(e));
   }
-  cout << "Average error: " << total_error / variables.size() << endl;
+  moment_gaussian joint(prod_all(model.factors()));
+  
+  test(new asynchronous_bethe_bp<canonical_gaussian>(model), 10, joint, 1e-5);
+  test(new residual_bethe_bp<canonical_gaussian>(model), m*n*50, joint, 1e-5);
 }
