@@ -24,18 +24,15 @@ namespace sill {
    *
    * Implements: Factor
    *
-   * @tparam F the prior factor type. The factor type must support 
+   * @tparam F the underlying factor type. The factor type must support 
    *          sum-product CSR operations.
-   *
-   * @tparam G the likelihood factor type.
    *
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename F, typename G = F>
+  template <typename F>
   class decomposable_fragment : public factor {
     concept_assert((DistributionFactor<F>));
-    concept_assert((DistributionFactor<G>));
     
     // Public type declarations
     //==========================================================================
@@ -60,13 +57,13 @@ namespace sill {
     typedef decomposable_fragment collapse_type;
 
     //! The type of the constituent factor
-    typedef prior_likelihood<F, G> factor_type;
+    typedef prior_likelihood<F> factor_type;
 
     // Private data members
     //==========================================================================
   private:
     //! The type that stores factors in this fragment
-    typedef std::vector<prior_likelihood<F,G> > pl_vector;
+    typedef std::vector<prior_likelihood<F> > pl_vector;
     
     //! The argument set of this factor
     domain_type args;
@@ -92,12 +89,12 @@ namespace sill {
     decomposable_fragment() : pls(new pl_vector()) { }
 
     //! Singleton constructor
-    explicit decomposable_fragment(const prior_likelihood<F,G>& pl) 
+    explicit decomposable_fragment(const prior_likelihood<F>& pl) 
       : args(pl.arguments()),
         pls(new pl_vector(1, pl)) { }
 
     //! Converts a prior to a decomposable fragment. 
-    //! Care must be taken when F == G that decomposable_fragment is not
+    //! Care must be taken that decomposable_fragment is not
     //! constructed with a likelihood alone.
     explicit decomposable_fragment(const F& prior)
       : args(prior.arguments()),
@@ -168,7 +165,7 @@ namespace sill {
     }
     
     //! Returns the collection of likelihoods, contained in this fragment
-    forward_range<const G&> likelihoods() const {
+    forward_range<const F&> likelihoods() const {
       return make_transformed(*pls,std::mem_fun_ref(&factor_type::likelihood));
     }
 
@@ -222,7 +219,7 @@ namespace sill {
 
     //! multiplies in a likelihood
     //! the arguments of the likelihood must be covered by at least one clique
-    decomposable_fragment& operator*=(const G& likelihood) {
+    decomposable_fragment& operator*=(const F& likelihood) {
       foreach(factor_type& pl, *pls) {
         if (includes(pl.arguments(), likelihood.arguments())) {
           pl *= likelihood;
@@ -297,35 +294,35 @@ namespace sill {
 
   //! Multiplies two decomposable fragments
   //! \relates decomposable_fragment
-  template <typename F, typename G>
-  decomposable_fragment<F,G>
-  operator*(const decomposable_fragment<F,G>& x,
-            const decomposable_fragment<F,G>& y) {
-    return decomposable_fragment<F,G>(make_joined(x.factors(), y.factors()),
+  template <typename F>
+  decomposable_fragment<F>
+  operator*(const decomposable_fragment<F>& x,
+            const decomposable_fragment<F>& y) {
+    return decomposable_fragment<F>(make_joined(x.factors(), y.factors()),
 				      set_union(x.arguments(), y.arguments()));
   }
 
   //! Multiplies a decomposable fragment and a likelihood
   //! \relates decomposable_fragment
-  template <typename F, typename G>
-  decomposable_fragment<F,G>
-  operator*(decomposable_fragment<F,G> x, const G& likelihood) {
+  template <typename F>
+  decomposable_fragment<F>
+  operator*(decomposable_fragment<F> x, const F& likelihood) {
     return x *= likelihood;
   }
 
   //! Multiplies a decomposable fragment and a likelihood
   //! \relates decomposable_fragment
-  template <typename F, typename G>
-  decomposable_fragment<F,G>
-  operator*(const G& likelihood, decomposable_fragment<F,G> x) {
+  template <typename F>
+  decomposable_fragment<F>
+  operator*(const F& likelihood, decomposable_fragment<F> x) {
     return x *= likelihood;
   }
 
   //! Prints a model fragment to a stream
   //! relates decomposable_fragment
-  template <typename F, typename G>
+  template <typename F>
   std::ostream& 
-  operator<<(std::ostream& out, const decomposable_fragment<F,G>& df) {
+  operator<<(std::ostream& out, const decomposable_fragment<F>& df) {
     out << "#F(DF|" << df.arguments() << "|" << df.cliques() << ")";
     return out;
   }
