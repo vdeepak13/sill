@@ -57,9 +57,6 @@ namespace sill {
     //! implements Factor::variable_type
     typedef variable variable_type;
     
-    //! The result of a collapse operation
-    typedef any_factor collapse_type;
-
     //! implements Factor::collapse_ops
     static const unsigned collapse_ops = ~0; // supports all operations
 

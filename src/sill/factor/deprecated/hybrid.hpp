@@ -37,15 +37,6 @@ namespace sill {
     //! implements Factor::variable_type
     typedef variable variable_type;
 
-    //! The result of a collapse operation
-    typedef hybrid collapse_type; // do only weak marginals for now
-
-    //! implements Factor::collapse_ops
-    static const unsigned collapse_ops = 1 << sum_op;
-
-    //! implements Factor::combine_ops
-    static const unsigned combine_ops = F::combine_ops;
-    
     // Private data members and type declarations
     //==========================================================================
   private:

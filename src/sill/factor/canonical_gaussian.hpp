@@ -26,13 +26,6 @@ namespace sill {
 
     friend class moment_gaussian;
 
-    // Public type declarations
-    //==========================================================================
-  public:
-
-    //! implements Factor::collapse_type
-    typedef canonical_gaussian collapse_type;
-
     // Constructors and conversion operators
     //==========================================================================
   public:

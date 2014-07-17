@@ -59,9 +59,6 @@ namespace sill {
     //! implements Factor::record_type
     typedef finite_record record_type;
 
-    //! implements Factor::collapse_type
-    typedef table_factor collapse_type;
-
     //! The type of shape / index of the underlying table
     typedef table_type::shape_type shape_type;
 

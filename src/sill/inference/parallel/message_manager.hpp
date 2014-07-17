@@ -204,9 +204,6 @@ namespace sill {
     typedef typename factor_type::result_type    result_type;
     typedef typename factor_type::variable_type  variable_type;
     typedef typename factor_type::domain_type    domain_type;
-    // ASSERT that collapse_type = factor_type;
-    // TODO we should concept assert this
-    typedef typename factor_type::collapse_type  collapse_type;
   
   private:
 
