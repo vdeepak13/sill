@@ -196,7 +196,7 @@ namespace sill {
       domain_type vars = f.arguments();
       assert(vars.count(v));
       vars = set_difference(vars, make_domain(v));
-      base::add_family(vars, v);
+      base::add_family(v, vars);
       if (factor(vertex(v)).arguments().empty())
         factor(vertex(v)) = f;
       else

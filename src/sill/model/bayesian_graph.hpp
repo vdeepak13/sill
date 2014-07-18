@@ -138,7 +138,7 @@ namespace sill {
     }
 
     //! Adds all edges from vars to v; add nodes as necessary.
-    void add_family(const node_set& vars, Node v) {
+    void add_family(Node v, const node_set& vars) {
       assert(!(vars.count(v)));
       node_set tempset = vars; tempset.insert(v);
       add_nodes(tempset, true);
