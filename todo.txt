@@ -35,6 +35,14 @@
    - implement d-separation in Markov network and Bayesian network classes
    - get rid of member functions in decomposable that create functors
    - consider deprecating Factor::var_vector_type, var_map_type
+   - convert learn_factor<F> to a functor table_factor_learner<T> etc.
+   - rewrite dataset to use simpler interfaces and verify timing
+   - standardize vertex vs node in graphical models
+   - bayesian_network modifiers - check add_factor
+   - flatten, relative entropy for decomposable
+
+8. more examples / applications:
+   - viterbi algorithm
 
 Python:
 - change many asserts to exceptions

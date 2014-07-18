@@ -395,8 +395,16 @@ namespace sill {
   }
 
   double moment_gaussian::relative_entropy(const moment_gaussian& q) const {
-    assert(false); // not implemented yet
-    return 0;
+    assert(arguments() == q.arguments());
+    assert(marginal() && q.marginal());
+    mat lambdaq = inv(q.covariance(head_list));
+    vec mdiff = cmean - q.mean(head_list);
+    double d =
+      + accu(lambdaq % cov)
+      + as_scalar(mdiff.t()*lambdaq*mdiff)
+      - mdiff.size()
+      - log_det(cov) - log_det(lambdaq);
+    return d / 2.0;
   }
 
   double moment_gaussian::mutual_information(const vector_domain& d1,
