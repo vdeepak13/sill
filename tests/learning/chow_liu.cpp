@@ -19,6 +19,7 @@ following structure:
 
                 0
                 |
+                |
                 1
                / \
               /   \

@@ -1,15 +1,19 @@
 #include <boost/timer.hpp>
 
-#include <sill/learning/chow_liu.hpp>
-#include <sill/learning/dataset/assignment_dataset.hpp>
-#include <sill/learning/dataset/generate_datasets.hpp>
-#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset2/finite_dataset.hpp>
+#include <sill/learning/parameter/table_factor_learner.hpp>
+#include <sill/learning/structure/chow_liu.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>
 
 /**
  * Time our Chow-Liu implementation on a random HMM.
+ * 
+ * release timings:
+ * Chow-Liu using the assignment_dataset (old): 0.551218 s/trial
+ * Chow-Liu using the vector_dataset (old): 0.0766336 s/trial
+ * Chow-Liu using the finite_dataset (new): 0.0260711 s/trial
  */
 int main(int argc, char* argv[]) {
 
@@ -35,33 +39,34 @@ int main(int argc, char* argv[]) {
   cout << bn << endl;
 
   // generate some data from this model
-  syn_oracle_bayes_net<table_factor>::parameters syn_oracle_params;
-  syn_oracle_params.random_seed = o_random_seed;
-  syn_oracle_bayes_net<table_factor> bn_oracle(bn);
-  vector_dataset<> ds;
-  oracle2dataset(bn_oracle, nsamples, ds);
+  finite_dataset<> ds;
+  ds.initialize(bn.arguments());
+  for (size_t i = 0; i < nsamples; ++i) {
+    ds.insert(bn.sample(rng));
+  }
 
   // time the learning
   boost::timer ttrain;
   decomposable<table_factor> dm;
   for (size_t i = 0; i < ntrain; ++i) {
     cout << "Trial " << i << endl;
-    chow_liu<table_factor> chowliu(ds.finite_variables(), ds);
+    table_factor_learner<> learner(ds);
+    chow_liu<table_factor> chowliu(ds.arguments(), learner);
     dm = chowliu.model();
   }
-  cout << "Chow-Liu using the old dataset: "
+  cout << "Chow-Liu using the new dataset: "
        << ttrain.elapsed() / ntrain << " s/trial" << endl;
 
-  // time the log-likelihood evaluation
-  boost::timer ttest;
-  double ll = 0;
-  for (size_t i = 0; i < ntest; ++i) {
-    cout << "Trial " << i << endl;
-    foreach(const record<>& rec, ds.records()) {
-      ll += dm.log_likelihood(rec);
-    }
-  }
-  cout << "Log-likelihood evaluation: "
-       << ttest.elapsed() / ntest << " s/trial" << endl;
+//   // time the log-likelihood evaluation
+//   boost::timer ttest;
+//   double ll = 0;
+//   for (size_t i = 0; i < ntest; ++i) {
+//     cout << "Trial " << i << endl;
+//     foreach(const record<>& rec, ds.records()) {
+//       ll += dm.log_likelihood(rec);
+//     }
+//   }
+//   cout << "Log-likelihood evaluation: "
+//        << ttest.elapsed() / ntest << " s/trial" << endl;
 
 }

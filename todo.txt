@@ -40,6 +40,7 @@
    - standardize vertex vs node in graphical models
    - bayesian_network modifiers - check add_factor
    - flatten, relative entropy for decomposable
+   - ensure the newdatasets work with CRFs
 
 8. more examples / applications:
    - viterbi algorithm
