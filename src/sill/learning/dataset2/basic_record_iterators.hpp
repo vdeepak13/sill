@@ -4,6 +4,9 @@
 #include <iterator>
 
 namespace sill {
+  
+  // forward declaration
+  template <typename Dataset> class basic_const_record_iterator;
 
   /**
    * Iterator for datasets over single element type that store the
@@ -28,16 +31,23 @@ namespace sill {
     
     basic_record_iterator(Dataset* dataset,
                           const std::vector<size_t>& indices)
-      : dataset(dataset), row(0), indices(indices) { load_record(); }
+      : dataset(dataset), row(0), indices(indices), record(indices.size()) {
+      load_record();
+    }
     
-    basic_record_iterator(Dataset* dataset)
+    explicit basic_record_iterator(Dataset* dataset)
       : dataset(dataset), row(dataset->size()) { }
     
     size_t current_row() const {
       return row;
     }
-    record_type& operator*() const {
+
+    record_type& operator*() {
       return record;
+    }
+
+    record_type* operator->() {
+      return &record;
     }
 
     basic_record_iterator& operator++() {
@@ -58,6 +68,14 @@ namespace sill {
     }
     
     bool operator!=(const basic_record_iterator& other) const {
+      return row != other.row;
+    }
+    
+    bool operator==(const basic_const_record_iterator<Dataset>& other) const {
+      return row == other.row;
+    }
+    
+    bool operator!=(const basic_const_record_iterator<Dataset>& other) const {
       return row != other.row;
     }
     
@@ -87,6 +105,8 @@ namespace sill {
       }
     }
 
+    friend class basic_const_record_iterator<Dataset>;
+
   }; // class basic_record_iterator
 
 
@@ -111,15 +131,33 @@ namespace sill {
       load_record();
     }
     
-    basic_const_record_iterator(const Dataset* dataset)
+    explicit basic_const_record_iterator(const Dataset* dataset)
       : dataset(dataset), row(dataset->size()) { }
 
+    // record iterator conversions are expensive, so we make them explicit
+    explicit basic_const_record_iterator(const basic_record_iterator<Dataset>& it)
+      : dataset(it.dataset), row(it.row), indices(it.indices), record(it.record) { }
+
+    // mutable iterator can be assigned to a const iterator
+    basic_const_record_iterator&
+    operator=(const basic_record_iterator<Dataset>& it) {
+      dataset = it.dataset;
+      row = it.row;
+      indices = it.indices;
+      record = it.record;
+      return *this;
+    }
+    
     size_t current_row() const {
       return row;
     }
     
     const record_type& operator*() const {
       return record;
+    }
+
+    const record_type* operator->() const {
+      return &record;
     }
 
     basic_const_record_iterator& operator++() {
@@ -141,6 +179,14 @@ namespace sill {
     bool operator!=(const basic_const_record_iterator& other) const {
       return row != other.row;
     }
+
+    bool operator==(const basic_record_iterator<Dataset>& other) const {
+      return row == other.row;
+    }
+
+    bool operator!=(const basic_record_iterator<Dataset>& other) const {
+      return row != other.row;
+    }
     
   private:
     const Dataset* dataset;
@@ -159,6 +205,8 @@ namespace sill {
       }
       record.weight = dataset->weight(row);
     }
+
+    friend class basic_record_iterator<Dataset>;
 
   }; // class basic_const_record_iterator
 

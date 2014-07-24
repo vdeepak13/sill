@@ -11,18 +11,20 @@ namespace sill {
   struct finite_record2 {
     std::vector<size_t> values;
     double weight;
+
     typedef double weight_type;
-    finite_record2() : weight(0.0) { }
-    finite_record2(size_t n) : values(n), weight(0.0) { }
+
+    finite_record2() 
+      : weight(0.0) { }
+
+    explicit finite_record2(size_t n)
+      : values(n), weight(0.0) { }
   };
 
   inline std::ostream& operator<<(std::ostream& out, const finite_record2& r) {
     foreach(size_t x, r.values) {
-      if (x == size_t(-1)) {
-        out << "NA ";
-      } else {
-        out << x << " ";
-      }
+      // there is presently no way to detect special "undefined" value here
+      out << x << " ";
     }
     out << ": " << r.weight;
     return out;

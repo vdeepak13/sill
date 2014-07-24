@@ -1,4 +1,4 @@
-subdirs(crf dataset discriminative object_detection order_based_search structure_search)
+subdirs(crf dataset dataset2 discriminative object_detection order_based_search structure structure_search)
 
 add_executable(chow_liu chow_liu.cpp)
 add_executable(em_mog em_mog.cpp)

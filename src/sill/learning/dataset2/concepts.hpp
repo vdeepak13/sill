@@ -22,11 +22,11 @@ namespace sill {
     //! The variable type of each column.
     typedef typename DS::variable_type variable_type;
 
-    //! A sequence of variables, typically std::vector<variable_type*>.
-    typedef typename DS::vector_type vector_type;
-
     //! The set of column variables (e.g., finite_domain).
     typedef typename DS::domain_type domain_type;
+
+    //! A sequence of variables, typically std::vector<variable_type*>.
+    typedef typename DS::vector_type vector_type;
 
     //! A type that maps variable_type to values (e.g., finite_assignment).
     typedef typename DS::assignment_type assignment_type;\
@@ -68,10 +68,10 @@ namespace sill {
   template <typename DS>
   struct FiniteDataset : public Dataset<DS> {
     typedef finite_variable   variable_type;
-    typedef finite_var_vector vector_type;
     typedef finite_domain     domain_type;
+    typedef finite_var_vector var_vector_type;
     typedef finite_assignment assignment_Type;
-    typedef finite_record     record_type;
+    typedef finite_record2     record_type;
   };
 
   
@@ -82,10 +82,10 @@ namespace sill {
   template <typename DS>
   struct VectorDataset : public Dataset<DS> {
     typedef vector_variable   variable_type;
-    typedef vector_var_vector vector_type;
     typedef vector_domain     domain_type;
+    typedef vector_var_vector var_vector_type;
     typedef vector_assignment assignment_type;
-    typedef vector_record     record_type;
+    typedef vector_record2     record_type;
   };
 
 
@@ -96,10 +96,10 @@ namespace sill {
   template <typename DS>
   struct HybridDataset : public Dataset<DS> {
     typedef variable   variable_type;
-    typedef var_vetor  vector_type;
     typedef domain     domain_type;
-    typedef assignment assignment_Type;
-    typedef record     record_type;
+    typedef var_vector var_vector_type;
+    typedef assignment assignment_type;
+    typedef record2     record_type;
   };
 
 

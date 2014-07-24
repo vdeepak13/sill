@@ -7,6 +7,7 @@ namespace sill {
   // initialization
   // accessing the portion of the dataset by passing base class
   // models HybridDataset and InsertableDataset
+  // user must not call shuffle on the chilldren directly
   template <typename Tf = size_t, typename Tv = double>
   class dataset 
     : public finite_dataset<Tf>, public vector_dataset<Tv> {

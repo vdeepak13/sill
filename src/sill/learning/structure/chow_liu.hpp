@@ -78,7 +78,7 @@ namespace sill {
          impl::mst_weight_functor<F>(g));
 
       // Create a decomposable model consisting of the cliques in mst_edges
-      model_ *= mst_factors;
+      model_.initialize(mst_factors);
     }
 
     //! Return the learned tree.
