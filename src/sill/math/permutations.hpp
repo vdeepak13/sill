@@ -1,10 +1,12 @@
 #ifndef SILL_MATH_FREE_FUNCTIONS_HPP
 #define SILL_MATH_FREE_FUNCTIONS_HPP
 
+#include <algorithm> // change this to <utility> for C++11
 #include <cmath>
-#include <vector> // for use in randperm
+#include <vector>
 
 #include <boost/random/uniform_real.hpp>
+#include <boost/random/uniform_int.hpp>
 
 namespace sill {
 
@@ -40,6 +42,18 @@ namespace sill {
     if (k < n)
       perm.resize(k);
     return perm;
+  }
+
+  /**
+   * Randomly permutes the given values.
+   */
+  template <typename T, typename RandomNumberGenerator>
+  void permute(std::vector<T>& values, RandomNumberGenerator& rng) {
+    for (size_t i = 0; i < values.size(); ++i) {
+      boost::uniform_int<size_t> uniform(i, values.size() - 1);
+      size_t j = uniform(rng);
+      std::swap(values[i], values[j]);
+    }
   }
 
   //! @}

@@ -5,6 +5,7 @@
 #include <sill/base/finite_variable.hpp>
 #include <sill/learning/dataset2/basic_record_iterators.hpp>
 #include <sill/learning/dataset2/finite_record.hpp>
+#include <sill/math/permutations.hpp>
 
 #include <boost/shared_ptr.hpp>
 
@@ -15,15 +16,23 @@
 
 namespace sill {
 
-  // models FiniteDataset and InsertableDataset
+  /**
+   * A dataset that stores observations only for finite variables.
+   * Models FiniteDataset and InsertableDataset.
+   *
+   * \tparam T the internal storage of the finite values. You can reduce this to
+   *         uint8_t if you know that your finite values are sufficiently small.
+   *         bool is not supported, because we need to allow for missing values
+   *         (thus, even if the variable cardinality is 2, we still need 3 values).
+   */
   template <typename T = uint32_t> 
   class finite_dataset {
   public:
     typedef T value_type;
 
     typedef finite_variable   variable_type;
-    typedef finite_var_vector vector_type;
     typedef finite_domain     domain_type;
+    typedef finite_var_vector var_vector_type;
     typedef finite_assignment assignment_type;
     typedef finite_record2     record_type;
 
@@ -38,6 +47,12 @@ namespace sill {
     void initialize(const finite_var_vector& variables) {
       if (table_ptr) {
         throw std::logic_error("Attempt to call initialize() more than once.");
+      }
+      size_t max = std::numeric_limits<T>::max();
+      foreach(finite_variable* v, variables) {
+        if (v->size() > max) {
+          throw std::out_of_range("Variable cardinality exceeds the range of T.");
+        }
       }
       table_ptr.reset(new table(variables));
     }
@@ -84,12 +99,14 @@ namespace sill {
     }
 
     //! Returns a view whose records match the given assignment.
-    finite_dataset restrict(const finite_assignment& a) const {
+    //! This does not alter the columns of the dataset; the view still
+    //! contains all the columns of the original set, including those in a.
+    finite_dataset subset(const finite_assignment& a) const {
       check_initialized();
 
       // extract the indices of the fixed variables and the values
       std::vector<size_t> indices;
-      std::vector<T> values;
+      std::vector<size_t> values;
       foreach(finite_assignment::const_reference p, a) {
         if (table_ptr->var_index.count(p.first)) {
           indices.push_back(safe_get(table_ptr->var_index, p.first));
@@ -102,7 +119,7 @@ namespace sill {
       const_record_iterator end(this);
       std::vector<size_t> new_ordering;
       for(; it != end; ++it) {
-        if (it->index == values) {
+        if (it->values == values) {
           new_ordering.push_back(ordering[it.current_row()]);
         }
       }
@@ -121,23 +138,27 @@ namespace sill {
     virtual void insert(const finite_assignment& a, double weight = 1.0) {
       check_initialized();
       std::vector<size_t> values;
-      values.reserve(table_ptr->variables.size());
+      values.reserve(table_ptr->ncols());
       foreach(finite_variable* v, table_ptr->variables) {
         values.push_back(safe_get(a, v));
       }
       insert(values, weight); // protected function
     }
 
-    //! Inserts the given number of rows with unit weights and values -1.
+    //! Inserts the given number of rows with unit weights and "undefined" values.
     virtual void insert(size_t nrows) {
       check_initialized();
-      for (size_t i = 0; i < nrows; ++i) {
-        ordering.push_back(table_ptr->weights.size());
-        table_ptr->weights.push_back(1.0);
+
+      // compute the special "undefined" value for each variable
+      std::vector<size_t> values;
+      foreach(finite_variable* v, table_ptr->variables) {
+        values.push_back(v->size());
       }
-      table_ptr->data.insert(table_ptr->data.end(),
-                             nrows * table_ptr->ncols(),
-                             -1);
+
+      // insert the rows. TODO: reserve the size
+      for (size_t i = 0; i < nrows; ++i) {
+        insert(values, 1.0); // protected function
+      }
     }
 
     //! Randomizes the ordering of the records in this dataset.
@@ -155,13 +176,13 @@ namespace sill {
       std::map<finite_variable*, size_t> var_index; // index of each var
       std::vector<T> data;
       std::vector<double> weights;
-      size_t ncols() const { return variables.size(); }
       table(const finite_var_vector& variables)
         : variables(variables) {
         for (size_t i = 0; i < variables.size(); ++i) {
           var_index[variables[i]] = i;
         }
       }
+      size_t ncols() const { return variables.size(); }
     };
 
     //! the actual data plus some indexing stuff. null until initialization
@@ -182,7 +203,7 @@ namespace sill {
     finite_dataset(const finite_dataset& other, size_t begin, size_t end)
       : table_ptr(other.table_ptr),
         ordering(other.ordering.begin() + begin,
-                 other.ordering.end() + end) { }
+                 other.ordering.begin() + end) { }
  
     //! Throws an exception if the dataset is not initialized
     void check_initialized() const {
@@ -203,7 +224,7 @@ namespace sill {
     
     //! Common implementation of the insert() function
     void insert(const std::vector<size_t>& values, double weight) {
-      assert(values.size() == table_ptr->variables.size());
+      assert(values.size() == table_ptr->ncols());
       ordering.push_back(table_ptr->weights.size());
       table_ptr->data.insert(table_ptr->data.end(), values.begin(), values.end());
       table_ptr->weights.push_back(weight);
