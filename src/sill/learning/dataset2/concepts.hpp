@@ -6,10 +6,11 @@ namespace sill {
   /**
    * Represents a sequence of dense datapoints, where each column
    * is a variable of the specified type. Supports efficient 
-   * iteration over data for a specified subset of the columns,
+   * iteration over all the data or drawing samples from the data
+   * for a specified subset of the columns,
    * in the form of the records of the given type. The record type
-   * is variable_type-dependent and typically provides weight and
-   * a flat representation of the extracted data, so that many 
+   * is variable_type-dependent and provides weight and values in the
+   * native (flat) representation of the extracted data, so that many 
    * factor operations, such as sampling or log-likelihood can be
    * performed without additional data lookups/transforms or allocs.
    *
@@ -26,10 +27,10 @@ namespace sill {
     typedef typename DS::domain_type domain_type;
 
     //! A sequence of variables, typically std::vector<variable_type*>.
-    typedef typename DS::vector_type vector_type;
+    typedef typename DS::var_vector_type var_vector_type;
 
     //! A type that maps variable_type to values (e.g., finite_assignment).
-    typedef typename DS::assignment_type assignment_type;\
+    typedef typename DS::assignment_type assignment_type;
 
     //! The record that stores the extracted data (e.g., finite_record).
     typedef typename DS::record_type record_type;
@@ -40,19 +41,25 @@ namespace sill {
     //! An iterator that provides const access to the data in this dataset.
     typedef typename DS::const_record_iterator const_record_iterator;
 
+    //! An iterator that draws samples from the data in this dataset.
+    typedef typename DS::sample_iterator sample_iterator;
+
     //! Returns the number of datapoints in the dataset.
     size_t size() const;
 
-    //! Returns the variables in this dataset
+    //! Returns the variables in this dataset.
     domain_type arguments() const;
 
     //! Provides mutable access to a subset of columns in the specified order.
     std::pair<record_iterator, record_iterator>
-    records(const vector_type& vars);
+    records(const var_vector_type& vars);
 
     //! Provides const access to a subset of columns in the specified order.
     std::pair<const_record_iterator, const_record_iterator>
-    records(const vector_type& vars) const;
+    records(const var_vector_type& vars) const;
+
+    //! Draws samples from this dataset for a subset of columns in the given order.
+    sample_iterator samples(const var_vector_type& vars, usigned seed = 0) const;
 
     concept_usage(Dataset) {
       // TODO: finish this up
@@ -79,13 +86,13 @@ namespace sill {
    * Dataset, where each column is a vector variable and the member types
    * are the standard types associated with vector variables.
    */
-  template <typename DS>
+  template <typename DS, typename T>
   struct VectorDataset : public Dataset<DS> {
     typedef vector_variable   variable_type;
     typedef vector_domain     domain_type;
     typedef vector_var_vector var_vector_type;
     typedef vector_assignment assignment_type;
-    typedef vector_record2     record_type;
+    typedef vector_record2<T>  record_type;
   };
 
 

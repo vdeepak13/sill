@@ -8,7 +8,7 @@
 
 namespace sill {
 
-  template <typename T>
+  template <typename T = double>
   struct vector_record2 {
     arma::Col<T> values;
     T weight;

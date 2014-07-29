@@ -4,6 +4,7 @@
 #include <sill/base/finite_assignment.hpp>
 #include <sill/base/finite_variable.hpp>
 #include <sill/learning/dataset2/basic_record_iterators.hpp>
+#include <sill/learning/dataset2/basic_sample_iterator.hpp>
 #include <sill/learning/dataset2/finite_record.hpp>
 #include <sill/math/permutations.hpp>
 
@@ -36,8 +37,9 @@ namespace sill {
     typedef finite_assignment assignment_type;
     typedef finite_record2     record_type;
 
-    typedef basic_record_iterator<finite_dataset> record_iterator;
+    typedef basic_record_iterator<finite_dataset>       record_iterator;
     typedef basic_const_record_iterator<finite_dataset> const_record_iterator;
+    typedef basic_sample_iterator<finite_dataset>       sample_iterator;
 
     //! Creates an uninitialized dataset
     finite_dataset() { }
@@ -88,6 +90,13 @@ namespace sill {
       check_initialized();
       return std::make_pair(const_record_iterator(this, get_indices(vars)),
                             const_record_iterator(this));
+    }
+
+    //! Returns an iterator that generates samples drawn from this dataset
+    sample_iterator
+    samples(const finite_var_vector& vars, unsigned seed = 0) const {
+      check_initialized();
+      return sample_iterator(this, get_indices(vars), seed);
     }
 
     //! Returns a view of the dataset for a range of the rows.
@@ -248,8 +257,10 @@ namespace sill {
     // C++11 conversion feature
     // friend record_iterator;
     // friend const_record_iterator;
+    // friend sample_iterator;
     friend class basic_record_iterator<finite_dataset>;
     friend class basic_const_record_iterator<finite_dataset>;
+    friend class basic_sample_iterator<finite_dataset>;
 
   }; // class finite_dataset
 

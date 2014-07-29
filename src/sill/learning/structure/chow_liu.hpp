@@ -4,7 +4,7 @@
 #include <set>
 
 #include <sill/iterator/transform_output_iterator.hpp>
-#include <sill/learning/parameter/factor_learner.hpp>
+#include <sill/learning/parameter/factor_estimator.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/projections.hpp>
 
@@ -43,9 +43,9 @@ namespace sill {
     /**
      * Constructor which learns a Chow-Liu tree using the given base learner.
      * @param args variables over which to learn a tree.
-     * @param flearn returns the learned marginals for a subset of variables
+     * @param estim estimates marginals for a subset of variables
      */
-    chow_liu(const domain_type& dom, const factor_learner<F>& flearn) {
+    chow_liu(const domain_type& dom, const factor_estimator<F>& estim) {
       if (dom.empty()) {
         return;
       }
@@ -62,7 +62,7 @@ namespace sill {
       for (size_t i = 0; i < vars.size() - 1; ++i) {
         for (size_t j = i+1; j < vars.size(); ++j) {
           domain_type edge_dom = make_domain(vars[i], vars[j]);
-          F f = flearn(edge_dom);
+          F f = estim(edge_dom);
           double mi = f.mutual_information(make_domain(vars[i]),
                                            make_domain(vars[j]));
           g.add_edge(vars[i], vars[j], std::make_pair(mi, f));
