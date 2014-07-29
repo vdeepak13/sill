@@ -8,7 +8,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/bayesian_network.hpp>
 #include <sill/learning/dataset2/finite_dataset.hpp>
-#include <sill/learning/parameter/table_factor_learner.hpp>
+#include <sill/learning/parameter/table_factor_mle.hpp>
 #include <sill/learning/structure/chow_liu.hpp>
 
 #include <sill/macros_def.hpp>
@@ -65,8 +65,8 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   }
 
   // learn the model
-  table_factor_learner<> flearn(data);
-  chow_liu<table_factor> learner(make_domain(v), flearn);
+  table_factor_mle<> estim(&data);
+  chow_liu<table_factor> learner(make_domain(v), estim);
   decomposable<table_factor> dm = learner.model();
   
   // verify the cliques

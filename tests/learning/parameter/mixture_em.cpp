@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE em_mog
+#define BOOST_TEST_MODULE mixture_em
 #include <boost/test/unit_test.hpp>
 
 #include <boost/math/special_functions/round.hpp>
@@ -8,8 +8,10 @@
 #include <boost/tuple/tuple_comparison.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/em_mog.hpp>
-#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/factor/random/moment_gaussian_data.hpp>
+#include <sill/learning/dataset2/vector_dataset.hpp>
+#include <sill/learning/parameter/mixture_em.hpp>
+#include <sill/learning/parameter/moment_gaussian_mle.hpp>
 
 #include <algorithm>
 
@@ -19,7 +21,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   using namespace sill;
   using namespace std;
   
-  typedef em_mog em_engine;
+  typedef mixture_em<moment_gaussian, vector_dataset<> > em_engine;
 
   size_t k = 3;
   size_t nsamples = 2000;
@@ -35,26 +37,28 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   original[1] = moment_gaussian(var_vec, "2 -2", "1 0.2; 0.2 1");
   original[2] = moment_gaussian(var_vec, "2 +2", "1 -0.2; -0.2 1");
   
-  assignment_dataset<> data(finite_var_vector(), var_vec,
-                            std::vector<variable::variable_typenames>());
-  boost::lagged_fibonacci607 rng;
+  vector_dataset<> data;
+  data.initialize(var_vec);
 
+  boost::lagged_fibonacci607 rng;
   for (size_t i = 0; i < nsamples; ++i) {
     data.insert(original.sample(rng));
   }
 
-  em_engine engine(&data, k);
-  mixture_gaussian estimate = engine.initialize(rng, regul);
-  cout << estimate << endl;
+  moment_gaussian_mle<> learner(&data);
+  moment_gaussian_data<> generator(&data);
+  em_engine engine(&data, learner, k, vars, generator);
+  cout << engine.estimate() << endl;
 
   for(size_t i = 1; i <= niters; i++) {
-    double log_lik = engine.expectation(estimate);
-    estimate = engine.maximization(regul);
+    double log_lik = engine.expectation();
+    engine.maximization();
     cout << "Iteration " << i << ", log-likelihood " << log_lik << endl;
-    //cout << "\t" << estimate << endl;
+    //cout << "\t" << engine.estimate() << endl;
   }
 
   // retrieve the components in the canonical order
+  mixture_gaussian estimate = engine.estimate();
   std::vector<boost::tuple<double,double,size_t> > centers(k);
   for(size_t i = 0; i < k; ++i) {
     using boost::math::round;

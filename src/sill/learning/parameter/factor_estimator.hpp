@@ -1,15 +1,15 @@
-#ifndef SILL_FACTOR_LEARNER_HPP
-#define SILL_FACTOR_LEARNER_HPP
+#ifndef SILL_FACTOR_ESTIMATOR_HPP
+#define SILL_FACTOR_ESTIMATOR_HPP
 
 namespace sill {
 
   template <typename F>
-  class factor_learner {
+  class factor_estimator {
   public:
     typedef typename F::domain_type domain_type;
 
-    factor_learner() { }
-    virtual ~factor_learner() { }
+    factor_estimator() { }
+    virtual ~factor_estimator() { }
     virtual F operator()(const domain_type& args) const = 0;
   };
 

@@ -43,6 +43,8 @@
    - flatten, relative entropy for decomposable
    - ensure the newdatasets work with CRFs
    - fix chow-liu
+   - more efficient sampling from BNs and decomposable models
+   - try different initialization once we have better sampling of MGs
 
 8. more examples / applications:
    - viterbi algorithm
