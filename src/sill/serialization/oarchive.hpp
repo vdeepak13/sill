@@ -23,6 +23,11 @@ namespace sill {
 
     oarchive(std::ostream& os)
       : o(&os), bytes_() {}
+    
+    void reset(std::ostream& os) {
+      o = &os;
+      bytes_ = 0;
+    }
 
     size_t bytes() const {
       return bytes_;

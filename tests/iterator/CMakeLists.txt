@@ -1,2 +1,1 @@
-add_executable(pointer_iterator pointer_iterator.cpp)
 add_executable(subset_iterator subset_iterator.cpp)
