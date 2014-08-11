@@ -17,6 +17,9 @@ namespace sill {
   // standard type to represent size
   using std::size_t;
 
+  // standard type to represent difference
+  using std::ptrdiff_t;
+
   //! Type deduction will fail unless the arguments have the same type.
   template <typename T> void same_type(const T&, const T&) { }
 
