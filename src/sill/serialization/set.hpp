@@ -1,33 +1,29 @@
 #ifndef SILL_SERIALIZE_SET_HPP
 #define SILL_SERIALIZE_SET_HPP
 
-#include <set>
-
 #include <sill/serialization/iarchive.hpp>
 #include <sill/serialization/oarchive.hpp>
-#include <sill/serialization/iterator.hpp>
+#include <sill/serialization/range.hpp>
+
+#include <set>
 
 namespace sill {
 
-  /**
-    Serializes a set
-    Returns true on success, false on failure  */
+  //! Serializes a set. \relates oarchive
   template <typename T>
-  oarchive& operator<<(oarchive& a, const std::set<T>& vec){
-    serialize_iterator(a,vec.begin(),vec.end(), vec.size());
+  oarchive& operator<<(oarchive& a, const std::set<T>& set){
+    serialize_range(a,set.begin(), set.end(), set.size());
     return a;
   }
 
-  /**
-    deserializes a set
-    Returns true on success, false on failure  */
+  //! Deserializes a set. \relates iarchive
   template <typename T>
-  iarchive& operator>>(iarchive& a, std::set<T>& vec){
-    vec.clear();
-    deserialize_iterator<T>(a, std::inserter(vec,vec.end()));
+  iarchive& operator>>(iarchive& a, std::set<T>& set) {
+    set.clear();
+    deserialize_range<T>(a, std::inserter(set, set.end()));
     return a;
   }
 
 } // namespace sill
 
-#endif //PRL_SERIALIZE_SET_HPP
+#endif

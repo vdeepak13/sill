@@ -1,1 +1,3 @@
-add_executable(serializetests serializetests.cpp)
+add_executable(serialization serialization.cpp)
+
+add_test(serialization serialization)

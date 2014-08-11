@@ -1,20 +1,24 @@
 #ifndef SILL_IARCHIVE_HPP
 #define SILL_IARCHIVE_HPP
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
+#include <stdint.h>
 #include <string>
 #include <utility>
-#include <stdint.h>
-#ifdef _MSC_VER
-#include <itpp/base/ittypes.h> // for int32_t etc.
-#endif
+
+#include <boost/noncopyable.hpp>
 
 namespace sill {
 
   class universe;
 
-  class iarchive {
+  /**
+   * A class for deserializing data in the native binary format.
+   * The class is used in conjunction with operator>>. By default,
+   * operator>> throws an exception if the read operation fails.
+   */
+  class iarchive : boost::noncopyable {
   public:
     std::istream* i;
     sill::universe* u;
@@ -34,76 +38,86 @@ namespace sill {
     size_t bytes() const {
       return bytes_;
     }
+
+    void check() {
+      if (i->fail()) {
+        throw std::runtime_error("iarchive: Stream operation failed!");
+      }
+    }
   };
 
 
-  /** Deserializes a single character. 
-      Assertion fault on failure. */
-  iarchive& operator>>(iarchive& a, char& i);
+  //! Deserializes a single character. \relates iarchive
+  iarchive& operator>>(iarchive& a, char& c);
 
-  /** Deserializes a 64 bit integer. 
-      Assertion fault on failure. */
+  //! Deserializaes a single character. \relates iarchive
+  iarchive& operator>>(iarchive& a, unsigned char& c);
 
+  //! Deserializaes a primitive type. \relates iarchive
+  iarchive& operator>>(iarchive& a, bool& b);
+ 
+  //! Deserializaes a primitive type. \relates iarchive
+  iarchive& operator>>(iarchive& a, int& x);
 
-  /** Deserializes a boolean. Assertion fault on failure. */
-  iarchive& operator>>(iarchive& a, bool& i);
+  //! Deserializaes a primitive type. \relates iarchive
+  iarchive& operator>>(iarchive& a, long& x);
 
-  /** Deserializes a unsigned char.
-      Assertion fault on failure. */
-  iarchive& operator>>(iarchive& a, unsigned char& i);
+  //! Deserializaes a primitive type. \relates iarchive
+  iarchive& operator>>(iarchive& a, long long& x);
 
-  
-  iarchive& operator>>(iarchive& a, int& i);
-  iarchive& operator>>(iarchive& a, long& i);
-  iarchive& operator>>(iarchive& a, long long& i);
-  iarchive& operator>>(iarchive& a, unsigned long& i);
-  iarchive& operator>>(iarchive& a, unsigned int& i);
-  iarchive& operator>>(iarchive& a, unsigned long long& i);
-  iarchive& deserialize_64bit_integer(iarchive& a, int64_t& i);
+  //! Deserializaes a primitive type. \relates iarchive
+  iarchive& operator>>(iarchive& a, unsigned long& x);
 
+  //! Deserializaes a primitive type. \relates iarchive
+  iarchive& operator>>(iarchive& a, unsigned int& x);
 
-  /** Deserializes a floating point number. 
-      Assertion fault on failure. */
-  iarchive& operator>>(iarchive& a, float& i);
+  //! Deserializaes a primitive type. \relates iarchive
+  iarchive& operator>>(iarchive& a, unsigned long long& x);
 
-  /** Serializes a double precisition floating point number. 
-      Assertion fault on failure. */
-  iarchive& operator>>(iarchive& a, double& i);
+  //! Deserializes a floating point number. \relates iarchive
+  iarchive& operator>>(iarchive& a, float& x);
 
-  /** Deserializes a generic pointer object of known length.
-      This call must match the corresponding serialize call : 
-      \see{serialize(std::ostream &o, const iarchive&* i,const int length)}
-      The length of the object is read from the file and checked against the 
-      length parameter. If they do not match, the function returns with a failure.
-      Otherwise, an additional (length) bytes will be read from the file stream
-      into (*i). (*i) must contain at least (length) bytes of memory. Otherwise
-      there will be a buffer overflow. 
-      Assertion fault on failure. */
-  iarchive& deserialize(iarchive& a, void* const i, const size_t length);
+  //! Deserializes a floating point number. \relates iarchive
+  iarchive& operator>>(iarchive& a, double& x);
 
-  /** Loads a C string. If s is NULL, it will allocate it */
+  /** 
+   * Deserializes a generic pointer object of known length.
+   * This call must match the corresponding serialize call: 
+   * \see{serialize(std::ostream &o, const iarchive&* i,const int length)}
+   * The length of the object is read from the file and checked against the 
+   * length parameter. If they do not match, the function throws assertion.
+   * Otherwise, an additional (length) bytes will be read from the file stream
+   * into (*i). (*i) must contain at least (length) bytes of memory. Otherwise
+   * there will be a buffer overflow.
+   * \relates iarchive
+   */
+  iarchive& deserialize(iarchive& a, void* const x, const size_t length);
+
+  //! Deserializes a C string. If s is NULL, it will allocate it.
+  //! \relates iarchive
   iarchive& operator>>(iarchive& a, char*& s);
 
-  /** Loads a string.
-     Assertion fault on failure. */
+  //! Loads a string. \relates iarchive
   iarchive& operator>>(iarchive& a, std::string& s);
 
-
-  /** Deserializes a pair
-     Assertion fault on failure.  */
+  //! Deserializes a pair. \relates iarchive
   template <typename T,typename U>
-  iarchive& operator>>(iarchive& a, std::pair<T,U>& p){
+  inline iarchive& operator>>(iarchive& a, std::pair<T,U>& p){
     a >> p.first;
     a >> p.second;
     return a;
   }
 
-  /** Catch all serializer as member of iarchive */
+  /**
+   * Catch all deserializer that invokes a load() member of the class T.
+   * \relates iarchive
+   */
   template <typename T>
   inline iarchive& operator>>(iarchive& a, T& t) {
     t.load(a);
     return a;
   }
+
 } // namespace sill
 
-#endif //PRL_IARCHIVE_HPP
+#endif

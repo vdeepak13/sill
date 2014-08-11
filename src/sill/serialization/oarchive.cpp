@@ -1,101 +1,82 @@
-#include <iostream>
-#include <cstring>
-#include <stdexcept>
-
 #include <sill/serialization/oarchive.hpp>
 
-/***************************************************************************
- *                        Basic Serializers                                * 
- ***************************************************************************/
-// generate the operator<< call for a whole bunch of integer types
-#define GENCASTSERIALIZE(typesrc,typedest)              \
-  oarchive& operator<<(oarchive& a, const typesrc i) {  \
-    operator<<(a, static_cast<const typedest>(i));      \
-    return a;                                           \
+#include <cstring>
+#include <iostream>
+#include <stdexcept>
+
+#define SILL_CHAR_SERIALIZE(src_type)                       \
+  oarchive& operator<<(oarchive& a, const src_type c) {     \
+    serialize_character(a, static_cast<const src_type>(c)); \
+    return a;                                               \
   }
 
-#define GENINTSERIALIZE(typesrc)                              \
-  oarchive& operator<<(oarchive& a, const typesrc i) {        \
-    serialize_64bit_integer(a, static_cast<int64_t>(i));      \
-    return a;                                                 \
+#define SILL_INT64_SERIALIZE(src_type)                     \
+  oarchive& operator<<(oarchive& a, const src_type x) {     \
+    serialize_64bit_integer(a, static_cast<int64_t>(x));    \
+    return a;                                               \
   }
-
-namespace {
-
-  inline void check(std::ostream* out) {
-    if (out->fail()) {
-      throw std::runtime_error("oarchive: Stream operation failed!");
-    }
-  }
-
-}
 
 namespace sill {
 
-  oarchive& operator<<(oarchive& a, const char i) {
-    a.o->put(i);
+  void serialize_character(oarchive& a, const char c) {
+    a.o->put(c);
     a.bytes_++;
-    check(a.o);
-    return a;
+    a.check();
   }
 
-  oarchive& serialize_64bit_integer(oarchive& a, const int64_t i) {
-    a.o->write(reinterpret_cast<const char*>(&i), sizeof(int64_t));
+  void serialize_64bit_integer(oarchive& a, const int64_t x) {
+    a.o->write(reinterpret_cast<const char*>(&x), sizeof(int64_t));
     a.bytes_ += sizeof(int64_t);
-    check(a.o);
-    return a;
+    a.check();
   }
 
-  oarchive& operator<<(oarchive& a, const float i) {
-    a.o->write(reinterpret_cast<const char*>(&i), sizeof(float));
+  SILL_CHAR_SERIALIZE(char);
+  SILL_CHAR_SERIALIZE(unsigned char);
+  SILL_CHAR_SERIALIZE(bool);
+
+  SILL_INT64_SERIALIZE(int);
+  SILL_INT64_SERIALIZE(long);
+  SILL_INT64_SERIALIZE(long long);
+  SILL_INT64_SERIALIZE(unsigned long);
+  SILL_INT64_SERIALIZE(unsigned int);
+  SILL_INT64_SERIALIZE(unsigned long long);
+
+  oarchive& operator<<(oarchive& a, const float x) {
+    a.o->write(reinterpret_cast<const char*>(&x), sizeof(float));
     a.bytes_ += sizeof(float);
-    check(a.o);
+    a.check();
     return a;
   }
 
-  oarchive& operator<<(oarchive& a, const double i) {
-    a.o->write(reinterpret_cast<const char*>(&i), sizeof(double));
+  oarchive& operator<<(oarchive& a, const double x) {
+    a.o->write(reinterpret_cast<const char*>(&x), sizeof(double));
     a.bytes_ += sizeof(double);
-    check(a.o);
+    a.check();
     return a;
   }
-
-  GENCASTSERIALIZE(bool, char);
-  GENCASTSERIALIZE(unsigned char, char);
-  GENINTSERIALIZE(int);
-  GENINTSERIALIZE(long);
-  GENINTSERIALIZE(long long);
-  GENINTSERIALIZE(unsigned long);
-  GENINTSERIALIZE(unsigned int);
-  GENINTSERIALIZE(unsigned long long);
-  //GENCASTSERIALIZE(size_t, int64_t);
-
   oarchive& serialize(oarchive& a, const void* i, const size_t length) {
-    // save the length
-    operator<<(a,length);
+    a << length;
     a.o->write(reinterpret_cast<const char*>(i), length);
     a.bytes_ += length;
-    check(a.o);
+    a.check();
     return a;
   }
 
   oarchive& operator<<(oarchive& a, const char* s) {
-    // save the length
     size_t length = strlen(s);
-    operator<<(a,length);
+    a << length;
     a.o->write(reinterpret_cast<const char*>(s), length);
     a.bytes_ += length;
-    check(a.o);
+    a.check();
     return a;
   }
 
-  oarchive& operator<<(oarchive& a, const std::string& s){
-    // if we can't serialize the length, return immediately
+  oarchive& operator<<(oarchive& a, const std::string& s) {
     size_t length = s.length();
     a << length;
     a.o->write(reinterpret_cast<const char*>(s.c_str()), length);
     a.bytes_ += length;
-    check(a.o);
+    a.check();
     return a;
   }
 

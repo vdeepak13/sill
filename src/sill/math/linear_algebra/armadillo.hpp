@@ -11,7 +11,6 @@
 
 #include <sill/base/stl_util.hpp>
 #include <sill/range/forward_range.hpp>
-#include <sill/serialization/iterator.hpp>
 
 #include <sill/macros_def.hpp>
 

@@ -1,118 +1,104 @@
+#include <sill/serialization/iarchive.hpp>
+
 #include <iostream>
 #include <stdexcept>
 
-#include <sill/serialization/iarchive.hpp>
-
-namespace {
-
-  inline void check(std::istream* in) {
-    if (in->fail()) {
-      throw std::runtime_error("iarchive: Stream operation failed!");
-    }
+#define SILL_CHAR_DESERIALIZE(dest_type)            \
+  iarchive& operator>>(iarchive& a, dest_type& x) { \
+    char c;                                         \
+    deserialize_character(a, c);                    \
+    x = static_cast<dest_type>(c);                  \
+    return a;                                       \
   }
 
-}
-
+#define SILL_INT64_DESERIALIZE(dest_type)           \
+  iarchive& operator>>(iarchive& a, dest_type& x) { \
+    int64_t y;                                      \
+    deserialize_64bit_integer(a, y);                \
+    x = static_cast<dest_type>(y);                  \
+    return a;                                       \
+  }
+  
 namespace sill {
 
-  /***************************************************************************
-   *                        Basic Deserializers                              * 
-   ***************************************************************************/
-
-  // generate the serialize call for a whole bunch of integer types
-#define GENCASTDESERIALIZE(typesrc, typedest)     \
-  iarchive& operator>>(iarchive &a, typesrc &i) { \
-    typedest c;                                   \
-    operator>>(a, c);                             \
-    i = static_cast<typesrc>(c);                  \
-    return a;                                     \
-  } 
-
-#define GENINTDESERIALIZE(typesrc)                \
-  iarchive& operator>>(iarchive &a, typesrc &i) { \
-    int64_t c;                                    \
-    deserialize_64bit_integer(a, c);              \
-    i = static_cast<typesrc>(c);                  \
-    return a;                                     \
-  } 
-  
-  iarchive& operator>>(iarchive& a, char& i) {
-    a.i->get(i);
+  iarchive& deserialize_character(iarchive& a, char& c) {
+    a.i->get(c);
     a.bytes_++;
-    check(a.i);
+    a.check();
     return a;
   }
 
-  iarchive& deserialize_64bit_integer(iarchive& a, int64_t& i) {
-    a.i->read(reinterpret_cast<char*>(&i), sizeof(int64_t));
+  iarchive& deserialize_64bit_integer(iarchive& a, int64_t& x) {
+    a.i->read(reinterpret_cast<char*>(&x), sizeof(int64_t));
     a.bytes_ += sizeof(int64_t);
-    check(a.i);
+    a.check();
     return a;
   }
 
 
-  GENCASTDESERIALIZE(bool, char);
-  GENCASTDESERIALIZE(unsigned char, char);
-  // serializes a bunch of integer types
-  GENINTDESERIALIZE(int);
-  GENINTDESERIALIZE(long);
-  GENINTDESERIALIZE(long long);
-  GENINTDESERIALIZE(unsigned long);
-  GENINTDESERIALIZE(unsigned int);
-  GENINTDESERIALIZE(unsigned long long);
+  SILL_CHAR_DESERIALIZE(bool)
+  SILL_CHAR_DESERIALIZE(char)
+  SILL_CHAR_DESERIALIZE(unsigned char);
 
+  SILL_INT64_DESERIALIZE(int);
+  SILL_INT64_DESERIALIZE(long);
+  SILL_INT64_DESERIALIZE(long long);
+  SILL_INT64_DESERIALIZE(unsigned long);
+  SILL_INT64_DESERIALIZE(unsigned int);
+  SILL_INT64_DESERIALIZE(unsigned long long);
 
-  iarchive& operator>>(iarchive& a, float& i) {
-    a.i->read(reinterpret_cast<char*>(&i), sizeof(float));
+  iarchive& operator>>(iarchive& a, float& x) {
+    a.i->read(reinterpret_cast<char*>(&x), sizeof(float));
     a.bytes_ += sizeof(float);
-    check(a.i);
+    a.check();
     return a;
   }
 
-  iarchive& operator>>(iarchive& a, double& i) {
-    a.i->read(reinterpret_cast<char*>(&i), sizeof(double));
+  iarchive& operator>>(iarchive& a, double& x) {
+    a.i->read(reinterpret_cast<char*>(&x), sizeof(double));
     a.bytes_ += sizeof(double);
-    check(a.i);
+    a.check();
     return a;
   }
 
   iarchive& deserialize(iarchive& a, void* const i, const size_t length) {
-    // Save the length and check if lengths match
+    // deserialize the length and check if lengths match
     size_t length2;
-    operator>>(a, length2);
+    a >> length2;
     assert(length == length2);
 
-    //operator>> the rest
+    // deserialize the rest
     a.i->read(reinterpret_cast<char*>(i), length);
     a.bytes_ += length;
-    check(a.i);
+    a.check();
     return a;
   }
 
   iarchive& operator>>(iarchive& a, char*& s) {
-    // Save the length and check if lengths match
+    // deserialize the length
     size_t length;
-    operator>>(a, length);
-    if (s == NULL) s = new char[length+1];
-    //operator>> the rest
+    a >> length;
+    if (s == NULL) {
+      s = new char[length+1];
+    }
+
+    // deserialize the rest
     a.i->read(reinterpret_cast<char*>(s), length);
     s[length] = 0;
     a.bytes_ += length;
-    check(a.i);
+    a.check();
     return a;
   }
 
-  iarchive& operator>>(iarchive& a, std::string& s){
-    //read the length
+  iarchive& operator>>(iarchive& a, std::string& s) {
     size_t length;
     a >> length;
-    //resize the string and read the characters
+
     s.resize(length);
     a.i->read(const_cast<char*>(s.c_str()), length);
     a.bytes_ += length;
-    check(a.i);
+    a.check();
     return a;
   }
 
 } // namespace sill
-
