@@ -213,17 +213,18 @@ namespace sill {
     return output;
   }
 
-  /**
-   * Inplace version of remap
-   */
-  template <typename Key, typename T>
-  void remap(std::map<Key, T>& map,
-             const std::map<T, T>& val_map) {
-    typedef std::pair<Key, T> pair_type;
-    foreach(pair_type& pair, map) {
-      pair.second = safe_get(val_map, pair.second);
-    }
-  }
+// it's impossible to differentiate this from the above function
+//   /**
+//    * Inplace version of remap
+//    */
+//   template <typename Key, typename T>
+//   void remap(std::map<Key, T>& map,
+//              const std::map<T, T>& val_map) {
+//     typedef std::pair<Key, T> pair_type;
+//     foreach(pair_type& pair, map) {
+//       pair.second = safe_get(val_map, pair.second);
+//     }
+//   }
 
   /**
    * Inserts the elements in map 'from' into map 'to',
