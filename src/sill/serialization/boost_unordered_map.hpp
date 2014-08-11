@@ -5,24 +5,22 @@
 
 #include <sill/serialization/iarchive.hpp>
 #include <sill/serialization/oarchive.hpp>
-#include <sill/serialization/iterator.hpp>
+#include <sill/serialization/range.hpp>
 
 namespace sill {
 
-  /** Serializes a map
-      Returns true on success, false on failure. */
+  //! Serializes a map. \relates oarchive
   template <typename T, typename U>
-  oarchive& operator<<(oarchive& a, const boost::unordered_map<T,U>& map){
-    serialize_iterator(a, map.begin(), map.end(), map.size());
+  oarchive& operator<<(oarchive& a, const boost::unordered_map<T,U>& map) {
+    serialize_range(a, map.begin(), map.end(), map.size());
     return a;
   }
 
-  /** deserializes a map
-      Returns true on success, false on failure. */
+  //! Deserializes a map. \relates iarchive
   template <typename T, typename U>
-  iarchive& operator>>(iarchive& a, boost::unordered_map<T,U>& map){
+  iarchive& operator>>(iarchive& a, boost::unordered_map<T,U>& map) {
     map.clear();
-    deserialize_iterator<std::pair<T,U> >(a, std::inserter(map, map.end()));
+    deserialize_range<std::pair<T,U> >(a, std::inserter(map, map.end()));
     return a;
   }
 

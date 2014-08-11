@@ -1,30 +1,29 @@
 #ifndef SILL_SERIALIZE_MAP_HPP
 #define SILL_SERIALIZE_MAP_HPP
 
-#include <map>
-
 #include <sill/serialization/iarchive.hpp>
 #include <sill/serialization/oarchive.hpp>
-#include <sill/serialization/iterator.hpp>
+#include <sill/serialization/range.hpp>
+
+#include <map>
 
 namespace sill {
 
-  /** Serializes a map
-      Returns true on success, false on failure  */
+  //! Serializes a map. \relates oarchive
   template <typename T, typename U>
-  oarchive& operator<<(oarchive& a, const std::map<T,U>& vec){
-    serialize_iterator(a,vec.begin(),vec.end(), vec.size());
+  oarchive& operator<<(oarchive& a, const std::map<T,U>& map) {
+    serialize_range(a,map.begin(),map.end(), map.size());
     return a;
   }
 
-  /** deserializes a map
-      Returns true on success, false on failure  */
+  //! Deserializes a map. \relates iarchive
   template <typename T, typename U>
-  iarchive& operator>>(iarchive& a, std::map<T,U>& vec){
-    vec.clear();
-    deserialize_iterator<std::pair<T,U> >(a, std::inserter(vec,vec.end()));
+  iarchive& operator>>(iarchive& a, std::map<T,U>& map) {
+    map.clear();
+    deserialize_range<std::pair<T,U> >(a, std::inserter(map, map.end()));
     return a;
   }
+
 } // namespace sill
 
-#endif //PRL_SERIALIZE_MAP_HPP
+#endif

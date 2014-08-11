@@ -1,24 +1,25 @@
 #ifndef SILL_OARCHIVE_HPP
 #define SILL_OARCHIVE_HPP
 
-#include <iostream>
 #include <cassert>
+#include <iostream>
+#include <stdint.h>
 #include <string>
 #include <utility>
-#include <stdint.h>
-#ifdef _MSC_VER
-#include <itpp/base/ittypes.h> // for int32_t etc.
-#endif
+
+#include <boost/noncopyable.hpp>
 
 namespace sill {
-  
-  class oarchive{
-   public:
-    //! The associated stream
-    std::ostream* o;
 
-    //! The number of serialized bytes
-    size_t bytes_;
+  /**
+   * A class for serializing data in the native binary format.
+   * The class is used in conjunction wtih operator<<. By default,
+   * operator>> throws an exception if the write operation fails.
+   */
+  class oarchive : boost::noncopyable {
+  public:
+    std::ostream* o;  //!< The associated stream
+    size_t bytes_;    //!< The number of serialized bytes.
 
     oarchive(std::ostream& os)
       : o(&os), bytes_() {}
@@ -27,51 +28,61 @@ namespace sill {
       return bytes_;
     }
 
+    void check() {
+      if (o->fail()) {
+        throw std::runtime_error("oarchive: Stream operation failed!");
+      }
+    }
   };
 
-  /** Serializes a single character. 
-      Assertion fault on failure. */
-  oarchive& operator<<(oarchive& a, const char i);
+  //! Serializes a single character. \relates oarchive
+  oarchive& operator<<(oarchive& a, const char c);
 
-  /** Serializes a floating point number. 
-      Assertion fault on failure. */
-  oarchive& operator<<(oarchive& a, const float i);
+  //! Serializes a single character. \relates oarchive
+  oarchive& operator<<(oarchive& a, const unsigned char c);
 
-  /** Serializes a double precisition floating point number. 
-      Assertion fault on failure. */
-  oarchive& operator<<(oarchive& a, const double i);
+  //! Serializes a primitive type. \relates oarchive
+  oarchive& operator<<(oarchive& a, const bool b);
 
-  oarchive& operator<<(oarchive& a, const bool i);
-  oarchive& operator<<(oarchive& a, const unsigned char i);
-  
-  
-  /** Serializes a integer. 
-      Assertion fault on failure. */
-  oarchive& operator<<(oarchive& a, const int i);
-  oarchive& operator<<(oarchive& a, const long i);
-  oarchive& operator<<(oarchive& a, const long long i);
-  oarchive& operator<<(oarchive& a, const unsigned long i);
-  oarchive& operator<<(oarchive& a, const unsigned int i);
-  oarchive& operator<<(oarchive& a, const unsigned long long  i);
-  oarchive& serialize_64bit_integer(oarchive& a, const int64_t i);
+  //! Serializes a primitive type. \relates oarchive
+  oarchive& operator<<(oarchive& a, const int x);
 
+  //! Serializes a primitive type. \relates oarchive
+  oarchive& operator<<(oarchive& a, const long x);
 
-  /** Serializes a generic pointer object. bytes from (i) to (i + length - 1) 
-      inclusive will be written to the file stream. The length will also be
-      Assertion fault on failure.  */
-  oarchive& serialize(oarchive& a, const void* i,const size_t length);
+  //! Serializes a primitive type. \relates oarchive
+  oarchive& operator<<(oarchive& a, const long long x);
 
-  /** Serializes a C string 
-      Assertion fault on failure. */
+  //! Serializes a primitive type. \relates oarchive
+  oarchive& operator<<(oarchive& a, const unsigned long x);
+
+  //! Serializes a primitive type. \relates oarchive
+  oarchive& operator<<(oarchive& a, const unsigned int x);
+
+  //! Serializes a primitive type. \relates oarchive
+  oarchive& operator<<(oarchive& a, const unsigned long long x);
+
+  //! Serializes a floating point number. \relates oarchive
+  oarchive& operator<<(oarchive& a, const float x);
+
+  //! Serializes a floating point number. \relates oarchive
+  oarchive& operator<<(oarchive& a, const double x);
+
+  /**
+   * Serializes a generic pointer object. bytes from (i) to (i + length - 1) 
+   * inclusive will be written to the archive. The length will also be
+   * serialized.
+   * \relates oarchive
+   */
+  oarchive& serialize(oarchive& a, const void* i, const size_t length);
+
+  //! Serializes a C string. \relates oarchive
   oarchive& operator<<(oarchive& a, const char* s);
 
-  /** Serializes a string. 
-      Assertion fault on failure.  */
-  oarchive& operator<<(oarchive  &a, const std::string& s);
+  //! Serializes a string. \relates oarchive
+  oarchive& operator<<(oarchive& a, const std::string& s);
 
-
-  /** Serializes a pair
-      Assertion fault on failure.   */
+  //! Serializes a pair. \relates oarchive
   template <typename T,typename U>
   oarchive& operator<<(oarchive& a, const std::pair<T,U>& p) {
     a << p.first;
@@ -79,12 +90,16 @@ namespace sill {
     return a;
   }
 
-  /** catch all operator<< as member of iarchive */
+  /**
+   * Catch all serializer that invokes save() member of the class T.
+   * \relates oarchive
+   */
   template <typename T>
   inline oarchive& operator<<(oarchive& a, const T& t) {
     t.save(a);
     return a;
   }
+
 } // namespace sill
 
-#endif  //PRL_OARCHIVE_HPP
+#endif
