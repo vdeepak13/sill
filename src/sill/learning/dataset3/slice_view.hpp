@@ -25,8 +25,6 @@ namespace sill {
     typedef typename BaseDS::domain_type domain_type;
     typedef typename BaseDS::vector_type vector_type;
     typedef typename BaseDS::record_type record_type;
-    typedef typename BaseDS::elem_type   elem_type;
-    typedef typename BaseDS::weight_type weight_type;
 
     //! Default constructor. Creates an uninitialized view.
     slice_view()
