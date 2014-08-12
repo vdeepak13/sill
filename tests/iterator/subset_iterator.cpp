@@ -1,47 +1,59 @@
-#include <iostream>
-#include <set>
+#define BOOST_TEST_MODULE subset_iterator
+#include <boost/test/unit_test.hpp>
+
 #include <sill/iterator/subset_iterator.hpp>
-#include <sill/base/stl_util.hpp>
-/**
- * Test of the subset_iterator.
- */
-int main(int argc, char** argv) {
 
-  using namespace sill;
+#include <set>
 
-  typedef std::set<char> char_set_t;
+typedef std::multiset<std::set<char> > char_set_multiset;
+typedef sill::subset_iterator<std::set<char> > char_set_iterator;
 
-  char_set_t s;
+BOOST_TEST_DONT_PRINT_LOG_VALUE(char_set_multiset);
+
+char_set_multiset hardcoded(size_t min, size_t max) {
+  char_set_multiset result;
+  for (int a = 0; a < 2; ++a) {
+    for (int b = 0; b < 2; ++b) {
+      for (int c = 0; c < 2; ++c) {
+        for (int d = 0; d < 2; ++d) {
+          size_t sum = a + b + c + d;
+          if (min <= sum && sum <= max) {
+            std::set<char> elem;
+            if (a) elem.insert('a');
+            if (b) elem.insert('b');
+            if (c) elem.insert('c');
+            if (d) elem.insert('d');
+            result.insert(elem);
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
+
+char_set_multiset iterated(char_set_iterator it) {
+  char_set_multiset result;
+  char_set_iterator end;
+  for (; it != end; ++it) {
+    result.insert(*it);
+  }
+  return result;
+}
+
+BOOST_AUTO_TEST_CASE(test_all) {
+  std::set<char> s;
   s.insert('a');
   s.insert('b');
   s.insert('c');
   s.insert('d');
 
-  std::cout << "Original set: " << s << std::endl;
+  // strict subsets, minus the empty set
+  BOOST_CHECK_EQUAL(hardcoded(1, 3), iterated(char_set_iterator(s, 1, 3)));
 
-  std::cout << "Strict subsets, minus empty set:" << std::endl;
+  // all subsets
+  BOOST_CHECK_EQUAL(hardcoded(0, 4), iterated(char_set_iterator(s)));
 
-  subset_iterator<char_set_t> it(s,1,s.size()-1);
-  subset_iterator<char_set_t> end;
-  while (it != end) {
-    std::cout << *it << std::endl;
-    ++it;
-  }
-
-  std::cout << "All subsets:" << std::endl;
-  it = subset_iterator<char_set_t>(s);
-  while (it != end) {
-    std::cout << *it << std::endl;
-    ++it;
-  }
-
-  std::cout << "Subsets of size <= 2:" << std::endl;
-  it = subset_iterator<char_set_t>(s, 0, 2);
-  while (it != end) {
-    std::cout << *it << std::endl;
-    ++it;
-  }
-
-  // Return success.
-  return EXIT_SUCCESS;
+  // subsets of size <= 2
+  BOOST_CHECK_EQUAL(hardcoded(0, 2), iterated(char_set_iterator(s, 0, 2)));
 }
