@@ -11,7 +11,6 @@
 
 #include <sill/base/concepts.hpp>
 #include <sill/base/stl_util.hpp>
-#include <sill/iterator/set_insert_iterator.hpp>
 #include <sill/range/algorithm.hpp>
 #include <sill/range/converted.hpp>
 #include <sill/serialization/serialize.hpp>
@@ -170,7 +169,7 @@ namespace sill {
   std::set<V*> intersect(const std::set<V*>& s, const domain& t) {
     concept_assert((Variable<V>));
     std::set<V*> u;
-    sill::set_intersection(s, t, set_inserter(u));
+    sill::set_intersection(s, t, std::inserter(u, u.begin()));
     return u;
   }
 
@@ -194,8 +193,8 @@ namespace sill {
     concept_assert((Variable<V>));
     domain u;
     sill::set_union(make_converted<variable*>(s),
-                   make_converted<variable*>(t),
-                   set_inserter(u));
+                    make_converted<variable*>(t),
+                    std::inserter(u, u.begin()));
     return u;
   }
 
