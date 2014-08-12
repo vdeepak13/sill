@@ -28,7 +28,7 @@ namespace sill {
     //! Increment the counter.
     template <typename T>
     counting_output_iterator& operator=(const T&) {
-      counter++;
+      ++counter;
       return *this;
     }
 

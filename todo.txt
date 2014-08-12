@@ -46,6 +46,7 @@
    - more efficient sampling from BNs and decomposable models
    - try different initialization once we have better sampling of MGs
    - change the dataset2 design to allow on-disk datasets.
+   - clean up the subset_iterator code
 
 8. more examples / applications:
    - viterbi algorithm
