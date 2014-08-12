@@ -24,6 +24,7 @@ subdirs(
   mpi
   optimization
   parsers
+  range
   synthetic_data
   threading
   serialization
