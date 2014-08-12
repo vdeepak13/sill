@@ -5,6 +5,7 @@
 2. move to C++11
    - swap for custom iterators
 3. drop dependence on Boost for the main template library (keep it for Python bindings and tests)
+   - what to do about the range adaptors and iterators?
 4. remove much of the custom code like forward_range, range-based algorithms, operator std::string
 5. move domain, assignment, etc. to separate data structures
 6. variable values, not pointers

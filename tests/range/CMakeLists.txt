@@ -1,2 +1,4 @@
-add_executable(range range.cpp)
-add_executable(lexicographical_compare lexicographical_compare.cpp)
+add_executable(range_adaptors range_adaptors.cpp)
+
+add_test(range_adaptors range_adaptors)
+
