@@ -8,7 +8,9 @@
 #include <sill/factor/commutative_semiring.hpp>
 #include <sill/factor/table_factor.hpp>
 
-#include <sill/factor/random/random_table_factor_functor.hpp>
+#include <boost/random/mersenne_twister.hpp>
+
+#include <sill/factor/random/uniform_factor_generator.hpp>
 
 using namespace sill;
 
@@ -30,10 +32,11 @@ BOOST_AUTO_TEST_CASE(test_ops) {
   finite_domain dom(vec.begin(), vec.end());
   finite_domain var(vec.begin(), vec.begin()+1);
 
-  random_table_factor_functor rand;
+  uniform_factor_generator gen;
+  boost::mt19937 rng;
   std::vector<table_factor> f;
   for (size_t i = 0; i < 3; ++i) {
-    f.push_back(rand.generate_marginal(dom));
+    f.push_back(gen(dom, rng));
   }
   
   sill::sum_product<table_factor> sum_product;

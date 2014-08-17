@@ -6,9 +6,7 @@
 #include <iostream>
 #include <fstream>
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_01.hpp>
-#include <boost/random/uniform_int.hpp>
-#include <sill/factor/random/random.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 
 #include <sill/mpi/mpi_wrapper.hpp>
 #include <sill/mpi/mpilogger.hpp>
@@ -25,7 +23,7 @@ using namespace sill;
 
 void create_test_graph(universe &u, factor_graph_model<tablef> &fg) {
   boost::mt19937 rng;
-  boost::uniform_01<boost::mt19937, double> unif01(rng);
+  uniform_factor_generator gen;
 
   // Create some variables and factors
   std::vector<finite_variable*> x(100);
@@ -40,20 +38,17 @@ void create_test_graph(universe &u, factor_graph_model<tablef> &fg) {
 
   // Create some unary factors
   for(size_t i = 0; i < x.size(); ++i) {
-    // Create the arguments
     finite_domain arguments;  
     arguments.insert(x[i]);
-    // Create the table factor and add it to the factor graph
-    fg.add_factor( random_discrete_factor<tablef>(arguments, rng));
+    fg.add_factor(gen(arguments, rng));
   }
   
   // For every two variables in a chain create a factor
   for(size_t i = 0; i < x.size() - 1; ++i) {
-    // Create the arguments
     finite_domain arguments;  
-    arguments.insert(x[i]);   arguments.insert(x[i+1]);
-    // Create the table factor and add it to the factor graph
-    fg.add_factor( random_discrete_factor<tablef>(arguments, rng));
+    arguments.insert(x[i]);
+    arguments.insert(x[i+1]);
+    fg.add_factor(gen(arguments, rng));
   }
 
   basic_state_manager<tablef> manager(&fg, true);

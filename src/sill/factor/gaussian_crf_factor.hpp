@@ -11,6 +11,8 @@
 #include <sill/optimization/gaussian_opt_vector.hpp>
 #include <sill/range/forward_range.hpp>
 
+#include <boost/function.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -83,6 +85,9 @@ namespace sill {
     // Public types
     // =========================================================================
   public:
+    //! The type of functors that create table factor marginal distributions
+    typedef boost::function<gaussian_crf_factor(const vector_domain&,
+                                                const vector_domain&)> factor_fn_type;
 
     //! Base class
     typedef learnable_crf_factor<vector_variable, canonical_gaussian,
@@ -869,6 +874,12 @@ namespace sill {
   operator/(double a, const gaussian_crf_factor& b) {
     assert(false);
   }
+
+  // Utility classes
+  //============================================================================
+  typedef boost::function<gaussian_crf_factor(const vector_domain&,
+                                              const vector_domain&)>
+    gaussian_crf_factor_fn;
 
 }  // namespace sill
 

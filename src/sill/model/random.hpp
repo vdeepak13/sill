@@ -5,9 +5,9 @@
 
 #include <sill/range/concepts.hpp>
 #include <sill/factor/gaussian_crf_factor.hpp>
-#include <sill/factor/random/random.hpp>
-#include <sill/factor/random/random_crf_factor_functor_i.hpp>
-#include <sill/factor/random/random_factor_functor_i.hpp>
+#include <sill/factor/random/associative_factor_generator.hpp>
+#include <sill/factor/random/discrete_factor_generator.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/table_crf_factor.hpp>
 #include <sill/math/permutations.hpp>
@@ -41,57 +41,83 @@
 
 namespace sill {
 
+  /**
+   * Helper method for create_random_crf().
+   * This creates an edge factor whose type is determined by 'factor_choice':
+   *  - "random"
+   *  - "associative"
+   *  - "random_assoc"
+   */
+  template <typename Engine>
+  table_factor
+  create_random_crf_table_factor(const std::string& factor_choice,
+                                 finite_variable* y1, finite_variable* y2,
+                                 Engine& rng, double strength,
+                                 double base) {
+    if (factor_choice == "random") {
+      uniform_factor_generator gen(-strength, strength);
+      return gen(make_domain(y1, y2), rng);
+    } else if (factor_choice == "associative") {
+      std::vector<double> values(2, strength);
+      return make_associative_factor(make_domain(y1, y2), values);
+    } else if (factor_choice == "random_assoc") {
+      associative_factor_generator gen(base - strength, base + strength);
+      return gen(make_domain(y1, y2), rng);
+    } else {
+      throw std::invalid_argument("bad factor_choice: " + factor_choice);
+    }
+  }
+
+
   //! \addtogroup model
   //! @{
 
   // Methods for generative models
   //============================================================================
 
-  /*
-  template <typename F, typename Range>
-  pairwise_markov_network<F>
-  make_grid_mrf(size_t m, size_t n, const Range& variables) {
-    concept_assert((InputRandomAccessRangeC<Range, variable_h>));
-    concept_assert((Factor<F>));
-    assert(variables.size() == m*n);
-    return pairwise_markov_network<F>(make_grid_graph(m, n), variables);
-  }
-  */
+//   template <typename F, typename Range>
+//   pairwise_markov_network<F>
+//   make_grid_mrf(size_t m, size_t n, const Range& variables) {
+//     concept_assert((InputRandomAccessRangeC<Range, variable_h>));
+//     concept_assert((Factor<F>));
+//     assert(variables.size() == m*n);
+//     return pairwise_markov_network<F>(make_grid_graph(m, n), variables);
+//   }
 
-  template <typename F, typename Engine>
-  void randomize_factors(pairwise_markov_network<F>& mn, Engine& engine) {
-    foreach(F& factor, mn.factors())
-      factor = random_discrete_factor<F>(factor.arguments(), engine);
-  }
+//   template <typename F, typename Engine>
+//   void randomize_factors(pairwise_markov_network<F>& mn, Engine& engine) {
+//     foreach(F& factor, mn.factors())
+//       factor = random_discrete_factor<F>(factor.arguments(), engine);
+//   }
 
-  template <typename F, typename Engine>
-  void random_ising_model(pairwise_markov_network<F>& mn, Engine& engine) {
-    typedef typename F::variable_type variable_type;
+//   template <typename F, typename Engine>
+//   void random_ising_model(pairwise_markov_network<F>& mn, Engine& engine) {
+//     typedef typename F::variable_type variable_type;
 
-    foreach(variable_type* v, mn.vertices()) {
-      finite_domain f; f.insert(v);
-      mn[v] = random_discrete_factor<F>(f, engine);
-    }
+//     foreach(variable_type* v, mn.vertices()) {
+//       finite_domain f; f.insert(v);
+//       mn[v] = random_discrete_factor<F>(f, engine);
+//     }
 
-    foreach(undirected_edge<variable_type*> e, mn.edges()) {
-      mn[e] = random_ising_factor<F>(e.source(), e.target(), engine);
-    }
-  }
+//     foreach(undirected_edge<variable_type*> e, mn.edges()) {
+//       mn[e] = random_ising_factor<F>(e.source(), e.target(), engine);
+//     }
+//   }
 
-  template <typename Engine>
-  void random_ising_model(double alpha_max, double w_max,
-                          pairwise_markov_network<table_factor>& mn,
-                          Engine& engine) {
-    boost::uniform_real<> unif_alpha(0, alpha_max);
-    boost::uniform_real<> unif_w(0, w_max);
-    foreach(finite_variable* v, mn.vertices()) {
-      mn[v] = make_ising_factor<table_factor>(v, unif_alpha(engine));
-    }
-    foreach(undirected_edge<finite_variable*> e, mn.edges()) {
-      mn[e] = make_ising_factor<table_factor>(e.source(), e.target(),
-                                              unif_w(engine));
-    }
-  }
+//   template <typename Engine>
+//   void random_ising_model(double alpha_max, double w_max,
+//                           pairwise_markov_network<table_factor>& mn,
+//                           Engine& engine) {
+//     boost::uniform_real<> unif_alpha(0, alpha_max);
+//     boost::uniform_real<> unif_w(0, w_max);
+//     foreach(finite_variable* v, mn.vertices()) {
+//       mn[v] = make_ising_factor<table_factor>(v, unif_alpha(engine));
+//     }
+//     foreach(undirected_edge<finite_variable*> e, mn.edges()) {
+//       mn[e] = make_ising_factor<table_factor>(e.source(), e.target(),
+//                                               unif_w(engine));
+//     }
+//   }
 
   /**
    * Generates a random HMM as follows:
@@ -113,7 +139,7 @@ namespace sill {
   template <typename F, typename Engine>
   std::pair<std::vector<typename F::variable_type*>,
             std::vector<typename F::variable_type*> >
-  random_HMM(bayesian_network<F>& bn, Engine& engine, universe& u,
+  random_HMM(bayesian_network<F>& bn, Engine& rng, universe& u,
              size_t n, size_t n_states, size_t n_emissions,
              double alpha_tr = 1, double alpha_em = 1) {
     bn.clear();
@@ -123,18 +149,14 @@ namespace sill {
     std::vector<variable_type*> emission_vars;
     variable_type* prev_v = u.new_finite_variable(n_states);
     hidden_vars.push_back(prev_v);
-    F init_fctr(random_discrete_conditional_factor<table_factor>
-                (make_domain(prev_v), domain_type(), alpha_tr, engine));
-    bn.add_factor(prev_v, init_fctr);
+    discrete_factor_generator gen_tr(alpha_tr);
+    discrete_factor_generator gen_em(alpha_em);
+    bn.add_factor(prev_v, gen_tr(make_domain(prev_v), rng));
     for (size_t i = 0; i < n; ++i) {
       variable_type* cur_v = u.new_finite_variable(n_states);
-      F cur_fctr(random_discrete_conditional_factor<table_factor>
-                 (make_domain(cur_v), make_domain(prev_v), alpha_tr, engine));
-      bn.add_factor(cur_v, cur_fctr);
+      bn.add_factor(cur_v, gen_tr(make_domain(cur_v), make_domain(prev_v), rng));
       variable_type* emit_v = u.new_finite_variable(n_emissions);
-      F emit_fctr(random_discrete_conditional_factor<table_factor>
-                  (make_domain(emit_v), make_domain(cur_v), alpha_em, engine));
-      bn.add_factor(emit_v, emit_fctr);
+      bn.add_factor(emit_v, gen_em(make_domain(emit_v), make_domain(cur_v), rng));
       prev_v = cur_v;
       hidden_vars.push_back(prev_v);
       emission_vars.push_back(emit_v);
@@ -149,7 +171,7 @@ namespace sill {
 
     inline size_t
     create_random_crf_choose_neighbor(const std::string& model_structure,
-                                      size_t i, boost::mt11213b& rng) {
+                                      size_t i, boost::mt19937& rng) {
       if (model_structure == "chain") {
         return i-1;
       } else if (model_structure == "tree") {
@@ -223,21 +245,20 @@ namespace sill {
    * @return <Y variables in order, X variables in order,
    *          mapping from Y variables to their corresponding X variables>
    */
-  template <typename CRFfactor>
-  boost::tuple<typename CRFfactor::output_var_vector_type,
-               typename CRFfactor::input_var_vector_type,
-               std::map<typename CRFfactor::output_variable_type*,
-                        copy_ptr<typename CRFfactor::input_domain_type> > >
-  create_random_crf
-  (const std::string& model_structure, size_t n,
-   bool tractable, bool add_cross_factors,
-   random_crf_factor_functor_i<CRFfactor>& YY_factor_func,
-   random_crf_factor_functor_i<CRFfactor>& YX_factor_func,
-   random_factor_functor_i<typename CRFfactor::output_factor_type>&
-   XX_factor_func,
-   universe& u, unsigned random_seed,
-   decomposable<typename CRFfactor::output_factor_type>& Xmodel,
-   crf_model<CRFfactor>& YgivenXmodel) {
+  template <typename CRFfactor, typename Factor, typename Engine>
+  std::map<typename CRFfactor::output_variable_type*,
+           copy_ptr<typename CRFfactor::input_domain_type> >
+  create_random_crf(const std::string& model_structure,
+                    bool tractable,
+                    bool add_cross_factors,
+                    const typename CRFfactor::output_var_vector_type& Yvars,
+                    const typename CRFfactor::input_var_vector_type& Xvars,
+                    typename CRFfactor::factor_fn_type YY_factor_func,
+                    typename CRFfactor::factor_fn_type YX_factor_func,
+                    typename Factor::marginal_fn_type XX_factor_func,
+                    decomposable<Factor>& Xmodel,
+                    crf_model<CRFfactor>& YgivenXmodel,
+                    Engine& rng) {
 
     typedef typename CRFfactor::output_variable_type output_variable_type;
     typedef typename CRFfactor::input_domain_type input_domain_type;
@@ -246,98 +267,87 @@ namespace sill {
 
     assert(model_structure == "chain" || model_structure == "tree" ||
            model_structure == "star");
+    assert(Xvars.size() == Yvars.size());
 
-    boost::mt11213b rng(random_seed);
+    size_t n = Xvars.size();
+
     Xmodel.clear();
     YgivenXmodel.clear();
     std::map<output_variable_type*, copy_ptr<input_domain_type> > Y2X_map;
     if (n == 0) {
-      return boost::make_tuple
-        (output_var_vector_type(), input_var_vector_type(), Y2X_map);
-    }
-
-    // Create the variables
-    input_var_vector_type Xvars;
-    output_var_vector_type Yvars;
-    for (size_t i(0); i < n; ++i) {
-      Xvars.push_back
-        (YX_factor_func.generate_input_variable(u, "X" + to_string(i)));
-      Yvars.push_back
-        (YX_factor_func.generate_output_variable(u, "Y" + to_string(i)));
+      return Y2X_map;
     }
 
     if (n == 1) {
       Y2X_map[Yvars[0]] =
         copy_ptr<input_domain_type>
         (new input_domain_type(make_domain(Xvars[0])));
-      YgivenXmodel.add_factor
-        (YX_factor_func.generate_conditional(Yvars[0], Xvars[0]));
-      Xmodel *= XX_factor_func.generate_marginal(Xvars[0]);
-      return boost::make_tuple(Yvars, Xvars, Y2X_map);
+      YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[0]),
+                                             make_domain(Xvars[0])));
+      Xmodel *= XX_factor_func(make_domain(Xvars[0]));
+      return Y2X_map;
     }
 
     if (tractable) {
-      for (size_t i(0); i < n; ++i)
+      for (size_t i = 0; i < n; ++i)
         Y2X_map[Yvars[i]] =
           copy_ptr<input_domain_type>
           (new input_domain_type(make_domain(Xvars[i])));
       // Add initial vertex pair Y0--X0.
-      YgivenXmodel.add_factor
-        (YX_factor_func.generate_conditional(Yvars[0], Xvars[0]));
+      YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[0]),
+                                             make_domain(Xvars[0])));
       // Add the rest.
       for (size_t i = 1; i < n; ++i) {
         // Choose which existing vertex j to attach to.
         size_t j =
           impl::create_random_crf_choose_neighbor(model_structure, i, rng);
-        Xmodel *=
-          XX_factor_func.generate_marginal(make_domain(Xvars[i],Xvars[j]));
-        YgivenXmodel.add_factor
-          (YX_factor_func.generate_conditional(Yvars[i], Xvars[i]));
-        YgivenXmodel.add_factor(YY_factor_func.generate_marginal
-                                (make_domain(Yvars[i], Yvars[j])));
+        Xmodel *= XX_factor_func(make_domain(Xvars[i],Xvars[j]));
+        YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[i]),
+                                               make_domain(Xvars[i])));
+        YgivenXmodel.add_factor(YY_factor_func(make_domain(Yvars[i], Yvars[j]),
+                                               input_domain_type()));
         if (add_cross_factors) {
-          YgivenXmodel.add_factor
-            (YX_factor_func.generate_conditional(Yvars[j], Xvars[i]));
-          YgivenXmodel.add_factor
-            (YX_factor_func.generate_conditional(Yvars[i], Xvars[j]));
+          YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[j]),
+                                                 make_domain(Xvars[i])));
+          YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[i]),
+                                                 make_domain(Xvars[j])));
         }
       }
     } else { // intractable
 
       // First, create P(X).
-      for (size_t i(1); i < n; ++i) {
+      for (size_t i = 1; i < n; ++i) {
         // Choose which existing vertex j to attach to.
         size_t j =
           impl::create_random_crf_choose_neighbor(model_structure, i, rng);
-        Xmodel *=
-          XX_factor_func.generate_marginal(make_domain(Xvars[i], Xvars[j]));
+        Xmodel *= XX_factor_func(make_domain(Xvars[i], Xvars[j]));
       }
-      std::vector<size_t> xind(randperm(n, rng)); // Y_i matches to X_{xind[i]}
-      for (size_t i(0); i < n; ++i)
+      std::vector<size_t> xind = randperm(n, rng); // Y_i matches to X_{xind[i]}
+      for (size_t i = 0; i < n; ++i)
         Y2X_map[Yvars[i]] =
           copy_ptr<input_domain_type>
           (new input_domain_type(make_domain(Xvars[xind[i]])));
 
       // Second, create P(Y|X).
-      YgivenXmodel.add_factor
-        (YX_factor_func.generate_conditional(Yvars[0], Xvars[xind[0]]));
-      for (size_t i(1); i < n; ++i) {
+      YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[0]),
+                                             make_domain(Xvars[xind[0]])));
+      for (size_t i = 1; i < n; ++i) {
         // Choose which existing Y_j to attach to.
         size_t j =
           impl::create_random_crf_choose_neighbor(model_structure, i, rng);
-        YgivenXmodel.add_factor
-          (YX_factor_func.generate_conditional(Yvars[i], Xvars[xind[i]]));
-        YgivenXmodel.add_factor(YY_factor_func.generate_marginal
-                                (make_domain(Yvars[i], Yvars[j])));
+        YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[i]),
+                                               make_domain(Xvars[xind[i]])));
+        YgivenXmodel.add_factor(YY_factor_func(make_domain(Yvars[i], Yvars[j]),
+                                               input_domain_type()));
         if (add_cross_factors) {
-          YgivenXmodel.add_factor
-            (YX_factor_func.generate_conditional(Yvars[j], Xvars[xind[i]]));
-          YgivenXmodel.add_factor
-            (YX_factor_func.generate_conditional(Yvars[i], Xvars[xind[j]]));
+          YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[j]),
+                                                 make_domain(Xvars[xind[i]])));
+          YgivenXmodel.add_factor(YX_factor_func(make_domain(Yvars[i]),
+                                                 make_domain(Xvars[xind[j]])));
         }
       }
     }
-    return boost::make_tuple(Yvars, Xvars, Y2X_map);
+    return Y2X_map;
 
   } // create_random_crf
 
@@ -362,6 +372,7 @@ namespace sill {
    * @return <Y variables in order, X variables in order,
    *          mapping from Y variables to their corresponding X variables>
    */
+#if 0
   template <typename F>
   boost::tuple
   <typename F::var_vector_type, typename F::var_vector_type,
@@ -461,6 +472,8 @@ namespace sill {
     return boost::make_tuple(Yvars, Xvars, Y2X_map);
 
   } // create_random_bayesian_network_crf
+
+#endif
 
   // Methods for conditional models over discrete variables
   //============================================================================

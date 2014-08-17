@@ -4,6 +4,8 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/random/functional.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 
@@ -82,8 +84,9 @@ struct fixture {
     // generate a random model
     finite_var_vector varvec = u.new_finite_variables(m*n, 2);
     arma::field<finite_variable*> vars = make_grid_graph(varvec, m, n, mn);
+    uniform_factor_generator gen;
     boost::mt19937 rng;
-    random_ising_model(0.5, 1, mn, rng);
+    mn.initialize(marginal_fn(gen, rng));
 
     // create a region graph with clusters over pairs of adjacent variables
     std::vector<finite_domain> clusters;

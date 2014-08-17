@@ -5,6 +5,8 @@
 #include <set>
 #include <map>
 
+#include <boost/function.hpp>
+
 #include <sill/global.hpp>
 #include <sill/factor/concepts.hpp>
 #include <sill/graph/property_functors.hpp>
@@ -77,7 +79,7 @@ namespace sill {
     operator std::string() const {
       std::ostringstream out; out << *this; return out.str(); 
     }
-  
+
     // Accessors
     //==========================================================================
     //! Returns the arguments of the model
@@ -161,6 +163,16 @@ namespace sill {
 
     // Mutators
     //==========================================================================
+    //! Initializes the node and edge potentials with the given functor
+    void initialize(const boost::function<F(const domain_type&)>& fn) {
+      foreach(vertex v, vertices()) {
+        factor(v) = fn(make_domain(v));
+      }
+      foreach(edge e, edges()) {
+        factor(e) = fn(nodes(e));
+      }
+    }
+
     //! Extends the domains of all factors to include the incident nodes
     void extend_domains() {
       foreach(vertex v, vertices())

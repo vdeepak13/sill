@@ -1,8 +1,18 @@
 namespace sill {
   class universe;
 }
-#ifndef SILL_NAMED_UNIVERSE_HPP
-#define SILL_NAMED_UNIVERSE_HPP
+#ifndef SILL_UNIVERSE_HPP
+#define SILL_UNIVERSE_HPP
+
+#include <sill/global.hpp>
+
+#include <sill/base/concepts.hpp>
+#include <sill/base/finite_variable.hpp>
+#include <sill/base/process.hpp>
+#include <sill/base/stl_util.hpp>
+#include <sill/base/string_functions.hpp>
+#include <sill/base/vector_variable.hpp>
+#include <sill/serialization/serialize.hpp>
 
 #include <string>
 #include <stdexcept>
@@ -10,13 +20,7 @@ namespace sill {
 
 #include <boost/unordered_set.hpp>
 #include <boost/lexical_cast.hpp>
-#include <sill/global.hpp>
-#include <sill/base/process.hpp>
-#include <sill/base/concepts.hpp>
-#include <sill/base/stl_util.hpp>
-#include <sill/base/finite_variable.hpp>
-#include <sill/base/vector_variable.hpp>
-#include <sill/serialization/serialize.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -80,17 +84,24 @@ namespace sill {
     finite_variable* new_finite_variable(const std::string& name, size_t size);
 
 
-    finite_variable*
-    new_finite_variable(size_t size) {
+    finite_variable* new_finite_variable(size_t size) {
       return new_finite_variable(boost::lexical_cast<std::string>(next_id()),
                                  size);
     }
 
-    finite_var_vector
-    new_finite_variables(size_t n, size_t size) {
+    finite_var_vector new_finite_variables(size_t n, size_t size) {
       finite_var_vector vars(n);
       foreach(finite_variable*& v, vars) 
         v = new_finite_variable(size);
+      return vars;
+    }
+
+    finite_var_vector new_finite_variables(size_t n, size_t size,
+                                           const std::string& basename) {
+      finite_var_vector vars(n);
+      for (size_t i = 0; i < n; ++i) {
+        vars[i] = new_finite_variable(basename + to_string(i), size);
+      }
       return vars;
     }
 
@@ -100,6 +111,13 @@ namespace sill {
         vars[i] = new_finite_variable(sizes[i]);
       return vars;
     }
+
+    /**
+     * Returns a vector variable with the given name and number of dimensions.
+     * \throw std::invalid_argument if the existing and the new variables
+     *        are not type-compatible.
+     */
+    vector_variable* new_vector_variable(const std::string& name, size_t size);
 
     vector_variable* new_vector_variable(size_t dim) {
       return new_vector_variable(boost::lexical_cast<std::string>(next_id()),
@@ -113,19 +131,21 @@ namespace sill {
       return vars;
     }
     
+    vector_var_vector new_vector_variables(size_t n, size_t size,
+                                           const std::string& basename) {
+      vector_var_vector vars(n);
+      for (size_t i = 0; i < n; ++i) {
+        vars[i] = new_vector_variable(basename + to_string(i), size);
+      }
+      return vars;
+    }
+
     vector_var_vector new_vector_variables(const std::vector<size_t>& dims) {
       vector_var_vector vars(dims.size());
       for(size_t i = 0; i < dims.size(); i++)
         vars[i] = new_vector_variable(dims[i]);
       return vars;
     }
-
-    /**
-     * Returns a vector variable with the given name and number of dimensions.
-     * \throw std::invalid_argument if the existing and the new variables
-     *        are not type-compatible.
-     */
-    vector_variable* new_vector_variable(const std::string& name, size_t size);
 
     /**
      * Return a variable of the specified type and the given size.

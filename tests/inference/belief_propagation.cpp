@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/factor/canonical_gaussian.hpp>
-#include <sill/factor/random/random_canonical_gaussian_functor.hpp>
+#include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/inference/belief_propagation.hpp>
@@ -57,9 +57,11 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   vector_var_vector variables = u.new_vector_variables(m*n, 1);
   cg_model_type model;
   make_grid_graph(variables, m, n, model);
-  random_canonical_gaussian_functor gen;
+  
+  moment_gaussian_generator gen;
+  boost::mt19937 rng;
   foreach(cg_model_type::edge e, model.edges()) {
-    model[e] = gen.generate_marginal(model.nodes(e));
+    model[e] = canonical_gaussian(gen(model.nodes(e), rng));
   }
   moment_gaussian joint(prod_all(model.factors()));
   

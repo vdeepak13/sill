@@ -5,6 +5,8 @@
 #include <sill/factor/learnable_crf_factor.hpp>
 #include <sill/optimization/table_factor_opt_vector.hpp>
 
+#include <boost/function.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -33,6 +35,9 @@ namespace sill {
     // Public types
     // =========================================================================
   public:
+    //! The type of functors that create table factor marginal distributions
+    typedef boost::function<table_crf_factor(const finite_domain&,
+                                             const finite_domain&)> factor_fn_type;
 
     //! Base class
     typedef
@@ -511,6 +516,12 @@ namespace sill {
   operator/(double a, const table_crf_factor& b) {
     return table_crf_factor(a) /= b;
   }
+
+  // Utility classes
+  //============================================================================
+  typedef boost::function<table_crf_factor(const finite_domain&,
+                                           const finite_domain&)>
+    table_crf_factor_fn;
 
 }  // namespace sill
 

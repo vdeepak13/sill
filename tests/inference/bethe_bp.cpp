@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include <sill/factor/canonical_gaussian.hpp>
-#include <sill/factor/random/random_canonical_gaussian_functor.hpp>
+#include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/inference/asynchronous_bethe_bp.hpp>
@@ -53,9 +53,11 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   vector_var_vector variables = u.new_vector_variables(m*n, 1);
   pairwise_markov_network<canonical_gaussian> model;
   make_grid_graph(variables, m, n, model);
-  random_canonical_gaussian_functor gen;
+
+  moment_gaussian_generator gen;
+  boost::mt19937 rng;
   foreach(undirected_edge<vector_variable*> e, model.edges()) {
-    model[e] = gen.generate_marginal(model.nodes(e));
+    model[e] = canonical_gaussian(gen(model.nodes(e), rng));
   }
   moment_gaussian joint(prod_all(model.factors()));
   

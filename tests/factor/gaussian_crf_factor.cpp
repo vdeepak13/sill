@@ -4,7 +4,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/gaussian_crf_factor.hpp>
-#include <sill/model/random.hpp>
+#include <sill/factor/random/moment_gaussian_generator.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -22,12 +22,12 @@ int main(int argc, char** argv) {
 
   universe u;
   boost::mt11213b rng(random_seed);
+  moment_gaussian_generator gen(-0.3, 0.3, 0.3, 0.5);
 
   vector_variable* Y1 = u.new_vector_variable(1);
   vector_variable* X1 = u.new_vector_variable(1);
 
-  moment_gaussian
-    mg_Y1X1(make_marginal_gaussian_factor(make_vector(Y1,X1), .3, .3, .2, rng));
+  moment_gaussian mg_Y1X1 = gen(make_domain(Y1,X1), rng);
   moment_gaussian mg_Y1_given_X1(mg_Y1X1.conditional(make_domain(X1)));
   gaussian_crf_factor gcf_Y1_given_X1(mg_Y1_given_X1);
   canonical_gaussian

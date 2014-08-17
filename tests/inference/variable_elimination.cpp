@@ -1,6 +1,8 @@
 #define BOOST_TEST_MODULE variable_elimination
 #include <boost/test/unit_test.hpp>
 
+#include <sill/factor/random/functional.hpp>
+#include <sill/factor/random/ising_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
@@ -21,9 +23,10 @@ BOOST_AUTO_TEST_CASE(test_grid) {
   finite_var_vector variables = u.new_finite_variables(m*n, 2);
 
   boost::mt19937 rng;
+  ising_factor_generator gen(0.0, 0.5, 0.0, 1.0);
   pairwise_markov_network<table_factor> mn;
   make_grid_graph(variables, m, n, mn);
-  random_ising_model(0.5, 1, mn, rng);
+  mn.initialize(marginal_fn(gen, rng));
 
   std::vector<table_factor> factors(mn.factors().begin(), mn.factors().end());
   table_factor product = prod_all(factors);

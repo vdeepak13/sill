@@ -38,8 +38,6 @@ int main(int argc, char** argv) {
   size_t Xsize = 2;
   unsigned oracle_seed = time(NULL);
   double b_max = 5;
-  double spread = 2;
-  double cov_strength = 1;
 
   size_t cpl_method = 1;
   size_t line_search_type = 0;
@@ -107,8 +105,8 @@ int main(int argc, char** argv) {
   for (size_t j(0); j < Xsize; ++j)
     X.push_back(u.new_vector_variable(1));
   vector_var_vector YX(sill::concat(Y, X));
-  moment_gaussian truth_YX(make_marginal_gaussian_factor
-                        (sill::concat(Y,X), b_max, spread, cov_strength, rng));
+  moment_gaussian_generator gen(-b_max, b_max, 2.0, 0.5);
+  moment_gaussian truth_YX = gen(make_domain(YX), rng);
   truth_YX.normalize();
   if (1) {
     canonical_gaussian cg1(truth_YX);

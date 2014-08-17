@@ -6,21 +6,15 @@
 
 #include <boost/array.hpp>
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_01.hpp>
-#include <boost/random/uniform_int.hpp>
-
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/model/factor_graph_model.hpp>
-
-#include <sill/factor/random/random.hpp>
 #include <sill/parallel/pthread_tools.hpp>
-
 
 #include <sill/inference/parallel/basic_state_manager.hpp>
 #include <sill/inference/parallel/basic_update_rule.hpp>
-
 
 // This should come last
 #include <sill/macros_def.hpp>
@@ -57,7 +51,7 @@ int main(int argc, char* argv[]) {
   cout << "Done!" << endl;
   cout << "-- Initializing random number genrators : ";
   boost::mt19937 rng;
-  boost::uniform_01<boost::mt19937, double> unif01(rng);
+  uniform_factor_generator gen;
   cout << "Done!" << endl;
 
   cout << "-- Creating variables : ";
@@ -68,23 +62,20 @@ int main(int argc, char* argv[]) {
 
   cout << "-- Creating Factor Graph : ";
   factor_graph_model_type fg;  
+
   // Add vertex parameters
   for(size_t i = 0; i < x.size(); ++i) {
-    // Create the arguments
-    finite_domain arguments;  
+    finite_domain arguments;
     arguments.insert(x[i]);
-    table_factor factor(arguments, 1.0);
-    factor.normalize();
-    // Create the table factor and add it to the factor graph
-    fg.add_factor( random_discrete_factor<table_factor>(arguments, unif01));
+    fg.add_factor(gen(arguments, rng));
   }
+
   // Add edge parameters
   for(size_t i = 0; i < x.size()-1; ++i) {
-    // Create the arguments
     finite_domain arguments;  
-    arguments.insert(x[i]);   arguments.insert(x[i+1]);
-    // Create the table factor and add it to the factor graph
-    fg.add_factor( random_discrete_factor<table_factor>(arguments, unif01));
+    arguments.insert(x[i]);
+    arguments.insert(x[i+1]);
+    fg.add_factor(gen(arguments, rng));
   }
   cout << "Done!" << endl;
 
