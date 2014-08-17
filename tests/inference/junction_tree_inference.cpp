@@ -4,6 +4,8 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/factor/canonical_gaussian.hpp>
+#include <sill/factor/random/functional.hpp>
+#include <sill/factor/random/ising_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
@@ -29,7 +31,7 @@ struct fixture {
     variables = u.new_finite_variables(m*n, 2);
     boost::mt19937 rng;
     make_grid_graph(variables, m, n, mn);
-    random_ising_model(mn, rng);
+    mn.initialize(marginal_fn(uniform_factor_generator(-1.0, 0.0), rng));
     factors.assign(mn.factors().begin(), mn.factors().end());
   }
 

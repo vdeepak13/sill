@@ -48,6 +48,11 @@
    - try different initialization once we have better sampling of MGs
    - change the dataset2 design to allow on-disk datasets.
    - clean up the subset_iterator code
+   - marginal() test => is_marginal() 
+   - merged datasets
+   - change the table generator to take actual arguments (not logspace)
+   - refactor the CRF factors
+   - clean up and simplify the optimization code
 
 8. more examples / applications:
    - viterbi algorithm

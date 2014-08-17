@@ -1,6 +1,7 @@
 #ifndef SILL_MOMENT_GAUSSIAN_HPP
 #define SILL_MOMENT_GAUSSIAN_HPP
 
+#include <boost/function.hpp>
 #include <boost/random/lagged_fibonacci.hpp>
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/uniform_int.hpp>
@@ -29,6 +30,14 @@ namespace sill {
   class moment_gaussian : public gaussian_factor {
 
     friend class canonical_gaussian;
+  public:
+    //! The type of functors that create table factor marginal distributions
+    typedef boost::function<moment_gaussian(const vector_domain&)> marginal_fn_type;
+
+    //! The type of functors that create table factor conditional distributions
+    typedef boost::function<moment_gaussian(const vector_domain&,
+                                            const vector_domain&)> conditional_fn_type;
+
 
     // Private data members and methods
     //==========================================================================
@@ -398,6 +407,15 @@ namespace sill {
 
   //! \relates moment_gaussian
   double norm_inf(const moment_gaussian& x, const moment_gaussian& y);
+
+  // Utility classes
+  //============================================================================
+  typedef boost::function<moment_gaussian(const vector_domain&)>
+    marginal_moment_gaussian_fn;
+
+  typedef boost::function<moment_gaussian(const vector_domain&,
+                                          const vector_domain&)>
+    conditional_moment_gaussian_fn;
 
   // Traits
   //============================================================================

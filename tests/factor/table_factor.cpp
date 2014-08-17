@@ -6,7 +6,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/random/random.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/learning/dataset/record_conversions.hpp>
 
 #include "predicates.hpp"
@@ -16,11 +16,11 @@ using namespace sill;
 struct fixture {
   fixture()
     : vars(u.new_finite_variables(3, 2)),
-      f(random_range_discrete_factor<table_factor>
-               (make_domain(vars), rng, 0.0, 1.0)) { }
+      f(gen(make_domain(vars), rng)) { }
 
   universe u;
   boost::mt19937 rng; 
+  uniform_factor_generator gen;
   finite_var_vector vars;
   table_factor f;
 };
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE(test_sampling) {
   boost::mt11213b rng;
 
   // Create a model to sample from.
-  table_factor f(random_discrete_factor<table_factor>(vars, rng));
+  table_factor f = uniform_factor_generator()(vars, rng);
   f.normalize();
 
   // Test log likelihood.

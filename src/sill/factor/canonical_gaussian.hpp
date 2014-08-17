@@ -10,6 +10,8 @@
 #include <sill/learning/dataset/vector_record.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 
+#include <boost/function.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -25,6 +27,13 @@ namespace sill {
   class canonical_gaussian : public gaussian_factor {
 
     friend class moment_gaussian;
+  public:
+    //! The type of functors that create table factor marginal distributions
+    typedef boost::function<canonical_gaussian(const vector_domain&)> marginal_fn_type;
+
+    //! The type of functors that create table factor conditional distributions
+    typedef boost::function<canonical_gaussian(const vector_domain&,
+                                               const vector_domain&)> conditional_fn_type;
 
     // Constructors and conversion operators
     //==========================================================================
@@ -419,6 +428,15 @@ namespace sill {
   
   //! Returns the inverse of the factor (flips the sign on information vec & mat)
   canonical_gaussian invert(const canonical_gaussian& f);
+
+  // Utility classes
+  //============================================================================
+  typedef boost::function<canonical_gaussian(const vector_domain&)>
+    marginal_canonical_gaussian_fn;
+
+  typedef boost::function<canonical_gaussian(const vector_domain&,
+                                          const vector_domain&)>
+    conditional_canonical_gaussian_fn;
 
   // Traits
   //============================================================================

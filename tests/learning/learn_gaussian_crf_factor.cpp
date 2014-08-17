@@ -3,6 +3,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/base/universe.hpp>
+#include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/learning/crf/crf_parameter_learner.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
@@ -34,8 +35,6 @@ int main(int argc, char** argv) {
   size_t Xsize = 2;
   unsigned oracle_seed = 1284392;
   double b_max = 5;
-  double spread = 2;
-  double cov_strength = 1;
 
   if (argc == 5) {
     std::istringstream is(argv[1]);
@@ -65,8 +64,8 @@ int main(int argc, char** argv) {
   for (size_t j(0); j < Xsize; ++j)
     X.push_back(u.new_vector_variable(1));
   vector_var_vector YX(sill::concat(Y, X));
-  moment_gaussian truth(make_marginal_gaussian_factor
-                        (sill::concat(Y,X), b_max, spread, cov_strength, rng));
+  moment_gaussian_generator gen(-b_max, b_max, 2.0, 0.5);
+  moment_gaussian truth = gen(make_domain(YX), rng);
   if (1) {
     canonical_gaussian cg1(truth);
     canonical_gaussian cg2(truth);

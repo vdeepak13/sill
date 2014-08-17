@@ -316,18 +316,13 @@ namespace sill {
     collapse(std::plus<result_type>(), 0, retain, f);
   }
 
-  // TODO: this is awfully inefficient at the moment
-  table_factor table_factor::conditional(const finite_domain& B) const {
-    assert(includes(arguments(), B));
-    table_factor cond(*this);
-    table_factor PB(marginal(B));
-    foreach(const finite_assignment& fa, assignments())
-      cond(fa) /= PB(fa);
-    return cond;
+  table_factor table_factor::conditional(const finite_domain& subset) const {
+    assert(includes(arguments(), subset));
+    return *this / marginal(subset);
   }
 
   bool table_factor::is_conditional(const finite_domain& tail, double tol) const {
-    return norm_inf(sum(*this, tail), table_factor(1.0)) <= tol;
+    return norm_inf(marginal(tail), table_factor(1.0)) <= tol;
   }
 
   table_factor& table_factor::normalize() {

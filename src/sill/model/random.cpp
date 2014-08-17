@@ -1,4 +1,4 @@
-
+#include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>
@@ -75,9 +75,8 @@ namespace sill {
       YgivenXmodel.add_factor
         (table_crf_factor(f, make_domain<finite_variable>(Yvars[0]), false));
       if (n == 1) {
-        f =
-          random_range_discrete_factor<table_factor>
-          (make_domain(Xvars[0]), rng, -XXstrengthD, XXstrengthD);
+        uniform_factor_generator gen(-XXstrengthD, XXstrengthD);
+        f = gen(make_domain(Xvars[0]), rng);
         Xmodel *= f;
       }
       for (size_t i(1); i < n; ++i) {
@@ -268,34 +267,32 @@ namespace sill {
         (new vector_domain(make_domain<vector_variable>(Xvars.back())));
     }
     // Add initial vertex pair Y1--X1.
-    moment_gaussian f(make_binary_conditional_gaussian
-                      (Yvars[0],Xvars[0], b_max, c_max, rng));
+    moment_gaussian_generator genXX(-b_max, b_max, variance, XXcorrelation);
+    moment_gaussian_generator genYX(-b_max, b_max, 1.0, 1.0, -c_max, c_max);
+    moment_gaussian_generator genYY(-b_max, b_max, variance, YYcorrelation);
+    moment_gaussian f;
+    f = genYX(make_domain(Yvars[0]), make_domain(Xvars[0]), rng);
     YgivenXmodel.add_factor(gaussian_crf_factor(f));
-    if (n == 1) {
-      f =
-        make_marginal_gaussian_factor
-        (make_vector(Xvars[0]), b_max, variance, variance / 2, rng);
-      Xmodel *= canonical_gaussian(f);
+
+    if (n == 1) { // why is this n==1 ?? could this use genXX also?
+      moment_gaussian_generator gen(-b_max, b_max, variance, 0.5);
+      Xmodel *= canonical_gaussian(gen(make_domain(Xvars[0]), rng));
     }
-    for (size_t i(1); i < n; ++i) {
+
+    for (size_t i = 1; i < n; ++i) {
       // Choose which existing vertex j to attach to.
       size_t j((model_structure == "chain") ?
                i-1 : boost::uniform_int<int>(0,i-1)(rng));
-      f = make_binary_marginal_gaussian
-        (Xvars[j], Xvars[i], b_max, variance, XXcorrelation, rng);
+      f = genXX(make_domain(Xvars[j], Xvars[i]), rng);
       Xmodel *= canonical_gaussian(f);
-      f = make_binary_conditional_gaussian
-        (Yvars[i], Xvars[i], b_max, c_max, rng);
+      f = genYX(make_domain(Yvars[i]), make_domain(Xvars[i]), rng);
       YgivenXmodel.add_factor(gaussian_crf_factor(f));
-      f = make_binary_marginal_gaussian
-        (Yvars[j], Yvars[i], b_max, variance, YYcorrelation, rng);
+      f = genYY(make_domain(Yvars[j], Yvars[i]), rng);
       YgivenXmodel.add_factor(gaussian_crf_factor(f));
       if (add_cross_factors) {
-        f = make_binary_conditional_gaussian
-          (Yvars[j], Xvars[i], b_max, c_max, rng);
+        f = genYX(make_domain(Yvars[j]), make_domain(Xvars[i]), rng);
         YgivenXmodel.add_factor(gaussian_crf_factor(f));
-        f = make_binary_conditional_gaussian
-          (Yvars[i], Xvars[j], b_max, c_max, rng);
+        f = genYX(make_domain(Yvars[i]), make_domain(Xvars[j]), rng);
         YgivenXmodel.add_factor(gaussian_crf_factor(f));
       }
     }

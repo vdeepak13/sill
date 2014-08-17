@@ -6,13 +6,10 @@
 
 #include <sill/factor/any_factor.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/random/random.hpp>
 #include <sill/inference/junction_tree_inference.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/range/algorithm.hpp>
-
-boost::mt19937 rng;
 
 int main(int argc, char** argv)
 {
@@ -46,10 +43,12 @@ int main(int argc, char** argv)
   std::vector< tablef > factors(n);
 
   // Generate n random table factors, each with <=m variables
+  boost::mt19937 rng;
+  uniform_factor_generator gen;
   for(size_t i = 0; i < n; i++) {
     finite_domain d;
     for(size_t j = 0; j < m; j++) d.insert(v[rng() % k]);
-    factors[i] = random_discrete_factor< tablef >(d, rng);
+    factors[i] = gen(d, rng);
   }
 
   if (n < 10) {

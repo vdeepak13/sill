@@ -5,6 +5,8 @@
 
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/decomposable_fragment.hpp>
+#include <sill/factor/random/functional.hpp>
+#include <sill/factor/random/ising_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/inference/junction_tree_inference.hpp>
@@ -30,7 +32,7 @@ void test_marginal(size_t m, size_t n) {
   pairwise_markov_network< table_factor > mn;
   finite_var_vector variables = u.new_finite_variables(m * n, 2);
   make_grid_graph(variables, m, n, mn);
-  random_ising_model(mn, rng);
+  mn.initialize(marginal_fn(ising_factor_generator(), rng));
 
   // compute the corresponding decomposable fragment
   shafer_shenoy<table_factor> ss(mn);

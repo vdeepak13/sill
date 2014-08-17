@@ -6,7 +6,8 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random/random.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
+#include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/learning/crf/crf_parameter_learner.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
@@ -35,8 +36,7 @@ create_finite_var_data
   using namespace sill;
 
   // Fixed dataset parameters
-  double lower = .001;
-  double upper = 1;
+  uniform_factor_generator gen(std::log(0.001), 0);
 
   // Create P(Y | X), P(X)
   Y.clear();
@@ -46,10 +46,7 @@ create_finite_var_data
   for (size_t j(0); j < Xsize; ++j)
     X.push_back(u.new_finite_variable(2));
   YX = sill::concat(Y, X);
-  truth_YX =
-    random_range_discrete_factor<table_factor>
-    (make_domain<finite_variable>(YX), rng, lower, upper);
-  truth_YX.normalize();
+  truth_YX = gen(make_domain(YX), rng).normalize();
   truth_Y_given_X = truth_YX.conditional(make_domain<finite_variable>(X));
   truth_X = truth_YX.marginal(make_domain(X));
 
@@ -461,8 +458,6 @@ int main(int argc, char** argv) {
   } else if (factor_type == "gaussian") { //===================================
     // Fixed dataset parameters
     double b_max = 5;
-    double spread = 2;
-    double cov_strength = 1;
     // Fixed learning parameters
     bool normalize_data = false;
     // Gaussian CRF factor cross validation parameters
@@ -480,13 +475,13 @@ int main(int argc, char** argv) {
 
     // Create P(Y | X), P(X)
     vector_var_vector Y, X;
-    for (size_t j(0); j < Ysize; ++j)
+    for (size_t j = 0; j < Ysize; ++j)
       Y.push_back(u.new_vector_variable(1));
-    for (size_t j(0); j < Xsize; ++j)
+    for (size_t j = 0; j < Xsize; ++j)
       X.push_back(u.new_vector_variable(1));
     vector_var_vector YX(sill::concat(Y, X));
-    moment_gaussian truth_YX(make_marginal_gaussian_factor
-                             (YX, b_max, spread, cov_strength, rng));
+    moment_gaussian_generator gen(-b_max, b_max, 2.0, 0.5);
+    moment_gaussian truth_YX = gen(make_domain(YX), rng);
     truth_YX.normalize();
     if (1) { // Make sure this is a valid Gaussian.
       canonical_gaussian cg1(truth_YX);

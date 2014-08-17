@@ -1,4 +1,3 @@
-
 #ifndef SILL_TABLE_FACTOR_HPP
 #define SILL_TABLE_FACTOR_HPP
 
@@ -7,6 +6,7 @@
 #include <iosfwd>
 #include <sstream>
 
+#include <boost/function.hpp>
 #include <boost/random/uniform_real.hpp>
 
 #include <sill/base/finite_assignment.hpp>
@@ -61,6 +61,13 @@ namespace sill {
 
     //! The type of shape / index of the underlying table
     typedef table_type::shape_type shape_type;
+
+    //! The type of functors that create table factor marginal distributions
+    typedef boost::function<table_factor(const finite_domain&)> marginal_fn_type;
+
+    //! The type of functors that create table factor conditional distributions
+    typedef boost::function<table_factor(const finite_domain&,
+                                         const finite_domain&)> conditional_fn_type;
 
     // Constructors and conversion operators
     //==========================================================================
@@ -550,7 +557,7 @@ namespace sill {
     void marginal_unnormalized(const finite_domain& retain, table_factor& f) const;
 
     //! If this factor represents P(A,B), then this returns P(A|B).
-    //! @todo Make this more efficient.
+    //! \todo Make this more efficient.
     table_factor conditional(const finite_domain& B) const;
 
     //! Returns true if this factor represents a conditional distribution
@@ -1131,6 +1138,58 @@ namespace sill {
     return factor;
   }
 
+  /**
+   * Creates a factor \f$\phi\f$ over a single binary variable \f$x\f$
+   * such that \f$\phi(x)=\exp(\alpha)\f$ for \f$x=1\f$ 
+   * and \f$\phi(x)=\exp(-\alpha)\f$ for \f$x=0\f$.
+   */
+  inline table_factor make_ising_factor(finite_variable* u, double alpha) {
+    assert(u->size() == 2);
+    boost::array<double, 2> values = { std::exp(-alpha), std::exp(+alpha) };
+    return make_dense_table_factor(make_vector(u), values);
+  }
+
+  /**
+   * Creates an Ising factor \f$\phi\f$ over two variables \f$x, y\f$
+   * such that \f$\phi(x, y)=\exp(+\alpha)\f$ for \f$x=y\f$ 
+   * and \f$\phi(x, y)=\exp(-\alpha)\f$ for \f$x \neq y\f$.
+   */
+  inline table_factor
+  make_ising_factor(finite_variable* u, finite_variable* v, double alpha) {
+    assert(u->size() == 2 && v->size() == 2);
+    double a = std::exp(+alpha);
+    double b = std::exp(-alpha);
+    boost::array<double, 4> values = { a, b, b, a };
+    return make_dense_table_factor(make_vector(u, v), values);
+  }
+
+  /**
+   * Creates a factor over the given discrete variables (y1, ..., yn)
+   * that equal to exp(value[k]) whenever y1 == y2 == ... == yn = k and 
+   * 1.0 everywhere else.
+   */
+  inline table_factor
+  make_associative_factor(const finite_domain& args,
+                          const std::vector<double>& values) {
+    foreach(finite_variable* v, args) {
+      assert(v->size() == values.size());
+    }
+    table_factor f(args, 1.0);
+    std::vector<size_t> index;
+    for (size_t k = 0; k < values.size(); ++k) {
+      index.assign(args.size(), k);
+      f.table()(index) = std::exp(values[k]);
+    }
+    return f;
+  }
+
+  inline table_factor
+  make_associative_factor(finite_variable* x, finite_variable* y,
+                          double strength) {
+    return make_associative_factor(make_domain(x, y),
+                                   std::vector<double>(x->size(), strength));
+  }
+
   // Operator Overloads
   //============================================================================
 
@@ -1245,6 +1304,15 @@ namespace sill {
   inline table_factor operator/(table_factor x, double a) {
     return x /= a;
   }
+
+  // Utility classes
+  //============================================================================
+  typedef boost::function<table_factor(const finite_domain&)>
+    marginal_table_factor_fn;
+
+  typedef boost::function<table_factor(const finite_domain&,
+                                       const finite_domain&)>
+    conditional_table_factor_fn;
 
   // Traits
   //============================================================================

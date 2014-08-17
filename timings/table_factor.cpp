@@ -10,11 +10,9 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/timer.hpp>
 
+#include <sill/copy_ptr.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/copy_ptr.hpp>
-#include <sill/factor/random/random.hpp>
-
 #include <sill/range/algorithm.hpp>
 
 using namespace sill;

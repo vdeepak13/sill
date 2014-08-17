@@ -2,6 +2,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/base/universe.hpp>
+#include <sill/factor/random/functional.hpp>
+#include <sill/factor/random/ising_factor_generator.hpp>
+#include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/inference/gibbs_sampler.hpp>
 #include <sill/model/decomposable.hpp>
@@ -33,11 +36,12 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
 
   universe u;
   boost::mt19937 rng(random_seed);
+  ising_factor_generator gen(0.0, 0.5, 0.0, 1.0);
   
   finite_var_vector variables = u.new_finite_variables(m*n, 2);
   pairwise_markov_network<table_factor> mn;
   make_grid_graph(variables, m, n, mn);
-  random_ising_model(0.5, 1, mn, rng);
+  mn.initialize(marginal_fn(gen, rng));
   cout << "Generated random " << m << " x " << n << " Markov network."
        << endl;
 

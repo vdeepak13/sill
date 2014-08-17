@@ -4,11 +4,13 @@
 #include <iostream>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random/random_table_factor_functor.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/bayesian_network.hpp>
 #include <sill/learning/chow_liu.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
+
+#include <boost/random/mersenne_twister.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -43,18 +45,18 @@ BOOST_AUTO_TEST_CASE(test_simple) {
 
   // generate a random Bayesian network with the given structure
   bayesian_network<table_factor> bn;
-  random_table_factor_functor gen(0);
-  bn.add_factor(v[0], gen.generate_marginal(v[0]));
-  bn.add_factor(v[1], gen.generate_conditional(v[1], v[0]));
-  bn.add_factor(v[2], gen.generate_conditional(v[2], v[1]));
-  bn.add_factor(v[3], gen.generate_conditional(v[3], v[1]));
-  bn.add_factor(v[4], gen.generate_conditional(v[4], v[3]));
-  bn.add_factor(v[5], gen.generate_conditional(v[5], v[3]));
+  uniform_factor_generator gen;
+  boost::mt19937 rng;
+  bn.add_factor(v[0], gen(make_domain(v[0]), rng));
+  bn.add_factor(v[1], gen(make_domain(v[1]), make_domain(v[0]), rng));
+  bn.add_factor(v[2], gen(make_domain(v[2]), make_domain(v[1]), rng));
+  bn.add_factor(v[3], gen(make_domain(v[3]), make_domain(v[1]), rng));
+  bn.add_factor(v[4], gen(make_domain(v[4]), make_domain(v[3]), rng));
+  bn.add_factor(v[5], gen(make_domain(v[5]), make_domain(v[3]), rng));
 
   //cout << bn << endl;
 
   // generate a dataset
-  boost::mt19937 rng;
   vector_dataset<> data(v, vector_var_vector(),
                         std::vector<variable::variable_typenames>());
   for (size_t i = 0; i < nsamples; ++i) {

@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/random/random_table_factor_functor.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/learning/dataset3/finite_memory_dataset.hpp>
 #include <sill/learning/mle/table_factor.hpp>
 
@@ -112,18 +112,18 @@ BOOST_AUTO_TEST_CASE(test_iterator_comparisons) {
 struct fixture {
   fixture()
     : v(u.new_finite_variables(3, 2)),
-      f(random_table_factor_functor(0).generate_marginal(make_domain(v))) {
+      f(uniform_factor_generator()(make_domain(v), rng)) {
     ds.initialize(v, 1000);
     f.normalize();
     for (size_t i = 0; i < 1000; ++i) {
       ds.insert(f.sample(rng));
     }
   }
+  boost::mt19937 rng;
   universe u;
   finite_var_vector v;
   finite_memory_dataset ds;
   table_factor f;
-  boost::mt19937 rng;
 };
 
 BOOST_FIXTURE_TEST_CASE(test_records, fixture) {
@@ -212,7 +212,7 @@ BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
   mle.normalize();
   double kl = f.relative_entropy(mle);
   std::cout << "Samples: " << kl << std::endl;
-  BOOST_CHECK_SMALL(kl, 2e-2);
+  BOOST_CHECK_SMALL(kl, 0.05);
 }
 
 // BOOST_FIXTURE_TEST_CASE(test_shuffle, fixture) {

@@ -2,14 +2,11 @@
 
 #include <boost/array.hpp>
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_01.hpp>
-#include <boost/random/uniform_int.hpp>
-
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/random/random.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/inference/parallel/message_manager.hpp>
 #include <sill/parallel/pthread_tools.hpp>
 
@@ -84,8 +81,7 @@ int main() {
 
   // Random number generator
   boost::mt19937 rng;
-  boost::uniform_01<boost::mt19937, double> unif01(rng);
-
+  uniform_factor_generator gen;
 
   // Create a universe.
   universe u;
@@ -101,22 +97,18 @@ int main() {
 
   // Create some unary factors
   for(size_t i = 0; i < x.size(); ++i) {
-    // Create the arguments
     finite_domain arguments;  
     arguments.insert(x[i]);
-    // Create the table factor and add it to the factor graph
-    fg.add_factor( random_discrete_factor<table_factor>(arguments, rng));
+    fg.add_factor(gen(arguments, rng));
   }
   
   // For every two variables in a chain create a factor
   for(size_t i = 0; i < x.size() - 1; ++i) {
-    // Create the arguments
     finite_domain arguments;  
-    arguments.insert(x[i]);   arguments.insert(x[i+1]);
-    // Create the table factor and add it to the factor graph
-    fg.add_factor( random_discrete_factor<table_factor>(arguments, rng));
+    arguments.insert(x[i]);
+    arguments.insert(x[i+1]);
+    fg.add_factor(gen(arguments, rng));
   }
-
 
   basic_message_manager<table_factor> manager(fg,true);
   

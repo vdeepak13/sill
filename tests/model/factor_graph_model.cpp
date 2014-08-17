@@ -3,13 +3,11 @@
 
 #include <boost/array.hpp>
 #include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_01.hpp>
-#include <boost/random/uniform_int.hpp>
 
 #include <sill/stl_io.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
-#include <sill/factor/random/random.hpp>
+#include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/range/algorithm.hpp>
@@ -32,7 +30,7 @@ struct fixture {
     : nvars(10) {
     // Random number generator
     boost::mt19937 rng;
-    boost::uniform_01<boost::mt19937, double> unif01(rng);
+    uniform_factor_generator gen;
 
     // Create some variables
     x.resize(nvars);
@@ -43,13 +41,13 @@ struct fixture {
     // Create some unary factors
     for(size_t i = 0; i < nvars; ++i) {
       finite_domain arguments = make_domain(x[i]);
-      fg.add_factor(random_discrete_factor<table_factor>(arguments, unif01));
+      fg.add_factor(gen(arguments, rng));
     }
     
     // For every two variables in a chain create a factor
     for(size_t i = 0; i < x.size() - 1; ++i) {
       finite_domain arguments = make_domain(x[i], x[i+1]);
-      fg.add_factor(random_discrete_factor<table_factor>(arguments, unif01));
+      fg.add_factor(gen(arguments, rng));
     }
   }
 
