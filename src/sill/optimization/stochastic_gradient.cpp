@@ -1,4 +1,3 @@
-
 #include <sill/optimization/stochastic_gradient.hpp>
 
 #include <sill/macros_def.hpp>

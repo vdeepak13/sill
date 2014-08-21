@@ -1,4 +1,3 @@
-
 #include <sill/learning/decomposable_parameter_learner.hpp>
 
 namespace sill {

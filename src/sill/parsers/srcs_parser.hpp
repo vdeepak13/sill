@@ -5,8 +5,8 @@
  */
 
 
-#ifndef SRCS_PARSER_HPP_
-#define SRCS_PARSER_HPP_
+#ifndef SILL_SRCS_PARSER_HPP
+#define SILL_SRCS_PARSER_HPP
 
 #include <string>
 #include <vector>

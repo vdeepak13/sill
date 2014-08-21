@@ -1,4 +1,3 @@
-
 #ifndef SILL_SYN_ORACLE_CSI_HPP
 #define SILL_SYN_ORACLE_CSI_HPP
 

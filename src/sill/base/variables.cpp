@@ -1,4 +1,3 @@
-
 #include <sill/base/variables.hpp>
 
 #include <sill/macros_def.hpp>

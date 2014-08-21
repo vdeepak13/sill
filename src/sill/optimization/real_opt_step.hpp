@@ -1,4 +1,3 @@
-
 #ifndef SILL_REAL_OPT_STEP_HPP
 #define SILL_REAL_OPT_STEP_HPP
 

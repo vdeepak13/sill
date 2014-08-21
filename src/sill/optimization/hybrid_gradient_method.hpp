@@ -1,6 +1,5 @@
-
-#ifndef _SILL_HYBRID_GRADIENT_METHOD_HPP_
-#define _SILL_HYBRID_GRADIENT_METHOD_HPP_
+#ifndef SILL_HYBRID_GRADIENT_METHOD_HPP
+#define SILL_HYBRID_GRADIENT_METHOD_HPP
 
 #include <sill/optimization/gradient_method.hpp>
 

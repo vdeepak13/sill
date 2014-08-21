@@ -1,4 +1,3 @@
-
 #include <iostream>
 
 #include <sill/base/universe.hpp>

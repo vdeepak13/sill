@@ -1,4 +1,3 @@
-
 #include <sill/learning/error_measures.hpp>
 
 #include <sill/macros_def.hpp>

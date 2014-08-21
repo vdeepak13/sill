@@ -1,4 +1,3 @@
-
 #include <sill/optimization/logreg_opt_vector.hpp>
 
 #include <sill/macros_def.hpp>

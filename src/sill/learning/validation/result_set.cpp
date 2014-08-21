@@ -1,4 +1,3 @@
-
 #include <sill/learning/validation/result_set.hpp>
 
 #include <sill/macros_def.hpp>

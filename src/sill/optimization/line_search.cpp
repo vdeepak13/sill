@@ -1,4 +1,3 @@
-
 #include <sill/optimization/line_search.hpp>
 
 namespace sill {

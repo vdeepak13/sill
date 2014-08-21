@@ -1,4 +1,3 @@
-
 #ifndef SILL_VECTOR_RECORD_HPP
 #define SILL_VECTOR_RECORD_HPP
 

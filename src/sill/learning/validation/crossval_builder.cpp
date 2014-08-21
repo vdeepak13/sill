@@ -1,4 +1,3 @@
-
 #include <sill/learning/validation/crossval_builder.hpp>
 
 namespace sill {

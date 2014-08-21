@@ -1,4 +1,3 @@
-
 #ifndef SILL_SET_INDEX_HPP
 #define SILL_SET_INDEX_HPP
 

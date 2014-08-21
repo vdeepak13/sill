@@ -1,4 +1,3 @@
-
 #include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
 
 #include <sill/macros_def.hpp>

@@ -1,4 +1,3 @@
-
 #ifndef SILL_LEARN_FACTOR_HPP
 #define SILL_LEARN_FACTOR_HPP
 

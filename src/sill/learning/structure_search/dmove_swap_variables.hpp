@@ -1,6 +1,6 @@
-
 #ifndef SILL_LEARNING_DMOVE_SWAP_VARIABLES_HPP
 #define SILL_LEARNING_DMOVE_SWAP_VARIABLES_HPP
+
 #include <set>
 #include <sill/learning/structure_search/decomposable_move.hpp>
 #include <sill/base/stl_util.hpp>

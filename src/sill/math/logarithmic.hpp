@@ -1,4 +1,3 @@
-
 #ifndef SILL_LOGARITHMIC_HPP
 #define SILL_LOGARITHMIC_HPP
 

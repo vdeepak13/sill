@@ -1,4 +1,3 @@
-
 #ifndef SILL_FINITE_RECORD_HPP
 #define SILL_FINITE_RECORD_HPP
 

@@ -1,4 +1,3 @@
-
 #include <sill/learning/dataset/record_conversions.hpp>
 
 #include <sill/macros_def.hpp>

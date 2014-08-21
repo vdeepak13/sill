@@ -1,4 +1,3 @@
-
 #ifndef SILL_STRING_FUNCTIONS_HPP
 #define SILL_STRING_FUNCTIONS_HPP
 
@@ -105,4 +104,4 @@ namespace sill {
 
 } // namespace sill
 
-#endif // #ifndef SILL_STRING_FUNCTIONS_HPP
+#endif

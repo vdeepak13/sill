@@ -1,6 +1,6 @@
-
 #ifndef SILL_LEARNING_DMOVE_MOVE_LEAF_HPP
 #define SILL_LEARNING_DMOVE_MOVE_LEAF_HPP
+
 #include <set>
 #include <sill/iterator/subset_iterator.hpp>
 #include <sill/learning/structure_search/decomposable_move.hpp>

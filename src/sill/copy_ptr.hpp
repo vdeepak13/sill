@@ -1,4 +1,3 @@
-
 #ifndef SILL_COPY_PTR_HPP
 #define SILL_COPY_PTR_HPP
 

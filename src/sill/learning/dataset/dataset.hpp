@@ -1,4 +1,3 @@
-
 #ifndef SILL_DATASET_HPP
 #define SILL_DATASET_HPP
 

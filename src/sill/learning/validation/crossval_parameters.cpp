@@ -1,4 +1,3 @@
-
 #include <sill/learning/validation/crossval_parameters.hpp>
 
 #include <sill/macros_def.hpp>

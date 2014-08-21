@@ -1,4 +1,3 @@
-
 #ifndef SILL_PWL_CRF_WEIGHTS_HPP
 #define SILL_PWL_CRF_WEIGHTS_HPP
 

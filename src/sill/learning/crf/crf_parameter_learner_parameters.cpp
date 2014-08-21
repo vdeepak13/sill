@@ -1,4 +1,3 @@
-
 #include <sill/learning/crf/crf_parameter_learner_parameters.hpp>
 
 #include <sill/macros_def.hpp>

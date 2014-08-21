@@ -1,4 +1,3 @@
-
 #include <sill/model/model_products.hpp>
 
 #include <sill/macros_def.hpp>
