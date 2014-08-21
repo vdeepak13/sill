@@ -20,7 +20,6 @@ set(PRL_LEARNING_SOURCES
   ${PRL_PARAMETER_SOURCES}
   ${PRL_VALIDATION_SOURCES}
   decomposable_parameter_learner
-  em_mog
   error_measures
   learn_crf_factor
   PARENT_SCOPE)

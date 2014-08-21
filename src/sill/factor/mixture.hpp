@@ -54,7 +54,6 @@ namespace sill {
     typedef typename F::record_type record_type;
 
     typedef typename F::var_vector_type var_vector_type;
-    typedef typename F::var_map_type    var_map_type;
 
 
     // Constructors, conversion operators, and serialization

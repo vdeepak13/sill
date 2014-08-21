@@ -1,9 +1,7 @@
 #include <boost/timer.hpp>
 
-//#include <sill/learning/dataset2/finite_dataset.hpp>
-//#include <sill/learning/parameter/table_factor_mle.hpp>
 #include <sill/learning/dataset3/finite_memory_dataset.hpp>
-#include <sill/learning/mle/table_factor.hpp>
+#include <sill/learning/factor_mle/table_factor.hpp>
 #include <sill/learning/structure/chow_liu.hpp>
 #include <sill/model/random.hpp>
 
@@ -53,10 +51,9 @@ int main(int argc, char* argv[]) {
   decomposable<table_factor> dm;
   for (size_t i = 0; i < ntrain; ++i) {
     cout << "Trial " << i << endl;
-    //table_factor_mle<> estim(&ds);
-    mle<table_factor> estim(&ds);
-    chow_liu<table_factor> chowliu(ds.arguments(), estim);
-    dm = chowliu.model();
+    factor_mle<table_factor> estim(&ds);
+    chow_liu<table_factor> chowliu(ds.arguments());
+    chowliu.learn(estim, dm);
   }
   cout << "Chow-Liu using the new dataset: "
        << ttrain.elapsed() / ntrain << " s/trial" << endl;

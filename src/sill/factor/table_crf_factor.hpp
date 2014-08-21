@@ -95,7 +95,7 @@ namespace sill {
       f = table_factor_opt_vector(YX_vec, 0);
       conditioned_f = table_factor(Y_vec, 0);
       if (restrict_map.size() != f.f.arguments().size())
-        restrict_map = table_factor::shape_type(f.f.arguments().size(), 0);
+        restrict_map = table_factor::index_type(f.f.arguments().size(), 0);
     }
 
     /**
@@ -124,7 +124,7 @@ namespace sill {
         this->f.f(fa) = f(fa);
       conditioned_f = table_factor(Y_vec, 0);
       if (restrict_map.size() != this->f.f.arguments().size())
-        restrict_map = table_factor::shape_type(this->f.f.arguments().size(),0);
+        restrict_map = table_factor::index_type(this->f.f.arguments().size(),0);
     }
 
     //! Constructor from a constant factor.
@@ -166,7 +166,7 @@ namespace sill {
     void load(iarchive & ar) {
       base::load(ar);
       ar >> f >> log_space_ >> conditioned_f;
-      restrict_map = table_factor::shape_type(f.f.arguments().size(), 0);
+      restrict_map = table_factor::index_type(f.f.arguments().size(), 0);
     }
 
     // Public methods: Probabilistic queries
@@ -463,7 +463,7 @@ namespace sill {
   protected:
 
     //! Temporary used to avoid reallocation for table factor calls.
-    mutable table_factor::shape_type restrict_map;
+    mutable table_factor::index_type restrict_map;
 
     //! Underlying table_factor.
     //! The argument sequence of the table factor is (Y,X),

@@ -284,7 +284,7 @@ namespace sill {
 
       std::set<const F*> CPTs;
       BOOST_FOREACH(const F& f, fg.factors())
-        if(*(f.arg_list().begin()) == *i)
+        if(*(f.arg_vector().begin()) == *i)
           CPTs.insert(&f);
 
       assert(CPTs.size() == 1);

@@ -29,21 +29,17 @@ namespace sill {
    * \see Factor
    */
   class nonlinear_gaussian : public factor {
-    
     // Public type declarations 
     //==========================================================================
   public: 
-    //! implements Factor::result_type
-    typedef double result_type; // TODO (Stano): is this correct?
-    
-    //! implements Factor::variable_type
-    typedef vector_variable variable_type;
-
-    //! implements Factor::domain_type
-    typedef vector_domain domain_type;
-
-    //! implements Factor::assignment_Type
+    // Factor concept types
+    typedef double            result_type; // TODO (Stano): is this correct?
+    typedef double            real_type;
+    typedef vector_variable   variable_type;
+    typedef vector_domain     domain_type;
+    typedef vector_var_vector var_vector_type;
     typedef vector_assignment assignment_type;
+    typedef vec               index_type;
 
     // Private data members and accessors
     //==========================================================================

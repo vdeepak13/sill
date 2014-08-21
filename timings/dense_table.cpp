@@ -63,22 +63,22 @@ int main(int argc, char** argv) {
             << time << "s." << std::endl;
 
   // Now do the same with multidimensional tables.
-  typedef sill::dense_table<int>::shape_type shape_type;
+  typedef sill::dense_table<int>::index_type index_type;
 
   t.restart();
   const int d = 12;
   unsigned int dims[d] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-  sill::dense_table<int> a_table(shape_type(dims, dims + d));
+  sill::dense_table<int> a_table(index_type(dims, dims + d));
   cout << a_table.shape() << endl;
   for(int i=0;i<20;i++) {
     // Number the elements uniquely.
     int x = 0;
-    foreach(const shape_type& index, a_table.indices()) {
+    foreach(const index_type& index, a_table.indices()) {
       a_table(index) = x++;
     }
     // Check to make sure the elements are what we set them to.
     x = 0;
-    foreach(const shape_type& index, a_table.indices())
+    foreach(const index_type& index, a_table.indices())
       assert(a_table(index) == x++);
   }
   time = t.elapsed();
@@ -110,24 +110,24 @@ int main(int argc, char** argv) {
 
   // Now do the same with multidimensional tables.
   size_t e_dims[2] = {p, q};
-  double_table e_table(shape_type(e_dims, e_dims + 2));
+  double_table e_table(index_type(e_dims, e_dims + 2));
   size_t f_dims[2] = {q, r};
-  double_table f_table(shape_type(f_dims, f_dims + 2));
+  double_table f_table(index_type(f_dims, f_dims + 2));
 
-  foreach(const double_table::shape_type& index, e_table.indices()) 
+  foreach(const double_table::index_type& index, e_table.indices()) 
     e_table(index) = e[index[0]][index[1]];
 
-  foreach(const double_table::shape_type& index, f_table.indices()) 
+  foreach(const double_table::index_type& index, f_table.indices()) 
     f_table(index) = f[index[0]][index[1]];
 
   t.restart();
   int N = 10000;
   for(int i=0;i<N;i++) {
     unsigned int g_dims[3] = {p, q, r};
-    double_table g_table(shape_type(g_dims, g_dims + 3));
-    shape_type e_dim_map(2); // maps e's dimensions to g's dimensions
+    double_table g_table(index_type(g_dims, g_dims + 3));
+    index_type e_dim_map(2); // maps e's dimensions to g's dimensions
     e_dim_map[0] = 0; e_dim_map[1] = 1;
-    shape_type f_dim_map(2); // maps f's dimensions to g's dimensions
+    index_type f_dim_map(2); // maps f's dimensions to g's dimensions
     f_dim_map[0] = 1; f_dim_map[1] = 2;
     // Compute the sum.
     g_table.join(e_table, f_table, e_dim_map, f_dim_map, std::plus<double>());
@@ -137,10 +137,10 @@ int main(int argc, char** argv) {
 //   t.restart();
 //   for(int i=0;i<N;i++) {
 //     unsigned int g_dims[3] = {p, q, r};
-//     double_table g_table(shape_type(g_dims, g_dims + 3));
-//     shape_type e_dim_map(2); // maps e's dimensions to g's dimensions
+//     double_table g_table(index_type(g_dims, g_dims + 3));
+//     index_type e_dim_map(2); // maps e's dimensions to g's dimensions
 //     e_dim_map[0] = 0; e_dim_map[1] = 1;
-//     shape_type f_dim_map(2); // maps f's dimensions to g's dimensions
+//     index_type f_dim_map(2); // maps f's dimensions to g's dimensions
 //     f_dim_map[0] = 1; f_dim_map[1] = 2;
 //     // Compute the sum.
 //     g_table.join(e_table, f_table, e_dim_map, f_dim_map, binary_op<double>(sum_op));
@@ -150,7 +150,7 @@ int main(int argc, char** argv) {
 
   /*
   // Check it is correct.
-  shape_type index(3);
+  index_type index(3);
   for (index[0] = 0; index[0] < p; index[0]++)
     for (index[1] = 0; index[1] < q; index[1]++)
       for (index[2] = 0; index[2] < r; index[2]++)
@@ -176,7 +176,7 @@ int main(int argc, char** argv) {
   // Compute the aggregation.
   h_table.aggregate(g_table, h_dim_map, plus<int>());
     
-  shape_type index2(2);
+  index_type index2(2);
   // Check it is correct.
   for (index2[0] = 0; index2[0] < p; index2[0]++)
     for (index2[1] = 0; index2[1] < r; index2[1]++)

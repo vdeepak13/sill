@@ -150,7 +150,7 @@ namespace sill {
   // Accessors
   //==========================================================================
 
-  const vector_var_vector& canonical_gaussian::argument_list() const {
+  const vector_var_vector& canonical_gaussian::arg_vector() const {
     return arg_list;
   }
 
@@ -236,6 +236,12 @@ namespace sill {
   logarithmic<double>
   canonical_gaussian::operator()(const record_type& r) const {
     return logarithmic<double>(logv(r), log_tag());
+  }
+  
+  logarithmic<double>
+  canonical_gaussian::operator()(const vec& v) const {
+    double log = - 0.5*dot(v, lambda*v) + dot(v, eta) + log_mult;
+    return logarithmic<double>(log, log_tag());
   }
 
   double canonical_gaussian::logv(const vector_assignment& a) const {
@@ -644,14 +650,14 @@ namespace sill {
   double norm_inf(const canonical_gaussian& x, const canonical_gaussian& y) {
     assert(x.arguments() == y.arguments());
     double vec_norm =
-      norm(x.inf_vector() - y.inf_vector(x.argument_list()), "inf");
+      norm(x.inf_vector() - y.inf_vector(x.arg_vector()), "inf");
     double mat_norm =
-      norm(x.inf_matrix() - y.inf_matrix(x.argument_list()), "inf");
+      norm(x.inf_matrix() - y.inf_matrix(x.arg_vector()), "inf");
     return std::max(vec_norm, mat_norm);
   }
 
   canonical_gaussian pow(const canonical_gaussian& cg, double a) {
-    return canonical_gaussian(cg.argument_list(),
+    return canonical_gaussian(cg.arg_vector(),
                               cg.inf_matrix() * a,
                               cg.inf_vector() * a,
                               cg.log_multiplier() * a);
@@ -673,14 +679,14 @@ namespace sill {
   }
 
   canonical_gaussian invert(const canonical_gaussian& cg) {
-    return canonical_gaussian(cg.argument_list(),
+    return canonical_gaussian(cg.arg_vector(),
                               -cg.inf_matrix(),
                               -cg.inf_vector(),
                               -cg.log_multiplier());
   }
 
   std::ostream& operator<<(std::ostream& out, const canonical_gaussian& cg) {
-    out << "#F(CG|" << cg.argument_list()
+    out << "#F(CG|" << cg.arg_vector()
         << "|" << cg.inf_matrix()
         << "|" << cg.inf_vector()
         << "|" << cg.log_multiplier() << ")";

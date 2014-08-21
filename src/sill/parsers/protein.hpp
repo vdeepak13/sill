@@ -134,7 +134,7 @@ namespace sill{
         proteinparsing::valueassign(factor(fasg), value);
         */
         // faster, but a little awkward
-        if (factor.arg_list()[0] == varsrc) {
+        if (factor.arg_vector()[0] == varsrc) {
           factor.set_logv(srcasg, destasg, proteinparsing::bound_infinity(value));
         }
         else {

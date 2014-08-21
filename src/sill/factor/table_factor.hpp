@@ -31,48 +31,34 @@ namespace sill {
    * A table factor represents a function of a set of finite variables.
    *
    * \ingroup factor_types
-   * \see Factor
+   * \see Factor, DistributionFactor
    */
   class table_factor : public factor {
 
     // Public type declarations
     //==========================================================================
   public:
-    //! implements Factor::result_type
-    typedef double result_type;
+    // The types of the Factor concept
+    typedef double              result_type;
+    typedef double              real_type;
+    typedef finite_variable     variable_type;
+    typedef finite_domain       domain_type;
+    typedef finite_var_vector   var_vector_type;
+    typedef finite_assignment   assignment_type;
+    typedef std::vector<size_t> index_type;
+    typedef finite_record       record_type;
 
-    typedef dense_table<result_type> table_type;
-
-    //! implements Factor::domain_type
-    typedef finite_domain domain_type;
-
-    //! implements Factor::variable_type
-    typedef finite_variable variable_type;
-
-    typedef finite_var_vector var_vector_type;
-
-    //! implements Factor::assignment_type
-    typedef finite_assignment assignment_type;
-
-    typedef finite_var_map var_map_type;
-
-    //! implements Factor::record_type
-    typedef finite_record record_type;
-
-    //! The type of shape / index of the underlying table
-    typedef table_type::shape_type shape_type;
-
-    //! The type of functors that create table factor marginal distributions
+    // The types of the DistributionFactor concept
     typedef boost::function<table_factor(const finite_domain&)> marginal_fn_type;
-
-    //! The type of functors that create table factor conditional distributions
     typedef boost::function<table_factor(const finite_domain&,
                                          const finite_domain&)> conditional_fn_type;
+    
+    // Other types
+    typedef dense_table<result_type> table_type;
 
     // Constructors and conversion operators
     //==========================================================================
   public:
-
     //! Serialize members
     void save(oarchive& ar) const;
 
@@ -80,48 +66,31 @@ namespace sill {
     void load(iarchive& ar);
 
     //! Default constructor for a factor with no arguments, i.e., a constant.
-    explicit table_factor(result_type default_value = 0.0) {
-      initialize(this->arguments(), default_value);
+    explicit table_factor(double value = 0.0) {
+      initialize(this->arguments(), value);
     }
 
-    //! Creates a factor with the specified arguments. The table
-    //! geometry will respect the specified order of arguments.
-    explicit table_factor(const forward_range<finite_variable*>& arguments,
-                 result_type default_value = 0.0)
-      : args(boost::begin(arguments), boost::end(arguments)) {
-      initialize(arguments, default_value);
+    //! Creates a factor with the specified arguments in their natural order,
+    //! filled with given value.
+    explicit table_factor(const finite_domain& args, double value = 0.0)
+      : args(args) {
+      initialize(args, value);
     }
 
-    explicit table_factor(const finite_var_vector& arguments,
-                          result_type default_value = 0.0)
-      : args(arguments.begin(), arguments.end()) {
-      initialize(arguments, default_value);
+    //! Creates a factor with the specified arguments in the specified order,
+    //! filled with the given value.
+    explicit table_factor(const finite_var_vector& args, double value = 0.0)
+      : args(args.begin(), args.end()) {
+      initialize(args, value);
     }
 
-    //! SWIG constructor
-    table_factor(const finite_var_vector& arguments,
-                 const std::vector<result_type>& values)
-      : args(arguments.begin(), arguments.end()) {
-      initialize(arguments, 0);
+    //! Creates a factor with the specified arguments and values.
+    table_factor(const finite_var_vector& args, const std::vector<double>& values)
+      : args(args.begin(), args.end()) {
+      initialize(args, 0.0);
       assert(table().size() == values.size());
       sill::copy(values, table_data.begin());
     }
-
-//     table_factor(const table_factor& factor) {
-//       (*this) = factor;
-//     }
-
-//     //! Conversion to a constant factor. The argument set of this factor
-//     //! must be empty (otherwise, an assertion violation is thrown).
-//     operator constant_factor() const {
-//       assert(this->arguments().empty());
-//       return constant_factor(*table_data.begin());
-//     }
-
-//     //! Conversion to human-readable representation
-//     operator std::string() const {
-//       std::ostringstream out; out << *this; return out.str();
-//     }
 
     //! Exchanges the content of two factors
     void swap(table_factor& f);
@@ -150,7 +119,7 @@ namespace sill {
     }
 
     //! Returns the arguments of the factor in the natural order
-    const finite_var_vector& arg_list() const {
+    const finite_var_vector& arg_vector() const {
       return arg_seq;
     }
 
@@ -177,7 +146,7 @@ namespace sill {
     /**
      * Returns the range over the set of assignments.
      * The order of the assignments is determined by the order of the variables
-     * in arg_list(), counting from lowest to highest with the first variable
+     * in arg_vector(), counting from lowest to highest with the first variable
      * being the most significant digit.
      */
     finite_assignment_range assignments() const;
@@ -521,7 +490,7 @@ namespace sill {
      *                      pre-allocated.
      */
     void restrict_aligned(const finite_record& r,
-                          shape_type& restrict_map,
+                          index_type& restrict_map,
                           table_factor& f) const;
 
     /**
@@ -540,7 +509,6 @@ namespace sill {
                         table_factor& f) const;
 
     //! implements Factor::subst_args
-    //! \todo Strengthen the requirement on var_map
     table_factor& subst_args(const finite_var_map& var_map);
 
     //! implements DistributionFactor::marginal
@@ -618,7 +586,7 @@ namespace sill {
     template <typename RandomNumberGenerator>
     finite_assignment sample(RandomNumberGenerator& rng) const {
       double r(boost::uniform_real<double>(0,1)(rng));
-      foreach(const shape_type& s, table_data.indices()) {
+      foreach(const index_type& s, table_data.indices()) {
         if (r < table_data(s)) {
           finite_assignment a;
           get_assignment_from_shape(s, a);
@@ -653,7 +621,7 @@ namespace sill {
           }
         }
       } else {
-        foreach(const shape_type& s, table_data.indices()) {
+        foreach(const index_type& s, table_data.indices()) {
           if (r <= table_data(s)) {
             get_record_from_shape(s, rec);
             return;
@@ -748,7 +716,7 @@ namespace sill {
     /**
      * Unrolls the factor to be over a single variable new_v (created within
      * the given universe).
-     * If the factor is over A,B,C (the sequence given by arg_list()), then
+     * If the factor is over A,B,C (the sequence given by arg_vector()), then
      * this returns a new factor only over variable new_v, with domain of size
      * A.size() * B.size() * C.size().  The new factor's values match those
      * in the original factor, with the values of A,B,C defining the index into
@@ -843,7 +811,7 @@ namespace sill {
     }
 
     //! Converts table index (subscripts) to an assignment
-    finite_assignment assignment(const shape_type& index) const;
+    finite_assignment assignment(const index_type& index) const;
 
     // Operator Overloads 
     //==========================================================================
@@ -950,7 +918,7 @@ namespace sill {
         assert(except_v);
       }
 
-      //! Size of dense_table<result_type>::shape_type
+      //! Size of dense_table<result_type>::index_type
       size_t size() const {
         assert(vars);
         return vars->size();
@@ -994,7 +962,7 @@ namespace sill {
     table_type table_data;
 
     //! Index into table_data (for avoiding reallocation)
-    mutable shape_type index;
+    mutable index_type index;
 
     // Private helper functions
     //==========================================================================
@@ -1007,7 +975,7 @@ namespace sill {
 
     //! Fills in the local table coordinates according to the assignment
     void get_shape_from_assignment( const finite_assignment& a,
-                                    shape_type& s) const{
+                                    index_type& s) const{
       for(size_t i = 0; i<arg_seq.size(); i++){
         finite_assignment::const_iterator
               var_i_value_iterator = a.find(arg_seq[i]);
@@ -1018,14 +986,14 @@ namespace sill {
 
     //! Fills in the local table coordinates according to the assignment
     void get_shape_from_assignment( const finite_record& r,
-                                    shape_type& s) const{
+                                    index_type& s) const{
       for(size_t i = 0; i < arg_seq.size(); i++) {
         s[i] = r.finite(arg_seq[i]);
       }
     }
 
     //! Fills in the assignment according to the local table coordinates
-    void get_assignment_from_shape(const shape_type& s,
+    void get_assignment_from_shape(const index_type& s,
                                    finite_assignment& a) const {
       a.clear();
       assert(s.size() == arg_seq.size());
@@ -1036,7 +1004,7 @@ namespace sill {
 
     //! Fills in the record according to the local table coordinates.
     //! The record MUST include all arguments of this factor.
-    void get_record_from_shape(const shape_type& s,
+    void get_record_from_shape(const index_type& s,
                                finite_record& r) const {
       for(size_t i(0); i < s.size(); i++) {
         r.finite(arg_seq[i]) = s[i];
@@ -1044,32 +1012,32 @@ namespace sill {
     }
 
     //! Creates an object that maps indices of one table to another
-    static shape_type make_dim_map(const finite_var_vector& vars,
+    static index_type make_dim_map(const finite_var_vector& vars,
                                    const var_index_map& to_map);
 
     //! Creates an object that maps indices of a table to fixed values
-    static shape_type make_restrict_map(const finite_var_vector& vars,
+    static index_type make_restrict_map(const finite_var_vector& vars,
                                         const finite_assignment& a);
 
     //! Creates an object that maps indices of a table to fixed values
-    static shape_type make_restrict_map(const finite_var_vector& vars,
+    static index_type make_restrict_map(const finite_var_vector& vars,
                                         const finite_record& r);
 
     //! Creates an object that maps indices of a table to fixed values,
     //! but limits assignment a to include only variables in a_vars.
-    static shape_type make_restrict_map(const finite_var_vector& vars,
+    static index_type make_restrict_map(const finite_var_vector& vars,
                                         const finite_assignment& a,
                                         const finite_domain& a_vars);
 
     //! Creates an object that maps indices of a table to fixed values,
     //! but limits record r to include only variables in r_vars.
-    static shape_type make_restrict_map(const finite_var_vector& vars,
+    static index_type make_restrict_map(const finite_var_vector& vars,
                                         const finite_record& r,
                                         const finite_domain& r_vars);
 
     //! Creates an object that maps indices of a table to fixed values,
     //! but limits record r to include all variables EXCEPT for except_v.
-    static shape_type
+    static index_type
     make_restrict_map_except(const finite_var_vector& vars,
                              const finite_record& r,
                              finite_variable* except_v);

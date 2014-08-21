@@ -7,8 +7,8 @@
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/bayesian_network.hpp>
-#include <sill/learning/dataset2/finite_dataset.hpp>
-#include <sill/learning/parameter/table_factor_mle.hpp>
+#include <sill/learning/dataset3/finite_memory_dataset.hpp>
+#include <sill/learning/factor_mle/table_factor.hpp>
 #include <sill/learning/structure/chow_liu.hpp>
 
 #include <sill/macros_def.hpp>
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   //cout << bn << endl;
 
   // generate a dataset
-  finite_dataset<> data;
+  finite_memory_dataset data;
   data.initialize(bn.arguments());
   for (size_t i = 0; i < nsamples; ++i) {
     finite_assignment a = bn.sample(rng);
@@ -65,9 +65,9 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   }
 
   // learn the model
-  table_factor_mle<> estim(&data);
-  chow_liu<table_factor> learner(make_domain(v), estim);
-  decomposable<table_factor> dm = learner.model();
+  chow_liu<table_factor> learner(make_domain(v));
+  decomposable<table_factor> dm;
+  learner.learn(data, dm);
   
   // verify the cliques
   std::set<finite_domain> cliques(dm.cliques().begin(), dm.cliques().end());

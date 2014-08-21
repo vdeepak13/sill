@@ -113,7 +113,7 @@ namespace sill {
 
   gaussian_crf_factor::gaussian_crf_factor(const canonical_gaussian& cg)
     : base(cg.arguments(), copy_ptr<vector_domain>(new vector_domain())),
-      head_(cg.argument_list()), tail_(), fixed_records_(false),
+      head_(cg.arg_vector()), tail_(), fixed_records_(false),
       conditioned_f(cg), relabeled(false) {
     bool result = chol(ov.A, cg.inf_matrix());
     if (!result) {
@@ -147,7 +147,7 @@ namespace sill {
     }
 
     // Build head_, tail_, relabeling info.
-    foreach(vector_variable* v, cg.argument_list()) {
+    foreach(vector_variable* v, cg.arg_vector()) {
       if (Y.count(v)) {
         head_.push_back(v);
       } else {
@@ -183,7 +183,7 @@ namespace sill {
     }
 
     // Build head_, tail_, relabeling info.
-    foreach(vector_variable* v, cg.argument_list()) {
+    foreach(vector_variable* v, cg.arg_vector()) {
       if (head_vars.count(v)) {
         head_.push_back(v);
         if (X.count(v))
@@ -446,7 +446,7 @@ namespace sill {
     }
     if (head_.size() == 0) // If this is a constant factor
       return conditioned_f;
-    if (conditioned_f.argument_list() == head_) { // avoid reallocation
+    if (conditioned_f.arg_vector() == head_) { // avoid reallocation
       conditioned_f.inf_matrix() = trans(ov.A) * ov.A;
       if (x.size() == 0) {
         conditioned_f.inf_vector() = trans(ov.A) * ov.b;
@@ -534,7 +534,7 @@ namespace sill {
     vector_domain final_head;
     vector_domain final_tail;
     vector_domain tmp_head(head_.begin(), head_.end());
-    foreach(vector_variable* v, final_cg.argument_list()) {
+    foreach(vector_variable* v, final_cg.arg_vector()) {
       if (tmp_head.count(v))
         final_head.insert(v);
       else

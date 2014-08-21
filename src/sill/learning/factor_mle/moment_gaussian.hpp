@@ -1,11 +1,10 @@
-#ifndef SILL_MLE_MOMENT_GAUSSIAN_HPP
-#define SILL_MLE_MOMENT_GAUSSIAN_HPP
+#ifndef SILL_FACTOR_MLE_MOMENT_GAUSSIAN_HPP
+#define SILL_FACTOR_MLE_MOMENT_GAUSSIAN_HPP
 
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/learning/dataset3/vector_dataset.hpp>
 #include <sill/learning/dataset3/vector_record.hpp>
-#include <sill/learning/mle/mle.hpp>
-#include <sill/learning/parameter/factor_estimator.hpp>
+#include <sill/learning/factor_mle/factor_mle.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -14,16 +13,18 @@ namespace sill {
   // moment gaussian maximum likelihood estimator
   // eventually: add the template argument for the storage type of the factor
   template <>
-  class mle<moment_gaussian> : public factor_estimator<moment_gaussian> {
+  class factor_mle<moment_gaussian> {
   public:
     typedef vector_dataset<> dataset_type;
+    typedef vector_domain    domain_type;
 
     struct param_type {
       double smoothing;
-      param_type() : smoothing(0.0) { }
+      param_type(double smoothing = 0.0) // intentionally implicit
+        : smoothing(smoothing) { }
     };
 
-    mle(const vector_dataset<>* dataset,
+    factor_mle(const vector_dataset<>* dataset,
         const param_type& params = param_type()) 
       : dataset(dataset), params(params) {
       assert(dataset->size() > 0);
@@ -63,15 +64,15 @@ namespace sill {
       return moment_gaussian(vars, mean, cov);
     }
 
-    //! Returns the marginal distribution over a subset of variables,
-    //! reweighting the dataset
+    //! Returns the marginal distribution over a subset of variables
+    //! reweighing the dataset
     moment_gaussian operator()(const vector_domain& vars,
                                const vec& weights) const {
       return operator()(make_vector(vars), weights);
     }
 
-    //! Returns the marginal distribution over a sequence of variables,
-    //! reweighting the dataset
+    //! Returns the marginal distribution over a sequence of variables
+    //! reweighing the dataset
     moment_gaussian operator()(const vector_var_vector& vars,
                                const vec& weights) const {
       assert(weights.size() == dataset->size());
@@ -110,7 +111,7 @@ namespace sill {
     const vector_dataset<>* dataset;
     param_type params;
 
-  }; // mle<moment_gaussian>
+  }; // factor_mle<moment_gaussian>
 
 } // namespace sill
 

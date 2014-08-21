@@ -28,20 +28,16 @@ namespace sill {
    * \ingroup factor_types
    */
   class moment_gaussian : public gaussian_factor {
-
-    friend class canonical_gaussian;
   public:
-    //! The type of functors that create table factor marginal distributions
+    // DistributionFactor concept types
     typedef boost::function<moment_gaussian(const vector_domain&)> marginal_fn_type;
-
-    //! The type of functors that create table factor conditional distributions
     typedef boost::function<moment_gaussian(const vector_domain&,
                                             const vector_domain&)> conditional_fn_type;
-
 
     // Private data members and methods
     //==========================================================================
   private:
+    friend class canonical_gaussian;
 
     //! A list of head arguments in their natural order
     vector_var_vector head_list;
@@ -438,6 +434,7 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
+#include <sill/factor/gaussian_common.hpp>
 #include <sill/factor/operations.hpp>
 
 #endif 

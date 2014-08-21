@@ -38,8 +38,6 @@ namespace sill {
 
     typedef finite_record record_type;
 
-    typedef finite_var_map var_map_type;
-
   };
 
   template <typename LA>
@@ -53,8 +51,6 @@ namespace sill {
 
     typedef vector_record<LA> record_type;
 
-    typedef vector_var_map var_map_type;
-
   };
 
   template <typename LA>
@@ -67,8 +63,6 @@ namespace sill {
     typedef assignment assignment_type;
 
     typedef record<LA> record_type;
-
-    typedef var_map var_map_type;
 
   };
 

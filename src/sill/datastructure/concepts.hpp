@@ -23,7 +23,7 @@ namespace sill {
   struct Table : Mutable_ForwardContainer<T>
   {
     //! The type used to represent the shape and indices.
-    typedef typename T::shape_type shape_type;
+    typedef typename T::index_type index_type;
 
     //! Mutable iterator range over the elements of this table
     typedef typename T::mutable_range mutable_range;
@@ -43,7 +43,7 @@ namespace sill {
     size_t num_dimensions();
 
     //! Returns the dimensions of this table.
-    const shape_type& shape() const;
+    const index_type& shape() const;
 
     //! Returns the number of cells in this table (Boost convention).
     size_t num_elements() const;
@@ -83,7 +83,7 @@ namespace sill {
      */
     template <typename JoinOp>
     void join(const Table& x, const Table& y,
-              const shape_type& x_dim_map, const shape_type& y_dim_map,
+              const index_type& x_dim_map, const index_type& y_dim_map,
               JoinOp op);
 
     /**
@@ -102,7 +102,7 @@ namespace sill {
      *        a type that models the BinaryFunction concept
      */
     template <typename JoinOp>
-    void join_with(const Table& y, const shape_type& y_dim_map, JoinOp op);
+    void join_with(const Table& y, const index_type& y_dim_map, JoinOp op);
 
     /**
      * Aggregates a table and stores the result into this table. Each
@@ -123,7 +123,7 @@ namespace sill {
      *        a type that models a symmetric binary operator
      */
     template <typename AggOp>
-    void aggregate(const Table& x, const shape_type& dim_map, AggOp op);
+    void aggregate(const Table& x, const index_type& dim_map, AggOp op);
 
 
     /**
@@ -158,8 +158,8 @@ namespace sill {
     template <typename JoinOp, typename AggOp>
     static T join_aggregate(const Table& x,
                             const Table& y,
-                            const shape_type& x_dim_map,
-                            const shape_type& y_dim_map,
+                            const index_type& x_dim_map,
+                            const index_type& y_dim_map,
                             JoinOp join_op,
                             AggOp agg_op);
 
@@ -172,7 +172,7 @@ namespace sill {
     template <typename Predicate>
     static boost::optional< std::pair<T,T> >
     join_find(const Table& x, const Table& y,
-              const shape_type& x_dim_map, const shape_type& y_dim_map,
+              const index_type& x_dim_map, const index_type& y_dim_map,
               Predicate p);
 
     /**
@@ -196,8 +196,8 @@ namespace sill {
      *        values of dim_map must be unique
      */
     void restrict(const Table& x,
-                   const shape_type& restrict_map,
-                   const shape_type& dim_map);
+                   const index_type& restrict_map,
+                   const index_type& dim_map);
 
     // Concept checking
     concept_usage(Table) {
@@ -222,8 +222,8 @@ namespace sill {
     T t;
     size_t a;
     size_t si;
-    shape_type sh;
-    shape_type i;
+    index_type sh;
+    index_type i;
     mutable_range elts;
     index_range idxs;
     value_type v;
