@@ -4,7 +4,6 @@
 #include <sill/base/universe.hpp>
 #include <sill/factor/gaussian_factor.hpp>
 #include <sill/factor/invalid_operation.hpp>
-#include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/operations.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
@@ -16,6 +15,7 @@
 
 namespace sill {
 
+  // forward declaration
   class moment_gaussian;
 
   /**
@@ -25,19 +25,18 @@ namespace sill {
    * \ingroup factor_types
    */
   class canonical_gaussian : public gaussian_factor {
-
-    friend class moment_gaussian;
   public:
-    //! The type of functors that create table factor marginal distributions
-    typedef boost::function<canonical_gaussian(const vector_domain&)> marginal_fn_type;
-
-    //! The type of functors that create table factor conditional distributions
+    // DistributionFactor concept types
+    typedef boost::function<canonical_gaussian(const vector_domain&)>
+      marginal_fn_type;
     typedef boost::function<canonical_gaussian(const vector_domain&,
-                                               const vector_domain&)> conditional_fn_type;
+                                               const vector_domain&)>
+      conditional_fn_type;
 
     // Constructors and conversion operators
     //==========================================================================
   public:
+    friend class moment_gaussian;
 
     //! Constructs a canonical Gaussian factor with no arguments
     explicit canonical_gaussian(double value = 1) : log_mult(std::log(value)) { }
@@ -112,7 +111,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns the argument list of this Gaussian
-    const vector_var_vector& argument_list() const;
+    const vector_var_vector& arg_vector() const;
 
     //! Returns the number of dimensions of this Gaussian
     size_t size() const;
@@ -166,6 +165,9 @@ namespace sill {
 
     //! Evaluates the factor for a record.
     logarithmic<double> operator()(const record_type& r) const;
+
+    //! Evaluates the factor for a raw vector
+    logarithmic<double> operator()(const vec& v) const;
 
     //! Returns the log-likelihood of the factor
     double logv(const vector_assignment& a) const;
@@ -271,11 +273,8 @@ namespace sill {
      *
      * @tparam RandomNumGen  Random number generator.
      */
-    template <typename RandomNumGen>
-    vector_assignment sample(RandomNumGen& rng) const {
-      moment_gaussian mg(*this);
-      return mg.sample(rng);
-    }
+    template <typename RandomNumberGenerator>
+    vector_assignment sample(RandomNumberGenerator& rng) const;
 
     //! implements Distribution::entropy
     double entropy(double base) const;
@@ -341,7 +340,6 @@ namespace sill {
     friend canonical_gaussian combine(const canonical_gaussian& x,
                                       const canonical_gaussian& y,
                                       double sign);
-
 
   }; // class canonical_gaussian
   
@@ -471,6 +469,7 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
+#include <sill/factor/gaussian_common.hpp>
 #include <sill/factor/operations.hpp>
 
 #endif

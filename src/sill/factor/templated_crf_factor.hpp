@@ -48,24 +48,26 @@ namespace sill {
     typedef typename base::input_domain_type     input_domain_type;
     typedef typename base::input_assignment_type input_assignment_type;
     typedef typename base::input_var_vector_type input_var_vector_type;
-    typedef typename base::input_var_map_type    input_var_map_type;
     typedef typename base::input_record_type     input_record_type;
     typedef typename base::output_variable_type   output_variable_type;
     typedef typename base::output_domain_type     output_domain_type;
     typedef typename base::output_assignment_type output_assignment_type;
     typedef typename base::output_var_vector_type output_var_vector_type;
-    typedef typename base::output_var_map_type    output_var_map_type;
     typedef typename base::output_record_type     output_record_type;
     typedef typename base::variable_type   variable_type;
     typedef typename base::domain_type     domain_type;
     typedef typename base::assignment_type assignment_type;
     typedef typename base::var_vector_type var_vector_type;
-    typedef typename base::var_map_type    var_map_type;
     typedef typename base::record_type     record_type;
     typedef typename base::result_type          result_type;
     typedef typename base::output_factor_type   output_factor_type;
     typedef typename base::optimization_vector  optimization_vector;
     typedef typename base::regularization_type  regularization_type;
+
+
+    typedef std::map<input_variable_type*, input_variable_type*> input_var_map_type;
+    typedef std::map<output_variable_type*, output_variable_type*> output_var_map_type;
+    typedef std::map<variable_type*, variable_type*> var_map_type;
 
     typedef typename F::la_type la_type;
 
@@ -118,14 +120,9 @@ namespace sill {
      *                      the templated factor.
      *                      (default = identity map)
      */
-    templated_crf_factor
-    (boost::shared_ptr<F> factor_ptr_,
-     const
-     typename variable_type_group<output_variable_type,la_type>::var_map_type&
-     Yvarmap,
-     const
-     typename variable_type_group<input_variable_type,la_type>::var_map_type&
-     Xvarmap)
+    templated_crf_factor(boost::shared_ptr<F> factor_ptr_,
+                         const output_var_map_type& Yvarmap,
+                         const input_var_map_type& Xvarmap)
       : base(), factor_ptr_(factor_ptr_), fixed_records_(false),
         relabeled_args(false) {
       init(Yvarmap,Xvarmap);
@@ -597,12 +594,10 @@ namespace sill {
     mutable record_type base_input_record;
 
     //! Mapping: Vars in the base factor --> Vars in this factor instance
-    typename variable_type_group<variable_type,la_type>::var_map_type
-    vmap_base2this;
+    var_map_type vmap_base2this;
 
     //! Mapping: Vars in this factor instance --> Vars in the base factor
-    typename variable_type_group<variable_type,la_type>::var_map_type
-    vmap_this2base;
+    var_map_type vmap_this2base;
 
     //! Temp used to hold factors returned by the base,
     //! but with variables mapped to this instance's variables.
@@ -683,15 +678,8 @@ namespace sill {
     //! Initialize with the given variable maps.
     //! Given: factor_ptr_ is set
     //! Init: vmap_base2this, base_record, base_input_record
-    void
-    init
-    (const
-     typename variable_type_group<output_variable_type,la_type>::var_map_type&
-     Yvarmap,
-     const
-     typename variable_type_group<input_variable_type,la_type>::var_map_type&
-     Xvarmap) {
-
+    void init(const output_var_map_type& Yvarmap,
+              const input_var_map_type& Xvarmap) {
       assert(factor_ptr_);
       var_vector_type base_vars;
       input_var_vector_type base_input_vars;

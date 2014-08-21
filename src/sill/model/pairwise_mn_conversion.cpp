@@ -16,7 +16,7 @@ namespace sill {
     std::list<factor_type> factor_list;
     std::map<finite_variable*, std::vector<finite_variable*> > var_mapping;
     foreach(factor_type f, fm.factors()) {
-      const std::vector<finite_variable*>& f_arg_list = f.arg_list();
+      const std::vector<finite_variable*>& f_arg_list = f.arg_vector();
       if (f_arg_list.size() < 2)
         factor_list.push_back(f);
       else {
@@ -24,7 +24,7 @@ namespace sill {
         finite_variable* new_v;
         factor_type new_f;
         boost::tie(new_v, new_f) = f.unroll(u);
-        var_mapping[new_v] = f.arg_list();
+        var_mapping[new_v] = f.arg_vector();
         vars.insert(new_v);
         factor_list.push_back(new_f);
         // Create indicator potentials linking new_v and v in f_arg_list.

@@ -299,7 +299,7 @@ namespace mpi_state_manager_prot {
               // deserialize
               msg->load_remap(*arc, state_.id2var_);
               state_.checkin(srcv, destv, msg);
-              assert(msg->arg_list().size() > 0);
+              assert(msg->arg_vector().size() > 0);
               // if I receive a message, finish() should wake up if it 
               // is sleeping
               state_.shutdown_cond_.broadcast();
@@ -377,7 +377,7 @@ namespace mpi_state_manager_prot {
           p.priority = residual;
           if (v.is_variable()) {
             p.belief.load_remap(*arc, state_.id2var_);
-            assert(p.belief.arg_list().size() > 0);
+            assert(p.belief.arg_vector().size() > 0);
           }
           int numneighbors = state_.model_->num_neighbors(v);
           for (int i = 0;i < numneighbors; ++i) {
@@ -393,7 +393,7 @@ namespace mpi_state_manager_prot {
 
             state_.state_lock_.unlock();
             m.load_remap(*arc, state_.id2var_);
-            assert(m.arg_list().size() > 0); 
+            assert(m.arg_vector().size() > 0); 
           }
           state_.deferred_insertions_lock.lock();
 
@@ -540,7 +540,7 @@ namespace mpi_state_manager_prot {
       arc << srcvertexid;
       arc << destvertexid;
       m.save_remap(arc, state_.var2id_);
-      assert(m.arg_list().size() > 0);
+      assert(m.arg_vector().size() > 0);
       po_.send_message(destinationmachine,
                        MPI_STATE_MANAGER_PROT_ID, 
                        strm.str().length(), 
@@ -560,7 +560,7 @@ namespace mpi_state_manager_prot {
       arc << vid;
       typename mpi_state_manager<F>::belief_type* b = state_.checkout_belief(v);
       b->save_remap(arc, state_.var2id_);
-      assert(b->arg_list().size() > 0);
+      assert(b->arg_vector().size() > 0);
       state_.checkin_belief(v,b);
       po_.send_message(destinationmachine,
                   MPI_STATE_MANAGER_PROT_ID, 
@@ -599,7 +599,7 @@ namespace mpi_state_manager_prot {
       // std::cout << "giving away vertex " << vid << std::endl;
       arc << residual;
       if (v.is_variable()) {
-        assert(state_.beliefs_[&(v.variable())].arg_list().size() > 0);
+        assert(state_.beliefs_[&(v.variable())].arg_vector().size() > 0);
         state_.beliefs_[&(v.variable())].save_remap(arc, state_.var2id_);
         
       }
@@ -614,7 +614,7 @@ namespace mpi_state_manager_prot {
         typename mpi_state_manager<F>::message_type &msg = 
                                               state_.messages_[u][v].message;
         
-        assert(msg.arg_list().size() > 0);
+        assert(msg.arg_vector().size() > 0);
         msg.save_remap(arc, state_.var2id_);
         state_.messages_[u].erase(v);
         if (state_.messages_[u].size() == 0) {

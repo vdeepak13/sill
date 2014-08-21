@@ -402,7 +402,7 @@ namespace sill {
       good_order = false;
     } else {
       for (size_t i = 0; i < output_arguments().size(); ++i) {
-        if (!output_arguments().count(f.f.arg_list()[i])) {
+        if (!output_arguments().count(f.f.arg_vector()[i])) {
           good_order = false;
           break;
         }
@@ -425,7 +425,7 @@ namespace sill {
         good_order = false;
       } else {
         for (size_t i = 0; i < output_arguments().size(); ++i) {
-          if (f.f.arg_list()[i] != conditioned_f.arg_list()[i]) {
+          if (f.f.arg_vector()[i] != conditioned_f.arg_vector()[i]) {
             good_order = false;
             break;
           }
@@ -434,12 +434,12 @@ namespace sill {
       if (!good_order) {
         output_var_vector_type Y_vec(output_arguments().size(), NULL);
         for (size_t i = 0; i < output_arguments().size(); ++i)
-          Y_vec[i] = f.f.arg_list()[i];
+          Y_vec[i] = f.f.arg_vector()[i];
         conditioned_f = table_factor(Y_vec, 0);
       }
     }
     if (restrict_map.size() != f.f.arguments().size())
-      restrict_map = table_factor::shape_type(f.f.arguments().size(), 0);
+      restrict_map = table_factor::index_type(f.f.arguments().size(), 0);
   } // optimize_variable_order
 
 }  // namespace sill

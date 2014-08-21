@@ -760,7 +760,7 @@ namespace sill {
         // std::cout << "deferred insertion of vertex." << std::endl;
         if (e.v.is_variable()) {
           beliefs_[&(e.v.variable())] = e.belief;
-          assert(e.belief.arg_list().size() > 0);
+          assert(e.belief.arg_vector().size() > 0);
         }
         SetOwner(e.v, po_.id());
         // its ok to make this uniform beliefs

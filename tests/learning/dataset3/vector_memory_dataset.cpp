@@ -3,7 +3,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset3/vector_memory_dataset.hpp>
-#include <sill/learning/mle/moment_gaussian.hpp>
+#include <sill/learning/factor_mle/moment_gaussian.hpp>
 
 #include <boost/math/special_functions.hpp>
 #include <boost/random/mersenne_twister.hpp>
@@ -127,7 +127,7 @@ struct fixture {
 BOOST_FIXTURE_TEST_CASE(test_records, fixture) {
   // verify that the distribution retrieved by immutable iterators
   // matches the factor for every variable or every pair of variables
-  mle<moment_gaussian> estim(&ds);
+  factor_mle<moment_gaussian> estim(&ds);
   for (size_t i = 0; i < v.size(); ++i) {
     for (size_t j = i; j < v.size(); ++j) {
       vector_domain dom = make_domain(v[i], v[j]);
@@ -165,7 +165,7 @@ BOOST_FIXTURE_TEST_CASE(test_subset, fixture) {
   slice_view<vector_dataset<> > ds1 = ds.subset(0, 500);
   BOOST_CHECK_EQUAL(ds.record(48), ds1.record(48));
   BOOST_CHECK_EQUAL(ds.record(99), ds1.record(99, v));
-  mle<moment_gaussian> estim1(&ds1);
+  factor_mle<moment_gaussian> estim1(&ds1);
   moment_gaussian mle1 = estim1(v);
   double kl1 = f.relative_entropy(mle1);
   std::cout << "Single slice: " << kl1 << std::endl;
@@ -178,7 +178,7 @@ BOOST_FIXTURE_TEST_CASE(test_subset, fixture) {
   slice_view<vector_dataset<> > ds2 = ds.subset(slices);
   BOOST_CHECK_EQUAL(ds.record(940), ds2.record(40, v));
   BOOST_CHECK_EQUAL(ds.record(250), ds2.record(150));
-  mle<moment_gaussian> estim2(&ds2);
+  factor_mle<moment_gaussian> estim2(&ds2);
   moment_gaussian mle2 = estim2(v);
   double kl2 = f.relative_entropy(mle2);
   std::cout << "Two slices: " << kl2 << std::endl;
@@ -215,7 +215,7 @@ BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
 }
 
 // BOOST_FIXTURE_TEST_CASE(test_shuffle, fixture) {
-//   mle<moment_gaussian> estim(&ds);
+//   factor_mle<moment_gaussian> estim(&ds);
 //   moment_gaussian mle1 = estim(v);
 //   ds.shuffle(rng);
 //   moment_gaussian mle2 = estim(v);

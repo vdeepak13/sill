@@ -78,9 +78,6 @@ namespace sill {
     //! Type for an assignment to input variables.
     typedef typename ivar_group::assignment_type  input_assignment_type;
 
-    //! Mapping: input variable to input variable.
-    typedef typename ivar_group::var_map_type  input_var_map_type;
-
     //! Type for a record for input variables.
     typedef typename ivar_group::record_type  input_record_type;
 
@@ -100,9 +97,6 @@ namespace sill {
 
     //! Type for an assignment to output variables.
     typedef typename OutputFactor::assignment_type  output_assignment_type;
-
-    //! Mapping: output variable to output variable.
-    typedef typename OutputFactor::var_map_type  output_var_map_type;
 
     //! Type for a record for output variables.
     typedef typename OutputFactor::record_type  output_record_type;
@@ -131,9 +125,6 @@ namespace sill {
 
     //! Type for an assignment to X,Y.
     typedef typename var_group::assignment_type  assignment_type;
-
-    //! Mapping: variable to variable.
-    typedef typename var_group::var_map_type  var_map_type;
 
     //! Type for a record over X,Y.
     typedef typename var_group::record_type  record_type;

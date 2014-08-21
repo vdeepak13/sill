@@ -74,7 +74,7 @@ namespace sill {
 
     //! Returns the dimensions of this data structure.
     size_type size() const {
-      return f.arg_list();
+      return f.arg_vector();
     }
 
     //! Resize the data.

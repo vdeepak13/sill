@@ -4,7 +4,7 @@
 #include <sill/base/universe.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/learning/dataset3/finite_memory_dataset.hpp>
-#include <sill/learning/mle/table_factor.hpp>
+#include <sill/learning/factor_mle/table_factor.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -129,7 +129,7 @@ struct fixture {
 BOOST_FIXTURE_TEST_CASE(test_records, fixture) {
   // verify that the distribution retrieved by immutable iterators
   // matches the factor for every variable or every pair of variables
-  mle<table_factor> estim(&ds);
+  factor_mle<table_factor> estim(&ds);
   for (size_t i = 0; i < v.size(); ++i) {
     for (size_t j = i; j < v.size(); ++j) {
       finite_domain dom = make_domain(v[i], v[j]);
@@ -167,7 +167,7 @@ BOOST_FIXTURE_TEST_CASE(test_subset, fixture) {
   slice_view<finite_dataset> ds1 = ds.subset(0, 500);
   BOOST_CHECK_EQUAL(ds.record(48), ds1.record(48));
   BOOST_CHECK_EQUAL(ds.record(99), ds1.record(99, v));
-  mle<table_factor> estim1(&ds1);
+  factor_mle<table_factor> estim1(&ds1);
   table_factor mle1 = estim1(v);
   double kl1 = f.relative_entropy(mle1);
   std::cout << "Single slice: " << kl1 << std::endl;
@@ -180,7 +180,7 @@ BOOST_FIXTURE_TEST_CASE(test_subset, fixture) {
   slice_view<finite_dataset> ds2 = ds.subset(slices);
   BOOST_CHECK_EQUAL(ds.record(140), ds2.record(40, v));
   BOOST_CHECK_EQUAL(ds.record(350), ds2.record(150));
-  mle<table_factor> estim2(&ds2);
+  factor_mle<table_factor> estim2(&ds2);
   table_factor mle2 = estim2(v);
   double kl2 = f.relative_entropy(mle2);
   std::cout << "Two slices: " << kl2 << std::endl;
@@ -216,7 +216,7 @@ BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
 }
 
 // BOOST_FIXTURE_TEST_CASE(test_shuffle, fixture) {
-//   mle<table_factor> estim(&ds);
+//   factor_mle<table_factor> estim(&ds);
 //   table_factor mle1 = estim(v);
 //   ds.shuffle(rng);
 //   table_factor mle2 = estim(v);

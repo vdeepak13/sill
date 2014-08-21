@@ -27,23 +27,15 @@ namespace sill {
     // Public type declarations 
     //==========================================================================
   public:
-    //! implements Factor::result_type
+    // Factor concept types
     typedef logarithmic<double> result_type;
-
-    //! implements Factor::variable_type
-    typedef vector_variable variable_type;
-
-    //! implements Factor::domain_type
-    typedef vector_domain domain_type;
-
-    //! implements Factor::assignment_type
-    typedef vector_assignment assignment_type;
-
-    //! implements Factor::record_type
+    typedef double              real_type;
+    typedef vector_variable     variable_type;
+    typedef vector_domain       domain_type;
+    typedef vector_var_vector   var_vector_type;
+    typedef vector_assignment   assignment_type;
+    typedef vec                 index_type;
     typedef vector_record<dense_linear_algebra<> > record_type;
-
-    typedef vector_var_vector var_vector_type;
-    typedef vector_var_map    var_map_type;
 
     // Protected member data and member functions
     //==========================================================================

@@ -29,7 +29,7 @@ namespace sill {
   void print_alchemy(const log_table_factor & f,
                      std::ostream& out){
     bool first_line = true;
-    foreach(const finite_variable* v, f.arg_list()){
+    foreach(const finite_variable* v, f.arg_vector()){
       if(!first_line) out << " ";
       out << v->name() << " /";
       first_line = false;
@@ -45,7 +45,7 @@ namespace sill {
   void print_alchemy(const table_factor & f,
                      std::ostream& out){
     bool first_line = true;
-    foreach(const finite_variable* v, f.arg_list()){
+    foreach(const finite_variable* v, f.arg_vector()){
       if(!first_line) out << " ";
       out << v->name() << " /";
       first_line = false;
@@ -323,7 +323,7 @@ namespace sill {
       fg.add_factor(factor);
       // if there are weights, make sure they are all one
       if(weights.size() > 0 && warnprinted == false) {
-        assert(weights.size() == factor.arg_list().size());
+        assert(weights.size() == factor.arg_vector().size());
         for (size_t i = 0; i < weights.size(); ++i) {
           if (weights[i] != 1 && warnprinted == false) {
             std::cerr << "Warning. Loading Lifted model into regular factor_graph\n";
@@ -546,9 +546,9 @@ namespace sill {
       // Finished processing factor so add it to the factor graph
       size_t factorid = fg.add_factor(factor);
       if(weights.size() > 0) {
-        assert(weights.size() == factor.arg_list().size());
+        assert(weights.size() == factor.arg_vector().size());
         for (size_t i = 0; i < weights.size(); ++i) {
-          finite_variable* f = factor.arg_list()[i];
+          finite_variable* f = factor.arg_vector()[i];
           typename factor_graph_model<F>::vertex_type varvertex(f);
           size_t varid = fg.vertex2id(varvertex);
           

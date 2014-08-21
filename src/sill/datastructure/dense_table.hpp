@@ -1,4 +1,3 @@
-
 #ifndef SILL_DENSE_TABLE_HPP
 #define SILL_DENSE_TABLE_HPP
 
@@ -49,7 +48,7 @@ namespace sill {
     typedef typename std::vector<T>::const_iterator const_iterator;
 
     //! The type used to represent the shape and indices.
-    typedef std::vector<size_t> shape_type;
+    typedef std::vector<size_t> index_type;
 
     // Forward declaration
     class index_iterator;
@@ -63,7 +62,7 @@ namespace sill {
 #endif
 
     //! The dimensions of this table
-    shape_type shape_;
+    index_type shape_;
 
     //! Pre-computed number of elements
     size_t size_;
@@ -97,7 +96,7 @@ namespace sill {
     //==========================================================================
   public:
     //! Constructs a table with the given dimensions and default element
-    dense_table(const shape_type& extents, T init_elt = T())
+    dense_table(const index_type& extents, T init_elt = T())
       : shape_(extents), 
         size_(sill::accumulate(shape_, 1, std::multiplies<size_t>())),
         elts(size_, init_elt),
@@ -141,7 +140,7 @@ namespace sill {
     }
 
     //! Returns the dimensions of this table.
-    const shape_type& shape() const {
+    const index_type& shape() const {
       return shape_;
     }
 
@@ -222,7 +221,7 @@ namespace sill {
 
   #ifndef SWIG
     //! Returns the index associated with an iterator position
-    shape_type index(const_iterator it) const {
+    index_type index(const_iterator it) const {
       assert(it >= begin() && it < end());
       return offset.index(it - begin());
     }
@@ -243,19 +242,19 @@ namespace sill {
      * element in the geometry is the least significant bit of the index.
      */
     std::pair<index_iterator, index_iterator>
-    indices(const shape_type& restrict_map) const {
+    indices(const index_type& restrict_map) const {
       return std::make_pair(index_iterator(&shape_, &restrict_map),
                             index_iterator());
     }
     #endif
 
     //! implements Table::operator()
-    const T& operator()(const shape_type& i) const {
+    const T& operator()(const index_type& i) const {
       return elts[offset(i)];
     }
 
     //! implements Table::operator()
-    T& operator()(const shape_type& i) {
+    T& operator()(const index_type& i) {
       return elts[offset(i)];
     }
 
@@ -287,7 +286,7 @@ namespace sill {
     //! implements Table::join
     template <typename JoinOp>
     void join(const dense_table& x, const dense_table& y,
-              const shape_type& x_dim_map, const shape_type& y_dim_map,
+              const index_type& x_dim_map, const index_type& y_dim_map,
               JoinOp op) {
       concept_assert((BinaryFunction<JoinOp,T,T,T>));
 #ifdef EXPERIMENTAL
@@ -302,7 +301,7 @@ namespace sill {
 
       // Iterate over the cells of this table, computing the value
       // using the corresponding cells of the input tables.
-      foreach(const shape_type& index, indices()) {
+      foreach(const index_type& index, indices()) {
         (*this)(index) = op(x.elts[x_offset()],
                             y.elts[y_offset()]);
         ++x_offset;
@@ -315,7 +314,7 @@ namespace sill {
 
       // Iterate over the cells of this table, computing the value
       // using the corresponding cells of the input tables.
-      foreach(const shape_type& index, indices())
+      foreach(const index_type& index, indices())
         (*this)(index) = op(x.elts[x_offset(index)],
                             y.elts[y_offset(index)]);
 #endif
@@ -323,7 +322,7 @@ namespace sill {
 
     //! implements Table::join_with
     template <typename JoinOp>
-    void join_with(const dense_table& y, const shape_type& y_dim_map,
+    void join_with(const dense_table& y, const index_type& y_dim_map,
                    JoinOp op) {
       concept_assert((BinaryFunction<JoinOp,T,T,T>));
 
@@ -347,7 +346,7 @@ namespace sill {
       // Iterate over the cells of this table, computing the value
       // using the corresponding cell of y.
 
-      foreach(const shape_type& index, indices()) {
+      foreach(const index_type& index, indices()) {
         (*this)(index) = op((*this)(index), y.elts[y_offset(index)]);
       }
 #endif
@@ -356,7 +355,7 @@ namespace sill {
     //! implements Table::aggregate
     //! \todo Do we require that the table is initialized to op.left_identity()?
     template <typename AggOp>
-    void aggregate(const dense_table& x, const shape_type& dim_map, AggOp op) {
+    void aggregate(const dense_table& x, const index_type& dim_map, AggOp op) {
       concept_assert((BinaryFunction<AggOp,T,T,T>));
 #ifdef EXPERIMENTAL
       // Get an offset calculator that maps x indexes to z offsets.
@@ -365,7 +364,7 @@ namespace sill {
       z_offset.reset(this->shape(), x.shape(), dim_map);
       // Iterate over the cells of the input table, computing the
       // aggregate.
-      foreach(const shape_type& x_index, x.indices()) {
+      foreach(const index_type& x_index, x.indices()) {
         size_t offset = z_offset();
         elts[offset] = op(elts[offset], x(x_index));
         ++z_offset;
@@ -376,7 +375,7 @@ namespace sill {
       offset_functor z_offset(this->shape(), x.arity(), dim_map);
       // Iterate over the cells of the input table, computing the
       // aggregate.
-      foreach(const shape_type& x_index, x.indices()) {
+      foreach(const index_type& x_index, x.indices()) {
         size_t offset = z_offset(x_index);
         elts[offset] = op(elts[offset], x(x_index));
       }
@@ -408,8 +407,8 @@ namespace sill {
     static typename AggOp::result_type
     join_aggregate(const dense_table& x,
                    const dense_table& y,
-                   const shape_type& x_dim_map,
-                   const shape_type& y_dim_map,
+                   const index_type& x_dim_map,
+                   const index_type& y_dim_map,
                    JoinOp join_op, AggOp agg_op, T initialvalue) {
       concept_assert((BinaryFunction<JoinOp,T,T,T>));
       concept_assert((BinaryFunction<AggOp,T,T,T>));
@@ -421,7 +420,7 @@ namespace sill {
       size_t z_arity =
         1 + std::max(sill::accumulate(x_dim_map, 0, maximum<size_t>()),
                      sill::accumulate(y_dim_map, 0, maximum<size_t>()));
-      shape_type z_shape(z_arity);
+      index_type z_shape(z_arity);
 
       // could simplify the following as:
       // boost::copy(x.shape(), boost::subrange(x, x_dim_map));
@@ -448,8 +447,8 @@ namespace sill {
     static boost::optional< std::pair<T,T> >
     join_find(const dense_table& x,
               const dense_table& y,
-              const shape_type& x_dim_map,
-              const shape_type& y_dim_map,
+              const index_type& x_dim_map,
+              const index_type& y_dim_map,
               Pred p) {
       concept_assert((BinaryPredicate<Pred, T, T>));
 
@@ -457,7 +456,7 @@ namespace sill {
       size_t z_arity =
         1 + std::max(sill::accumulate(x_dim_map, 0, maximum<size_t>()),
                      sill::accumulate(x_dim_map, 0, maximum<size_t>()));
-      shape_type z_shape(z_arity);
+      index_type z_shape(z_arity);
 
       // could simplify the following as:
       // boost::copy(x.shape(), boost::subrange(x, x_dim_map));
@@ -482,12 +481,12 @@ namespace sill {
 
     //! implements Table::restrict
     void restrict(const dense_table& x,
-                  const shape_type& restrict_map,
-                  const shape_type& dim_map) {
+                  const index_type& restrict_map,
+                  const index_type& dim_map) {
       // Get an offset calculator that maps x indexes to offsets of this table
       offset_functor z_offset(this->shape(), x.arity(), dim_map);
       // Iterate over a subspace of the input table, copying to this table.
-      foreach(const shape_type& x_index, x.indices(restrict_map)) {
+      foreach(const index_type& x_index, x.indices(restrict_map)) {
         size_t offset = z_offset(x_index);
         elts[offset] = x(x_index); ;
       }
@@ -512,7 +511,7 @@ namespace sill {
      *        are ignored.
      */ 
     void restrict_aligned(const dense_table& x,
-                          const shape_type& restrict_map) {
+                          const index_type& restrict_map) {
       size_t l = this->arity();
       if (x.arity() < l)
         throw std::invalid_argument
@@ -552,7 +551,7 @@ namespace sill {
      * @param retain_dim  Dimension in x to be retained.
      */
     void restrict_other(const dense_table& x,
-                        const shape_type& restrict_map,
+                        const index_type& restrict_map,
                         size_t retain_dim) {
       /* We want to copy x[restrict_map, except for retain_dim] to this[],
          along retain_dim.
@@ -628,19 +627,19 @@ namespace sill {
      * element in the geometry is the least significant bit of the index.
      */
     class index_iterator :
-      public std::iterator<std::forward_iterator_tag, const shape_type> {
+      public std::iterator<std::forward_iterator_tag, const index_type> {
 
       //! The geometry of the table.
-      const shape_type* geometry;
+      const index_type* geometry;
 
       //! The current index into the table.
-      shape_type index;
+      index_type index;
 
       //! A flag indicating whether the index has wrapped around.
       bool done;
 
       //! Restrictions to a certain subspace of the table.
-      const shape_type* restrict_map;
+      const index_type* restrict_map;
 
     public:
       //! End iterator constructor.
@@ -648,7 +647,7 @@ namespace sill {
         : geometry(NULL), index(), done(true), restrict_map(NULL) { }
 
       //! Begin iterator constructor with no restrictions.
-      index_iterator(const shape_type* geometry)
+      index_iterator(const index_type* geometry)
         : geometry(geometry),
           index(geometry->size(), 0),
           done(false),
@@ -662,8 +661,8 @@ namespace sill {
       }
 
       //! Begin iterator constructor with restrictions.
-      index_iterator(const shape_type* geometry,
-                     const shape_type* restrict_map)
+      index_iterator(const index_type* geometry,
+                     const index_type* restrict_map)
         : geometry(geometry),
           index(geometry->size(), 0),
           done(false), 
@@ -688,7 +687,7 @@ namespace sill {
        * If the supplied index pointed to the last cell, this function returns
        * true and the index is reset to point to the first cell.
        */
-      bool increment(shape_type& index, const shape_type& geometry) {
+      bool increment(index_type& index, const index_type& geometry) {
         for(size_t i = 0; i<index.size(); i++)
           if (index[i] == geometry[i] - 1)
             index[i] = 0;
@@ -719,9 +718,9 @@ namespace sill {
        *        indicate no restriction
        *
        */
-      static bool increment(shape_type& index,
-                            const shape_type& geometry,
-                            const shape_type& restrict_map) {
+      static bool increment(index_type& index,
+                            const index_type& geometry,
+                            const index_type& restrict_map) {
         assert(index.size() == geometry.size());
         assert(index.size() == restrict_map.size());
 
@@ -759,12 +758,12 @@ namespace sill {
       }
 
       //! Returns a const reference to the current index.
-      const shape_type& operator*() {
+      const index_type& operator*() {
         return index;
       }
 
       //! Returns a const pointer to the current index.
-      const shape_type* operator->() {
+      const index_type* operator->() {
         return &index;
       }
 
@@ -796,7 +795,7 @@ namespace sill {
     class offset_functor {
 
       //! The multiplier associated with the index in each dimension.
-      shape_type multiplier_;
+      index_type multiplier_;
 
     public:
 
@@ -804,7 +803,7 @@ namespace sill {
        * Constructs an offset calculator for the default indices
        * associated with a table with the supplied geometry.
        */
-      offset_functor(const shape_type& geometry)
+      offset_functor(const index_type& geometry)
         : multiplier_(geometry.size(), 1) {
         // Calculate the multipliers.
         for (size_t i = 1; i < multiplier_.size(); ++i)
@@ -838,9 +837,9 @@ namespace sill {
        *         The values in this map must be in the range
        *         [0, index_dim).
        */
-      offset_functor(const shape_type& geometry,
+      offset_functor(const index_type& geometry,
                      size_t index_dim,
-                     const shape_type& pos_map)
+                     const index_type& pos_map)
         : multiplier_(index_dim, 0) {
         // Calculate the multipliers, one per tuple position.
         if (geometry.empty())
@@ -860,7 +859,7 @@ namespace sill {
        * the optimal overhead of native nested loops we should exploit
        * this.
        */
-      size_t operator()(const shape_type& index) const {
+      size_t operator()(const index_type& index) const {
         size_t offset = 0;
         for (size_t d = 0; d < multiplier_.size(); ++d)
           offset += multiplier_[d] * index[d];
@@ -873,8 +872,8 @@ namespace sill {
       }
 
       //! Calculates the index associated with the supplied offset.
-      shape_type index(size_t offset) const {
-        shape_type ind(multiplier_.size());
+      index_type index(size_t offset) const {
+        index_type ind(multiplier_.size());
         // must use int here to avoid wrap-around
         for(int d = multiplier_.size()-1; d >= 0; --d) {
           assert(multiplier_[d] != 0);
@@ -893,23 +892,23 @@ namespace sill {
       size_t offset;
 
       //! The multiplier associated with the index in each dimension.
-      shape_type multiplier;
+      index_type multiplier;
 
       //! Geometry of the table for which offsets are calculated.
-//      const shape_type* geometry_ptr;
+//      const index_type* geometry_ptr;
 
       //! Geometry of the table whose indices are being iterated over;
       //! this geometry corresponds to the below indices.
-      const shape_type* indices_geometry_ptr;
+      const index_type* indices_geometry_ptr;
 
       //! Current 'index' position of the iterator.
-      shape_type indices;
+      index_type indices;
 
      public:
       offset_iterator()
         : offset(0), indices_geometry_ptr(NULL) { }
 
-      offset_iterator(const shape_type& geometry)
+      offset_iterator(const index_type& geometry)
         : offset(0),
           multiplier(geometry.size(), 1),
 //          geometry_ptr(&geometry),
@@ -920,9 +919,9 @@ namespace sill {
           multiplier[i] = multiplier[i - 1] * geometry[i - 1];
       }
 
-      offset_iterator(const shape_type& geometry,
-                      const shape_type& indices_geometry,
-                      const shape_type& pos_map)
+      offset_iterator(const index_type& geometry,
+                      const index_type& indices_geometry,
+                      const index_type& pos_map)
         : offset(0),
           multiplier(indices_geometry.size(), 0),
 //          geometry_ptr(&geometry),
@@ -937,7 +936,7 @@ namespace sill {
       }
 
       //! Like a constructor, but avoids reallocation when possible.
-      void reset(const shape_type& geometry) {
+      void reset(const index_type& geometry) {
         offset = 0;
         if (multiplier.size() != geometry.size())
           multiplier.resize(geometry.size());
@@ -954,9 +953,9 @@ namespace sill {
       }
 
       //! Like a constructor, but avoids reallocation when possible.
-      void reset(const shape_type& geometry,
-                 const shape_type& indices_geometry,
-                 const shape_type& pos_map) {
+      void reset(const index_type& geometry,
+                 const index_type& indices_geometry,
+                 const index_type& pos_map) {
         offset = 0;
         if (multiplier.size() != indices_geometry.size())
           multiplier.resize(indices_geometry.size());
@@ -990,8 +989,8 @@ namespace sill {
 
       /*
       //! Calculates the index associated with the supplied offset.
-      shape_type index(size_t offset) const {
-        shape_type ind(multiplier.size());
+      index_type index(size_t offset) const {
+        index_type ind(multiplier.size());
         // must use int here to avoid wrap-around
         for(int d = multiplier.size()-1; d >= 0; --d) {
           assert(multiplier[d] != 0);
@@ -1037,8 +1036,8 @@ namespace sill {
   //! \relates dense_table
   template <typename T>
   std::ostream& operator<<(std::ostream& out, const dense_table<T>& table) {
-    typedef typename dense_table<T>::shape_type shape_type;
-    foreach(const shape_type& index, table.indices()) {
+    typedef typename dense_table<T>::index_type index_type;
+    foreach(const index_type& index, table.indices()) {
       sill::copy(index, std::ostream_iterator<T, char>(out, " "));
       out << table(index) << std::endl;
     }

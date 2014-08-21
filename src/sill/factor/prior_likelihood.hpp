@@ -30,23 +30,15 @@ namespace sill
     // Public type declarations
     //==========================================================================
   public:
-    //! The base factor type.
-    typedef factor base;
-
-    //! The type of values stored in the factor
-    typedef typename F::result_type result_type;
-
-    //! implements Factor::domain_type
-    typedef typename F::domain_type domain_type;
-
-    //! implements Factor::variable_type
-    typedef typename F::variable_type variable_type;
-
-    //! the assignment type of the factor
+    // Factor concept types
+    typedef typename F::result_type     result_type;
+    typedef typename F::real_type       real_type;
+    typedef typename F::variable_type   variable_type;
+    typedef typename F::domain_type     domain_type;
+    typedef typename F::var_vector_type var_vector_type;
     typedef typename F::assignment_type assignment_type;
-
-    //! implements Factor::record_type
-    typedef typename F::record_type record_type;
+    typedef typename F::index_type      index_type; // TODO
+    typedef typename F::record_type     record_type;
 
     // Private data members
     //==========================================================================

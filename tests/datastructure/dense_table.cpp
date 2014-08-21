@@ -11,7 +11,7 @@
 using namespace sill;
 
 typedef sill::dense_table<int> table_type;
-typedef std::vector<size_t> shape_type;
+typedef std::vector<size_t> index_type;
 
 BOOST_AUTO_TEST_CASE(test_read_write) {
 
@@ -56,16 +56,16 @@ BOOST_AUTO_TEST_CASE(test_read_write) {
   
   const int d = 10;
   unsigned int dims[d] = {3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-  table_type a_table(shape_type(dims, dims + d));
+  table_type a_table(index_type(dims, dims + d));
 
   // Number the elements uniquely.
   int x = 0;
-  foreach(const table_type::shape_type& index, a_table.indices()) {
+  foreach(const table_type::index_type& index, a_table.indices()) {
     a_table(index) = x++;
   }
   // Check to make sure the elements are what we set them to.
   x = 0;
-  foreach(const table_type::shape_type& index, a_table.indices())
+  foreach(const table_type::index_type& index, a_table.indices())
     BOOST_CHECK_EQUAL(a_table(index), x++);
 }
 
@@ -92,26 +92,26 @@ BOOST_AUTO_TEST_CASE(test_operations) {
 
   // Now do the same with multidimensional tables.
   unsigned int e_dims[2] = {p, q};
-  table_type e_table(shape_type(e_dims, e_dims + 2));
+  table_type e_table(index_type(e_dims, e_dims + 2));
   unsigned int f_dims[2] = {q, r};
-  table_type f_table(shape_type(f_dims, f_dims + 2));
+  table_type f_table(index_type(f_dims, f_dims + 2));
   table_type::index_iterator it, end;
   for (boost::tie(it, end) = e_table.indices(); it != end; ++it)
     e_table(*it) = e[(*it)[0]][(*it)[1]];
   for (boost::tie(it, end) = f_table.indices(); it != end; ++it)
     f_table(*it) = f[(*it)[0]][(*it)[1]];
   unsigned int g_dims[3] = {p, q, r};
-  table_type g_table(shape_type(g_dims, g_dims + 3));
-  shape_type e_dim_map; // maps e's dimensions to g's dimensions
+  table_type g_table(index_type(g_dims, g_dims + 3));
+  index_type e_dim_map; // maps e's dimensions to g's dimensions
   e_dim_map.push_back(0);
   e_dim_map.push_back(1);
-  shape_type f_dim_map; // maps f's dimensions to g's dimensions
+  index_type f_dim_map; // maps f's dimensions to g's dimensions
   f_dim_map.push_back(1);
   f_dim_map.push_back(2);
   // Compute the sum.
   g_table.join(e_table, f_table, e_dim_map, f_dim_map, std::plus<int>());
   // Check it is correct.
-  table_type::shape_type index(3);
+  table_type::index_type index(3);
   for (index[0] = 0; index[0] < p; index[0]++)
     for (index[1] = 0; index[1] < q; index[1]++)
       for (index[2] = 0; index[2] < r; index[2]++)
@@ -131,14 +131,14 @@ BOOST_AUTO_TEST_CASE(test_operations) {
 
   // Now do the same with multidimensional tables.
   unsigned int h_dims[2] = {p, r};
-  table_type h_table(shape_type(h_dims, h_dims + 2), 0);
-  shape_type h_dim_map; // maps h's dimensions to g's dimensions
+  table_type h_table(index_type(h_dims, h_dims + 2), 0);
+  index_type h_dim_map; // maps h's dimensions to g's dimensions
   h_dim_map.push_back(0);
   h_dim_map.push_back(2);
   // Compute the aggregation.
   h_table.aggregate(g_table, h_dim_map, std::plus<int>());
 
-  table_type::shape_type index2(2);
+  table_type::index_type index2(2);
   // Check it is correct.
   for (index2[0] = 0; index2[0] < p; index2[0]++)
     for (index2[1] = 0; index2[1] < r; index2[1]++)

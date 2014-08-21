@@ -11,7 +11,6 @@
 #include <sill/copy_ptr.hpp>
 #include <sill/global.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
-//#include <sill/learning/dataset/dataset.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/stl_concepts.hpp>
 
@@ -52,6 +51,8 @@ namespace sill {
    *
    * \ingroup factor_concepts
    * \see constant_factor, table_factor
+   *
+   * \todo Swappable
    */
   template <typename F>
   struct Factor
@@ -59,10 +60,16 @@ namespace sill {
 
     /**
      * The type that represents the value returned by factor's
-     * operator() and norm_constant().  Typically, this type is either
+     * operator() and norm_constant(). Typically, this type is either
      * double or logarithmic<double>.
      */
     typedef typename F::result_type result_type;
+
+    /**
+     * The type that represents a real number for the result of
+     * calling log(operator()). This should be either double or float.
+     */
+    typedef typename F::real_type real_type;
 
     /**
      * The type of variables, used by the factor. Typically, this type is
@@ -75,38 +82,93 @@ namespace sill {
      * factor's arguments. This type must be equal to set<variable_type*>.
      */
     typedef typename F::domain_type domain_type;
-    
+
+    /**
+     * The type that represents the factor's argument vector, that is,
+     * a sequence of variables. This must be equal to vector<variable_type*>.
+     */
+    typedef typename F::var_vector_type var_vector_type;
     
     /**
-     * The type that represents an assignment. 
-     * In the current design, this typedef is not required to be a part of the
-     * factor's public interface, but the factor must use this type in its
-     * operator(). 
+     * The type that represents an assignment to a subset of variables.
+     * This type can be used to evaluate the factor via operator().
      */
     typedef typename F::assignment_type assignment_type;
 
-    
-    //! Returns the arguments of the factor
+    /**
+     * The type that represents an assignment to all of factors' arguments
+     * in their natural order. This type can be often used to evaluate the
+     * factor efficiently via operator().
+     */
+    typedef typename F::index_type index_type;
+
+    /**
+     * The type that represents a record in a dataset compatible with
+     * this factor.
+     * \deprecated This is part of the old dataset framework and is deprecated.
+     */
+    typedef typename F::record_type record_type;
+
+    /**
+     * Default constructor for a factor with no arguments and factor-specific value.
+     */
+    Factor();
+
+    /**
+     * Conversion from a constant: creates a factor with no arguments
+     * and equal to the given constant.
+     */
+    explicit Factor(result_type value);
+
+    /**
+     * Creates a factor with the given argument set and factor-specific value.
+     */
+    explicit Factor(const domain_type& args);
+
+    /**
+     * Creates a factor with the given argument set and given likelihood.
+     */
+    Factor(const domain_type& args, result_type likelihood);
+
+    /**
+     * Returns the arguments of the factor.
+     */
     const domain_type& arguments() const;
 
-    //! Returns a new factor which represents the result of restricting this
-    //! factor to an assignment to one or more of its variables
+    /**
+     * Returns the value of the factor for the given assignment.
+     */
+    result_type operator()(const assignment_type& a) const;
+
+    /**
+     * Returns the value of the factor for the given index.
+     */
+    result_type operator()(const index_type& index) const;
+
+    /**
+     * Returns the value of the factor for the given dataset record.
+     * \deprecated This is part of the old dataset framework and is deprecated.
+     */
+    result_type operator()(const record_type& record) const;
+
+    /**
+     * Returns a new factor which represents the result of restricting this
+     * factor to an assignment to some of its arguments.
+     * \todo standardize the other versions
+     */
     F restrict(const assignment_type& a) const;
 
     /**
      * Renames the arguments of this factor in-place.
      *
-     * @param map
+     * \param map
      *        an object such that map[v] maps the variable handle v
      *        a type compatible variable handle; this mapping must be 1:1.
-     *
-     * \todo Requires that the keys and values of var_map are disjoint
+     * \todo Requires that the keys and values of var_map are disjoint?
      */
     F& subst_args(const std::map<variable_type*, variable_type*>& map);
-
-    /* Evaluates the factor for the given assignment. */
-    result_type operator()(const assignment_type& a);
-
+   
+    // TODO: fix this
     concept_usage(Factor) {
       F f;
       const F& cf = f;
@@ -125,7 +187,10 @@ namespace sill {
   }; // concept Factor
 
   /**
-   * A concept that represents a distribution and a factor. 
+   * A concept that represents a factor of a probability distribution.
+   * This factor may represent a (possibly unnormalized) marginal
+   * probability distribution alpha * p(A), or a (possibly unnormalized)
+   * conditional probability distribution alpha * P(A|B).
    *
    * \ingroup factor_concepts
    * \see table_factor
@@ -133,31 +198,115 @@ namespace sill {
   template <typename F>
   struct DistributionFactor : Factor<F> {
 
-    //! Multiplies this factor by another factor
+    /**
+     * A functor that, given a set of arguments, returns a marginal
+     * distribution over these arguments. Must be identical to 
+     * boost::function<F(const domain_type&)>.
+     */
+    typedef typename F::marginal_fn_type marginal_fn_type;
+
+    /**
+     * A functor that, given a set of head and tail arguments, returns
+     * the conditional distribution p(head|tail). Must be identical to
+     * boost::function<F(const domain_type&, const domain_type&)>.
+     */
+    typedef typename F::conditional_fn_type conditional_fn_type;
+
+    /**
+     * Multiplies this factor by another factor of the same kind.
+     */
     F& operator*=(const F& f);
 
-    //! Computes a marginal (sum) over a factor expression
+    /**
+     * Multiplies this factor by a constant. This changes the total probability
+     * of the distribution represented by this factor.
+     */
+    F& operator*=(typename F::result_type value);
+
+    /**
+     * Divides this factor by a constant. This changes the total probability
+     * of the distribution represented by this factor.
+     */
+    F& operator/=(typename F::result_type value);
+
+    /**
+     * Computes a marginal (sum) over a subset of variables
+     * \param retain A set of arguments that should be retained. This may
+     *        include arguments not present in the factor (which are ignored).
+     * \todo standardize the other versions
+     */
     F marginal(const typename F::domain_type& retain) const;
 
-    //! Returns true if the factor is normalizable (default implementation)
+    /**
+     * If this factor represents the marginal distribution P(A,B),
+     * then this returns P(A|B).
+     */
+    F conditional(const typename F::domain_type& tail) const;
+
+    /**
+     * Returns true if this factor represents a conditional distribution
+     * p(args - tail | tail). This function may be implemented numerically
+     * and may take a second optional argument, which is the tolerance.
+     */
+    bool is_conditional(const typename F::domain_type& tail) const;
+
+    /**
+     * Returns true if the factor is normalizable (that is, it has a positive
+     * and finite mass.
+     */
     bool is_normalizable() const;
 
-    //! Returns the normalization constant of this factor
+    /**
+     * Returns the normalization constant of this factor. Dividing the factor
+     * by this constant would make it a proper distribution.
+     */
     typename F::result_type norm_constant() const;
 
     /**
-     * Normalizes a factor in-place.  This method throws an exception if
+     * Normalizes a factor in-place. This function throws an exception if
      * the supplied factor is not normalizable (because its integral is
      * not positive and finite).
      */
     F& normalize();
 
-    //! Computes the entropy of the distribution.
-    double entropy() const;
+    /**
+     * Computes the entropy of the distribution, provided that this factor
+     * represents a marginal distribution.
+     * \todo standardize the other versions
+     */
+    typename F::real_type entropy() const;
 
-    //! Computes KL(*this, q)
-    double relative_entropy(const DistributionFactor& q);
+    /**
+     * Computes the Kullback-Liebler divergence from this factor to the 
+     * supplied factor. Assumes that both *this and q represent a marginal
+     * distribution.
+     * \todo standardize the other versions
+     */
+    typename F::real_type relative_entropy(const F& q);
 
+    /**
+     * Computes the mutual information between two sets of variables
+     * in this factor's arguments.
+     */
+    typename F::real_type mutual_information(const typename F::domain_type&,
+                                             const typename F::domain_type&) const;
+
+    /**
+     * A free function that multipies two distribution factors.
+     */
+    friend F operator*(const F& f, const F& g);
+
+    /**
+     * A free function that multiplies a distribution factor and a constant.
+     */
+    friend F operator*(const F& f, typename F::result_type x);
+
+    /**
+     * A free function that multiplies a distributino factor and a constant.
+     */
+    friend F operator*(typename F::result_type x, const F& f);
+
+    // TODO: fix this
     concept_usage(DistributionFactor) {
       bool b;
       typename F::result_type r;
@@ -178,53 +327,6 @@ namespace sill {
     }
 
   }; // concept DistributionFactor
-
-  /**
-   * A concept that represents a distribution and a factor, which has additional
-   * methods which help with learning.
-   *
-   * \ingroup factor_concepts
-   * \see table_factor
-   */
-  /* // JOSEPH B.: I COMMENTED THIS OUT FOR TEMPLATIZING BY LINEAR ALGEBRA TYPE
-  template <typename F>
-  struct LearnableDistributionFactor : DistributionFactor<F> {
-
-    typedef typename DistributionFactor<F>::assignment_type assignment_type;
-    typedef typename DistributionFactor<F>::domain_type domain_type;
-
-    //! Learns a marginal factor P(X) from data.
-    //! @param X          Variables in marginal.
-    //! @param ds         Training data.
-    //! @param smoothing  Regularization (>= 0).
-    static F
-    learn_marginal(const typename F::domain_type& X, const dataset& ds,
-                   double smoothing);
-
-    //! Learns a conditional factor P(A | B, C=c) from data.
-    //! @param ds         Training data.
-    //! @param smoothing  Regularization (>= 0).
-    static F
-    learn_conditional(const typename F::domain_type& A,
-                      const typename F::domain_type& B,
-                      const typename F::assignment_type& c, const dataset& ds,
-                      double smoothing);
-
-    concept_usage(LearnableDistributionFactor) {
-      sill::same_type(f, F::learn_marginal(dom_constref, ds_constref, d));
-      sill::same_type(f, F::learn_conditional(dom_constref, dom_constref,
-                                             a_constref, ds_constref, d));
-    }
-
-  private:
-    F f;
-    static const domain_type& dom_constref;
-    static const dataset& ds_constref;
-    double d;
-    static const assignment_type& a_constref;
-
-  }; // concept LearnableDistributionFactor
-  */
 
   //============================================================================
   // CONDITIONAL FACTORS
@@ -258,8 +360,7 @@ namespace sill {
    *
    * @author Joseph Bradley
    *
-   * @todo Once factors are templatized by linear algebra type,
-   *       add back methods here which use datasets/records.
+   * @todo Clean this up.
    */
   template <class F>
   struct CRFfactor

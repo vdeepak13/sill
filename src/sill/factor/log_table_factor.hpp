@@ -58,7 +58,7 @@ namespace sill {
     //==========================================================================
   private:
     //! The type of shape / index of the underlying table
-    typedef table_type::shape_type shape_type;
+    typedef table_type::index_type index_type;
 
     //! The type that maps variables to table indices
     typedef std::map<finite_variable*, size_t> var_index_map;
@@ -91,7 +91,7 @@ namespace sill {
 
     //! Fills in the local table coordinates according to the assignment
     void get_shape_from_assignment( const finite_assignment& a,
-                                    shape_type& s) const{
+                                    index_type& s) const{
       for(size_t i = 0; i<arg_seq.size(); i++){
         finite_assignment::const_iterator
               var_i_value_iterator = a.find(arg_seq[i]);
@@ -101,11 +101,11 @@ namespace sill {
     }
 
     //! Creates an object that maps indices of one table to another
-    static shape_type make_dim_map(const finite_var_vector& vars,
+    static index_type make_dim_map(const finite_var_vector& vars,
                                    const var_index_map& to_map);
 
     //! Creates an object that maps indices of a table to fixed values
-    static shape_type make_restrict_map(const finite_var_vector& vars,
+    static index_type make_restrict_map(const finite_var_vector& vars,
                                         const finite_assignment& a);
 
     //! Creates an object that maps indices of a set to 0..(n-1)
@@ -158,7 +158,7 @@ namespace sill {
 
     //! Conversion from a table_factor.
     explicit log_table_factor(const table_factor& f)
-      : args(f.arguments()), arg_seq(f.arg_list()),
+      : args(f.arguments()), arg_seq(f.arg_vector()),
         table_data(f.table().shape()) {
       var_index.clear();
       for (size_t i = 0; i < arg_seq.size(); ++i)
@@ -205,7 +205,7 @@ namespace sill {
     }
 
     //! Returns the arguments of the factor in the natural order
-    const finite_var_vector& arg_list() const {
+    const finite_var_vector& arg_vector() const {
       return arg_seq;
     }
 
@@ -226,7 +226,7 @@ namespace sill {
     /**
      * Returns the range over the set of assignments.
      * The order of the assignments is determined by the order of the variables
-     * in arg_list(), counting from lowest to highest with the first variable
+     * in arg_vector(), counting from lowest to highest with the first variable
      * being the most significant digit.
      */
     finite_assignment_range assignments() const;
@@ -255,13 +255,13 @@ namespace sill {
     // -------------------------------------------------------------------
     //! Returns the value associated with a given assignment of variables
     result_type v(const finite_assignment& a) const {
-      shape_type index(arg_seq.size());
+      index_type index(arg_seq.size());
       get_shape_from_assignment(a,index);
       return table_data(index);
     }
 
     result_type& v(const finite_assignment& a) {
-      shape_type index(arg_seq.size());
+      index_type index(arg_seq.size());
       get_shape_from_assignment(a,index);
       return table_data(index);
     }
@@ -273,7 +273,7 @@ namespace sill {
     //! direct indexing for 2 arguments
     result_type v(size_t i, size_t j) const {
       assert(arguments().size()==2);
-      shape_type index(2);
+      index_type index(2);
       index[0] = i;
       index[1] = j;
       return table_data(index);
@@ -281,7 +281,7 @@ namespace sill {
     
     result_type& v(size_t i, size_t j) {
       assert(arguments().size()==2);
-      shape_type index(2);
+      index_type index(2);
       index[0] = i;
       index[1] = j;
       return table_data(index);
@@ -295,7 +295,7 @@ namespace sill {
      //! direct indexing for 1 argument
     result_type v(size_t i) const {
       assert(arguments().size()==1);
-      shape_type index(1);
+      index_type index(1);
       index[0] = i;
       return table_data(index);
     }
@@ -303,7 +303,7 @@ namespace sill {
     //! direct indexing for 1 argument
     result_type& v(size_t i) {
       assert(arguments().size()==1);
-      shape_type index(1);
+      index_type index(1);
       index[0] = i;
       return table_data(index);
     }
@@ -319,7 +319,7 @@ namespace sill {
     // -------------------------------------------------------------------
     //! Returns the value associated with a given assignment of variables
     void set_v(const finite_assignment& a, result_type v) {
-      shape_type index(arg_seq.size());
+      index_type index(arg_seq.size());
       get_shape_from_assignment(a,index);
       table_data(index) = v;
     }
@@ -331,7 +331,7 @@ namespace sill {
     //! direct indexing for 2 arguments
     void set_v(size_t i, size_t j, result_type v) {
       assert(arguments().size()==2);
-      shape_type index(2);
+      index_type index(2);
       index[0] = i;
       index[1] = j;
       table_data(index) = v;
@@ -344,7 +344,7 @@ namespace sill {
      //! direct indexing for 1 argument
     void set_v(size_t i, result_type v) {
       assert(arguments().size()==1);
-      shape_type index(1);
+      index_type index(1);
       index[0] = i;
       table_data(index) = v;
     }
@@ -597,7 +597,7 @@ namespace sill {
     /**
      * Unrolls the factor to be over a single variable new_v (created within
      * the given universe).
-     * If the factor is over A,B,C (the sequence given by arg_list()), then
+     * If the factor is over A,B,C (the sequence given by arg_vector()), then
      * this returns a new factor only over variable new_v, with domain of size
      * A.size() * B.size() * C.size().  The new factor's values match those
      * in the original factor, with the values of A,B,C defining the index into
@@ -685,7 +685,7 @@ namespace sill {
     }
 
     //! Converts table index (subscripts) to an assignment
-    finite_assignment assignment(const shape_type& index) const;
+    finite_assignment assignment(const index_type& index) const;
 
   // Operator Overloads 
   //============================================================================

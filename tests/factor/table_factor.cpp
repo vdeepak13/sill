@@ -97,7 +97,7 @@ BOOST_FIXTURE_TEST_CASE(test_rolling, fixture) {
   finite_variable* f_unrolled_v = NULL;
   table_factor f_unrolled;
   boost::tie(f_unrolled_v, f_unrolled) = f.unroll(u);
-  table_factor f_rolled_again = f_unrolled.roll_up(f.arg_list());
+  table_factor f_rolled_again = f_unrolled.roll_up(f.arg_vector());
   BOOST_CHECK_EQUAL(f, f_rolled_again); 
 }
 

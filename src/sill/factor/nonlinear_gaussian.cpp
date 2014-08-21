@@ -54,7 +54,7 @@ namespace sill {
     moment_gaussian joint = multiply_with(marginal);
     canonical_gaussian likelihood = canonical_gaussian(joint) / marginal;
     // enforce that likelihood is PSD
-    likelihood.enforce_psd(joint.mean(likelihood.argument_list()));
+    likelihood.enforce_psd(joint.mean(likelihood.arg_vector()));
     return likelihood;
   }
 

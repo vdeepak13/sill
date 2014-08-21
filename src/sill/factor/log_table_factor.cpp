@@ -164,10 +164,10 @@ namespace sill {
     // get it in index coordinates
     size_t v = safe_get(var_index, x);
     size_t w = safe_get(var_index, y);
-    foreach(const shape_type& a_b_g, table_data.indices()) {
-      shape_type ap_b_g(a_b_g);
-      foreach(const shape_type& ap_bp_gp, table_data.indices()) {
-        shape_type a_bp_gp(ap_bp_gp);
+    foreach(const index_type& a_b_g, table_data.indices()) {
+      index_type ap_b_g(a_b_g);
+      foreach(const index_type& ap_bp_gp, table_data.indices()) {
+        index_type a_bp_gp(ap_bp_gp);
         //in the notation of the paper,
         //f_a_b_g is alpha beta gamma
         //f_ap_bp_gp is alpha' beta' gamma'
@@ -223,7 +223,7 @@ namespace sill {
 
 
   finite_assignment
-  log_table_factor::assignment(const shape_type& index) const {
+  log_table_factor::assignment(const index_type& index) const {
     finite_assignment a;
     assert(index.size() == arg_seq.size());
     for(size_t i = 0; i < index.size(); i++)
@@ -246,7 +246,7 @@ namespace sill {
          arg_it != arg_end; ++arg_it)
       arg_seq.push_back(*arg_it);
     var_index.clear();
-    shape_type geometry(arg_seq.size());
+    index_type geometry(arg_seq.size());
     for (size_t i = 0; i < arg_seq.size(); ++i) {
       var_index[arg_seq[i]] = i;
       geometry[i] = arg_seq[i]->size();
@@ -255,22 +255,22 @@ namespace sill {
     table_data = dense_table<result_type>(geometry, default_value);
   }
 
-  log_table_factor::shape_type
+  log_table_factor::index_type
   log_table_factor::make_dim_map(const finite_var_vector& vars,
                                     const var_index_map& to_map) {
     // return make_vector(to_map.values(vars)); <-- slow
-    dense_table<result_type>::shape_type map(vars.size());
+    dense_table<result_type>::index_type map(vars.size());
     for(size_t i = 0; i < vars.size(); i++) {
       map[i] = safe_get(to_map, vars[i]);
     }
     return map;
   }
 
-  log_table_factor::shape_type
+  log_table_factor::index_type
   log_table_factor::make_restrict_map(const finite_var_vector& vars,
                                          const finite_assignment& a) {
     size_t retained = std::numeric_limits<size_t>::max();
-    dense_table<result_type>::shape_type map(vars.size(), retained);
+    dense_table<result_type>::index_type map(vars.size(), retained);
     for(size_t i = 0; i < vars.size(); i++) {
       finite_assignment::const_iterator it = a.find(vars[i]);
       if (it != a.end()) map[i] = it->second;
@@ -289,7 +289,7 @@ namespace sill {
   // Free functions
   //============================================================================
   std::ostream& operator<<(std::ostream& out, const log_table_factor& f) {
-    out << f.arg_list() << std::endl;
+    out << f.arg_vector() << std::endl;
     out << f.table();
     return out;
   }

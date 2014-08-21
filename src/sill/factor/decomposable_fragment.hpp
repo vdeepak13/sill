@@ -22,10 +22,10 @@ namespace sill {
    * locally from the cliques of the factor, which can be used
    * to perform marginalization operations.
    *
-   * Implements: Factor
+   * Models: Factor
    *
-   * @tparam F the underlying factor type. The factor type must support 
-   *          sum-product CSR operations.
+   * \tparam F the underlying factor type. Must satisfy the
+   *           DistributionFactor concept.
    *
    * \ingroup factor_types
    * \see Factor
@@ -37,22 +37,17 @@ namespace sill {
     // Public type declarations
     //==========================================================================
   public:
-    //! The storage type of the underlying factor
-    typedef typename F::result_type result_type;
-
-    //! implements Factor::domain_type
-    typedef typename F::domain_type domain_type;
-
-    //! implements Factor::variable_type
-    typedef typename F::variable_type variable_type;
-
-    //! the assignment type of the factor
+    // Factor concept types
+    typedef typename F::result_type     result_type;
+    typedef typename F::real_type       real_type;
+    typedef typename F::variable_type   variable_type;
+    typedef typename F::domain_type     domain_type;
+    typedef typename F::var_vector_type var_vector_type;
     typedef typename F::assignment_type assignment_type;
+    typedef typename F::index_type      index_type; // TODO
+    typedef typename F::record_type     record_type;
 
-    //! implements Factor::record_type
-    typedef typename F::record_type record_type;
-
-    //! The type of the constituent factor
+    // Other types
     typedef prior_likelihood<F> factor_type;
 
     // Private data members
@@ -65,7 +60,7 @@ namespace sill {
     domain_type args;
 
     //! The collection of factors that forms this fragment
-    //! \todo: deprecate the copy_ptr
+    //! \todo deprecate the copy_ptr
     copy_ptr<pl_vector> pls;
 
     // Constructors and conversion operators
