@@ -1,4 +1,3 @@
-
 #include <sill/math/statistics.hpp>
 
 #include <sill/macros_def.hpp>

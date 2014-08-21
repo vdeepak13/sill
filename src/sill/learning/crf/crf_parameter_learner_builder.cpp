@@ -1,4 +1,3 @@
-
 #include <sill/learning/crf/crf_parameter_learner_builder.hpp>
 
 namespace sill {

@@ -1,4 +1,3 @@
-
 #ifndef SILL_DATASOURCE_HPP
 #define SILL_DATASOURCE_HPP
 

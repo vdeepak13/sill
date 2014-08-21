@@ -1,4 +1,3 @@
-
 #include <cmath>
 
 #include <sill/optimization/single_opt_step.hpp>

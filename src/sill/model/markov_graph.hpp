@@ -1,4 +1,3 @@
-
 #ifndef SILL_MARKOV_GRAPH_HPP
 #define SILL_MARKOV_GRAPH_HPP
 

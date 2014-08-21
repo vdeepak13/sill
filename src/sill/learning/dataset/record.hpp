@@ -1,4 +1,3 @@
-
 #ifndef SILL_RECORD_HPP
 #define SILL_RECORD_HPP
 

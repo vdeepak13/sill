@@ -1,4 +1,3 @@
-
 #include <iostream>
 
 #include <sill/optimization/table_factor_opt_vector.hpp>

@@ -1,4 +1,3 @@
-
 #ifndef SILL_SINGLE_OPT_STEP_HPP
 #define SILL_SINGLE_OPT_STEP_HPP
 

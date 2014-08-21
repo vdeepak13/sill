@@ -1,4 +1,3 @@
-
 #include <sill/math/operations.hpp>
 
 namespace sill {

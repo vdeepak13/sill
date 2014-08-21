@@ -24,10 +24,10 @@ namespace sill {
   class chow_liu {
   public:
     // Learner concept types
+    typedef typename F::real_type                real_type;
     typedef decomposable<F>                      model_type;
     typedef typename factor_mle<F>::dataset_type dataset_type;
     typedef typename factor_mle<F>::param_type   param_type;
-    typedef double                               real_type;
 
     // Other public types
     typedef typename F::variable_type    variable_type;

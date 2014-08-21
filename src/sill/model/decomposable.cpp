@@ -1,4 +1,3 @@
-
 #include <sill/model/decomposable.hpp>
 
 #include <sill/macros_def.hpp>

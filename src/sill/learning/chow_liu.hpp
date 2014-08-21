@@ -1,4 +1,3 @@
-
 #ifndef SILL_CHOW_LIU_HPP
 #define SILL_CHOW_LIU_HPP
 

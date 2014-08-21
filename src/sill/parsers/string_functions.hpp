@@ -4,8 +4,8 @@
  * \author Anton
  */
 
-#ifndef STRING_FUNCTIONS_HPP_
-#define STRING_FUNCTIONS_HPP_
+#ifndef SILL_PARSERS_STRING_FUNCTIONS_HPP
+#define SILL_PARSERS_STRING_FUNCTIONS_HPP
 
 #include <cstdlib>
 #include <string>

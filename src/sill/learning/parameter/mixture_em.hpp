@@ -1,5 +1,5 @@
-#ifndef SILL_MIXTURE_EM3_HPP
-#define SILL_MIXTURE_EM3_HPP
+#ifndef SILL_MIXTURE_EM_HPP
+#define SILL_MIXTURE_EM_HPP
 
 #include <sill/factor/factor_evaluator.hpp>
 #include <sill/factor/mixture.hpp>
@@ -27,7 +27,7 @@ namespace sill {
   class mixture_em {
   public:
     // Member types of the Learner concept
-    typedef double                               real_type; // TODO
+    typedef typename F::real_type                real_type;
     typedef mixture<F>                           model_type;
     typedef typename factor_mle<F>::dataset_type dataset_type;
     typedef typename factor_mle<F>::param_type   comp_param_type;

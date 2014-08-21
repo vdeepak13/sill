@@ -1,4 +1,3 @@
-
 #include <sill/base/vector_assignment.hpp>
 
 #include <sill/macros_def.hpp>

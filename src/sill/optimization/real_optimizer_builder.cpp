@@ -1,4 +1,3 @@
-
 #include <sill/optimization/real_optimizer_builder.hpp>
 
 namespace sill {

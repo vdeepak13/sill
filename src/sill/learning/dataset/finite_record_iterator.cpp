@@ -1,4 +1,3 @@
-
 #include <sill/learning/dataset/finite_record_iterator.hpp>
 
 #include <sill/macros_def.hpp>

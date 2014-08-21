@@ -1,7 +1,5 @@
-
 #ifndef SILL_STL_UTIL_HPP
 #define SILL_STL_UTIL_HPP
-
 
 #include <set>
 #include <map>

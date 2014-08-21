@@ -1,4 +1,3 @@
-
 #include <sill/optimization/gradient_method.hpp>
 
 namespace sill {

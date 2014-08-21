@@ -1,4 +1,3 @@
-
 #include <sill/base/string_functions.hpp>
 
 #include <sill/macros_def.hpp>

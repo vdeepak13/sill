@@ -1,4 +1,3 @@
-
 #ifndef SILL_DS_ORACLE_HPP
 #define SILL_DS_ORACLE_HPP
 

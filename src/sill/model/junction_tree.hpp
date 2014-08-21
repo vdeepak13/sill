@@ -1,4 +1,3 @@
-
 #ifndef SILL_JUNCTION_TREE_HPP
 #define SILL_JUNCTION_TREE_HPP
 

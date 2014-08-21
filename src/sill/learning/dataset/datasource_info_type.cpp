@@ -1,4 +1,3 @@
-
 #include <sill/learning/dataset/datasource_info_type.hpp>
 
 #include <sill/macros_def.hpp>

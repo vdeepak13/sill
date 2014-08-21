@@ -1,5 +1,6 @@
 #ifndef SILL_INFERENCE_MK_PROPAGATION_HPP
 #define SILL_INFERENCE_MK_PROPAGATION_HPP
+
 #include <sill/model/factor_graph_model.hpp>
 #include <map>
 

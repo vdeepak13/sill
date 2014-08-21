@@ -1,4 +1,3 @@
-
 #ifndef SILL_CRF_X_MAPPING_HPP
 #define SILL_CRF_X_MAPPING_HPP
 

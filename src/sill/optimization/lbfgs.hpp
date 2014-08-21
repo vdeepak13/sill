@@ -1,4 +1,3 @@
-
 #ifndef SILL_LBFGS_HPP
 #define SILL_LBFGS_HPP
 

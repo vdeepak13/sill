@@ -1,4 +1,3 @@
-
 #ifndef SILL_FILTER_ORACLE_HPP
 #define SILL_FILTER_ORACLE_HPP
 

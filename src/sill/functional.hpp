@@ -1,4 +1,3 @@
-
 #ifndef SILL_FUNCTIONAL_HPP
 #define SILL_FUNCTIONAL_HPP
 

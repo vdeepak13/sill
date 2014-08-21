@@ -1,4 +1,3 @@
-
 #include <boost/random/uniform_int.hpp>
 
 #include <sill/learning/dataset/dataset_view.hpp>

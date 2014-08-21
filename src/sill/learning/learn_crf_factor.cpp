@@ -1,4 +1,3 @@
-
 #include <sill/learning/crossval_methods.hpp>
 #include <sill/learning/learn_crf_factor.hpp>
 

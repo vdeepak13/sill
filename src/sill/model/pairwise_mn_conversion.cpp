@@ -1,4 +1,3 @@
-
 #include <sill/model/pairwise_mn_conversion.hpp>
 
 #include <sill/macros_def.hpp>

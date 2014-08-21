@@ -1,4 +1,3 @@
-
 #include <sill/optimization/single_opt_step_builder.hpp>
 
 namespace sill {
