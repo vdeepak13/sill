@@ -9,7 +9,9 @@
 
 #include <sill/base/assignment.hpp>
 #include <sill/copy_ptr.hpp>
+#include <sill/factor/factor_evaluator.hpp>
 #include <sill/global.hpp>
+#include <sill/learning/factor_mle/factor_mle.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/stl_concepts.hpp>
@@ -96,20 +98,6 @@ namespace sill {
     typedef typename F::assignment_type assignment_type;
 
     /**
-     * The type that represents an assignment to all of factors' arguments
-     * in their natural order. This type can be often used to evaluate the
-     * factor efficiently via operator().
-     */
-    typedef typename F::index_type index_type;
-
-    /**
-     * The type that represents a record in a dataset compatible with
-     * this factor.
-     * \deprecated This is part of the old dataset framework and is deprecated.
-     */
-    typedef typename F::record_type record_type;
-
-    /**
      * Default constructor for a factor with no arguments and factor-specific value.
      */
     Factor();
@@ -139,17 +127,6 @@ namespace sill {
      * Returns the value of the factor for the given assignment.
      */
     result_type operator()(const assignment_type& a) const;
-
-    /**
-     * Returns the value of the factor for the given index.
-     */
-    result_type operator()(const index_type& index) const;
-
-    /**
-     * Returns the value of the factor for the given dataset record.
-     * \deprecated This is part of the old dataset framework and is deprecated.
-     */
-    result_type operator()(const record_type& record) const;
 
     /**
      * Returns a new factor which represents the result of restricting this
@@ -186,6 +163,38 @@ namespace sill {
 
   }; // concept Factor
 
+  /**
+   * A concept that preresents a factor that can be indexed efficiently.
+   * The factor defines a factor-specific index type that can be used to
+   * evaluate the factor using operator().
+   *
+   * Even if the factor is not IndexableFactor, its value an be still evaluated
+   * by passing assignment_type to operator(), though this operation may not
+   * be efficient.
+   */
+  template <typename F>
+  struct IndexableFactor : Factor<F> {
+    /**
+     * The type that represents an assignment to all of factors' arguments
+     * in their natural order. This type can be often used to evaluate the
+     * factor efficiently.
+     */
+    typedef typename F::index_type index_type;
+
+    /**
+     * Returns the value of the factor for the given index.
+     */
+    typename F::result_type operator()(const index_type& index) const;
+
+    /**
+     * A helper class that can be used to evaluate the factor efficiently.
+     * The primary template simply invokes F::operator(); this template can
+     * be further specialized to evalute the factor more efficiently.
+     * \see factor_evaluator<moment_gaussian>
+     */
+    friend class factor_evaluator<F>;
+  };
+  
   /**
    * A concept that represents a factor of a probability distribution.
    * This factor may represent a (possibly unnormalized) marginal
@@ -292,6 +301,13 @@ namespace sill {
                                              const typename F::domain_type&) const;
 
     /**
+     * Draws random samples from the distribution represented by this factor.
+     * Requires that the factor represents a marginal distribution.
+     */
+    template <typename RandomNumberGenerator>
+    typename F::assignment_type sample(RandomNumberGenerator& rng) const;
+
+    /**
      * A free function that multipies two distribution factors.
      */
     friend F operator*(const F& f, const F& g);
@@ -327,6 +343,46 @@ namespace sill {
     }
 
   }; // concept DistributionFactor
+
+  /**
+   * A class that represents a marginal or conditiona distribution that can be
+   * learned from data. Each LearnarbleFactor is associated with a dataset type
+   * (which is usually an abstract base class) which represents a collection of
+   * data points in a format accessible to this factor.
+   */
+  template <typename F>
+  class LearnableFactor : public DistributionFactor<F> {
+    
+    /**
+     * The type that represents a dataset compatible with this factor.
+     * Must satisfy the Dataset concept.
+     */
+    typedef typename F::dataset_type dataset_type;
+
+    /**
+     * The type that represents a record in a dataset compatible with
+     * this factor.
+     * \deprecated This is part of the old dataset framework and is deprecated.
+     */
+    typedef typename F::record_type record_type;
+
+    /**
+     * Returns the value of the factor for the given dataset record.
+     * \deprecated This is part of the old dataset framework and is deprecated.
+     */
+    typename F::result_type operator()(const record_type& record) const;
+
+    /**
+     * A helper class that can be used to compute the maximum likelihood
+     * estimate (MLE) of this factor type for a subset of variables.
+     * The primary template of factor_mle is defunct; the template must
+     * be specialized to this factor type (there is usually no generic
+     * way of computing the MLE of any factor type).
+     */
+    friend class factor_mle<F>;
+
+  };    
+  
 
   //============================================================================
   // CONDITIONAL FACTORS

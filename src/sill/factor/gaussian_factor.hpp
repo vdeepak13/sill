@@ -17,6 +17,9 @@
 
 namespace sill {
 
+  // Forward declaration
+  template <typename T> class vector_dataset;
+
   /**
    * The base class of all Guassians
    *
@@ -34,7 +37,12 @@ namespace sill {
     typedef vector_domain       domain_type;
     typedef vector_var_vector   var_vector_type;
     typedef vector_assignment   assignment_type;
-    typedef vec                 index_type;
+
+    // IndexableFactor concept types
+    typedef vec index_type;
+
+    // LearnableFactor concept types
+    typedef vector_dataset<double> dataset_type;
     typedef vector_record_old<dense_linear_algebra<> > record_type;
 
     // Protected member data and member functions

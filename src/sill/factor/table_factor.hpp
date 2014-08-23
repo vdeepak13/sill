@@ -27,6 +27,9 @@
 
 namespace sill {
 
+  // Forward declaration
+  class finite_dataset;
+
   /**
    * A table factor represents a function of a set of finite variables.
    *
@@ -38,20 +41,25 @@ namespace sill {
     // Public type declarations
     //==========================================================================
   public:
-    // The types of the Factor concept
+    // Factor concept types
     typedef double              result_type;
     typedef double              real_type;
     typedef finite_variable     variable_type;
     typedef finite_domain       domain_type;
     typedef finite_var_vector   var_vector_type;
     typedef finite_assignment   assignment_type;
-    typedef std::vector<size_t> index_type;
-    typedef finite_record_old       record_type;
 
-    // The types of the DistributionFactor concept
+    // IndexableFactor types
+    typedef std::vector<size_t> index_type;
+
+    // DistributionFactor concept types
     typedef boost::function<table_factor(const finite_domain&)> marginal_fn_type;
     typedef boost::function<table_factor(const finite_domain&,
                                          const finite_domain&)> conditional_fn_type;
+
+    // LearnableFactor concept types
+    typedef finite_dataset dataset_type;
+    typedef finite_record_old record_type;
     
     // Other types
     typedef dense_table<result_type> table_type;

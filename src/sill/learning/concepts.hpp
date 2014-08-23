@@ -42,12 +42,6 @@ namespace sill {
                     const param_type& params,
                     model_type& model);
 
-    /**
-     * Returns the log_likelihood of the dataset under a model models learned
-     * by this learner.
-     */
-    real_type log_likelihood(const dataset_type& ds,
-                             const model_type& model) const;
   }; // concept Learner
 
   /**
@@ -62,6 +56,7 @@ namespace sill {
      * Performs one iteration on the model. It is assumed that the
      * dataset and parameters were passed in a separate initialization
      * function.
+     * \return The current objective value of the model
      */
     real_type iterate();
 
