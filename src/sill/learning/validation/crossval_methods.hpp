@@ -5,7 +5,7 @@
 #include <boost/random/uniform_int.hpp>
 
 #include <sill/learning/validation/crossval_parameters.hpp>
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/validation/parameter_grid.hpp>
 
 #include <sill/macros_def.hpp>

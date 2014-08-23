@@ -1,7 +1,7 @@
 #ifndef SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP
 #define SILL_LEARNING_DECOMPOSABLE_CHANGE_HPP
 
-#include <sill/learning/dataset/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
 #include <sill/learning/structure_old/decomposable_score_functor.hpp>
 #include <sill/model/learnt_decomposable.hpp>
 

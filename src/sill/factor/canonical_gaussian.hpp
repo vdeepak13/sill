@@ -6,7 +6,7 @@
 #include <sill/factor/invalid_operation.hpp>
 #include <sill/factor/operations.hpp>
 #include <sill/factor/traits.hpp>
-#include <sill/learning/dataset/vector_record.hpp>
+#include <sill/learning/dataset_old/vector_record.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 
 #include <boost/function.hpp>

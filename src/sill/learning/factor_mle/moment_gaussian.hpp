@@ -2,8 +2,8 @@
 #define SILL_FACTOR_MLE_MOMENT_GAUSSIAN_HPP
 
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/learning/dataset3/vector_dataset.hpp>
-#include <sill/learning/dataset3/vector_record.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset/vector_record.hpp>
 #include <sill/learning/factor_mle/factor_mle.hpp>
 
 #include <sill/macros_def.hpp>
@@ -42,7 +42,7 @@ namespace sill {
       // compute the mean
       vec mean = arma::zeros(n);
       double sumw = 0.0;
-      foreach(const vector_record2<double>& r, dataset->records(vars)) {
+      foreach(const vector_record<double>& r, dataset->records(vars)) {
         mean += r.weight * r.values;
         sumw += r.weight;
       }
@@ -50,7 +50,7 @@ namespace sill {
 
       // compute the covariance
       mat cov = arma::zeros(n, n);
-      foreach(const vector_record2<double>& r, dataset->records(vars)) {
+      foreach(const vector_record<double>& r, dataset->records(vars)) {
         vec x = r.values - mean;
         cov += r.weight * (x * x.t());
       }
@@ -82,7 +82,7 @@ namespace sill {
       vec mean = arma::zeros(n);
       double sumw = 0.0;
       size_t i = 0;
-      foreach(const vector_record2<double>& r, dataset->records(vars)) {
+      foreach(const vector_record<double>& r, dataset->records(vars)) {
         mean += (r.weight * weights[i]) * r.values;
         sumw += (r.weight * weights[i]);
         ++i;
@@ -92,7 +92,7 @@ namespace sill {
       // compute the covariance
       mat cov = arma::zeros(n, n);
       i = 0;
-      foreach(const vector_record2<double>& r, dataset->records(vars)) {
+      foreach(const vector_record<double>& r, dataset->records(vars)) {
         vec x = r.values - mean;
         cov += (r.weight * weights[i]) * (x * x.t());
         ++i;

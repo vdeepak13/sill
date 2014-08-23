@@ -6,7 +6,7 @@
 #include <sill/base/stl_util.hpp>
 #include <sill/base/vector_assignment.hpp>
 #include <sill/factor/factor.hpp>
-#include <sill/learning/dataset/vector_record.hpp>
+#include <sill/learning/dataset_old/vector_record.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
 #include <sill/range/concepts.hpp>
@@ -35,7 +35,7 @@ namespace sill {
     typedef vector_var_vector   var_vector_type;
     typedef vector_assignment   assignment_type;
     typedef vec                 index_type;
-    typedef vector_record<dense_linear_algebra<> > record_type;
+    typedef vector_record_old<dense_linear_algebra<> > record_type;
 
     // Protected member data and member functions
     //==========================================================================

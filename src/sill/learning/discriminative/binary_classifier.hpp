@@ -1,7 +1,7 @@
 #ifndef SILL_LEARNING_DISCRIMINATIVE_BINARY_CLASSIFIER_HPP
 #define SILL_LEARNING_DISCRIMINATIVE_BINARY_CLASSIFIER_HPP
 
-#include <sill/learning/dataset/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
 #include <sill/learning/discriminative/singlelabel_classifier.hpp>
 
 #include <sill/macros_def.hpp>

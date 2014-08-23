@@ -62,7 +62,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
 
   std::vector<std::pair<size_t, double> > avg_L1_errors;
   for (size_t i = 0; i < nsamples; ++i) {
-    const finite_record& sample = sampler.next_sample();
+    const finite_record_old& sample = sampler.next_sample();
     for (size_t j = 0; j < variables.size(); ++j) {
       approx_var_marginals[j](sample)++;
     }

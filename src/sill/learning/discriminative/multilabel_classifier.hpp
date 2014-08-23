@@ -2,7 +2,7 @@
 #define SILL_LEARNING_DISCRIMINATIVE_MULTILABEL_CLASSIFIER_HPP
 
 #include <sill/factor/table_factor.hpp>
-#include <sill/learning/dataset/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
 #include <sill/learning/discriminative/classifier.hpp>
 
 #include <sill/macros_def.hpp>

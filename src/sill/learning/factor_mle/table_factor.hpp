@@ -2,8 +2,8 @@
 #define SILL_FACTOR_MLE_TABLE_FACTOR_HPP
 
 #include <sill/factor/table_factor.hpp>
-#include <sill/learning/dataset3/finite_dataset.hpp>
-#include <sill/learning/dataset3/finite_record.hpp>
+#include <sill/learning/dataset/finite_dataset.hpp>
+#include <sill/learning/dataset/finite_record.hpp>
 #include <sill/learning/factor_mle/factor_mle.hpp>
 
 #include <sill/macros_def.hpp>
@@ -35,7 +35,7 @@ namespace sill {
     //! Returns the marginal distribution over a sequence of variables
     table_factor operator()(const finite_var_vector& vars) const {
       table_factor factor(vars, params.smoothing);
-      foreach(const finite_record2& r, dataset->records(vars)) {
+      foreach(const finite_record& r, dataset->records(vars)) {
         factor.table()(r.values) += r.weight;
       }
       factor.normalize();

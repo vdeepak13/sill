@@ -7,8 +7,8 @@
 #include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/learning/validation/model_validation_functor.hpp>
 #include <sill/learning/validation/validation_framework.hpp>
-#include <sill/learning/dataset/ds_oracle.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/ds_oracle.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/math/linear_algebra/sparse_linear_algebra.hpp>
 #include <sill/math/statistics.hpp>
@@ -833,7 +833,7 @@ namespace sill {
     mutable boost::mt11213b rng;
 
     //! Dataset pointer (for simulating batch learning from an oracle)
-    vector_dataset<la_type>* my_ds_ptr;
+    vector_dataset_old<la_type>* my_ds_ptr;
 
     //! Oracle pointer (for simulating online learning from a dataset)
     ds_oracle<la_type>* my_ds_o_ptr;
@@ -1285,7 +1285,7 @@ namespace sill {
       } else {
         if (!ds_ptr) {
           assert(o_ptr);
-          my_ds_ptr = new vector_dataset<la_type>(o_ptr->datasource_info(),n);
+          my_ds_ptr = new vector_dataset_old<la_type>(o_ptr->datasource_info(),n);
           for (size_t i = 0; i < n; ++i) {
             if (o_ptr->next())
               my_ds_ptr->insert(o_ptr->current());
@@ -1788,7 +1788,7 @@ namespace sill {
     params = other.params;
     rng = other.rng;
     if (other.my_ds_ptr) {
-      my_ds_ptr = new vector_dataset<la_type>(*(other.my_ds_ptr));
+      my_ds_ptr = new vector_dataset_old<la_type>(*(other.my_ds_ptr));
       ds_ptr = my_ds_ptr;
     } else {
       ds_ptr = other.ds_ptr;

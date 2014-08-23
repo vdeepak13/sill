@@ -39,7 +39,7 @@ namespace sill {
       return f.f(a);
   }
 
-  double table_crf_factor::v(const finite_record& r) const {
+  double table_crf_factor::v(const finite_record_old& r) const {
     if (log_space_)
       return std::exp(f.f(r.finite_assignment()));
     else
@@ -53,7 +53,7 @@ namespace sill {
       return std::log(f.f(a));
   }
 
-  double table_crf_factor::logv(const finite_record& r) const {
+  double table_crf_factor::logv(const finite_record_old& r) const {
     if (log_space_)
       return f.f(r.finite_assignment());
     else
@@ -69,7 +69,7 @@ namespace sill {
   }
 
   const table_factor&
-  table_crf_factor::condition(const finite_record& r) const {
+  table_crf_factor::condition(const finite_record_old& r) const {
     f.f.restrict_aligned(r, restrict_map, conditioned_f);
     if (log_space_)
       conditioned_f.update(exponent<double>());
@@ -104,7 +104,7 @@ namespace sill {
       convert_to_log_space();
     table_factor new_f;
     table_factor tmp_f;
-    foreach(const finite_record& r, ds.records()) {
+    foreach(const finite_record_old& r, ds.records()) {
       f.f.restrict(r, Y_part, tmp_f);
 //      tmp_f /= ds.size(); // Removed
       new_f += tmp_f;
@@ -149,7 +149,7 @@ namespace sill {
   }
 
   table_crf_factor&
-  table_crf_factor::partial_condition(const finite_record& r,
+  table_crf_factor::partial_condition(const finite_record_old& r,
                                       const finite_domain& Y_part,
                                       const finite_domain& X_part) {
     table_factor new_f;
@@ -170,14 +170,14 @@ namespace sill {
     double total_ds_weight(0);
     size_t i(0);
     if (log_space()) {
-      foreach(const finite_record& r, ds.records()) {
+      foreach(const finite_record_old& r, ds.records()) {
         f.f.restrict(r, input_arguments(), true, tmp_fctr);
         val += ds.weight(i) * tmp_fctr(r);
         total_ds_weight += ds.weight(i);
         ++i;
       }
     } else {
-      foreach(const finite_record& r, ds.records()) {
+      foreach(const finite_record_old& r, ds.records()) {
         f.f.restrict(r, input_arguments(), true, tmp_fctr);
         val += ds.weight(i) * std::log(tmp_fctr(r));
         total_ds_weight += ds.weight(i);
@@ -223,7 +223,7 @@ namespace sill {
   // =========================================================================
 
   void table_crf_factor::add_gradient(table_factor_opt_vector& grad,
-                                      const finite_record& r, double w) const {
+                                      const finite_record_old& r, double w) const {
     if (log_space_) {
       grad.f(r) += w;
     } else {
@@ -236,7 +236,7 @@ namespace sill {
   }
 
   void table_crf_factor::add_expected_gradient
-  (table_factor_opt_vector& grad, const finite_record& r,
+  (table_factor_opt_vector& grad, const finite_record_old& r,
    const table_factor& fy, double w) const {
 
     assert(includes(Ydomain_, fy.arguments()));
@@ -268,7 +268,7 @@ namespace sill {
 
   void
   table_crf_factor::add_combined_gradient
-  (optimization_vector& grad, const finite_record& r,
+  (optimization_vector& grad, const finite_record_old& r,
    const output_factor_type& fy, double w) const {
     add_gradient(grad, r, w);
     add_expected_gradient(grad, r, fy, -1. * w);
@@ -276,7 +276,7 @@ namespace sill {
 
   void
   table_crf_factor::add_hessian_diag
-  (optimization_vector& hessian, const finite_record& r, double w) const {
+  (optimization_vector& hessian, const finite_record_old& r, double w) const {
     if (!log_space_) {
       assert(false); // TO DO
     }
@@ -284,7 +284,7 @@ namespace sill {
 
   void
   table_crf_factor::add_expected_hessian_diag(optimization_vector& hessian,
-                                              const finite_record& r,
+                                              const finite_record_old& r,
                                               const table_factor& fy,
                                               double w) const {
     if (!log_space_) {
@@ -294,7 +294,7 @@ namespace sill {
 
   void
   table_crf_factor::add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                                  const finite_record& r,
+                                                  const finite_record_old& r,
                                                   const table_factor& fy,
                                                   double w) const {
     add_expected_gradient(sqrgrad, r, fy, w);

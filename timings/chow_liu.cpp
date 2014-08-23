@@ -1,9 +1,9 @@
 #include <boost/timer.hpp>
 
 #include <sill/learning/structure_old/chow_liu.hpp>
-#include <sill/learning/dataset/assignment_dataset.hpp>
-#include <sill/learning/dataset/generate_datasets.hpp>
-#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset_old/assignment_dataset.hpp>
+#include <sill/learning/dataset_old/generate_datasets.hpp>
+#include <sill/learning/dataset_old/syn_oracle_bayes_net.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
   syn_oracle_bayes_net<table_factor>::parameters syn_oracle_params;
   syn_oracle_params.random_seed = o_random_seed;
   syn_oracle_bayes_net<table_factor> bn_oracle(bn);
-  vector_dataset<> ds;
+  vector_dataset_old<> ds;
   oracle2dataset(bn_oracle, nsamples, ds);
 
   // time the learning

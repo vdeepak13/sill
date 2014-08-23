@@ -5,8 +5,8 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/range/concepts.hpp>
-#include <sill/learning/dataset/syn_oracle_knorm.hpp>
-#include <sill/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/learning/dataset_old/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset_old/syn_oracle_majority.hpp>
 
 #include <sill/macros_def.hpp>
 

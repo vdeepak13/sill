@@ -52,7 +52,7 @@ namespace sill {
     typedef finite_assignment assignment_type;
 
     //! implements Factor::record_type
-    typedef finite_record record_type;
+    typedef finite_record_old record_type;
 
     // Private data members
     //==========================================================================

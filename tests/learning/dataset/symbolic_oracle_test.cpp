@@ -5,7 +5,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/range/concepts.hpp>
-#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/learning/dataset_old/data_loader.hpp>
 #include <sill/copy_ptr.hpp>
 
 #include <sill/macros_def.hpp>

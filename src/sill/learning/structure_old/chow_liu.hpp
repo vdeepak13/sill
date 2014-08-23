@@ -5,7 +5,7 @@
 
 #include <sill/iterator/transform_output_iterator.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/parameter_old/learn_factor.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/projections.hpp>

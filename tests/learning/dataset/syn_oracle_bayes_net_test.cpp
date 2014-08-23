@@ -3,8 +3,8 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/factor/table_factor.hpp>
-#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <sill/learning/dataset/syn_oracle_majority.hpp>
+#include <sill/learning/dataset_old/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset_old/syn_oracle_majority.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>

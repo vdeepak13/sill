@@ -5,8 +5,8 @@
 #include <sill/base/universe.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/learning/crf/crf_parameter_learner.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/vector_assignment_dataset.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/vector_assignment_dataset.hpp>
 #include <sill/learning/crf/learn_crf_factor.hpp>
 #include <sill/model/random.hpp>
 

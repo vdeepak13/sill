@@ -5,8 +5,8 @@
 #include <sstream>
 #include <string>
 
-#include <sill/learning/dataset/dataset_statistics.hpp>
-#include <sill/learning/dataset/oracle.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/oracle.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/macros_def.hpp>

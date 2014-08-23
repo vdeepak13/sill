@@ -5,12 +5,12 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/dataset.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/generate_datasets.hpp>
-#include <sill/learning/dataset/syn_oracle_knorm.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/data_loader.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
+#include <sill/learning/dataset_old/generate_datasets.hpp>
+#include <sill/learning/dataset_old/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
   size_t nvars = 20;
   syn_oracle_knorm knorm(create_syn_oracle_knorm(2,nvars,u));
   size_t nrecords = 5000;
-  vector_dataset<> ds;
+  vector_dataset_old<> ds;
   oracle2dataset(knorm, nrecords, ds);
   // Create some views
   dataset_view<> ds_view_range(ds);
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
   cout << "Test 1: use record_iterator for " << nruns << " iterations" << endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++) {
-    vector_dataset<>::record_iterator_type r_it = ds.records().first;
+    vector_dataset_old<>::record_iterator_type r_it = ds.records().first;
     for (size_t i = 0; i < 1000; i++) {
       const vec& v = (*r_it).vector();
       for (size_t j = 0; j < nvars; j++)
@@ -67,7 +67,7 @@ int main(int argc, char* argv[]) {
       ++r_it;
     }
   }
-  cout << " vector_dataset: " << t.elapsed() / nruns << std::endl;
+  cout << " vector_dataset_old: " << t.elapsed() / nruns << std::endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++) {
     dataset_view<>::record_iterator_type r_it = ds_view_range.records().first;
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
         tmp += v[j];
     }
   }
-  cout << " vector_dataset: " << t.elapsed() / nruns << std::endl;
+  cout << " vector_dataset_old: " << t.elapsed() / nruns << std::endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++) {
     for (size_t i = 0; i < 1000; i++) {
@@ -179,7 +179,7 @@ int main(int argc, char* argv[]) {
     for (size_t i = 0; i < 1000; i++)
       for (size_t j = 0; j < nvars; j++)
         tmp += ds.vector(i,j);
-  cout << " vector_dataset: " << t.elapsed() / nruns << std::endl;
+  cout << " vector_dataset_old: " << t.elapsed() / nruns << std::endl;
   t.restart();
   for (size_t n = 0; n < nruns; n++)
     for (size_t i = 0; i < 1000; i++)
@@ -231,7 +231,7 @@ int main(int argc, char* argv[]) {
       o(*(data_loader::load_symbolic_oracle<symbolic_oracle<>::la_type>
           ("/Users/jbradley/data/uci/adult/adult-test.sum", u)));
     size_t nrecords2 = 5000;
-    vector_dataset<> ds2;
+    vector_dataset_old<> ds2;
     oracle2dataset(o, nrecords2, ds2);
     ds2.print_datasource_info();
     // Create binarized view
@@ -302,8 +302,8 @@ int main(int argc, char* argv[]) {
       cout << "Reverted: " << orig_vals << "\n";
     }
     cout << "Using load_record():\n";
-    vector_dataset<>::record_iterator_type r_it = ds2.begin();
-    vector_dataset<>::record_iterator_type r_it2 = ds_view_merged2.begin();
+    vector_dataset_old<>::record_iterator_type r_it = ds2.begin();
+    vector_dataset_old<>::record_iterator_type r_it2 = ds_view_merged2.begin();
     for (size_t i = 0; i < 6; i++) {
       cout << "Original: " << (*r_it).finite() << "\n"
            << "Merged: " << (*r_it2).finite() << "\n";
@@ -337,7 +337,7 @@ int main(int argc, char* argv[]) {
     cout << "Test: use record_iterator for " << nruns << " iterations" << endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
-      vector_dataset<>::record_iterator_type r_it = ds2.records().first;
+      vector_dataset_old<>::record_iterator_type r_it = ds2.records().first;
       for (size_t i = 0; i < 1000; i++) {
         const std::vector<size_t>& f = (*r_it).finite();
         for (size_t j = 0; j < nvars2; j++)
@@ -345,7 +345,7 @@ int main(int argc, char* argv[]) {
         ++r_it;
       }
     }
-    cout << " vector_dataset class: " << t.elapsed() / nruns << std::endl;
+    cout << " vector_dataset_old class: " << t.elapsed() / nruns << std::endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
       dataset_view<>::record_iterator_type r_it = ds_view_binarized.records().first;
@@ -366,14 +366,14 @@ int main(int argc, char* argv[]) {
     cout << "Test: use record_iterator for " << nruns << " iterations" << endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
-      vector_dataset<>::record_iterator_type r_it = ds2.records().first;
+      vector_dataset_old<>::record_iterator_type r_it = ds2.records().first;
       for (size_t i = 0; i < 1000; i++) {
         const std::vector<size_t>& f = (*r_it).finite();
         tmp += f.back();
         ++r_it;
       }
     }
-    cout << " vector_dataset class: " << t.elapsed() / nruns << std::endl;
+    cout << " vector_dataset_old class: " << t.elapsed() / nruns << std::endl;
     t.restart();
     for (size_t n = 0; n < nruns; n++) {
       dataset_view<>::record_iterator_type r_it = ds_view_merged1.records().first;
@@ -403,7 +403,7 @@ int main(int argc, char* argv[]) {
     for (size_t n = 0; n < nruns; n++)
       for (size_t i = 0; i < 1000; i++)
         tmp += ds2.finite(i, ds2_last_f_var);
-    cout << " vector_dataset class: " << t.elapsed() / nruns << std::endl;
+    cout << " vector_dataset_old class: " << t.elapsed() / nruns << std::endl;
     size_t ds_view_merged1_last_f_var(ds_view_merged1.num_finite() - 1);
     t.restart();
     for (size_t n = 0; n < nruns; n++)

@@ -1,8 +1,8 @@
 
 #include <sill/factor/gaussian_crf_factor.hpp>
 #include <sill/factor/operations.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/record_conversions.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
+#include <sill/learning/dataset_old/record_conversions.hpp>
 #include <sill/learning/validation/parameter_grid.hpp>
 #include <sill/math/constants.hpp>
 

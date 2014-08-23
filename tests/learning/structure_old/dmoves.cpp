@@ -5,10 +5,10 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/dataset_statistics.hpp>
-#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 #include <sill/learning/structure_old/decomposable_iterators.hpp>
 #include <sill/learning/structure_old/decomposable_search.hpp>
 #include <sill/learning/structure_old/entropy_score.hpp>
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
   syn_oracle_bayes_net<table_factor>::parameters bn_oracle_params;
   bn_oracle_params.random_seed = random_seed2;
   syn_oracle_bayes_net<table_factor> bn_oracle(bn, bn_oracle_params);
-  vector_dataset<> ds;
+  vector_dataset_old<> ds;
   oracle2dataset(bn_oracle, n_records, ds);
   dataset_statistics<> stats(ds);
 

@@ -7,10 +7,10 @@
 #include <sill/factor/table_crf_factor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/crf/pwl_crf_learner.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <sill/learning/dataset/syn_oracle_majority.hpp>
-#include <sill/learning/dataset/assignment_dataset.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset_old/syn_oracle_majority.hpp>
+#include <sill/learning/dataset_old/assignment_dataset.hpp>
 #include <sill/model/model_products.hpp>
 #include <sill/model/random.hpp>
 

@@ -3,13 +3,13 @@
 #include <boost/program_options.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/dataset_statistics.hpp>
-#include <sill/learning/dataset/generate_datasets.hpp>
-#include <sill/learning/dataset/syn_oracle_knorm.hpp>
-#include <sill/learning/dataset/syn_oracle_majority.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
+#include <sill/learning/dataset_old/data_loader.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/generate_datasets.hpp>
+#include <sill/learning/dataset_old/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset_old/syn_oracle_majority.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 //#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
 #include <sill/learning/parameter_old/learn_factor.hpp>
@@ -97,10 +97,10 @@ int main(int argc, char* argv[]) {
   // Create a dataset to work with
   universe u;
 
-  boost::shared_ptr<vector_dataset<la_type> >
-    ds_train_ptr(new vector_dataset<la_type>());
-  boost::shared_ptr<vector_dataset<la_type> >
-    ds_test_ptr(new vector_dataset<la_type>());
+  boost::shared_ptr<vector_dataset_old<la_type> >
+    ds_train_ptr(new vector_dataset_old<la_type>());
+  boost::shared_ptr<vector_dataset_old<la_type> >
+    ds_test_ptr(new vector_dataset_old<la_type>());
 
   if (vm.count("synthetic_data")) {
     if (synthetic_data == "knorm") {
@@ -131,10 +131,10 @@ int main(int argc, char* argv[]) {
       assert(false);
     }
   } else {
-    boost::shared_ptr<vector_dataset<la_type> > ds_ptr =
-      data_loader::load_symbolic_dataset<vector_dataset<la_type> >(data_path,u);
-    ds_train_ptr.reset(new vector_dataset<la_type>(ds_ptr->datasource_info()));
-    ds_test_ptr.reset(new vector_dataset<la_type>(ds_ptr->datasource_info()));
+    boost::shared_ptr<vector_dataset_old<la_type> > ds_ptr =
+      data_loader::load_symbolic_dataset<vector_dataset_old<la_type> >(data_path,u);
+    ds_train_ptr.reset(new vector_dataset_old<la_type>(ds_ptr->datasource_info()));
+    ds_test_ptr.reset(new vector_dataset_old<la_type>(ds_ptr->datasource_info()));
     ds_ptr->randomize();
     for (size_t i(0); i < (size_t)(ds_ptr->size() * fraction_train); ++i)
       ds_train_ptr->insert(ds_ptr->operator[](i));
@@ -151,8 +151,8 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  vector_dataset<la_type>& ds_train = *ds_train_ptr;
-  vector_dataset<la_type>& ds_test = *ds_test_ptr;
+  vector_dataset_old<la_type>& ds_train = *ds_train_ptr;
+  vector_dataset_old<la_type>& ds_test = *ds_test_ptr;
   finite_variable* class_var = ds_train.finite_class_variables().front();
 
   dataset_statistics<la_type> stats(ds_train);

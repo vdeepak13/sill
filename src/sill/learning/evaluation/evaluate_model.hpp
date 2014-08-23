@@ -2,7 +2,7 @@
 #define SILL_EVALUATE_MODEL_HPP
 
 #include <sill/learning/crf/crf_X_mapping.hpp>
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/math/statistics.hpp>
 #include <sill/model/crf_model.hpp>

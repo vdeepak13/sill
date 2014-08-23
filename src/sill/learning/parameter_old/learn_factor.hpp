@@ -4,7 +4,7 @@
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 
 #include <sill/macros_def.hpp>
 

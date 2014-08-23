@@ -9,9 +9,9 @@
 #include <sill/learning/crf/pwl_crf_parameter_learner.hpp>
 #include <sill/learning/validation/crossval_builder.hpp>
 #include <sill/learning/validation/validation_framework.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/generate_datasets.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/generate_datasets.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 #include <sill/model/model_products.hpp>
 #include <sill/model/random_crf_builder.hpp>
 
@@ -42,9 +42,9 @@ run_test(const sill::crf_model<F>& YgivenXmodel,
   // Generate a dataset
   cout << "Sampling " << ntrain << " training samples and "
        << ntest << " test samples from the model" << endl;
-  vector_dataset<> train_ds(ds_info, ntrain);
+  vector_dataset_old<> train_ds(ds_info, ntrain);
   generate_dataset(train_ds, YXmodel, ntrain, rng);
-  vector_dataset<> test_ds(ds_info, ntest);
+  vector_dataset_old<> test_ds(ds_info, ntest);
   generate_dataset(test_ds, YXmodel, ntest, rng);
 
   double true_train_ll = train_ds.expected_value(YgivenXmodel.log_likelihood());

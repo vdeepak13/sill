@@ -9,7 +9,7 @@
 //#include <sill/factor/concepts.hpp>
 #include <sill/iterator/subset_iterator.hpp>
 #include <sill/learning/crf/pwl_crf_weights.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
 #include <sill/model/crf_model.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/base/stl_util.hpp>

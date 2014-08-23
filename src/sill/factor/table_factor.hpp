@@ -16,7 +16,7 @@
 #include <sill/factor/factor.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional.hpp>
-#include <sill/learning/dataset/finite_record.hpp>
+#include <sill/learning/dataset_old/finite_record.hpp>
 #include <sill/math/is_finite.hpp>
 #include <sill/range/algorithm.hpp>
 #include <sill/range/forward_range.hpp>
@@ -46,7 +46,7 @@ namespace sill {
     typedef finite_var_vector   var_vector_type;
     typedef finite_assignment   assignment_type;
     typedef std::vector<size_t> index_type;
-    typedef finite_record       record_type;
+    typedef finite_record_old       record_type;
 
     // The types of the DistributionFactor concept
     typedef boost::function<table_factor(const finite_domain&)> marginal_fn_type;
@@ -154,7 +154,7 @@ namespace sill {
     result_type operator()(const finite_assignment& a) const {
       return v(a);
     }
-    result_type operator()(const finite_record& r) const {
+    result_type operator()(const finite_record_old& r) const {
       return v(r);
     }
     result_type operator()(size_t i) const {
@@ -167,7 +167,7 @@ namespace sill {
     result_type& operator()(const finite_assignment& a) {
       return v(a);
     }
-    result_type& operator()(const finite_record& r) {
+    result_type& operator()(const finite_record_old& r) {
       return v(r);
     }
     result_type& operator()(size_t i) {
@@ -192,13 +192,13 @@ namespace sill {
     }
 
     //! Returns the value associated with a given assignment of variables
-    result_type v(const finite_record& r) const {
+    result_type v(const finite_record_old& r) const {
       get_shape_from_assignment(r,index);
       return table_data(index);
     }
 
     //! Returns the value associated with a given assignment of variables
-    result_type& v(const finite_record& r) {
+    result_type& v(const finite_record_old& r) {
       get_shape_from_assignment(r,index);
       return table_data(index);
     }
@@ -209,7 +209,7 @@ namespace sill {
     }
 
     //! Returns the log of the value associated with an assignment.
-    double logv(const finite_record& r) const {
+    double logv(const finite_record_old& r) const {
       return std::log(v(r));
     }
 
@@ -454,7 +454,7 @@ namespace sill {
 
     //! Restrict which stores the result in the given factor f.
     //! This avoids reallocation if f has been pre-allocated.
-    void restrict(const finite_record& r, table_factor& f) const;
+    void restrict(const finite_record_old& r, table_factor& f) const;
 
     /**
      * Restrict which stores the result in the given factor f.
@@ -462,7 +462,7 @@ namespace sill {
      * @param r_vars  Only restrict away arguments of this factor which
      *                appear in both keys(r) and r_vars.
      */
-    void restrict(const finite_record& r, const finite_domain& r_vars,
+    void restrict(const finite_record_old& r, const finite_domain& r_vars,
                   table_factor& f) const;
 
     /**
@@ -473,7 +473,7 @@ namespace sill {
      * @param strict  Require that all variables which are in
      *                intersect(f.arguments(), r_vars) appear in keys(r).
      */
-    void restrict(const finite_record& r, const finite_domain& r_vars,
+    void restrict(const finite_record_old& r, const finite_domain& r_vars,
                   bool strict, table_factor& f) const;
 
     /**
@@ -489,7 +489,7 @@ namespace sill {
      * @param f             (Return value) This factor must have been
      *                      pre-allocated.
      */
-    void restrict_aligned(const finite_record& r,
+    void restrict_aligned(const finite_record_old& r,
                           index_type& restrict_map,
                           table_factor& f) const;
 
@@ -503,7 +503,7 @@ namespace sill {
      * @param f          (Return value) This factor must have been
      *                    pre-allocated.
      */
-    void restrict_other(const finite_record& r,
+    void restrict_other(const finite_record_old& r,
                         const uvec& r_indices,
                         finite_variable* retain_v,
                         table_factor& f) const;
@@ -609,7 +609,7 @@ namespace sill {
     //!             to the sampled value for each sampled variable.
     //!             This record must include all sampled variables!
     template <typename RandomNumberGenerator>
-    void sample(RandomNumberGenerator& rng, finite_record& rec) const {
+    void sample(RandomNumberGenerator& rng, finite_record_old& rec) const {
       double r(boost::uniform_real<double>(0,1)(rng));
       if (arg_seq.size() == 1) { // Optimization for Gibbs sampling
         for (size_t i = 0; i < arg_seq[0]->size(); ++i) {
@@ -751,7 +751,7 @@ namespace sill {
      * This is useful when you wish to call those operations on records with
      * the same variable ordering many times.
      */
-    void set_record_indices(const finite_record& r,
+    void set_record_indices(const finite_record_old& r,
                             uvec& r_indices) const;
 
     // Combine and collapse operations
@@ -911,7 +911,7 @@ namespace sill {
         : vars(NULL), r(NULL), r_indices(NULL), except_v(NULL) { }
 
       restrict_map_except_functor(const finite_var_vector& vars,
-                                  const finite_record& r,
+                                  const finite_record_old& r,
                                   const uvec& r_indices,
                                   finite_variable* except_v)
         : vars(&vars), r(&r), r_indices(&r_indices), except_v(except_v) {
@@ -936,7 +936,7 @@ namespace sill {
 
     private:
       const finite_var_vector* vars;
-      const finite_record* r;
+      const finite_record_old* r;
       const uvec* r_indices;
       finite_variable* except_v;
     }; // struct restrict_map_except_functor
@@ -985,7 +985,7 @@ namespace sill {
     }
 
     //! Fills in the local table coordinates according to the assignment
-    void get_shape_from_assignment( const finite_record& r,
+    void get_shape_from_assignment( const finite_record_old& r,
                                     index_type& s) const{
       for(size_t i = 0; i < arg_seq.size(); i++) {
         s[i] = r.finite(arg_seq[i]);
@@ -1005,7 +1005,7 @@ namespace sill {
     //! Fills in the record according to the local table coordinates.
     //! The record MUST include all arguments of this factor.
     void get_record_from_shape(const index_type& s,
-                               finite_record& r) const {
+                               finite_record_old& r) const {
       for(size_t i(0); i < s.size(); i++) {
         r.finite(arg_seq[i]) = s[i];
       }
@@ -1021,7 +1021,7 @@ namespace sill {
 
     //! Creates an object that maps indices of a table to fixed values
     static index_type make_restrict_map(const finite_var_vector& vars,
-                                        const finite_record& r);
+                                        const finite_record_old& r);
 
     //! Creates an object that maps indices of a table to fixed values,
     //! but limits assignment a to include only variables in a_vars.
@@ -1032,14 +1032,14 @@ namespace sill {
     //! Creates an object that maps indices of a table to fixed values,
     //! but limits record r to include only variables in r_vars.
     static index_type make_restrict_map(const finite_var_vector& vars,
-                                        const finite_record& r,
+                                        const finite_record_old& r,
                                         const finite_domain& r_vars);
 
     //! Creates an object that maps indices of a table to fixed values,
     //! but limits record r to include all variables EXCEPT for except_v.
     static index_type
     make_restrict_map_except(const finite_var_vector& vars,
-                             const finite_record& r,
+                             const finite_record_old& r,
                              finite_variable* except_v);
 
     //! Creates an object that maps indices of a set to 0..(n-1)

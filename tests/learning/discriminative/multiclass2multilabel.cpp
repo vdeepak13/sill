@@ -1,13 +1,13 @@
 #include <iostream>
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/dataset_statistics.hpp>
-#include <sill/learning/dataset/syn_oracle_knorm.hpp>
-#include <sill/learning/dataset/syn_oracle_majority.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
+#include <sill/learning/dataset_old/data_loader.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset_old/syn_oracle_majority.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 //#include <sill/learning/discriminative/concepts.hpp>
 //#include <sill/learning/discriminative/discriminative.hpp>
 #include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
@@ -30,9 +30,9 @@ int main(int argc, char* argv[]) {
   size_t ntrain = 500;
   size_t ntest = 500;
 
-  vector_dataset<> ds_train;
+  vector_dataset_old<> ds_train;
   oracle2dataset(majority, ntrain, ds_train);
-  vector_dataset<> ds_test;
+  vector_dataset_old<> ds_test;
   oracle2dataset(majority, ntest, ds_test);
 
   finite_var_vector new_class_vars;
