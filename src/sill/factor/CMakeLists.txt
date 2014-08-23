@@ -1,4 +1,4 @@
-set(PRL_FACTOR_SOURCES
+set(SILL_FACTOR_SOURCES
   canonical_gaussian
   gaussian_crf_factor
 #  log_reg_crf_factor

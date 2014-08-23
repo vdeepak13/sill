@@ -1,4 +1,4 @@
-set(PRL_VALIDATION_SOURCES
+set(SILL_VALIDATION_SOURCES
   crossval_builder
   crossval_parameters
   parameter_grid

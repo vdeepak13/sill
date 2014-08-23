@@ -1,4 +1,4 @@
-set(PRL_MODEL_SOURCES
+set(SILL_MODEL_SOURCES
 #  decomposable
   model_products
   pairwise_mn_conversion
