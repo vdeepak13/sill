@@ -2,7 +2,6 @@ link_libraries(sill ${Boost_LIBRARIES})
 
 add_executable(boost_function boost_function.cpp)
 add_executable(boost_unordered_utils boost_unordered_utils.cpp)
-add_executable(boosters boosters.cpp)
 add_executable(chow_liu_timing chow_liu.cpp)
 add_executable(chow_liu_timing2 chow_liu2.cpp)
 add_executable(compute_message compute_message.cpp)

@@ -2,15 +2,8 @@
 #define SILL_DISCRIMINATIVE_LOAD_FUNCTIONS_HPP
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/discriminative/all_pairs_batch.hpp>
-#include <sill/learning/discriminative/batch_booster.hpp>
-#include <sill/learning/discriminative/batch_booster_OC.hpp>
-#include <sill/learning/discriminative/boosters.hpp>
-#include <sill/learning/discriminative/decision_tree.hpp>
-#include <sill/learning/discriminative/filtering_booster.hpp>
 #include <sill/learning/discriminative/logistic_regression.hpp>
-#include <sill/learning/discriminative/stump.hpp>
-#include <sill/learning/object_detection/haar.hpp>
+#include <sill/learning/discriminative/multiclass_classifier.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -141,8 +134,6 @@ namespace sill {
   template <typename LA>
   boost::shared_ptr<binary_classifier<LA> >
   load_binary_classifier(std::ifstream& in, const datasource& ds) {
-    using namespace sill::discriminative;
-    using namespace sill::boosting;
     std::string line;
     getline(in, line);
     boost::shared_ptr<binary_classifier<LA> > ptr;
@@ -154,43 +145,8 @@ namespace sill {
       assert(false);
       return ptr;
     }
-    if (name.compare("stump") == 0) {
-      if (obj.compare(objective_accuracy::name()) == 0)
-        ptr.reset(new stump<objective_accuracy,LA>());
-      else if (obj.compare(objective_information::name()) == 0)
-        ptr.reset(new stump<objective_information,LA>());
-      else
-        assert(false);
-    } else if (name.compare("decision_tree") == 0) {
-      if (obj.compare(objective_accuracy::name()) == 0)
-        ptr.reset(new decision_tree<objective_accuracy,LA>());
-      else if (obj.compare(objective_information::name()) == 0)
-        ptr.reset(new decision_tree<objective_information,LA>());
-      else
-        assert(false);
-    } else if (name.compare("logistic_regression") == 0) {
+    if (name.compare("logistic_regression") == 0) {
       ptr.reset(new logistic_regression<LA>());
-    } else if (name.compare("batch_booster") == 0) {
-      if (obj.compare(adaboost::name()) == 0)
-        ptr.reset(new batch_booster<adaboost,LA>());
-      else if (obj.compare(filterboost::name()) == 0)
-        ptr.reset(new batch_booster<filterboost,LA>());
-      else
-        assert(false);
-    } else if (name.compare("filtering_booster")==0){
-      if (obj.compare(adaboost::name()) == 0)
-        ptr.reset(new filtering_booster<adaboost,LA>());
-      else if (obj.compare(filterboost::name()) == 0)
-        ptr.reset(new filtering_booster<filterboost,LA>());
-      else
-        assert(false);
-    } else if (name.compare("haar") == 0) {
-      if (obj.compare(objective_accuracy::name()) == 0)
-        ptr.reset(new haar<objective_accuracy>());
-      else if (obj.compare(objective_information::name()) == 0)
-        ptr.reset(new haar<objective_information>());
-      else
-        assert(false);
     } else {
       std::cerr << "load_binary_classifier() did not recognize the classifier "
                 << "name: " << name << std::endl;
@@ -213,8 +169,6 @@ namespace sill {
   template <typename LA>
   boost::shared_ptr<multiclass_classifier<LA> >
   load_multiclass_classifier(std::ifstream& in, const datasource& ds) {
-    using namespace sill::discriminative;
-    using namespace sill::boosting;
     std::string line;
     getline(in, line);
     boost::shared_ptr<multiclass_classifier<LA> > ptr;
@@ -226,16 +180,7 @@ namespace sill {
       assert(false);
       return ptr;
     }
-    if (name.compare("batch_booster_OC") == 0) {
-      if (obj.compare(adaboost::name()) == 0)
-        ptr.reset(new batch_booster_OC<adaboost,LA>());
-      else if (obj.compare(filterboost::name()) == 0)
-        ptr.reset(new batch_booster_OC<filterboost,LA>());
-      else
-        assert(false);
-    } else {
-      assert(false);
-    }
+    assert(false);
     ptr->load(in, ds, false);
     return ptr;
   }
@@ -255,8 +200,6 @@ namespace sill {
   boost::shared_ptr<sill::binary_classifier<LA> >
   empty_binary_classifier(std::string learner_name,
                           size_t booster_iterations) {
-    using namespace sill::discriminative;
-    using namespace sill::boosting;
     std::string name, obj, base;
     boost::tie(name, obj, base) = parse_learner_name(learner_name);
     boost::shared_ptr<binary_classifier<LA> > learner_ptr;
@@ -269,65 +212,8 @@ namespace sill {
         return learner_ptr;
       }
     }
-    if (name.compare("stump") == 0) {
-      if (obj.compare(objective_accuracy::name()) == 0)
-        learner_ptr.reset(new stump<objective_accuracy,LA>());
-      else if (obj.compare(objective_information::name()) == 0)
-        learner_ptr.reset(new stump<objective_information,LA>());
-      else if (obj.size() > 0)
-        std::cerr << "Did not recognize objective: " << obj
-                  << std::endl;
-      else
-        learner_ptr.reset(new stump<objective_accuracy,LA>());
-    } else if (name.compare("decision_tree") == 0) {
-      if (obj.compare(objective_accuracy::name()) == 0)
-        learner_ptr.reset(new decision_tree<objective_accuracy,LA>());
-      else if (obj.compare(objective_information::name()) == 0)
-        learner_ptr.reset(new decision_tree<objective_information,LA>());
-      else if (obj.size() > 0)
-        std::cerr << "Did not recognize objective: " << obj
-                  << std::endl;
-      else
-        learner_ptr.reset
-          (new decision_tree<objective_accuracy,LA>());
-    } else if (name.compare("logistic_regression") == 0) {
+    if (name.compare("logistic_regression") == 0) {
       learner_ptr.reset(new logistic_regression<LA>());
-    } else if (name.compare("haar") == 0) {
-      if (obj.compare(objective_accuracy::name()) == 0)
-        learner_ptr.reset(new haar<objective_accuracy>());
-      else if (obj.compare(objective_information::name()) == 0)
-        learner_ptr.reset(new haar<objective_information>());
-      else if (obj.size() > 0)
-        std::cerr << "Did not recognize objective: " << obj
-                  << std::endl;
-      else
-        learner_ptr.reset(new haar<objective_accuracy>());
-    } else if (name.compare("batch_booster") == 0) {
-      batch_booster_parameters<LA> params;
-      params.init_iterations = booster_iterations;
-      params.weak_learner = base_learner_ptr;
-      if (obj.compare(adaboost::name()) == 0 || obj.size()==0){
-        learner_ptr.reset(new batch_booster<adaboost,LA>(params));
-      } else if (obj.compare(filterboost::name()) == 0) {
-        learner_ptr.reset(new batch_booster<filterboost,LA>(params));
-      } else {
-        std::cerr << "Did not recognize booster objective: "
-                  << obj << std::endl;
-        return learner_ptr;
-      }
-    } else if (name.compare("filtering_booster") == 0) {
-      filtering_booster_parameters<LA> params;
-      params.init_iterations = booster_iterations;
-      params.weak_learner = base_learner_ptr;
-      if (obj.compare(adaboost::name()) == 0 || obj.size()==0){
-        learner_ptr.reset(new filtering_booster<adaboost,LA>(params));
-      } else if (obj.compare(filterboost::name()) == 0) {
-        learner_ptr.reset(new filtering_booster<filterboost,LA>(params));
-      } else {
-        std::cerr << "Did not recognize booster objective: "
-                  << obj << std::endl;
-        return learner_ptr;
-      }
     } else if (name.size() > 0) {
       std::cerr << "Learner not supported yet: " << name << std::endl;
     } else
@@ -339,7 +225,6 @@ namespace sill {
   boost::shared_ptr<sill::multiclass_classifier<LA> >
   empty_multiclass_classifier(std::string learner_name, sill::universe& u,
                               size_t booster_iterations) {
-    using namespace sill::boosting;
     std::string name, obj, base;
     boost::tie(name, obj, base) = parse_learner_name(learner_name);
     boost::shared_ptr<multiclass_classifier<LA> > learner_ptr;
@@ -361,35 +246,7 @@ namespace sill {
         }
       }
     }
-    if (learner_name.compare("batch_booster_OC") == 0) {
-      batch_booster_OC_parameters<LA> params;
-      if (!base_learner_is_binary) {
-        assert(false);
-        return learner_ptr;
-      }
-      params.init_iterations = booster_iterations;
-      params.binary_label = u.new_finite_variable(2);
-      params.weak_learner = binary_base_ptr;
-      if (obj.compare(adaboost::name()) == 0 || obj.size() == 0) {
-        learner_ptr.reset(new batch_booster_OC<adaboost,LA>(params));
-      } else if (obj.compare(filterboost::name()) == 0) {
-        learner_ptr.reset(new batch_booster_OC<filterboost,LA>(params));
-      } else {
-        std::cerr << "Did not recognize booster objective: "
-                  << obj << std::endl;
-        return learner_ptr;
-      }
-    } else if (learner_name.compare("all_pairs_batch") == 0) {
-      all_pairs_batch_parameters params;
-      if (!base_learner_is_binary) {
-        assert(false);
-        return learner_ptr;
-      }
-      params.binary_label = u.new_finite_variable(2);
-      params.base_learner = binary_base_ptr;
-      learner_ptr.reset(new all_pairs_batch(params));
-    } else
-      assert(false);
+    assert(false);
     return learner_ptr;
   }
 

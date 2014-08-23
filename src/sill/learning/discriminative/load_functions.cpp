@@ -1,14 +1,5 @@
-#include <sill/learning/discriminative/all_pairs_batch.hpp>
-#include <sill/learning/discriminative/batch_booster.hpp>
-#include <sill/learning/discriminative/batch_booster_OC.hpp>
-#include <sill/learning/discriminative/boosters.hpp>
-//#include <sill/learning/discriminative/concepts.hpp>
-#include <sill/learning/discriminative/decision_tree.hpp>
-#include <sill/learning/discriminative/filtering_booster.hpp>
 #include <sill/learning/discriminative/load_functions.hpp>
 #include <sill/learning/discriminative/logistic_regression.hpp>
-#include <sill/learning/discriminative/stump.hpp>
-#include <sill/learning/object_detection/haar.hpp>
 #include <sill/base/universe.hpp>
 
 #include <sill/macros_def.hpp>
@@ -65,24 +56,8 @@ namespace sill {
 
   boost::tuple<bool, bool, bool, bool>
   check_learner_info(const std::string& name) {
-    if (name.compare("all_pairs_batch") == 0) {
-      return boost::make_tuple(false, true, false, false);
-    } else if (name.compare("batch_booster") == 0) {
-      return boost::make_tuple(true, false, false, false);
-    } else if (name.compare("batch_booster_OC") == 0) {
-      return boost::make_tuple(false, true, false, false);
-    } else if (name.compare("decision_tree") == 0) {
-      return boost::make_tuple(true, false, false, false);
-    } else if (name.compare("filtering_booster") == 0) {
-      return boost::make_tuple(true, false, false, true);
-    } else if (name.compare("filtering_booster_OC") == 0) {
-      return boost::make_tuple(false, true, false, true);
-    } else if (name.compare("logistic_regression") == 0) {
+    if (name.compare("logistic_regression") == 0) {
       // TODO: THIS ISN'T QUITE CORRECT
-      return boost::make_tuple(true, false, false, false);
-    } else if (name.compare("stump") == 0) {
-      return boost::make_tuple(true, false, false, false);
-    } else if (name.compare("haar") == 0) {
       return boost::make_tuple(true, false, false, false);
     } else {
       std::cerr << "check_learner_info() did not recognize learner name: \""
