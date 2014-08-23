@@ -84,14 +84,6 @@ find_package(Boost 1.40 COMPONENTS
               unit_test_framework
 	      system REQUIRED)
 
-# MPI Support for parallel algorithms 
-find_package(MPICH2)
-#find_package(MPI)
-
-# I don't know how to do this automatically
-set(MPI_CXX true CACHE BOOL
-    "Set to true if the MPI implementation provides a C++ interface.")
-
 # Sparse linear algebra library
 find_package(SuiteSparse)
 
@@ -127,17 +119,6 @@ if (SUITESPARSE_FOUND)
 #  link_directories(${SUITESPARSE_LIBRARY_DIRS})
   link_libraries(${SUITESPARSE_LIBRARIES})
 endif (SUITESPARSE_FOUND)
-
-# If we find MPI link against it
-if(MPI_FOUND)
-  include_directories(${MPI_INCLUDE_PATH})
-  link_directories(${MPI_INCLUDE_PATH})
-  link_libraries(${MPI_LIBRARY} ${MPI_EXTRA_LIBRARY})
-  # Stano: not sure if these do anything but the link flags are
-  # non-empty for openmpi
-  set(CMAKE_CXX_FLAGS "${MPI_COMPILE_FLAGS}")
-  set(CMAKE_EXE_LINKER_FLAGS "${MPI_LINK_FLAGS}") 
-endif(MPI_FOUND)
 
 if (${CMAKE_SYSTEM} MATCHES Darwin)
 #  link_libraries(blas)
