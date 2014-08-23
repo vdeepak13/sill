@@ -1,4 +1,4 @@
-subdirs(crf dataset dataset3 discriminative order_based_search parameter structure structure_search)
+subdirs(crf dataset dataset3 discriminative parameter structure structure_search)
 
 add_executable(chow_liu chow_liu.cpp)
 add_executable(learn_crf_factor learn_crf_factor.cpp)
