@@ -44,8 +44,6 @@ namespace sill {
     typedef typename F::domain_type     domain_type;
     typedef typename F::var_vector_type var_vector_type;
     typedef typename F::assignment_type assignment_type;
-    typedef typename F::index_type      index_type; // TODO
-    typedef typename F::record_type     record_type;
 
     // Other types
     typedef prior_likelihood<F> factor_type;

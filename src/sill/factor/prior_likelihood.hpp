@@ -18,7 +18,7 @@ namespace sill
    * that the two priors are neighbors in the external junction tree,
    * and performs implicit division of the prior separator.
    *
-   * @tparam F the prior and likelihood factor type
+   * \tparam F the prior and likelihood factor type
    *
    * \ingroup factor_types
    * \see Factor
@@ -37,8 +37,6 @@ namespace sill
     typedef typename F::domain_type     domain_type;
     typedef typename F::var_vector_type var_vector_type;
     typedef typename F::assignment_type assignment_type;
-    typedef typename F::index_type      index_type; // TODO
-    typedef typename F::record_type     record_type;
 
     // Private data members
     //==========================================================================

@@ -16,8 +16,9 @@ namespace sill {
   template <typename F>
   class factor_evaluator {
   public:
-    typedef typename F::index_type      index_type;
     typedef typename F::result_type     result_type;
+    typedef typename F::real_type       real_type;
+    typedef typename F::index_type      index_type;
     typedef typename F::var_vector_type var_vector_type;
     
     //! Constructs the evaluator, holding the passed factor by reference

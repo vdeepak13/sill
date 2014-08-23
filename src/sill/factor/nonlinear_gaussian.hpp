@@ -39,7 +39,9 @@ namespace sill {
     typedef vector_domain     domain_type;
     typedef vector_var_vector var_vector_type;
     typedef vector_assignment assignment_type;
-    typedef vec               index_type;
+
+    // IndexableFactor concept types
+    typedef vec index_type;
 
     // Private data members and accessors
     //==========================================================================
