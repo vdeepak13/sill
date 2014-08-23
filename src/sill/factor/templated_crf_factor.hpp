@@ -3,7 +3,7 @@
 
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/learnable_crf_factor.hpp>
-#include <sill/learning/dataset/record_conversions.hpp>
+#include <sill/learning/dataset_old/record_conversions.hpp>
 
 #include <sill/macros_def.hpp>
 

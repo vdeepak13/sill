@@ -3,9 +3,9 @@
 
 #include <sill/factor/table_factor.hpp>
 #include <sill/base/stl_util.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 #include <sill/learning/discriminative/multiclass_classifier.hpp>
 #include <sill/learning/discriminative/multilabel_classifier.hpp>
 
@@ -161,8 +161,8 @@ namespace sill {
                           parameters params = parameters())
     : base(o), params(params), datasource_info_(o.datasource_info()) {
 
-      boost::shared_ptr<vector_dataset<la_type> >
-        ds_ptr(new vector_dataset<la_type>());
+      boost::shared_ptr<vector_dataset_old<la_type> >
+        ds_ptr(new vector_dataset_old<la_type>());
       oracle2dataset(o, n, *ds_ptr);
       build(*ds_ptr);
     }
@@ -369,7 +369,7 @@ namespace sill {
     void init_only(const datasource& ds) {
       if (ds.finite_class_variables().size() > 1) {
         init_sub();
-        vector_dataset<la_type> orig_ds(ds.datasource_info());
+        vector_dataset_old<la_type> orig_ds(ds.datasource_info());
         dataset_view<la_type> ds_view(orig_ds, true);
         ds_view.set_merged_variables(orig_ds.finite_class_variables(),
                                      params.new_label);

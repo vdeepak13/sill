@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/dataset3/vector_memory_dataset.hpp>
+#include <sill/learning/dataset/vector_memory_dataset.hpp>
 #include <sill/learning/factor_mle/moment_gaussian.hpp>
 
 #include <boost/math/special_functions.hpp>
@@ -28,7 +28,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ds.initialize(v);
   
   // insert a record
-  vector_record2<> r(4);
+  vector_record<> r(4);
   r.values[0] = 2.0;
   r.values[1] = 0.0;
   r.values[2] = 1.0;
@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE(test_iterator_comparisons) {
   
   vector_memory_dataset<> ds;
   ds.initialize(v);
-  ds.insert(vector_record2<>(3));
+  ds.insert(vector_record<>(3));
 
   vector_dataset<>::record_iterator it1, end1;
   boost::tie(it1, end1) = ds.records(v);
@@ -140,13 +140,13 @@ BOOST_FIXTURE_TEST_CASE(test_records, fixture) {
 
   // fill the content of the dataset using mutable iteration
   vector_var_vector v01 = make_vector(v[0], v[1]);
-  foreach(vector_record2<>& r, ds.records(v01)) {
+  foreach(vector_record<>& r, ds.records(v01)) {
     r.values[0] = std::numeric_limits<double>::quiet_NaN();
     r.values[1] = std::numeric_limits<double>::quiet_NaN();
   }
 
   // verify that we get the mutated version back
-  foreach(const vector_record2<>& r, ds.records(v01)) {
+  foreach(const vector_record<>& r, ds.records(v01)) {
     BOOST_CHECK_EQUAL(r.values.size(), 2);
     BOOST_CHECK(boost::math::isnan(r.values[0]));
     BOOST_CHECK(boost::math::isnan(r.values[1]));
@@ -186,14 +186,14 @@ BOOST_FIXTURE_TEST_CASE(test_subset, fixture) {
 
   // verify the number of records
   size_t n_mutable = 0;
-  foreach(const vector_record2<>& r, ds2.records(v)) {
+  foreach(const vector_record<>& r, ds2.records(v)) {
     ++n_mutable;
   }
   BOOST_CHECK_EQUAL(n_mutable, 500);
 
   const vector_dataset<>& dsc = ds2;
   size_t n_const = 0;
-  foreach(const vector_record2<>& r, dsc.records(v)) {
+  foreach(const vector_record<>& r, dsc.records(v)) {
     ++n_const;
   }
   BOOST_CHECK_EQUAL(n_const, 500);
@@ -204,7 +204,7 @@ BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
   boost::mt19937 rng;
   vec mean = arma::zeros(3);
   for (size_t i = 0; i < 600; ++i) {
-    vector_record2<> r = ds.sample(v, rng);
+    vector_record<> r = ds.sample(v, rng);
     mean += r.values * r.weight;
     //std::cout << r.weight << ": " << r.values.t() << std::endl;
   }

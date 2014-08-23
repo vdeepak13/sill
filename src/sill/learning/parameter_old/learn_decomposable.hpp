@@ -1,7 +1,7 @@
 #ifndef SILL_LEARN_DECOMPOSABLE
 #define SILL_LEARN_DECOMPOSABLE
 
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/parameter_old/learn_factor.hpp>
 #include <sill/model/decomposable.hpp>
 

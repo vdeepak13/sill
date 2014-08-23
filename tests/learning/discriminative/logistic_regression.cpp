@@ -1,13 +1,13 @@
 #include <iostream>
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/dataset_statistics.hpp>
-#include <sill/learning/dataset/syn_oracle_knorm.hpp>
-#include <sill/learning/dataset/syn_oracle_majority.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
+#include <sill/learning/dataset_old/data_loader.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/syn_oracle_knorm.hpp>
+#include <sill/learning/dataset_old/syn_oracle_majority.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 //#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/logistic_regression.hpp>
 #include <sill/learning/parameter_old/learn_factor.hpp>
@@ -26,16 +26,16 @@ int main(int argc, char* argv[]) {
   /*
   size_t ntrain = 30162;
   size_t ntest = 15060;
-  boost::shared_ptr<vector_dataset<> > ds_train_ptr
-    = data_loader::load_symbolic_dataset<vector_dataset<> >
+  boost::shared_ptr<vector_dataset_old<> > ds_train_ptr
+    = data_loader::load_symbolic_dataset<vector_dataset_old<> >
     ("/Users/jbradley/data/uci/adult/adult-train.sum", u, ntrain);
-  vector_dataset& ds_train = *ds_train_ptr;
-  boost::shared_ptr<vector_dataset<> > ds_test_ptr
-    = data_loader::load_symbolic_dataset<vector_dataset<> >
+  vector_dataset_old& ds_train = *ds_train_ptr;
+  boost::shared_ptr<vector_dataset_old<> > ds_test_ptr
+    = data_loader::load_symbolic_dataset<vector_dataset_old<> >
     ("/Users/jbradley/data/uci/adult/adult-test.sum",
      ds_train.finite_list(),
      ds_train.vector_list(), ds_train.variable_type_order(), ntest);
-  vector_dataset& ds_test = *ds_test_ptr;
+  vector_dataset_old& ds_test = *ds_test_ptr;
   finite_variable* class_var = ds_train.finite_class_variables().front();
   vec means;
   vec std_devs;
@@ -52,9 +52,9 @@ int main(int argc, char* argv[]) {
   syn_oracle_knorm knorm(create_syn_oracle_knorm(2,20,u,oracle_params));
   finite_variable* class_var = knorm.finite_class_variables().front();
   cout << knorm;
-  vector_dataset<> ds_train;
+  vector_dataset_old<> ds_train;
   oracle2dataset(knorm, ntrain, ds_train);
-  vector_dataset<> ds_test;
+  vector_dataset_old<> ds_test;
   oracle2dataset(knorm, ntest, ds_test);
 
   /*
@@ -63,12 +63,12 @@ int main(int argc, char* argv[]) {
   syn_oracle_majority majority(create_syn_oracle_majority(9,u));
   finite_variable* class_var = majority.finite_class_variables().front();
   cout << majority;
-  boost::shared_ptr<vector_dataset<> > ds_train_ptr
-    = oracle2dataset<vector_dataset<> >(majority, ntrain);
-  vector_dataset& ds_train = *ds_train_ptr;
-  boost::shared_ptr<vector_dataset<> > ds_test_ptr
-    = oracle2dataset<vector_dataset<> >(majority, ntest);
-  vector_dataset& ds_test = *ds_test_ptr;
+  boost::shared_ptr<vector_dataset_old<> > ds_train_ptr
+    = oracle2dataset<vector_dataset_old<> >(majority, ntrain);
+  vector_dataset_old& ds_train = *ds_train_ptr;
+  boost::shared_ptr<vector_dataset_old<> > ds_test_ptr
+    = oracle2dataset<vector_dataset_old<> >(majority, ntest);
+  vector_dataset_old& ds_test = *ds_test_ptr;
   */
 
   dataset_statistics<> stats(ds_train);

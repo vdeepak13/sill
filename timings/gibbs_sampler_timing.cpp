@@ -62,7 +62,7 @@ int main(int argc, char* argv[]) {
   std::vector<std::pair<size_t, double> > avg_L1_errors;
   boost::timer t;
   for (size_t i = 0; i < nsamples; ++i) {
-    const finite_record& sample = sampler.next_sample();
+    const finite_record_old& sample = sampler.next_sample();
     for (size_t j = 0; j < variables.size(); ++j) {
       approx_var_marginals[j](sample)++;
     }

@@ -527,7 +527,7 @@ namespace sill {
 
     //! Given a record over x2, return the corresponding subfactor's index.
     static inline size_t
-    subfactor_index(const finite_record& r,
+    subfactor_index(const finite_record_old& r,
                     const finite_var_vector& x2_vec,
                     const std::vector<size_t>& x2_multipliers) {
       size_t i(0);
@@ -568,7 +568,7 @@ namespace sill {
     }
 
     //! Given a record over x2, return the corresponding subfactor's index.
-    inline size_t my_subfactor_index(const finite_record& r) const {
+    inline size_t my_subfactor_index(const finite_record_old& r) const {
       size_t i(0);
       if (fixed_records_) {
         for (size_t j(0); j < x2_vec.size(); ++j)
@@ -586,7 +586,7 @@ namespace sill {
     }
 
     //! Given a record over x2, return the corresponding subfactor.
-    const F& subfactor(const finite_record& r) const {
+    const F& subfactor(const finite_record_old& r) const {
       return subfactors_[my_subfactor_index(r)];
     }
 

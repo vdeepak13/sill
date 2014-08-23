@@ -3,7 +3,7 @@
 
 #include <boost/tuple/tuple.hpp>
 
-#include <sill/learning/dataset/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
 #include <sill/model/learnt_decomposable.hpp>
 #include <sill/iterator/subset_iterator.hpp>
 

@@ -4,8 +4,8 @@
 #include <algorithm>
 
 #include <sill/functional.hpp>
-#include <sill/learning/dataset/ds_oracle.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/ds_oracle.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 #include <sill/learning/discriminative/binary_classifier.hpp>
 #include <sill/stl_io.hpp>
 
@@ -232,7 +232,7 @@ namespace sill {
     size_t iteration_;
 
     //! Dataset (for batch mode when given an oracle)
-    vector_dataset<la_type>* ds_ptr;
+    vector_dataset_old<la_type>* ds_ptr;
 
     //! Dataset
     const dataset<la_type>& ds;
@@ -289,7 +289,7 @@ namespace sill {
                                  = logistic_regression_parameters())
       : params(params),
         train_acc(-1), train_log_like(-std::numeric_limits<double>::max()),
-        iteration_(0), ds_ptr(new vector_dataset<la_type>()), ds(*ds_ptr),
+        iteration_(0), ds_ptr(new vector_dataset_old<la_type>()), ds(*ds_ptr),
         ds_o_ptr(new ds_oracle<la_type>(*ds_ptr)), o(*ds_o_ptr) { }
 
     /**
@@ -322,7 +322,7 @@ namespace sill {
         finite_seq(o.finite_list()), vector_seq(o.vector_list()),
         total_train(0), train_acc(-1),
         train_log_like(-std::numeric_limits<double>::max()), iteration_(0),
-        ds_ptr(new vector_dataset<la_type>(o.datasource_info())), ds(*ds_ptr),
+        ds_ptr(new vector_dataset_old<la_type>(o.datasource_info())), ds(*ds_ptr),
         ds_o_ptr(NULL), o(o) {
       switch(params.method) {
       case 0:

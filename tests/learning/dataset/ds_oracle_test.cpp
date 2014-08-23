@@ -2,10 +2,10 @@
 #include <string>
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/dataset/assignment_dataset.hpp>
-#include <sill/learning/dataset/ds_oracle.hpp>
-//#include <sill/learning/dataset/concepts.hpp>
-#include <sill/learning/dataset/data_loader.hpp>
+#include <sill/learning/dataset_old/assignment_dataset.hpp>
+#include <sill/learning/dataset_old/ds_oracle.hpp>
+//#include <sill/learning/dataset_old/concepts.hpp>
+#include <sill/learning/dataset_old/data_loader.hpp>
 #include <sill/factor/table_factor.hpp>
 
 #include <sill/macros_def.hpp>

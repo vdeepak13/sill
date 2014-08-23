@@ -8,8 +8,8 @@
  */
 
 #include <sill/base/universe.hpp>
-#include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/data_loader.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 
 static int usage() {
   std::cerr << "usage: ./dataset_converter [input .sum filepath]"
@@ -29,8 +29,8 @@ int main(int argc, char** argv) {
   std::string output_filepath(argv[2]);
 
   universe u;
-  boost::shared_ptr<vector_dataset<> > ds_ptr =
-    data_loader::load_symbolic_dataset<vector_dataset<> >(input_filepath, u);
+  boost::shared_ptr<vector_dataset_old<> > ds_ptr =
+    data_loader::load_symbolic_dataset<vector_dataset_old<> >(input_filepath, u);
 
   symbolic::save_binary_dataset(*ds_ptr, output_filepath);
 

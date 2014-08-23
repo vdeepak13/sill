@@ -3,7 +3,7 @@
 
 #include <sill/base/variable_type_group.hpp>
 #include <sill/base/variable_type_union.hpp>
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/model/model_functors.hpp>
 
 #include <sill/macros_def.hpp>

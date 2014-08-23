@@ -7,7 +7,7 @@
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/bayesian_network.hpp>
-#include <sill/learning/dataset3/finite_memory_dataset.hpp>
+#include <sill/learning/dataset/finite_memory_dataset.hpp>
 #include <sill/learning/factor_mle/table_factor.hpp>
 #include <sill/learning/structure/chow_liu.hpp>
 

@@ -173,7 +173,7 @@ namespace sill {
   } // restrict(a, a_vars, strict, f)
 
   void
-  table_factor::restrict(const finite_record& r, table_factor& f) const {
+  table_factor::restrict(const finite_record_old& r, table_factor& f) const {
     finite_var_vector retained;
     // More efficient set difference: the domain of the factor is
     // supposed to be small, but evidence size can be very large.
@@ -204,13 +204,13 @@ namespace sill {
   } // restrict(r, f)
 
   void table_factor::
-  restrict(const finite_record& r, const finite_domain& r_vars,
+  restrict(const finite_record_old& r, const finite_domain& r_vars,
            table_factor& f) const {
     this->restrict(r, r_vars, false, f);
   } // restrict(r, r_vars, f)
 
   void table_factor::
-  restrict(const finite_record& r, const finite_domain& r_vars,
+  restrict(const finite_record_old& r, const finite_domain& r_vars,
            bool strict, table_factor& f) const {
     finite_var_vector retained;
     // More efficient set difference: the domain of the factor is
@@ -252,7 +252,7 @@ namespace sill {
     }
   } // restrict(r, r_vars, strict, f)
 
-  void table_factor::restrict_aligned(const finite_record& r,
+  void table_factor::restrict_aligned(const finite_record_old& r,
                                       index_type& restrict_map,
                                       table_factor& f) const {
     if (this->arg_seq.size() != restrict_map.size()) {
@@ -276,7 +276,7 @@ namespace sill {
     f.table_data.restrict_aligned(this->table(), restrict_map);
   } // restrict_aligned(r, restrict_map, f)
 
-  void table_factor::restrict_other(const finite_record& r,
+  void table_factor::restrict_other(const finite_record_old& r,
                                     const uvec& r_indices,
                                     finite_variable* retain_v,
                                     table_factor& f) const {
@@ -430,7 +430,7 @@ namespace sill {
     return newf;
   }
 
-  void table_factor::set_record_indices(const finite_record& r,
+  void table_factor::set_record_indices(const finite_record_old& r,
                                         uvec& r_indices) const {
     r_indices.set_size(arg_seq.size());
     for (size_t i = 0; i < arg_seq.size(); ++i)
@@ -496,11 +496,11 @@ namespace sill {
 
   table_factor::index_type
   table_factor::make_restrict_map(const finite_var_vector& vars,
-                                  const finite_record& r) {
+                                  const finite_record_old& r) {
     size_t retained = std::numeric_limits<size_t>::max();
     dense_table<result_type>::index_type map(vars.size(), retained);
     for(size_t i = 0; i < vars.size(); i++) {
-      finite_record_iterator it(r.find(vars[i]));
+      finite_record_old_iterator it(r.find(vars[i]));
       if (it != r.end())
         map[i] = it->second;
     }
@@ -525,13 +525,13 @@ namespace sill {
 
   table_factor::index_type
   table_factor::make_restrict_map(const finite_var_vector& vars,
-                                  const finite_record& r,
+                                  const finite_record_old& r,
                                   const finite_domain& r_vars) {
     size_t retained = std::numeric_limits<size_t>::max();
     dense_table<result_type>::index_type map(vars.size(), retained);
     for(size_t i = 0; i < vars.size(); i++) {
       if (r_vars.count(vars[i]) != 0) {
-        finite_record_iterator it(r.find(vars[i]));
+        finite_record_old_iterator it(r.find(vars[i]));
         if (it != r.end())
           map[i] = it->second;
       }
@@ -541,13 +541,13 @@ namespace sill {
 
   table_factor::index_type
   table_factor::make_restrict_map_except(const finite_var_vector& vars,
-                                         const finite_record& r,
+                                         const finite_record_old& r,
                                          finite_variable* except_v) {
     size_t retained = std::numeric_limits<size_t>::max();
     dense_table<result_type>::index_type map(vars.size(), retained);
     for(size_t i = 0; i < vars.size(); i++) {
       if (vars[i] != except_v) {
-        finite_record_iterator it(r.find(vars[i]));
+        finite_record_old_iterator it(r.find(vars[i]));
         if (it != r.end())
           map[i] = it->second;
       }

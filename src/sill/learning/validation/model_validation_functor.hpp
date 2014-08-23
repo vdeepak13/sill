@@ -3,7 +3,7 @@
 
 #include <boost/timer.hpp>
 
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 
 #include <sill/macros_def.hpp>
 

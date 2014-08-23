@@ -1,6 +1,6 @@
 #include <boost/timer.hpp>
 
-#include <sill/learning/dataset3/finite_memory_dataset.hpp>
+#include <sill/learning/dataset/finite_memory_dataset.hpp>
 #include <sill/learning/factor_mle/table_factor.hpp>
 #include <sill/learning/structure/chow_liu.hpp>
 #include <sill/model/random.hpp>
@@ -12,7 +12,7 @@
  * 
  * release timings:
  * Chow-Liu using the assignment_dataset (old): 0.551218 s/trial
- * Chow-Liu using the vector_dataset (old): 0.0766336 s/trial
+ * Chow-Liu using the vector_dataset_old (old): 0.0766336 s/trial
  * Chow-Liu using the finite_dataset (new): 0.0260711 s/trial
  */
 int main(int argc, char* argv[]) {

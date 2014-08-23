@@ -178,7 +178,7 @@ namespace sill {
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in real-space (not log-space).
-    double v(const finite_record& r) const;
+    double v(const finite_record_old& r) const;
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
@@ -186,7 +186,7 @@ namespace sill {
 
     //! Evaluates this factor for the given datapoint, returning its value
     //! in log-space.
-    double logv(const finite_record& r) const;
+    double logv(const finite_record_old& r) const;
 
     /**
      * If this factor is f(Y,X), compute f(Y, X = x).
@@ -208,7 +208,7 @@ namespace sill {
      *          the given input variable (X) instantiation;
      *          in real space
      */
-    const table_factor& condition(const finite_record& r) const;
+    const table_factor& condition(const finite_record_old& r) const;
 
     /**
      * If this factor is f(Y_retain, Y_part, X) (not in log space),
@@ -269,7 +269,7 @@ namespace sill {
      *          (which may have values for any other variables as well).
      * @return  This modified factor.
      */
-    table_crf_factor& partial_condition(const finite_record& r,
+    table_crf_factor& partial_condition(const finite_record_old& r,
                                         const output_domain_type& Y_part,
                                         const input_domain_type& X_part);
 
@@ -322,7 +322,7 @@ namespace sill {
     }
 
     //! This has not been implemented for this class.
-    void fix_records(const finite_record& r) {
+    void fix_records(const finite_record_old& r) {
     }
 
     //! This has not been implemented for this class.
@@ -353,7 +353,7 @@ namespace sill {
      * @param r      Datapoint.
      * @param w      Weight by which to multiply the added values.
      */
-    void add_gradient(table_factor_opt_vector& grad, const finite_record& r,
+    void add_gradient(table_factor_opt_vector& grad, const finite_record_old& r,
                       double w) const;
 
     /**
@@ -368,7 +368,7 @@ namespace sill {
      * @param w      Weight by which to multiply the added values.
      */
     void add_expected_gradient(table_factor_opt_vector& grad,
-                               const finite_record& r,
+                               const finite_record_old& r,
                                const table_factor& fy, double w = 1) const;
 
     /**
@@ -377,7 +377,7 @@ namespace sill {
      *   add_expected_gradient(grad, r, fy, -1 * w);
      */
     void
-    add_combined_gradient(optimization_vector& grad, const finite_record& r,
+    add_combined_gradient(optimization_vector& grad, const finite_record_old& r,
                           const output_factor_type& fy, double w = 1) const;
 
     /**
@@ -388,7 +388,7 @@ namespace sill {
      * @param w       Weight by which to multiply the added values.
      */
     void
-    add_hessian_diag(optimization_vector& hessian, const finite_record& r,
+    add_hessian_diag(optimization_vector& hessian, const finite_record_old& r,
                      double w) const;
 
     /**
@@ -404,7 +404,7 @@ namespace sill {
      */
     void
     add_expected_hessian_diag(optimization_vector& hessian,
-                              const finite_record& r,
+                              const finite_record_old& r,
                               const table_factor& fy, double w) const;
 
     /**
@@ -420,7 +420,7 @@ namespace sill {
      */
     void
     add_expected_squared_gradient(optimization_vector& sqrgrad,
-                                  const finite_record& r,
+                                  const finite_record_old& r,
                                   const table_factor& fy, double w) const;
 
     /**

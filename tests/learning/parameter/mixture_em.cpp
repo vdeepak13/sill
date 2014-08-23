@@ -9,7 +9,7 @@
 
 #include <sill/base/universe.hpp>
 
-#include <sill/learning/dataset3/vector_memory_dataset.hpp>
+#include <sill/learning/dataset/vector_memory_dataset.hpp>
 #include <sill/learning/factor_mle/moment_gaussian.hpp>
 #include <sill/learning/parameter/mixture_em.hpp>
 

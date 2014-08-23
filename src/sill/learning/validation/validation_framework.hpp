@@ -1,7 +1,7 @@
 #ifndef SILL_VALIDATION_FRAMEWORK_HPP
 #define SILL_VALIDATION_FRAMEWORK_HPP
 
-#include <sill/learning/dataset/dataset_view.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
 #include <sill/learning/validation/param_list_validation_functor.hpp>
 #include <sill/math/permutations.hpp>
 

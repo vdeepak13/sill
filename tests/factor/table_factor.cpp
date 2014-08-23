@@ -7,7 +7,7 @@
 
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
-#include <sill/learning/dataset/record_conversions.hpp>
+#include <sill/learning/dataset_old/record_conversions.hpp>
 
 #include "predicates.hpp"
 
@@ -77,7 +77,7 @@ BOOST_FIXTURE_TEST_CASE(test_restrict, fixture) {
   finite_var_vector fa_vars(vars.begin(), vars.begin() + 2);
   std::vector<size_t> fr_data;
   finite_assignment2vector(fa, fa_vars, fr_data);
-  finite_record fr(fa_vars);
+  finite_record_old fr(fa_vars);
   fr.set_finite_val(fr_data);
 
   table_factor f1(f);

@@ -94,7 +94,7 @@ namespace sill {
                                  gaussian_opt_vector, 2> base;
 
     typedef dense_linear_algebra<> la_type;
-    typedef vector_record<la_type> record_type;
+    typedef vector_record_old<la_type> record_type;
 
     //! Parameters used for learn_crf_factor.
     struct parameters {

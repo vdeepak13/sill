@@ -2,7 +2,7 @@
 #ifndef SILL_LEARNING_DECOMPOSABLE_MOVE_HPP
 #define SILL_LEARNING_DECOMPOSABLE_MOVE_HPP
 
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/structure_learning/decomposable_score.hpp>
 #include <sill/model/learnt_decomposable.hpp>
 

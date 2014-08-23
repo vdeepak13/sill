@@ -8,7 +8,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/bayesian_network.hpp>
 #include <sill/learning/structure_old/chow_liu.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
 
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   //cout << bn << endl;
 
   // generate a dataset
-  vector_dataset<> data(v, vector_var_vector(),
+  vector_dataset_old<> data(v, vector_var_vector(),
                         std::vector<variable::variable_typenames>());
   for (size_t i = 0; i < nsamples; ++i) {
     finite_assignment a = bn.sample(rng);

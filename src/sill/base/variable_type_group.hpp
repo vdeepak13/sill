@@ -7,8 +7,8 @@
 namespace sill {
 
   // Forward declarations
-  class finite_record;
-  template <typename LA> class vector_record;
+  class finite_record_old;
+  template <typename LA> class vector_record_old;
   template <typename LA> class record;
 
   /**
@@ -35,7 +35,7 @@ namespace sill {
 
     typedef finite_assignment assignment_type;
 
-    typedef finite_record record_type;
+    typedef finite_record_old record_type;
 
   };
 
@@ -48,7 +48,7 @@ namespace sill {
 
     typedef vector_assignment assignment_type;
 
-    typedef vector_record<LA> record_type;
+    typedef vector_record_old<LA> record_type;
 
   };
 
@@ -67,6 +67,6 @@ namespace sill {
 
 } // namespace sill
 
-#include <sill/learning/dataset/record.hpp>
+#include <sill/learning/dataset_old/record.hpp>
 
 #endif // #ifndef SILL_VARIABLE_TYPE_GROUP_HPP

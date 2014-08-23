@@ -5,10 +5,10 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/dataset_statistics.hpp>
-#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 #include <sill/learning/structure_old/decomposable_iterators.hpp>
 #include <sill/model/random.hpp>
 
@@ -40,7 +40,7 @@ int main() {
   learnt_decomposable<table_factor> model(bn.factors(), ld_params);
 
   syn_oracle_bayes_net<table_factor> bn_oracle(bn);
-  vector_dataset<> ds;
+  vector_dataset_old<> ds;
   oracle2dataset(bn_oracle, n_records, ds);
   dataset_statistics<> stats(ds);
 

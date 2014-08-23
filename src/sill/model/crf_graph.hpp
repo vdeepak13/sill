@@ -15,7 +15,7 @@
 #include <sill/graph/undirected_graph.hpp>
 #include <sill/graph/property_functors.hpp>
 #include <sill/iterator/map_value_iterator.hpp>
-#include <sill/learning/dataset/datasource.hpp>
+#include <sill/learning/dataset_old/datasource.hpp>
 #include <sill/model/interfaces.hpp>
 #include <sill/range/forward_range.hpp>
 #include <sill/serialization/list.hpp>

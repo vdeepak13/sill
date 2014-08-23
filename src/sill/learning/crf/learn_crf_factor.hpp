@@ -6,7 +6,7 @@
 #include <sill/factor/gaussian_crf_factor.hpp>
 #include <sill/factor/log_reg_crf_factor.hpp>
 #include <sill/factor/table_crf_factor.hpp>
-#include <sill/learning/dataset/dataset.hpp>
+#include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/parameter_old/learn_factor.hpp>
 #include <sill/learning/validation/model_validation_functor.hpp>
 #include <sill/math/constants.hpp>

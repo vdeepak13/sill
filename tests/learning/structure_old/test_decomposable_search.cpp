@@ -11,10 +11,10 @@
 #include <sill/math/permutations.hpp>
 #include <sill/model/random.hpp>
 
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/dataset_statistics.hpp>
-#include <sill/learning/dataset/syn_oracle_bayes_net.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
   random_HMM(bn, rng, u, n, n_states, n_emissions);
 
   syn_oracle_bayes_net<table_factor> bn_oracle(bn);
-  vector_dataset<> ds;
+  vector_dataset_old<> ds;
   oracle2dataset(bn_oracle, n_records, ds);
   dataset_statistics<> stats(ds);
 

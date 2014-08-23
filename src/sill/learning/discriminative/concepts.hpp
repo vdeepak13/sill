@@ -1,8 +1,8 @@
 #ifndef SILL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP
 #define SILL_LEARNING_DISCRIMINATIVE_CONCEPTS_HPP
 
-#include <sill/learning/dataset/oracle.hpp>
-#include <sill/learning/dataset/dataset_statistics.hpp>
+#include <sill/learning/dataset_old/oracle.hpp>
+#include <sill/learning/dataset_old/dataset_statistics.hpp>
 
 #include <sill/macros_def.hpp>
 

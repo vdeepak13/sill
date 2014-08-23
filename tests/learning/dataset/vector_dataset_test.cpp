@@ -3,16 +3,16 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-//#include <sill/learning/dataset/concepts.hpp>
-#include <sill/learning/dataset/data_loader.hpp>
-#include <sill/learning/dataset/data_conversions.hpp>
-#include <sill/learning/dataset/syn_oracle_majority.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+//#include <sill/learning/dataset_old/concepts.hpp>
+#include <sill/learning/dataset_old/data_loader.hpp>
+#include <sill/learning/dataset_old/data_conversions.hpp>
+#include <sill/learning/dataset_old/syn_oracle_majority.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 
 #include <sill/macros_def.hpp>
 
 /**
- * \file vector_dataset.cpp Test of the vector dataset class.
+ * \file vector_dataset_old.cpp Test of the vector dataset class.
  */
 int main(int argc, char* argv[]) {
 
@@ -23,10 +23,10 @@ int main(int argc, char* argv[]) {
 
   universe u;
 
-  //  concept_assert((sill::MutableDataset<vector_dataset>));
+  //  concept_assert((sill::MutableDataset<vector_dataset_old>));
 
-  boost::shared_ptr<vector_dataset<> > data_ptr =
-    data_loader::load_symbolic_dataset<vector_dataset<> >(filename, u);
+  boost::shared_ptr<vector_dataset_old<> > data_ptr =
+    data_loader::load_symbolic_dataset<vector_dataset_old<> >(filename, u);
 
   // Print the data
   cout << *data_ptr << endl;
@@ -43,8 +43,8 @@ int main(int argc, char* argv[]) {
   cout << (v / double(data_ptr->size())) << endl;
 
   // Split the data into 2 parts.
-  vector_dataset<> spam1(data_ptr->datasource_info());
-  vector_dataset<> spam2(data_ptr->datasource_info());
+  vector_dataset_old<> spam1(data_ptr->datasource_info());
+  vector_dataset_old<> spam2(data_ptr->datasource_info());
   for (size_t i(0); i < data_ptr->size() / 2; ++i) {
     spam2.insert(data_ptr->operator[](i));
   }
@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
 
   // Test on finite data
   syn_oracle_majority majority(create_syn_oracle_majority(9,u));
-  vector_dataset<> majority_ds;
+  vector_dataset_old<> majority_ds;
   oracle2dataset(majority, 20, majority_ds);
 
   return 0;

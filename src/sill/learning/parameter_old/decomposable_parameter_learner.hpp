@@ -5,8 +5,8 @@
 
 #include <sill/factor/concepts.hpp>
 #include <sill/learning/validation/crossval_methods.hpp>
-#include <sill/learning/dataset/dataset_view.hpp>
-#include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/learning/dataset_old/dataset_view.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 #include <sill/learning/parameter_old/learn_factor.hpp>
 #include <sill/learning/validation/validation_framework.hpp>
 #include <sill/math/permutations.hpp>
