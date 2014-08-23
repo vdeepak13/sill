@@ -6,5 +6,8 @@ if (TCMALLOC_FOUND)
   target_link_libraries(crf_parameter_learner_test tcmalloc)
 endif()
 
+add_executable(learn_crf_factor learn_crf_factor.cpp)
+add_executable(learn_gaussian_crf_factor learn_gaussian_crf_factor.cpp)
+
 add_executable(pwl_crf_learner_test pwl_crf_learner_test.cpp)
 add_executable(pwl_gaussian_crf_learner_test pwl_gaussian_crf_learner_test.cpp)

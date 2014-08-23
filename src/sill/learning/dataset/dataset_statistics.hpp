@@ -11,7 +11,7 @@
 #include <sill/range/concepts.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/dataset/dataset.hpp>
-#include <sill/learning/learn_factor.hpp>
+#include <sill/learning/parameter_old/learn_factor.hpp>
 
 #include <sill/range/algorithm.hpp>
 

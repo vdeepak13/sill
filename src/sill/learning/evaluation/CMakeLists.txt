@@ -1,0 +1,3 @@
+set(SILL_EVALUATION_SOURCES
+  error_measures
+  PARENT_SCOPE)
