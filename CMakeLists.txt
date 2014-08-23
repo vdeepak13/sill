@@ -95,10 +95,6 @@ set(MPI_CXX true CACHE BOOL
 # Sparse linear algebra library
 find_package(SuiteSparse)
 
-# OpenCV (optional)
-# If OpenCV is not found, projects/qsgm/vision/ compiles to throw an error.
-find_package(OpenCV)
-
 # Armadillo
 find_package(Armadillo REQUIRED)
 

@@ -1,9 +1,6 @@
 set(PRL_DISCRIMINATIVE_SOURCES
-  all_pairs_batch
-  classifier_cascade
-  load_functions
 #  logistic_regression
   multiclass_logistic_regression
   linear_regression
-  tree_sampler
+  load_functions
   PARENT_SCOPE)

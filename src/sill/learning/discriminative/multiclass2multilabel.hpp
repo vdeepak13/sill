@@ -563,6 +563,7 @@ namespace sill {
     return true;
   }
 
+
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
