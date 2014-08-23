@@ -21,7 +21,6 @@ subdirs(
   learning
   model
   math
-  mpi
   optimization
   parsers
   range
