@@ -1,3 +1,0 @@
-add_executable(decomposable_iterators decomposable_iterators.cpp)
-add_executable(test_decomposable_search test_decomposable_search.cpp)
-add_executable(dmoves dmoves.cpp)

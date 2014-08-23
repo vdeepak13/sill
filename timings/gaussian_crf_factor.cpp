@@ -8,7 +8,7 @@
 #include <sill/learning/crf/crf_parameter_learner.hpp>
 #include <sill/learning/dataset/data_conversions.hpp>
 #include <sill/learning/dataset/vector_assignment_dataset.hpp>
-#include <sill/learning/learn_crf_factor.hpp>
+#include <sill/learning/crf/learn_crf_factor.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>

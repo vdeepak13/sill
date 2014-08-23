@@ -12,7 +12,7 @@
 #include <sill/learning/dataset/vector_dataset.hpp>
 //#include <sill/learning/discriminative/concepts.hpp>
 #include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
-#include <sill/learning/learn_factor.hpp>
+#include <sill/learning/parameter_old/learn_factor.hpp>
 #include <sill/learning/validation/crossval_builder.hpp>
 
 #include <sill/macros_def.hpp>

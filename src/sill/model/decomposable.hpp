@@ -16,7 +16,7 @@
 #include <sill/graph/tree_traversal.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
 #include <sill/learning/dataset/dataset.hpp>
-#include <sill/learning/error_measures.hpp>
+#include <sill/learning/evaluation/error_measures.hpp>
 #include <sill/model/interfaces.hpp>
 #include <sill/model/junction_tree.hpp>
 #include <sill/model/model_functors.hpp>

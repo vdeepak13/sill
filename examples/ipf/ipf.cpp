@@ -6,7 +6,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/io.hpp>
-#include <sill/learning/ipf.hpp>
+#include <sill/learning/parameter/jt_ipf.hpp>
 
 #include <sill/macros_def.hpp>
 
