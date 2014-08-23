@@ -1,4 +1,4 @@
-set(PRL_OPTIMIZATION_SOURCES
+set(SILL_OPTIMIZATION_SOURCES
    gradient_method
    gradient_method_builder
    line_search

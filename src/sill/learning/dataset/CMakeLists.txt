@@ -1,4 +1,4 @@
-set(PRL_DATASET_SOURCES
+set(SILL_DATASET_SOURCES
   data_loader
   datasource
   datasource_info_type

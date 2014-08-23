@@ -4,18 +4,18 @@ add_subdirectory(discriminative)
 add_subdirectory(parameter)
 add_subdirectory(validation)
 
-add_prefix(PRL_CRF_SOURCES "crf/")
-add_prefix(PRL_DATASET_SOURCES "dataset/")
-add_prefix(PRL_DISCRIMINATIVE_SOURCES "discriminative/")
-add_prefix(PRL_PARAMETER_SOURCES "parameter/")
-add_prefix(PRL_VALIDATION_SOURCES "validation/")
+add_prefix(SILL_CRF_SOURCES "crf/")
+add_prefix(SILL_DATASET_SOURCES "dataset/")
+add_prefix(SILL_DISCRIMINATIVE_SOURCES "discriminative/")
+add_prefix(SILL_PARAMETER_SOURCES "parameter/")
+add_prefix(SILL_VALIDATION_SOURCES "validation/")
 
-set(PRL_LEARNING_SOURCES
-  ${PRL_CRF_SOURCES}
-  ${PRL_DATASET_SOURCES}
-  ${PRL_DISCRIMINATIVE_SOURCES}
-  ${PRL_PARAMETER_SOURCES}
-  ${PRL_VALIDATION_SOURCES}
+set(SILL_LEARNING_SOURCES
+  ${SILL_CRF_SOURCES}
+  ${SILL_DATASET_SOURCES}
+  ${SILL_DISCRIMINATIVE_SOURCES}
+  ${SILL_PARAMETER_SOURCES}
+  ${SILL_VALIDATION_SOURCES}
   decomposable_parameter_learner
   error_measures
   learn_crf_factor
