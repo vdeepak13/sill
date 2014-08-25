@@ -26,7 +26,7 @@ namespace sill {
     typedef typename DS::domain_type domain_type;
 
     //! A sequence of variables/processes (e.g., finite_var_vector).
-    typedef typename DS::vector_type vector_type;
+    typedef typename DS::var_vector_type var_vector_type;
 
     //! A type that maps variable_type to values (e.g., finite_assignment).
     typedef typename DS::assignment_type assignment_type;
@@ -49,21 +49,28 @@ namespace sill {
     //! Returns the variables in this dataset (may return a const-reference).
     const domain_type arguments() const;
 
+    //! Returns the variables in this dataset in the dataset's internal order.
+    const var_vector_type& arg_vector() const;
+
+    //! Returns a single datapoint in the dataset's internal variable order.
+    //! This function may not be implemented efficiently.
+    record_type record(size_t row) const;
+
     //! Returns a single datapoint for a subset of columns in the given order.
     //! This function may not be implemented efficiently.
-    record_type record(size_t row, const vector_type& vars) const;
+    record_type record(size_t row, const var_vector_type& vars) const;
 
     //! Provides mutable access to a subset of columns in the specified order.
     std::pair<record_iterator, record_iterator>
-    records(const vector_type& vars);
+    records(const var_vector_type& vars);
 
     //! Provides const access to a subset of columns in the specified order.
     std::pair<const_record_iterator, const_record_iterator>
-    records(const vector_type& vars) const;
+    records(const var_vector_type& vars) const;
 
     //! Returns a random datapoint drawn from this dataset.
     template <typename RandomNumberGenerator>
-    record_type sample(const vector_type& vars, RandomNumberGenerator& rng) const;
+    record_type sample(const var_vector_type& vars, RandomNumberGenerator& rng) const;
     
   };
 

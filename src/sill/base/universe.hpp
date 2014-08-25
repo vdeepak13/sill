@@ -10,7 +10,7 @@ namespace sill {
 #include <sill/base/finite_variable.hpp>
 #include <sill/base/process.hpp>
 #include <sill/base/stl_util.hpp>
-#include <sill/base/string_functions.hpp>
+#include <sill/parsers/string_functions.hpp>
 #include <sill/base/vector_variable.hpp>
 #include <sill/serialization/serialize.hpp>
 

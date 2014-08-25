@@ -36,7 +36,7 @@ namespace sill {
     size_t n_pred = 0;
     size_t actual = 0;
     foreach(typename F::output_variable_type* v, crf.output_arguments()) {
-      assert(v->get_variable_type() == variable::FINITE_VARIABLE);
+      assert(v->type() == variable::FINITE_VARIABLE);
       finite_variable* fv = static_cast<finite_variable*>(v);
       assert(fv->size() == 2);
     }

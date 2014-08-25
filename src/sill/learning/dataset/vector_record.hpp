@@ -13,6 +13,8 @@ namespace sill {
     arma::Col<T> values;
     T weight;
 
+    // helper types
+    typedef T elem_type;
     typedef T weight_type;
 
     vector_record()
@@ -21,12 +23,17 @@ namespace sill {
     explicit vector_record(size_t n, T weight = 0.0)
       : values(n, arma::fill::zeros), weight(weight) { }
 
+    vector_record(const arma::Col<T>& values, T weight)
+      : values(values), weight(weight) { }
+
     void resize(size_t n) {
       values = arma::zeros<arma::Col<T> >(n);
     }
 
     bool operator==(const vector_record& other) const {
-      return all(values == other.values) && weight == other.weight;
+      return values.size() == other.values.size()
+        && all(values == other.values)
+        && weight == other.weight;
     }
   };
 

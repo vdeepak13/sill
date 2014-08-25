@@ -630,7 +630,7 @@ namespace sill {
     struct dirent *ent;
     while ((ent = readdir(dir))) {
       std::string fname = ent->d_name;
-      bool predicatevalue = (lcase(fname).find("true") != std::string::npos);
+      bool predicatevalue = (tolower(fname).find("true") != std::string::npos);
       fname = dirname+"/"+fname;
       alchemy_parse_truth(u, truth,fname,predicatevalue,silent);
     }

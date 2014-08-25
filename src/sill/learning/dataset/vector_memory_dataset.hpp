@@ -14,9 +14,12 @@
 
 namespace sill {
 
+  // Forwad declarations
+  template <typename T> class hybrid_memory_dataset;
+
   /**
    * A dataset that stores observations for vector variables in memory.
-   * Models Dataset and InsertableDataset, and SliceableDataset.
+   * Models Dataset, InsertableDataset, and SliceableDataset.
    *
    * \tparam T the internal storage of the vector values. This should match the
    *         storage type of the learned factors.
@@ -26,6 +29,9 @@ namespace sill {
   public:
     // SliceableDataset concept typedefs
     typedef slice_view<vector_dataset<T> > slice_view_type;
+
+    // Bring the record(row) implementation up to this class
+    using vector_dataset<T>::record;
     
     //! Creates an uninitialized dataset
     vector_memory_dataset() { } 
@@ -39,7 +45,7 @@ namespace sill {
       if (data) {
         throw std::logic_error("Attempt to call initialize() more than once.");
       }
-      args = variables;
+      vector_dataset<T>::initialize(variables);
       num_allocated = std::max(capacity, size_t(1));
       num_inserted = 0;
       num_cols = vector_size(variables);
@@ -76,14 +82,6 @@ namespace sill {
       }
     }
 
-    vector_domain arguments() const {
-      return make_domain(args);
-    }
-
-    vector_record<T> record(size_t row) const {
-      return record(row, args);
-    }
-
     vector_record<T> record(size_t row, const vector_var_vector& vars) const {
       assert(row < num_inserted);
       vector_record<T> result(vector_size(vars), weights[row]);
@@ -112,13 +110,13 @@ namespace sill {
     }
 
     //! Inserts the values in this dataset's ordering.
-    virtual void insert(const vector_record<T>& r) {
+    void insert(const vector_record<T>& r) {
       check_initialized();
       insert(r.values, r.weight); // protected function
     }
  
     //! Inserts a new row from an assignment (all variables must be present).
-    virtual void insert(const vector_assignment& a, T weight = 1.0) {
+    void insert(const vector_assignment& a, T weight = 1.0) {
       check_initialized();
       arma::Col<T> values(num_cols);
       size_t col = 0;
@@ -131,7 +129,7 @@ namespace sill {
     }
 
     //! Inserts the given number of rows with unit weights and "undefined" values.
-    virtual void insert(size_t nrows) {
+    void insert(size_t nrows) {
       check_initialized();
       arma::Col<T> values(num_cols);
       values.fill(std::numeric_limits<T>::quiet_NaN());
@@ -143,12 +141,13 @@ namespace sill {
     // Protected functions
     //========================================================================
   protected:
-    typedef raw_record_iterator_state<vector_dataset<T> > iterator_state_type;
+    typedef raw_record_iterator_state<vector_record<T> > iterator_state_type;
+    using vector_dataset<T>::args;
 
     //! Throws an exception if the dataset is not initialized
     void check_initialized() const {
       if (!data) {
-        throw std::logic_error("The vector dataset is not initialized!");
+        throw std::logic_error("The dataset is not initialized!");
       }
     }
 
@@ -186,6 +185,8 @@ namespace sill {
       state.weights = weights.get();
       state.w_step = 1;
       return NULL;
+      // hybrid_memory_dataset depends on this being NULL
+      // if this ever changes, so should hybrid_memory_dataset
     }
     
     void advance(ptrdiff_t diff,
@@ -206,8 +207,11 @@ namespace sill {
     void save(iterator_state_type& state, aux_data* data) { }
 
     void print(std::ostream& out) const {
-      out << "vector_dataset[N=" << size() << ", args=" << args << "]";
+      out << "vector_memory_dataset(N=" << size() << ", args=" << args << ")";
     }
+
+    // friends
+    friend class hybrid_memory_dataset<T>;
 
     // Private data members
     //========================================================================
@@ -237,7 +241,7 @@ namespace sill {
       num_allocated = new_capacity;
     }
 
-    vector_var_vector args;         // the ordering of variables in the table
+    // vector_var_vector args;  // moved to the base class
     std::map<vector_variable*, size_t> arg_index; // the index of each var
     boost::shared_ptr<T[]> data;    // the data storage
     boost::shared_ptr<T[]> weights; // the weights storage

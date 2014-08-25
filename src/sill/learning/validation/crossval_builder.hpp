@@ -3,7 +3,7 @@
 
 #include <boost/program_options.hpp>
 
-#include <sill/base/string_functions.hpp>
+#include <sill/parsers/string_functions.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
 
 namespace sill {

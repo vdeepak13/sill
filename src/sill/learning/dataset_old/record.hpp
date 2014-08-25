@@ -407,7 +407,7 @@ namespace sill {
   sill::assignment record<LA>::assignment(const domain& X) const {
     sill::assignment a;
     foreach(variable* v, X) {
-      switch(v->get_variable_type()) {
+      switch(v->type()) {
       case variable::FINITE_VARIABLE:
         {
           finite_variable* vf = dynamic_cast<finite_variable*>(v);
@@ -435,7 +435,7 @@ namespace sill {
   void
   record<LA>::add_to_assignment(const domain& X, sill::assignment& a) const {
     foreach(variable* v, X) {
-      switch(v->get_variable_type()) {
+      switch(v->type()) {
       case variable::FINITE_VARIABLE:
         {
           finite_variable* vf = dynamic_cast<finite_variable*>(v);

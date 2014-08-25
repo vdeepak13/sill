@@ -11,13 +11,13 @@ namespace sill {
 
   /**
    * Datastructure used internally by raw_record_iterator and
-   * raw_const_record_iterator to store most of the iterator state
-   * visible to the dataset.
+   * raw_const_record_iterator to store the iterator state visible
+   * to the dataset.
    */
-  template <typename Dataset>
+  template <typename Record>
   struct raw_record_iterator_state {
-    typedef typename Dataset::elem_type   elem_type;
-    typedef typename Dataset::weight_type weight_type;
+    typedef typename Record::elem_type   elem_type;
+    typedef typename Record::weight_type weight_type;
 
     std::vector<elem_type*> elems;   // the pointers to the next values
     const weight_type*      weights; // the pointer to the next weight
@@ -48,16 +48,16 @@ namespace sill {
     : public std::iterator<std::forward_iterator_tag,
                            typename Dataset::record_type> {
   public:
-    typedef typename Dataset::vector_type      vector_type;
-    typedef typename Dataset::record_type      record_type;
-    typedef raw_record_iterator_state<Dataset> state_type;
+    typedef typename Dataset::var_vector_type      var_vector_type;
+    typedef typename Dataset::record_type          record_type;
+    typedef raw_record_iterator_state<record_type> state_type;
 
     // singular and past-the-end constructor
-    raw_record_iterator(size_t endrow = 0)
+    explicit raw_record_iterator(size_t endrow = 0)
       : dataset(NULL), row(endrow) { }
 
     // begin constructor
-    raw_record_iterator(Dataset* dataset, const vector_type& args)
+    raw_record_iterator(Dataset* dataset, const var_vector_type& args)
       : dataset(dataset), row(0), rows_left(0) {
       aux.reset(dataset->init(args, state));
       record.resize(state.elems.size());
@@ -151,16 +151,16 @@ namespace sill {
     : public std::iterator<std::forward_iterator_tag,
                            const typename Dataset::record_type> {
   public:
-    typedef typename Dataset::vector_type      vector_type;
-    typedef typename Dataset::record_type      record_type;
-    typedef raw_record_iterator_state<Dataset> state_type;
+    typedef typename Dataset::var_vector_type      var_vector_type;
+    typedef typename Dataset::record_type          record_type;
+    typedef raw_record_iterator_state<record_type> state_type;
 
     // default and end constructor
-    raw_const_record_iterator(size_t endrow = 0)
+    explicit raw_const_record_iterator(size_t endrow = 0)
       : dataset(NULL), row(endrow) { }
 
     // begin constructor
-    raw_const_record_iterator(const Dataset* dataset, const vector_type& args)
+    raw_const_record_iterator(const Dataset* dataset, const var_vector_type& args)
       : dataset(dataset), row(0), rows_left(0) {
       aux.reset(dataset->init(args, state));
       record.resize(state.elems.size());

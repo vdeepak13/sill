@@ -143,7 +143,7 @@ namespace sill {
       std::string varname = boost::lexical_cast<std::string>(varid);
       // find the variable in the universe
       variable* v = u.var_from_name(varname);
-      assert(v->get_variable_type() == variable::FINITE_VARIABLE);
+      assert(v->type() == variable::FINITE_VARIABLE);
       asg[dynamic_cast<finite_variable*>(v)] = val;
     }
     return asg;
@@ -163,7 +163,7 @@ namespace sill {
       std::string varname = boost::lexical_cast<std::string>(i);
       // find the variable in the universe
       variable* v = u.var_from_name(varname);
-      assert(v->get_variable_type() == variable::FINITE_VARIABLE);
+      assert(v->type() == variable::FINITE_VARIABLE);
       
       finite_variable* f = dynamic_cast<finite_variable*>(v);
       fout << beliefs[f].size() << " ";

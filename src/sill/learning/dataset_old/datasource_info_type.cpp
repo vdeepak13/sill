@@ -44,7 +44,7 @@ namespace sill {
   datasource_info_type::
   datasource_info_type(const forward_range<variable*>& var_seq) {
     foreach(variable* var, var_seq) {
-      switch (var->get_variable_type()) {
+      switch (var->type()) {
       case variable::FINITE_VARIABLE:
         finite_seq.push_back((finite_variable*)var);
         var_type_order.push_back(variable::FINITE_VARIABLE);

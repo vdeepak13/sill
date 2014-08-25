@@ -163,7 +163,7 @@ namespace sill {
   }
 
   bool datasource::has_variable(variable* v) const {
-    switch (v->get_variable_type()) {
+    switch (v->type()) {
     case variable::FINITE_VARIABLE:
       return has_variable((finite_variable*)v);
     case variable::VECTOR_VARIABLE:

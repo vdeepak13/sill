@@ -27,18 +27,14 @@ namespace sill {
     // types for the Dataset concept
     typedef finite_variable   argument_type;
     typedef finite_domain     domain_type;
-    typedef finite_var_vector vector_type;
+    typedef finite_var_vector var_vector_type;
     typedef finite_assignment assignment_type;
     typedef finite_record     record_type;
 
     typedef raw_record_iterator<finite_dataset>       record_iterator;
     typedef raw_const_record_iterator<finite_dataset> const_record_iterator;
 
-    // other helper types
-    typedef size_t elem_type;
-    typedef double weight_type;
-
-    //! Creates an uninitialized dataset
+    //! Default constructor
     finite_dataset() { }
 
     //! Destructor
@@ -51,10 +47,13 @@ namespace sill {
     bool empty() const { return size() == 0; }
 
     //! Returns the columns of this dataset.
-    virtual finite_domain arguments() const = 0;
+    const finite_domain arguments() const { return make_domain(args); }
+
+    //! Returns the columns of this dataset.
+    const finite_var_vector& arg_vector() const { return args; }
 
     //! Returns a single data point in the dataset's natural ordering.
-    virtual finite_record record(size_t row) const = 0;
+    finite_record record(size_t row) const { return record(row, args); }
 
     //! Returns a single data point for a subset of the variables.
     virtual finite_record
@@ -77,7 +76,7 @@ namespace sill {
     //! Draws a random sample from this dataset.
     template <typename RandomNumberGenerator>
     finite_record sample(const finite_var_vector& vars,
-                          RandomNumberGenerator& rng) const {
+                         RandomNumberGenerator& rng) const {
       assert(!empty());
       boost::uniform_int<size_t> uniform(0, size() - 1);
       return record(uniform(rng), vars);
@@ -86,7 +85,7 @@ namespace sill {
     // Utility functions, invoked by the iterators and subclasses
     //========================================================================
   protected:
-    typedef raw_record_iterator_state<finite_dataset> iterator_state_type;
+    typedef raw_record_iterator_state<finite_record> iterator_state_type;
 
     //! initializes the data structures in the record iterator
     virtual aux_data* init(const finite_var_vector& args,
@@ -108,20 +107,22 @@ namespace sill {
     //! prints the summary of this dataset to a stream
     virtual void print(std::ostream& out) const = 0;
 
+    //! initializes the variables in this dataset
+    void initialize(const finite_var_vector& vars) { args = vars; }
+
+    //! The variables in the dataset's internal ordering of columns.
+    finite_var_vector args;
+
     // friends
     friend class raw_record_iterator<finite_dataset>;
     friend class raw_const_record_iterator<finite_dataset>;
     friend class slice_view<finite_dataset>;
-    friend std::ostream& operator<<(std::ostream&, const finite_dataset&);
+    friend std::ostream& operator<<(std::ostream& out, const finite_dataset& ds) {
+      ds.print(out);
+      return out;
+    }
 
   }; // class finite_dataset
-
-  //! \relates finite_dataset
-  inline std::ostream&
-  operator<<(std::ostream& out, const finite_dataset& ds) {
-    ds.print(out);
-    return out;
-  }
 
 } // namespace sill
 

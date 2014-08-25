@@ -3,6 +3,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
+#include <sill/learning/dataset/finite_dataset_io.hpp>
 #include <sill/learning/dataset/finite_memory_dataset.hpp>
 #include <sill/learning/factor_mle/table_factor.hpp>
 
@@ -41,7 +42,8 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   // insert a bunch of empty records
   ds.insert(10);
 
-  // print the records
+  // print the dataset
+  std::cout << ds << std::endl;
   size_t i = 0;
   foreach (const finite_record& r, ds.records(v)) {
     std::cout << i << " " << r.values << " " << r.weight << std::endl;
@@ -224,3 +226,29 @@ BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
 //   std::cout << "Shuffle: " << kl << std::endl;
 //   BOOST_CHECK_SMALL(kl, 1e-10);
 // }
+
+BOOST_AUTO_TEST_CASE(test_load) {
+  int argc = boost::unit_test::framework::master_test_suite().argc;
+  BOOST_REQUIRE(argc > 1);
+  std::string dir = boost::unit_test::framework::master_test_suite().argv[1];
+  
+  universe u;
+  symbolic_format format;
+  finite_memory_dataset ds;
+  format.load_config(dir + "/finite_format.cfg", u);
+  load(dir + "/finite_data.txt", format, ds);
+
+  size_t values[][3] = { {0, 0, 2}, {2, 1, 3}, {1, 0, 0} };
+  double weights[] = {1.0, 2.0, 0.5};
+  BOOST_CHECK_EQUAL(ds.size(), 3);
+  size_t i = 0;
+  foreach(const finite_record& r, ds.records(format.finite_vars())) {
+    BOOST_CHECK_EQUAL(r.values[0], values[i][0]);
+    BOOST_CHECK_EQUAL(r.values[1], values[i][1]);
+    BOOST_CHECK_EQUAL(r.values[2], values[i][2]);
+    BOOST_CHECK_EQUAL(r.weight, weights[i]);
+    ++i;
+  }
+
+  save("finite_data.tmp", format, ds);
+}

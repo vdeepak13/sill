@@ -382,7 +382,7 @@ namespace sill {
     }
     std::set<size_t> vector_indices;
     foreach(variable* v, *X_ptr_) {
-      switch(v->get_variable_type()) {
+      switch(v->type()) {
       case variable::FINITE_VARIABLE:
         finite_indices.insert
           (ds_view.record_index(dynamic_cast<finite_variable*>(v)));

@@ -20,7 +20,7 @@ namespace sill {
     return out;
   }
 
-  variable::variable_typenames variable::get_variable_type() const{
+  variable::variable_typenames variable::type() const{
     if (typeid(*this) == typeid(const finite_variable)) {
       return FINITE_VARIABLE;
     }
@@ -96,7 +96,7 @@ namespace sill {
     a << (i == NULL);
     if (i == NULL) return;
 
-    a << size_t(i->get_variable_type());
+    a << size_t(i->type());
     i->save(a);
   }
 
