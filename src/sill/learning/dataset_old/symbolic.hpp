@@ -8,7 +8,7 @@
 
 #include <boost/tokenizer.hpp>
 
-#include <sill/base/string_functions.hpp>
+#include <sill/parsers/string_functions.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset_old/dataset.hpp>
 

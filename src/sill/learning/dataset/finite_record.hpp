@@ -12,6 +12,8 @@ namespace sill {
     std::vector<size_t> values;
     double weight;
 
+    // helper types
+    typedef size_t elem_type;
     typedef double weight_type;
 
     finite_record() 
@@ -19,6 +21,9 @@ namespace sill {
 
     explicit finite_record(size_t n, double weight = 0.0)
       : values(n), weight(weight) { }
+
+    finite_record(const std::vector<size_t>& values, double weight)
+      : values(values), weight(weight) { }
 
     void resize(size_t n) {
       values.resize(n);

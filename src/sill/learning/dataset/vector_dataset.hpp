@@ -31,18 +31,14 @@ namespace sill {
     // types for the Dataset concept
     typedef vector_variable   argument_type;
     typedef vector_domain     domain_type;
-    typedef vector_var_vector vector_type;
+    typedef vector_var_vector var_vector_type;
     typedef vector_assignment assignment_type;
     typedef vector_record<T>  record_type;
 
     typedef raw_record_iterator<vector_dataset>       record_iterator;
     typedef raw_const_record_iterator<vector_dataset> const_record_iterator;
 
-    // other helper types
-    typedef T elem_type;
-    typedef T weight_type;
-
-    //! Creates an uninitialized dataset
+    //! Default constructor
     vector_dataset() { }
 
     //! Destructor
@@ -55,10 +51,13 @@ namespace sill {
     bool empty() const { return size() == 0; }
 
     //! Returns the columns of this dataset.
-    virtual vector_domain arguments() const = 0;
+    const vector_domain arguments() const { return make_domain(args); }
+
+    //! Returns the columns of this dataset.
+    const vector_var_vector& arg_vector() const { return args; }
 
     //! Returns a single data point in the dataset's natural ordering.
-    virtual vector_record<T> record(size_t row) const = 0;
+    vector_record<T> record(size_t row) const { return record(row, args); }
 
     //! Returns a single data point for a subset of the variables.
     virtual vector_record<T>
@@ -81,7 +80,7 @@ namespace sill {
     //! Draws a random sample from this dataset.
     template <typename RandomNumberGenerator>
     vector_record<T> sample(const vector_var_vector& vars,
-                             RandomNumberGenerator& rng) const {
+                            RandomNumberGenerator& rng) const {
       assert(!empty());
       boost::uniform_int<size_t> uniform(0, size() - 1);
       return record(uniform(rng), vars);
@@ -90,7 +89,7 @@ namespace sill {
     // Utility functions, invoked by the iterators and public functions
     //========================================================================
   protected:
-    typedef raw_record_iterator_state<vector_dataset> iterator_state_type;
+    typedef raw_record_iterator_state<vector_record<T> > iterator_state_type;
 
     //! initializes the data structures in the record iterator
     virtual aux_data* init(const vector_var_vector& args,
@@ -112,21 +111,23 @@ namespace sill {
     //! prints the summary of this dataset to a stream
     virtual void print(std::ostream& out) const = 0;
 
+    //! initializes the variables in this dataset
+    void initialize(const vector_var_vector& vars) { args = vars; }
+
+    //! The variables in the dataset's internal ordering of columns.
+    vector_var_vector args;
+
     // friends
     friend class raw_record_iterator<vector_dataset>;
     friend class raw_const_record_iterator<vector_dataset>;
     friend class slice_view<vector_dataset>;
-    friend std::ostream& operator<<(std::ostream&, const vector_dataset&);
+
+    friend std::ostream& operator<<(std::ostream& out, const vector_dataset& ds) {
+      ds.print(out);
+      return out;
+    }
 
   }; // class vector_dataset
-
-  //! \relates vector_dataset
-  template <typename T>
-  inline std::ostream&
-  operator<<(std::ostream& out, const vector_dataset<T>& ds) {
-    ds.print(out);
-    return out;
-  }
 
 } // namespace sill
 

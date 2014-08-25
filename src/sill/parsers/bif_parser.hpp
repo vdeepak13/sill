@@ -16,11 +16,13 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/parsers/string_functions.hpp>
+#include <sill/parsers/tokenizer.hpp>
 
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/macros_def.hpp>
+
 namespace sill {
 
   /**
@@ -300,6 +302,6 @@ namespace sill {
 
   }
 
-}
+} // namespace sill
 
-#endif /* BIF_PARSER_HPP_ */
+#endif

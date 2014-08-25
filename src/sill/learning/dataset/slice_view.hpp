@@ -22,9 +22,12 @@ namespace sill {
   template <typename BaseDS>
   class slice_view : public BaseDS {
   public:
-    typedef typename BaseDS::domain_type domain_type;
-    typedef typename BaseDS::vector_type vector_type;
-    typedef typename BaseDS::record_type record_type;
+    // Bring the record(row) implementation up to this class
+    using BaseDS::record;
+
+    typedef typename BaseDS::domain_type     domain_type;
+    typedef typename BaseDS::var_vector_type var_vector_type;
+    typedef typename BaseDS::record_type     record_type;
 
     //! Default constructor. Creates an uninitialized view.
     slice_view()
@@ -33,12 +36,14 @@ namespace sill {
     //! Constructs a view of a dataset with a single slice
     slice_view(BaseDS* dataset, const slice& s)
       : dataset_(dataset), size_(0) {
+      BaseDS::initialize(dataset->arg_vector());
       initialize(std::vector<slice>(1, s));
     }
 
     //! Constructs a view of a dataset with multiple slices
     slice_view(BaseDS* dataset, const std::vector<slice>& s)
       : dataset_(dataset), size_(0) {
+      BaseDS::initialize(dataset->arg_vector());
       initialize(s);
     }
       
@@ -52,27 +57,8 @@ namespace sill {
       return slices_.size();
     }
     
-    //! Returns the columns of this dataset
-    domain_type arguments() const {
-      check_initialized();
-      return dataset_->arguments();
-    }
-    
-    //! Returns a single data point in the base dataset's natural ordering
-    record_type record(size_t row) const {
-      assert(row < size_);
-      foreach(const slice& s, slices_) {
-        if (row < s.size()) {
-          return dataset_->record(s.begin + row);
-        } else {
-          row -= s.size();
-        }
-      }
-      assert(false); // inconsistent state
-    }
-
     //! Returns a single data point for a subset of arguments (variables)
-    record_type record(size_t row, const vector_type& args) const {
+    record_type record(size_t row, const var_vector_type& args) const {
       assert(row < size_);
       foreach(const slice& s, slices_) {
         if (row < s.size()) {
@@ -87,7 +73,7 @@ namespace sill {
     // Protected functions (invoked by the iterators and public functions)
     //========================================================================
   protected:
-    typedef typename BaseDS::record_iterator::state_type iterator_state_type;
+    typedef typename BaseDS::iterator_state_type iterator_state_type;
 
     struct view_data : public aux_data {
       size_t slice_index; // the index of the current slice
@@ -99,7 +85,7 @@ namespace sill {
     };
   
     // initializes the data structures in the record iterator
-    aux_data* init(const vector_type& args,
+    aux_data* init(const var_vector_type& args,
                    iterator_state_type& state) const {
       check_initialized();
       return new view_data(dataset_->init(args, state));
@@ -149,7 +135,7 @@ namespace sill {
 
     // prints the summary of this view to a stream
     void print(std::ostream& out) const {
-      out << "slice_view[N=" << size() << ",slices=" << num_slices() << "] "
+      out << "slice_view(N=" << size() << ",slices=" << num_slices() << ") "
           << "base dataset: " << dataset_;
     }
 

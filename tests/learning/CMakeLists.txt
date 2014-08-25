@@ -1,1 +1,1 @@
-subdirs(crf dataset dataset3 discriminative parameter structure structure_old)
+subdirs(crf dataset dataset_old discriminative parameter structure structure_old)

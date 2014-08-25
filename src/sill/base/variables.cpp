@@ -94,7 +94,7 @@ namespace sill {
   (const domain& from, finite_domain& to) {
     to.clear();
     foreach(variable* v, from) {
-      if (v->get_variable_type() == variable::FINITE_VARIABLE)
+      if (v->type() == variable::FINITE_VARIABLE)
         to.insert((finite_variable*)v);
       else
         assert(false);
@@ -107,7 +107,7 @@ namespace sill {
   (const domain& from, vector_domain& to) {
     to.clear();
     foreach(variable* v, from) {
-      if (v->get_variable_type() == variable::VECTOR_VARIABLE)
+      if (v->type() == variable::VECTOR_VARIABLE)
         to.insert((vector_variable*)v);
       else
         assert(false);
@@ -120,7 +120,7 @@ namespace sill {
   finite_var_vector extract_finite_var_vector(const var_vector& vars) {
     finite_var_vector fvars;
     foreach(variable* v, vars) {
-      if (v->get_variable_type() == variable::FINITE_VARIABLE)
+      if (v->type() == variable::FINITE_VARIABLE)
         fvars.push_back((finite_variable*)v);
     }
     return fvars;
@@ -129,7 +129,7 @@ namespace sill {
   vector_var_vector extract_vector_var_vector(const var_vector& vars) {
     vector_var_vector vvars;
     foreach(variable* v, vars) {
-      if (v->get_variable_type() == variable::VECTOR_VARIABLE)
+      if (v->type() == variable::VECTOR_VARIABLE)
         vvars.push_back((vector_variable*)v);
     }
     return vvars;

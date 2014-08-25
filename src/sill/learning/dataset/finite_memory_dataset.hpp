@@ -14,11 +14,22 @@
 
 namespace sill {
 
-  // TODO: replace boost::shared_ptr with std::unique_ptr
+  // Forward declarations
+  template <typename T> class hybrid_memory_dataset;
+
+  /**
+   * A dataset that stores observations for finite variables in memory.
+   * Models Dataset, InsertableDataset, and SliceableDataset.
+   *
+   * \todo replace boost::shared_ptr with std::unique_ptr
+   */
   class finite_memory_dataset : public finite_dataset, boost::noncopyable {
   public:
     // SliceableDataset concept typedefs
     typedef slice_view<finite_dataset> slice_view_type;
+
+    // Bring the record(row) implementation up to this class
+    using finite_dataset::record;
     
     //! Creates an uninitialized dataset
     finite_memory_dataset() { } 
@@ -32,7 +43,7 @@ namespace sill {
       if (data) {
         throw std::logic_error("Attempt to call initialize() more than once.");
       }
-      args = variables;
+      finite_dataset::initialize(variables);
       num_allocated = std::max(capacity, size_t(1));
       num_inserted = 0;
       num_cols = variables.size();
@@ -68,14 +79,6 @@ namespace sill {
       }
     }
 
-    finite_domain arguments() const {
-      return make_domain(args);
-    }
-
-    finite_record record(size_t row) const {
-      return record(row, args);
-    }
-
     finite_record record(size_t row, const finite_var_vector& vars) const {
       assert(row < num_inserted);
       finite_record result(vars.size(), weights[row]);
@@ -101,13 +104,13 @@ namespace sill {
     }
 
     //! Inserts the values in this dataset's ordering.
-    virtual void insert(const finite_record& r) {
+    void insert(const finite_record& r) {
       check_initialized();
       insert(r.values, r.weight); // protected function
     }
  
     //! Inserts a new row from an assignment (all variables must be present).
-    virtual void insert(const finite_assignment& a, double weight = 1.0) {
+    void insert(const finite_assignment& a, double weight = 1.0) {
       check_initialized();
       std::vector<size_t> values;
       values.reserve(num_cols);
@@ -118,7 +121,7 @@ namespace sill {
     }
 
     //! Inserts the given number of rows with unit weights and "undefined" values.
-    virtual void insert(size_t nrows) {
+    void insert(size_t nrows) {
       check_initialized();
 
       // compute the special "undefined" value for each variable
@@ -139,7 +142,7 @@ namespace sill {
     //! Throws an exception if the dataset is not initialized
     void check_initialized() const {
       if (!data) {
-        throw std::logic_error("The finite dataset is not initialized!");
+        throw std::logic_error("The dataset is not initialized!");
       }
     }
 
@@ -169,6 +172,8 @@ namespace sill {
       state.e_step.assign(args.size(), 1);
       state.w_step = 1;
       return NULL;
+      // hybrid_memory_dataset depends on this being NULL
+      // if this ever changes, so should hybrid_memory_dataset
     }
     
     void advance(ptrdiff_t diff,
@@ -189,8 +194,11 @@ namespace sill {
     void save(iterator_state_type& state, aux_data* data) { }
 
     void print(std::ostream& out) const {
-      out << "finite_dataset[N=" << size() << ", args=" << args << "]";
+      out << "finite_memory_dataset(N=" << size() << ", args=" << args << ")";
     }
+
+    // friends
+    template <typename T> friend class hybrid_memory_dataset;
 
     // Private data members
     //========================================================================
@@ -218,7 +226,7 @@ namespace sill {
       num_allocated = new_capacity;
     }
 
-    finite_var_vector args;  // the ordering of variables in the table
+    // finite_var_vector args;  // moved to the base class
     std::map<finite_variable*, size_t> arg_index; // the index of each var
     boost::shared_ptr<size_t[]> data;    // the data storage
     boost::shared_ptr<double[]> weights; // the weights storage

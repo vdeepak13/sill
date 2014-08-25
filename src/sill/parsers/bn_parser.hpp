@@ -14,30 +14,11 @@
 #include <sill/factor/table_factor.hpp>
 //#include <sill/factor/log_table_factor.hpp>
 #include <sill/macros_def.hpp>
+
 namespace sill {
 
   typedef bayesian_network<table_factor>::factor_type factor_type;
   typedef bayesian_network<table_factor>::variable_type variable_type;
-
-  /**
-   * Removes trailing and leading white space from a string
-   */
-  std::string trim(const std::string& str) {
-    std::string::size_type pos1 = str.find_first_not_of(" \t");
-    std::string::size_type pos2 = str.find_last_not_of(" \t");
-    return str.substr(pos1 == std::string::npos ? 0 : pos1, 
-                      pos2 == std::string::npos ? str.size()-1 : pos2-pos1+1);
-  }
-
-  /**
-   * same as the stl string get line but this also increments a line
-   * counter which is useful for debugging purposes
-   */
-  std::istream& getline(std::ifstream& fin, std::string& line,
-                        size_t& line_number) {
-    ++line_number;
-    return getline(fin, line); 
-  }
 
   /**
    * This function fills in a Bayesian network using the file
@@ -303,8 +284,8 @@ namespace sill {
     return true; // Parsing successful
   } // end of parse_bn method
 
-} // End of namespace
+} // namespace sill
+
 #include <sill/macros_undef.hpp>
 
-
-#endif // SILL_BN_PARSER_HPP
+#endif

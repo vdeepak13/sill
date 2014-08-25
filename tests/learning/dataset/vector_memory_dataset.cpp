@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/base/universe.hpp>
+#include <sill/learning/dataset/vector_dataset_io.hpp>
 #include <sill/learning/dataset/vector_memory_dataset.hpp>
 #include <sill/learning/factor_mle/moment_gaussian.hpp>
 
@@ -45,6 +46,14 @@ BOOST_AUTO_TEST_CASE(test_insert) {
 
   // insert a bunch of empty records
   ds.insert(10);
+
+  // print the dataset
+  std::cout << ds << std::endl;
+  size_t i = 0;
+  foreach (const vector_record<>& r, ds.records(v)) {
+    std::cout << i << ": " << r << std::endl;
+    ++i;
+  }
 
   // basic checks
   BOOST_CHECK_EQUAL(ds.size(), 12);
@@ -223,3 +232,29 @@ BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
 //   std::cout << "Shuffle: " << kl << std::endl;
 //   BOOST_CHECK_SMALL(kl, 1e-10);
 // }
+
+BOOST_AUTO_TEST_CASE(test_load) {
+  int argc = boost::unit_test::framework::master_test_suite().argc;
+  BOOST_REQUIRE(argc > 1);
+  std::string dir = boost::unit_test::framework::master_test_suite().argv[1];
+  
+  universe u;
+  symbolic_format format;
+  vector_memory_dataset<> ds;
+  format.load_config(dir + "/vector_format.cfg", u);
+  load(dir + "/vector_data.txt", format, ds);
+
+  double values[][3] = { {180, 0, 0}, {178.2, 1, 0}, {150.4, 2, 2} };
+  double weights[] = {1.0, 2.0, 0.5};
+  BOOST_CHECK_EQUAL(ds.size(), 3);
+  size_t i = 0;
+  foreach(const vector_record<>& r, ds.records(format.vector_vars())) {
+    BOOST_CHECK_CLOSE(r.values[0], values[i][0], 1e-10);
+    BOOST_CHECK_CLOSE(r.values[1], values[i][1], 1e-10);
+    BOOST_CHECK_CLOSE(r.values[2], values[i][2], 1e-10);
+    BOOST_CHECK_EQUAL(r.weight, weights[i]);
+    ++i;
+  }
+
+  save("vector_data.tmp", format, ds);
+}

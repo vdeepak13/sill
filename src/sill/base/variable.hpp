@@ -12,7 +12,6 @@
 #include <sill/base/concepts.hpp>
 #include <sill/base/stl_util.hpp>
 #include <sill/range/algorithm.hpp>
-#include <sill/range/converted.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/range/forward_range.hpp>
 
@@ -91,7 +90,7 @@ namespace sill {
     enum variable_typenames {FINITE_VARIABLE, VECTOR_VARIABLE};
 
     //! Returns the dynamic type of this variable as an enumeration
-    variable_typenames get_variable_type() const;
+    variable_typenames type() const;
 
 
     // Private data members and constructors
@@ -182,25 +181,6 @@ namespace sill {
     concept_assert((Variable<V>));
     return intersect(t, s);
   }
-
-  /**
-   * Returns the union of two (different) specific domain types
-   * \relates variable
-   */
-  template <typename U, typename V>
-  domain operator+(const std::set<U*>& s, const std::set<V*>& t) {
-    concept_assert((Variable<U>));
-    concept_assert((Variable<V>));
-    domain u;
-    sill::set_union(make_converted<variable*>(s),
-                    make_converted<variable*>(t),
-                    std::inserter(u, u.begin()));
-    return u;
-  }
-
-  // TODO: this function should be renamed to make_set and put into 
-  // set_operations.hpp
-  // same goes for make_vector
 
   /**
    * A convenience function that returns a domain constructed from a

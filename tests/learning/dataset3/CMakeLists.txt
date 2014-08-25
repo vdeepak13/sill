@@ -1,5 +1,0 @@
-add_executable(finite_memory_dataset finite_memory_dataset.cpp)
-add_executable(vector_memory_dataset vector_memory_dataset.cpp)
-
-add_test(finite_memory_dataset finite_memory_dataset)
-add_test(vector_memory_dataset vector_memory_dataset)

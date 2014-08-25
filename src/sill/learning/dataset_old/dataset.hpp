@@ -919,10 +919,10 @@ namespace sill {
       }
     } else if (format == "vars") {
       foreach(finite_variable* v, finite_seq)
-        out << v->name() << "\t" << v->get_variable_type() << "\t"
+        out << v->name() << "\t" << v->type() << "\t"
             << v->size() << "\n";
       foreach(vector_variable* v, vector_seq)
-        out << v->name() << "\t" << v->get_variable_type() << "\t"
+        out << v->name() << "\t" << v->type() << "\t"
             << v->size() << "\n";
     } else if (format == "tabbed") {
       foreach(const record_type& r, records()) {

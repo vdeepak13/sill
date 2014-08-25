@@ -1,7 +1,6 @@
 #ifndef SILL_FACTOR_HPP
 #define SILL_FACTOR_HPP
 
-#include <sill/base/string_functions.hpp>
 #include <sill/global.hpp>
 
 #include <sill/macros_def.hpp>
@@ -43,4 +42,4 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
-#endif // #ifndef SILL_FACTOR_HPP
+#endif

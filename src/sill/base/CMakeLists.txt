@@ -7,7 +7,6 @@ set(SILL_BASE_SOURCES
   assignment
   finite_variable
   finite_assignment_iterator
-  string_functions
   vector_variable
   vector_assignment
   PARENT_SCOPE)

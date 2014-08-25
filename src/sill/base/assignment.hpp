@@ -102,10 +102,10 @@ namespace sill {
     //==========================================================================
     //! Returns true if the assignmemnt contains a variable
     bool contains(variable* v) const {
-      if (v->get_variable_type() == variable::FINITE_VARIABLE) {
+      if (v->type() == variable::FINITE_VARIABLE) {
         return (finite_assignment::count(dynamic_cast<finite_variable*>(v)) >0);
       }
-      else if (v->get_variable_type() == variable::VECTOR_VARIABLE) {
+      else if (v->type() == variable::VECTOR_VARIABLE) {
         return (vector_assignment::count(dynamic_cast<vector_variable*>(v)) >0);
       }
       assert(false); return false;
