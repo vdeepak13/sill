@@ -17,7 +17,7 @@ int main(int argc, char** argv) {
   assert(csize>0 && csize <= nsegs);
 
   // create the DBN
-  std::vector<finite_timed_process*> procs;
+  std::vector<finite_discrete_process*> procs;
   dynamic_bayesian_network< table_factor > dbn;
   highway_dbn(nsegs, dbn, procs);
   dbn.check_valid();

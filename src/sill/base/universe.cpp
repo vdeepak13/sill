@@ -1,6 +1,6 @@
 #include <sill/base/universe.hpp>
 #include <sill/base/process.hpp>
-#include <sill/base/timed_process.hpp>
+#include <sill/base/discrete_process.hpp>
 #include <sill/macros_def.hpp>
 
 namespace sill {

@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
   bool print_joint = argc > 3 ? boost::lexical_cast<bool>(argv[3]) : true;
 
   dynamic_bayesian_network<table_factor> dbn;
-  std::vector<finite_timed_process*> procs;
+  std::vector<finite_discrete_process*> procs;
   highway_dbn(nsegs, dbn, procs);
   dbn.check_valid();
   cout << dbn << endl;

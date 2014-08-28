@@ -2,17 +2,17 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/base/timed_process.hpp>
+#include <sill/base/discrete_process.hpp>
 #include <sill/serialization/serialize.hpp>
 
 using namespace sill;
 
 struct fixture {
   fixture()
-    : p(new finite_timed_process("p", 4)),
-      q(new finite_timed_process("q", 2)) { }
-  finite_timed_process* p;
-  finite_timed_process* q;
+    : p(new finite_discrete_process("p", 4)),
+      q(new finite_discrete_process("q", 2)) { }
+  finite_discrete_process* p;
+  finite_discrete_process* q;
 };
 
 BOOST_FIXTURE_TEST_CASE(test_construct, fixture) {
@@ -48,13 +48,13 @@ BOOST_FIXTURE_TEST_CASE(test_variables, fixture) {
   
   BOOST_CHECK_EQUAL(p1, p->at(1));
 
-  std::set<finite_timed_process*> procs = make_domain(p, q);
+  std::set<finite_discrete_process*> procs = make_domain(p, q);
   finite_domain pqt = make_domain(pt, qt);
   finite_domain pq1 = make_domain(p1, q1);
   BOOST_CHECK_EQUAL(pqt, variables(procs, current_step));
   BOOST_CHECK_EQUAL(pq1, variables(procs, 1));
-  BOOST_CHECK_EQUAL(procs, processes<finite_timed_process>(pqt));
-  BOOST_CHECK_EQUAL(procs, processes<finite_timed_process>(pq1));
+  BOOST_CHECK_EQUAL(procs, processes<finite_discrete_process>(pqt));
+  BOOST_CHECK_EQUAL(procs, processes<finite_discrete_process>(pq1));
 }
 
 // TODO: serialization

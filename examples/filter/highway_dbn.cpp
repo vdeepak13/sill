@@ -53,7 +53,7 @@ typedef sill::dynamic_bayesian_network<sill::table_factor> dbn_type;
 
 void highway_dbn(std::size_t n, 
                  dbn_type& dbn,
-                 std::vector<sill::finite_timed_process*>& procs) {
+                 std::vector<sill::finite_discrete_process*>& procs) {
   using namespace sill;
   dbn.clear();
   procs.clear();
@@ -63,14 +63,14 @@ void highway_dbn(std::size_t n,
   finite_var_vector vars_t1;
   for(size_t i = 0; i < n; i++) {
     std::string istr = boost::lexical_cast<std::string>(i);
-    finite_timed_process* p = new finite_timed_process("S" + istr, 3);
+    finite_discrete_process* p = new finite_discrete_process("S" + istr, 3);
     procs.push_back(p);
     vars_t.push_back(p->current());
     vars_t1.push_back(p->next());
   }
 
-//   finite_timed_process* obs_up = new finite_timed_process("Z_up", 3);
-//   finite_timed_process* obs_dn = new finite_timed_process("Z_dn", 3);
+//   finite_discrete_process* obs_up = new finite_discrete_process("Z_up", 3);
+//   finite_discrete_process* obs_dn = new finite_discrete_process("Z_dn", 3);
   
   // Setup the prior model
   for(size_t i = 0; i < n; i++) {

@@ -4,7 +4,7 @@
 #include <iosfwd>
 
 #include <sill/global.hpp>
-#include <sill/base/timed_process.hpp>
+#include <sill/base/discrete_process.hpp>
 #include <sill/graph/directed_graph.hpp>
 #include <sill/model/bayesian_network.hpp>
 
@@ -31,7 +31,7 @@ namespace sill {
     typedef typename F::variable_type variable_type;
 
     //! The type of processes used in this network
-    typedef timed_process<variable_type> process_type;
+    typedef discrete_process<variable_type> process_type;
    
     /*
     typedef typename base::edge edge;

@@ -1,6 +1,6 @@
 namespace sill {
   template <typename V>
-  class timed_process;
+  class discrete_process;
 }
 
 #ifndef SILL_TIMED_PROCESS_HPP
@@ -25,11 +25,11 @@ namespace sill {
   //! @{
 
   //! A constant that represents the current time step
-  //! \relates timed_process
+  //! \relates discrete_process
   static const int current_step = INT_MAX - 1;
 
   //! A constant that represents the next time step
-  //! \relates timed_process
+  //! \relates discrete_process
   static const int next_step = INT_MAX;
 
   /**
@@ -40,7 +40,7 @@ namespace sill {
    *        variables, the user needs to specialize this template.
    */
   template <typename V> 
-  class timed_process : public process {
+  class discrete_process : public process {
     concept_assert((Variable<V>));
 
     // Public type and constant declarations
@@ -88,14 +88,14 @@ namespace sill {
     //==========================================================================
   public:
     //! Default constructor (only used by serialization)
-    timed_process():var_current(NULL), var_next(NULL) { }
+    discrete_process():var_current(NULL), var_next(NULL) { }
 
     //! Constructs a generic process
-    timed_process(const std::string& name, size_t size) 
+    discrete_process(const std::string& name, size_t size) 
       : process(name), size_(size), var_current(NULL), var_next(NULL) { }
     
     //! Deletes the allocated processes
-    ~timed_process() {
+    ~discrete_process() {
       typedef std::pair<int, variable_type*> int_variable_pair;
       if(var_current) delete var_current;
       if(var_next) delete var_next;
@@ -129,7 +129,7 @@ namespace sill {
       variable_type*& var = vars[step];
       if (var == NULL) {
         std::string step_str = boost::lexical_cast<std::string>(step);
-        process* p = const_cast<timed_process*>(this);
+        process* p = const_cast<discrete_process*>(this);
         var = new variable_type(name() + ":" + step_str, size_, p, step);
       }
       return var;
@@ -141,7 +141,7 @@ namespace sill {
      */
     variable_type* current() const {
       if (var_current == NULL) {
-        process* p = const_cast<timed_process*>(this);
+        process* p = const_cast<discrete_process*>(this);
         var_current =
           new variable_type(name() + ":t", size_, p, int(current_step));
       }
@@ -154,7 +154,7 @@ namespace sill {
      */
     variable_type* next() const {
       if (var_next == NULL) {
-        process* p = const_cast<timed_process*>(this);
+        process* p = const_cast<discrete_process*>(this);
         var_next =
           new variable_type(name() + ":t'", size_, p, int(next_step));
       }
@@ -173,17 +173,17 @@ namespace sill {
       return at(index);
     }
 
-  }; // class timed_process  
+  }; // class discrete_process  
 
   //! A timed process over finite variables
-  typedef timed_process<finite_variable> finite_timed_process;
+  typedef discrete_process<finite_variable> finite_discrete_process;
 
   //! A timed process over vector variables
-  typedef timed_process<vector_variable> vector_timed_process;
+  typedef discrete_process<vector_variable> vector_discrete_process;
 
   //! Returns a subset of variables at the specified time step.  All
   //! variables must be indexed by int, or else boost::bad_any_cast is thrown.
-  //! \relates timed_process
+  //! \relates discrete_process
   template <typename Variable>
   std::set<Variable*> intersect(const std::set<Variable*>& vars, int step) {
     std::set<Variable*> result;
@@ -197,16 +197,16 @@ namespace sill {
 
   //! Serializer 
   template <typename V>
-  oarchive& serialize(oarchive& ar, timed_process<V>* const &p ) {
+  oarchive& serialize(oarchive& ar, discrete_process<V>* const &p ) {
     ar << (dynamic_cast<process* const>(p));
     return ar;
   }
   
   template <typename V>
-  iarchive& deserialize(iarchive& ar, timed_process<V>* &p) {
+  iarchive& deserialize(iarchive& ar, discrete_process<V>* &p) {
     process* tmp = NULL;
     ar >> tmp;
-    p = dynamic_cast<timed_process<V>* >(tmp);
+    p = dynamic_cast<discrete_process<V>* >(tmp);
     return ar;
   }
 

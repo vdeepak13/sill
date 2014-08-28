@@ -1,7 +1,7 @@
 #ifndef SILL_INFERENCE_INTERFACES_HPP
 #define SILL_INFERENCE_INTERFACES_HPP
 
-#include <sill/base/timed_process.hpp>
+#include <sill/base/discrete_process.hpp>
 #include <sill/factor/concepts.hpp>
 
 #include <sill/macros_def.hpp>
@@ -22,7 +22,7 @@ namespace sill {
 
     typedef typename F::domain_type domain_type;
 
-    typedef timed_process<variable_type> process_type;
+    typedef discrete_process<variable_type> process_type;
 
   public:
     //! Destructor

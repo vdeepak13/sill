@@ -22,7 +22,7 @@ namespace sill {
   public:
     typedef typename F::variable_type variable_type;
     typedef typename F::domain_type domain_type;
-    typedef timed_process<variable_type> process_type;
+    typedef discrete_process<variable_type> process_type;
     
     // Private data members
     // =========================================================================
