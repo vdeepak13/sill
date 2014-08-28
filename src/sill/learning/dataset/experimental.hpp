@@ -2,7 +2,7 @@ namespace sill {
 
   class finite_timed_dataset {
 
-    typedef finite_timed_process    argument_type;
+    typedef finite_discrete_process    argument_type;
     typedef finite_timed_domain     domain_type;
     typedef finite_timed_vector     vector_type;
     typedef finite_timed_assignment assignment_type;
@@ -30,7 +30,7 @@ namespace sill {
     records(const finite_timed_vector& args) const;
 
     sliding_view<finite_timed_dataset>
-    sliding(finite_timed_process p, size_t history) const;
+    sliding(finite_discrete_process p, size_t history) const;
 
     fixed_view<finite_timed_dataset>
     fixed(size_t time = 0) const;

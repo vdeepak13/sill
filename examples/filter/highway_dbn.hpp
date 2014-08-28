@@ -4,7 +4,7 @@
 
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/dynamic_bayesian_network.hpp>
-#include <sill/base/timed_process.hpp>
+#include <sill/base/discrete_process.hpp>
 
 /**
  * Makes a DBN modeling traffic speed on a highway divided into a
@@ -15,4 +15,4 @@
  **/
 void highway_dbn(std::size_t n, 
                  sill::dynamic_bayesian_network<sill::table_factor>& dbn,
-                 std::vector<sill::finite_timed_process*>& procs);
+                 std::vector<sill::finite_discrete_process*>& procs);

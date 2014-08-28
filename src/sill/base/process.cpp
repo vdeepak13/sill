@@ -1,6 +1,6 @@
 #include <sill/base/process.hpp>
 #include <sill/base/universe.hpp>
-#include <sill/base/timed_process.hpp>
+#include <sill/base/discrete_process.hpp>
 #include <iostream>
 
 namespace sill {
@@ -11,10 +11,10 @@ namespace sill {
   }
 
   process::process_typenames process::get_process_type() const {
-    if (typeid(*this) == typeid(const timed_process<finite_variable>)) {
+    if (typeid(*this) == typeid(const discrete_process<finite_variable>)) {
       return process::TIMED_PROCESS_FINITE;
     }
-    else if (typeid(*this) == typeid(const timed_process<vector_variable>)) {
+    else if (typeid(*this) == typeid(const discrete_process<vector_variable>)) {
       return process::TIMED_PROCESS_VECTOR;
     }
     assert(false);
@@ -58,10 +58,10 @@ namespace sill {
 
     switch(ptype) {
     case process::TIMED_PROCESS_FINITE:
-      p = new timed_process<finite_variable>;
+      p = new discrete_process<finite_variable>;
       break;
     case process::TIMED_PROCESS_VECTOR:
-      p = new timed_process<vector_variable>;
+      p = new discrete_process<vector_variable>;
       break;
     default:
       assert(false);
