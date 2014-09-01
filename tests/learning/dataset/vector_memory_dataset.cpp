@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE(test_load) {
   double weights[] = {1.0, 2.0, 0.5};
   BOOST_CHECK_EQUAL(ds.size(), 3);
   size_t i = 0;
-  foreach(const vector_record<>& r, ds.records(format.vector_vars())) {
+  foreach(const vector_record<>& r, ds.records(format.vector_var_vec())) {
     BOOST_CHECK_CLOSE(r.values[0], values[i][0], 1e-10);
     BOOST_CHECK_CLOSE(r.values[1], values[i][1], 1e-10);
     BOOST_CHECK_CLOSE(r.values[2], values[i][2], 1e-10);

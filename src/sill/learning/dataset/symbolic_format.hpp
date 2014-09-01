@@ -150,46 +150,134 @@ namespace sill {
       : skip_rows(0), skip_cols(0), weighted(false) { }
 
     /**
-     * Returns the vector of variables cast to finite_variable.
-     * \throw domain_error if some of the variables are not finite.
+     * Returns true if all the variables in the format are finite.
      */
-    finite_var_vector finite_vars() const {
+    bool is_finite() const {
+      foreach (const variable_info& info, vars) {
+        if (!info.is_finite()) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Returns the set of all finite variables in the format.
+     */
+    finite_domain finite_vars() const {
+      return make_domain(finite_var_vec());
+    }
+
+    /**
+     * Returns the vector of all finite variables in the format.
+     */
+    finite_var_vector finite_var_vec() const {
       finite_var_vector result;
       foreach (const variable_info& info, vars) {
         if (info.is_finite()) {
           result.push_back(info.as_finite());
-        } else {
-          throw std::domain_error("Variable " + info.name() + " is not finite");
         }
       }
       return result;
     }
 
     /**
-     * Returns the vector of variables cast to vector_variable.
-     * \throw domain_error if some of the variables are not vector.
+     * Returns a finite variable with the given name.
+     * \throw std::out_of_range if the variable with the name is not present
+     * \throw std::domain_error if the variable is present but is not finite
      */
-    vector_var_vector vector_vars() const {
+    finite_variable* finite_var(const std::string& name) const {
+      foreach (const variable_info& info, vars) {
+        if (info.name() == name) {
+          if (info.is_finite()) {
+            return info.as_finite();
+          } else {
+            throw std::domain_error("Variable " + name + " if not finite");
+          }
+        }
+      }
+      throw std::out_of_range("Could not find the variable " + name);
+    }
+
+    /**
+     * Returns true if all the variables in the format are vector.
+     */
+    bool is_vector() const {
+      foreach (const variable_info& info, vars) {
+        if (!info.is_vector()) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    /**
+     * Returns the set of all vector variables in the format.
+     */
+    vector_domain vector_vars() const {
+      return make_domain(vector_var_vec());
+    }
+
+    /**
+     * Returns the vector of all vector variables in the format.
+     */
+    vector_var_vector vector_var_vec() const {
       vector_var_vector result;
       foreach (const variable_info& info, vars) {
         if (info.is_vector()) {
           result.push_back(info.as_vector());
-        } else {
-          throw std::domain_error("Variable " + info.name() + " is not vector");
         }
       }
       return result;
+    }
+
+    /**
+     * Returns a vector variable with the given name.
+     * \throw std::out_of_range if the variable with the name is not present
+     * \throw std::domain_error if the variable is present but is not finite
+     */
+    vector_variable* vector_var(const std::string& name) const {
+      foreach (const variable_info& info, vars) {
+        if (info.name() == name) {
+          if (info.is_vector()) {
+            return info.as_vector();
+          } else {
+            throw std::domain_error("Variable " + name + " if not a vector");
+          }
+        }
+      }
+      throw std::out_of_range("Could not find the variable " + name);
+    }
+
+    /**
+     * Returns the set of variables in this format.
+     */
+    domain all_vars() const {
+      return make_domain(all_var_vec());
     }
 
     /**
      * Returns the vector of variables in this format.
      */
-    var_vector all_vars() const {
+    var_vector all_var_vec() const {
       var_vector result;
       foreach (const variable_info& info, vars) {
         result.push_back(info.var());
       }
       return result;
+    }
+
+    /**
+     * Returns a variable with the given name.
+     * \throw std::out_of_range if the variable with the name is not present
+     */
+    variable* var(const std::string& name) const {
+      foreach (const variable_info& info, vars) {
+        if (info.name() == name) {
+          return info.as_vector();
+        }
+      }
+      throw std::out_of_range("Could not find the variable " + name);
     }
 
     /**
@@ -235,7 +323,7 @@ namespace sill {
      *
      * [options]
      * separator="\t" (optional)
-     * skip_rows=1   (optional)
+     * skip_rows=1    (optional)
      * skip_cols=0    (optional)
      * weighted=1     (optional)
      *

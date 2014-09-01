@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include <sill/macros_def.hpp>
 
@@ -16,12 +17,16 @@ namespace sill {
    * Loads a finite memory dataset using the symbolic format.
    * All the variables in the format must be finite. The dataset
    * must not be initialized.
+   * \throw std::domain_error if the format contains variables that are not finite
    * \relates finite_memory_dataset
    */
   void load(const std::string& filename,
             const symbolic_format& format,
             finite_memory_dataset& ds) {
-    finite_var_vector vars = format.finite_vars();
+    if (!format.is_finite()) {
+      throw std::domain_error("The dataset contains variable(s) that are not finite");
+    }
+    finite_var_vector vars = format.finite_var_vec();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -47,12 +52,16 @@ namespace sill {
   /**
    * Saves a finite dataset using the symbolic format.
    * All the variables in the format must be finite.
+   * \throw std::domain_error if the format contains variables that are not finite
    * \relates finite_dataset, finite_memory_dataset
    */
   void save(const std::string& filename,
             const symbolic_format& format,
             const finite_dataset& data) {
-    finite_var_vector vars = format.finite_vars();
+    if (!format.is_finite()) {
+      throw std::domain_error("The dataset contains variable(s) that are not finite");
+    }
+    finite_var_vector vars = format.finite_var_vec();
     
     std::ofstream out(filename);
     if (!out) {

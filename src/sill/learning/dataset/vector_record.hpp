@@ -1,5 +1,5 @@
-#ifndef SILL_VECTOR_RECORD2_HPP
-#define SILL_VECTOR_RECORD2_HPP
+#ifndef SILL_VECTOR_RECORD_HPP
+#define SILL_VECTOR_RECORD_HPP
 
 #include <armadillo>
 #include <iostream>

@@ -14,12 +14,12 @@ namespace sill {
    */
   template <typename L>
   struct Learner {
-    //! The type this learner uses to represent real numbers.
-    //! Should match teh real type of the model.
-    typedef typename L::real_type real_type;
-
     //! The model type produced by this learner
     typedef typename L::model_type model_type;
+
+    //! The type this learner uses to represent real numbers.
+    //! Should match the real type of the model.
+    typedef typename L::real_type real_type;
 
     //! The dataset type used to train the model
     typedef typename L::dataset_type dataset_type;

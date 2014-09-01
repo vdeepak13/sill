@@ -1,5 +1,5 @@
-#ifndef SILL_FINITE_RECORD2_HPP
-#define SILL_FINITE_RECORD2_HPP
+#ifndef SILL_FINITE_RECORD_HPP
+#define SILL_FINITE_RECORD_HPP
 
 #include <iostream>
 #include <vector>

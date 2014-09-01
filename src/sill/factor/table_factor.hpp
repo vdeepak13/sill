@@ -16,6 +16,7 @@
 #include <sill/factor/factor.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional.hpp>
+#include <sill/learning/dataset/finite_dataset.hpp>
 #include <sill/learning/dataset_old/finite_record.hpp>
 #include <sill/math/is_finite.hpp>
 #include <sill/range/algorithm.hpp>
@@ -26,9 +27,6 @@
 #include <sill/macros_def.hpp>
 
 namespace sill {
-
-  // Forward declaration
-  class finite_dataset;
 
   /**
    * A table factor represents a function of a set of finite variables.
@@ -260,7 +258,14 @@ namespace sill {
       return std::log(v(i));
     }
 
-
+    //! Returns the log-likelihood of a dataset
+    double log_likelihood(const finite_dataset& ds) const {
+      double result = 0.0;
+      foreach (const finite_record& r, ds.records(arg_seq)) {
+        result += r.weight * std::log(table()(r.values));
+      }
+      return result;
+    }
 
     // Setters
     // -------------------------------------------------------------------

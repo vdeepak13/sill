@@ -7,6 +7,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include <sill/macros_def.hpp>
 
@@ -16,13 +17,17 @@ namespace sill {
    * Loads a vector memory dataset using the symbolic format.
    * All the variables in the format must be vector. The dataset
    * must not be initialized.
+   * \throw std::domain_error if the format contains variables that are not vector
    * \relates vector_memory_dataset
    */
   template <typename T>
   void load(const std::string& filename,
             const symbolic_format& format,
             vector_memory_dataset<T>& ds) {
-    vector_var_vector vars = format.vector_vars();
+    if (!format.is_vector()) {
+      throw std::domain_error("The dataset contains variable(s) that are not vector");
+    }
+    vector_var_vector vars = format.vector_var_vec();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -48,13 +53,17 @@ namespace sill {
   /**
    * Saves a vector dataset using the symbolic format.
    * All the variables in the format must be vector.
+   * \throw std::domain_error if the format contains variables that are not vector
    * \relates vector_dataset, vector_memory_dataset
    */
   template <typename T>
   void save(const std::string& filename,
             const symbolic_format& format,
             const vector_dataset<T>& data) {
-    vector_var_vector vars = format.vector_vars();
+    if (!format.is_vector()) {
+      throw std::domain_error("The dataset contains variable(s) that are not vector");
+    }
+    vector_var_vector vars = format.vector_var_vec();
     
     std::ofstream out(filename);
     if (!out) {
