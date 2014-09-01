@@ -1,5 +1,5 @@
-#ifndef SILL_VECTOR_RECORD_HPP
-#define SILL_VECTOR_RECORD_HPP
+#ifndef SILL_VECTOR_RECORD_OLD_HPP
+#define SILL_VECTOR_RECORD_OLD_HPP
 
 #include <map>
 

@@ -27,11 +27,6 @@ namespace sill {
                const param_type& params = param_type())
       : dataset(dataset), params(params) { }
 
-    //! Returns the marginal distribution over a subset of variables
-    table_factor operator()(const finite_domain& vars) const {
-      return operator()(make_vector(vars));
-    }
-     
     //! Returns the marginal distribution over a sequence of variables
     table_factor operator()(const finite_var_vector& vars) const {
       table_factor factor(vars, params.smoothing);
@@ -42,6 +37,19 @@ namespace sill {
       return factor;
     }
 
+    //! Returns the marginal distribution over a subset of variables
+    table_factor operator()(const finite_domain& vars) const {
+      return operator()(make_vector(vars));
+    }
+
+    //! Returns the conditional distributino over a subset of variables
+    table_factor operator()(const finite_domain& head,
+                            const finite_domain& tail) const {
+      assert(set_disjoint(head, tail));
+      table_factor f = operator()(set_union(head, tail));
+      return f /= f.marginal(tail);
+    }
+     
   private:
     const finite_dataset* dataset;
     param_type params;

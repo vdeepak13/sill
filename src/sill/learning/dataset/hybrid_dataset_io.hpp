@@ -21,7 +21,7 @@ namespace sill {
   void load(const std::string& filename,
             const symbolic_format& format,
             hybrid_memory_dataset<T>& ds) {
-    var_vector vars = format.all_vars();
+    var_vector vars = format.all_var_vec();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -65,7 +65,7 @@ namespace sill {
   void save(const std::string& filename,
             const symbolic_format& format,
             const hybrid_dataset<T>& data) {
-    var_vector vars = format.all_vars();
+    var_vector vars = format.all_var_vec();
     
     std::ofstream out(filename);
     if (!out) {

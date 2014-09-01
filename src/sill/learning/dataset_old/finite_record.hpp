@@ -1,5 +1,5 @@
-#ifndef SILL_FINITE_RECORD_HPP
-#define SILL_FINITE_RECORD_HPP
+#ifndef SILL_FINITE_RECORD_OLD_HPP
+#define SILL_FINITE_RECORD_OLD_HPP
 
 #include <map>
 
