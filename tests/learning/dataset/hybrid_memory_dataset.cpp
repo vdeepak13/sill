@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ds.initialize(fv, vv);
   
   // insert a record
-  hybrid_record<> r(3, 2);
+  hybrid_record<> r(fv, vv);
   r.values.finite[0] = 2;
   r.values.finite[1] = 0;
   r.values.finite[2] = 1;
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE(test_iterator_comparisons) {
   
   hybrid_memory_dataset<> ds;
   ds.initialize(v);
-  ds.insert(hybrid_record<>(3, 6));
+  ds.insert(hybrid_record<>(fv, vv));
 
   hybrid_dataset<>::record_iterator it1, end1;
   boost::tie(it1, end1) = ds.records(v);

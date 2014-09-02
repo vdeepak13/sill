@@ -1,6 +1,8 @@
 #ifndef SILL_VECTOR_RECORD_HPP
 #define SILL_VECTOR_RECORD_HPP
 
+#include <sill/base/vector_variable.hpp>
+
 #include <armadillo>
 #include <iostream>
 
@@ -10,6 +12,7 @@ namespace sill {
 
   template <typename T = double>
   struct vector_record {
+    vector_var_vector variables;
     arma::Col<T> values;
     T weight;
 
@@ -20,20 +23,33 @@ namespace sill {
     vector_record()
       : weight(0.0) { }
 
-    explicit vector_record(size_t n, T weight = 0.0)
-      : values(n, arma::fill::zeros), weight(weight) { }
+    explicit vector_record(const vector_var_vector& vars, T weight = 0.0)
+      : variables(vars),
+        values(vector_size(vars), arma::fill::zeros),
+        weight(weight) { }
 
-    vector_record(const arma::Col<T>& values, T weight)
-      : values(values), weight(weight) { }
-
-    void resize(size_t n) {
-      values = arma::zeros<arma::Col<T> >(n);
-    }
+    vector_record(const vector_var_vector& vars,
+                  const arma::Col<T>& values,
+                  T weight)
+      : variables(vars),
+        values(values),
+        weight(weight) { }
 
     bool operator==(const vector_record& other) const {
       return values.size() == other.values.size()
         && all(values == other.values)
         && weight == other.weight;
+    }
+
+    void extract(vector_assignment& a) const {
+      size_t col = 0;
+      foreach (vector_variable* v, variables) {
+        arma::Col<T>& value = a[v];
+        value.set_size(v->size());
+        for (size_t i = 0; i < v->size(); ) {
+          value[i++] = values[col++];
+        }
+      }
     }
   };
 

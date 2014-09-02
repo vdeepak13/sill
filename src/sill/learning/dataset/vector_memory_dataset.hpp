@@ -3,6 +3,7 @@
 
 #include <sill/learning/dataset/slice_view.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
+#include <sill/math/permutations.hpp>
 
 #include <algorithm>
 #include <stdexcept>
@@ -84,7 +85,7 @@ namespace sill {
 
     vector_record<T> record(size_t row, const vector_var_vector& vars) const {
       assert(row < num_inserted);
-      vector_record<T> result(vector_size(vars), weights[row]);
+      vector_record<T> result(vars, weights[row]);
       size_t col = 0;
       foreach(vector_variable* v, vars) {
         T* begin = col_ptr[safe_get(arg_index, v)] + row * v->size();
@@ -138,6 +139,24 @@ namespace sill {
       }
     }
 
+    //! Randomly permutes the rows
+    template <typename RandomNumberGenerator>
+    void shuffle(RandomNumberGenerator& rng) {
+      permute(randperm(num_inserted, rng));
+    }
+
+    //! Swaps this dataset with the other
+    void swap(vector_memory_dataset& ds) {
+      vector_dataset<T>::swap(ds);
+      std::swap(arg_index, ds.arg_index);
+      std::swap(data,      ds.data);
+      std::swap(weights,   ds.weights);
+      std::swap(col_ptr,   ds.col_ptr);
+      std::swap(num_allocated, ds.num_allocated);
+      std::swap(num_inserted,  ds.num_inserted);
+      std::swap(num_cols,      ds.num_cols);
+    }
+
     // Protected functions
     //========================================================================
   protected:
@@ -167,6 +186,26 @@ namespace sill {
       }
       weights[num_inserted] = weight;
       ++num_inserted;
+    }
+
+    //! Reorders the rows according to the given permutation
+    void permute(const std::vector<size_t>& permutation) {
+      assert(permutation.size() == num_inserted);
+      vector_memory_dataset ds;
+      ds.initialize(args, num_inserted);
+      arma::Col<T> values(num_cols);
+      for (size_t row = 0; row < num_inserted; ++row) {
+        size_t prow = permutation[row];
+        size_t col = 0;
+        for (size_t i = 0; i < args.size(); ++i) {
+          size_t vsize = args[i]->size();
+          T* begin = col_ptr[i] + prow * vsize;
+          std::copy(begin, begin + vsize, &values[col]);
+          col += vsize;
+        }
+        ds.insert(values, weights[prow]);
+      }
+      swap(ds);
     }
 
     aux_data* init(const vector_var_vector& args,

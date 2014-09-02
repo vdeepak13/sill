@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_parse_escaped) {
 
 BOOST_AUTO_TEST_CASE(test_escape_string) {
   BOOST_CHECK_EQUAL(escape_string("plain text"), "\"plain text\"");
-  BOOST_CHECK_EQUAL(escape_string("text\twith\ttabs"), "\"text\\twith\\tabs\"");
+  BOOST_CHECK_EQUAL(escape_string("text\twith\ttabs"), "\"text\\twith\\ttabs\"");
   BOOST_CHECK_EQUAL(escape_string("text\"with\"quotes"), "\"text\\\"with\\\"quotes\"");
 }
 
@@ -62,10 +62,10 @@ BOOST_AUTO_TEST_CASE(test_conversions) {
   BOOST_CHECK_EQUAL(parse_string<double>("1.0"), 1.0);
   BOOST_CHECK_EQUAL(parse_string<float>("1.0"), 1.0);
   BOOST_CHECK(boost::math::isnan(parse_string<double>("nan")));
-  BOOST_CHECK_THROW(parse_string<long>("a"), std::runtime_error);
-  BOOST_CHECK_THROW(parse_string<long>("1 "), std::runtime_error);
-  BOOST_CHECK_THROW(parse_string<long>(""), std::runtime_error);
-  BOOST_CHECK_THROW(parse_string<long>(std::string("")), std::runtime_error);
+  BOOST_CHECK_THROW(parse_string<long>("a"), std::invalid_argument);
+  BOOST_CHECK_THROW(parse_string<long>("1 "), std::invalid_argument);
+  BOOST_CHECK_THROW(parse_string<long>(""), std::invalid_argument);
+  BOOST_CHECK_THROW(parse_string<long>(std::string("")), std::invalid_argument);
 }
 
 BOOST_AUTO_TEST_CASE(test_join) {

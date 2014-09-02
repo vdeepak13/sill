@@ -78,13 +78,13 @@ namespace sill {
     //! Implements finite_dataset::record
     finite_record record(size_t row, const finite_var_vector& vars) const {
       hybrid_record<T> r = record(row, var_vector(vars.begin(), vars.end()));
-      return finite_record(r.values.finite, r.weight);
+      return finite_record(r.finite_vars, r.values.finite, r.weight);
     }
 
     //! Implements vector_dataset::record
     vector_record<T> record(size_t row, const vector_var_vector& vars) const {
       hybrid_record<T> r = record(row, var_vector(vars.begin(), vars.end()));
-      return vector_record<T>(r.values.vector, r.weight);
+      return vector_record<T>(r.vector_vars, r.values.vector, r.weight);
     }
 
     //! Returns mutable records for the specified variables.
@@ -159,6 +159,13 @@ namespace sill {
                           vector_state_type* vector)
         : finite(finite), vector(vector) { }
     };
+
+    //! swaps the arguments of this dataset and ds
+    void swap(hybrid_dataset& ds) {
+      finite_dataset::swap(ds);
+      vector_dataset<T>::swap(ds);
+      std::swap(args, ds.args);
+    }
     
     //! initializes the data structures in the record iterator
     virtual aux_data* init(const var_vector& args,
@@ -264,10 +271,9 @@ namespace sill {
       
       // begin constructor
       record_iterator(hybrid_dataset* dataset, const var_vector& args)
-        : dataset(dataset), row(0), rows_left(0) {
+        : dataset(dataset), row(0), rows_left(0), record(args) {
         iterator_state_type state(&finite_state, &vector_state);
         aux.reset(dataset->init(args, state));
-        record.resize(finite_state.elems.size(), vector_state.elems.size());
         load_advance();
       }
 
@@ -366,10 +372,9 @@ namespace sill {
       
       // begin constructor
       const_record_iterator(const hybrid_dataset* dataset, const var_vector& args)
-        : dataset(dataset), row(0), rows_left(0) {
+        : dataset(dataset), row(0), rows_left(0), record(args) {
         iterator_state_type state(&finite_state, &vector_state);
         aux.reset(dataset->init(args, state));
-        record.resize(finite_state.elems.size(), vector_state.elems.size());
         load_advance();
       }
 

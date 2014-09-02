@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ds.initialize(v);
   
   // insert a record
-  vector_record<> r(4);
+  vector_record<> r(v);
   r.values[0] = 2.0;
   r.values[1] = 0.0;
   r.values[2] = 1.0;
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(test_iterator_comparisons) {
   
   vector_memory_dataset<> ds;
   ds.initialize(v);
-  ds.insert(vector_record<>(3));
+  ds.insert(vector_record<>(v));
 
   vector_dataset<>::record_iterator it1, end1;
   boost::tie(it1, end1) = ds.records(v);
@@ -223,15 +223,15 @@ BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
   BOOST_CHECK_SMALL(diff, 0.2);
 }
 
-// BOOST_FIXTURE_TEST_CASE(test_shuffle, fixture) {
-//   factor_mle<moment_gaussian> estim(&ds);
-//   moment_gaussian mle1 = estim(v);
-//   ds.shuffle(rng);
-//   moment_gaussian mle2 = estim(v);
-//   double kl = mle1.relative_entropy(mle2);
-//   std::cout << "Shuffle: " << kl << std::endl;
-//   BOOST_CHECK_SMALL(kl, 1e-10);
-// }
+BOOST_FIXTURE_TEST_CASE(test_shuffle, fixture) {
+  factor_mle<moment_gaussian> estim(&ds);
+  moment_gaussian mle1 = estim(v);
+  ds.shuffle(rng);
+  moment_gaussian mle2 = estim(v);
+  double kl = mle1.relative_entropy(mle2);
+  std::cout << "Shuffle: " << kl << std::endl;
+  BOOST_CHECK_SMALL(kl, 1e-10);
+}
 
 BOOST_AUTO_TEST_CASE(test_load) {
   int argc = boost::unit_test::framework::master_test_suite().argc;

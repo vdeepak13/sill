@@ -4,10 +4,12 @@
 #include <sill/learning/dataset/finite_dataset_io.hpp>
 #include <sill/learning/factor_mle/table_factor.hpp>
 #include <sill/learning/parameter/naive_bayes_learner.hpp>
+#include <sill/learning/validation/cross_validation.hpp>
 
 int main(int argc, char** argv) {
   using namespace sill;
   std::string data_dir = argc > 1 ? argv[1] : "";
+  size_t num_folds = 10;
 
   // load the dataset format
   universe u;
@@ -28,14 +30,28 @@ int main(int argc, char** argv) {
   // train the model on all of the data,
   // using the default regularization parameters (set to 0)
   naive_bayes<table_factor> model;
-  double log_likelihood = learner.learn(ds, model);
-  std::cout << "Log-likelihood of the model: " << log_likelihood << std::endl;
-  
-//   // shuffle the 
-//   boost::mt19937 rng;
-//   ds.shuffle(rng);
+  double ll_model = learner.learn(ds, model);
+  double ll_prior = model.prior().log_likelihood(ds);
+  double ll_cond  = model.conditional_log_likelihood(ds);
+  std::cout << "Log-likelihood of the model: " << ll_model << std::endl
+            << "Log-likelihood of the prior: " << ll_prior << std::endl
+            << "Conditional log-likelihood:  " << ll_cond << std::endl;
 
-// todo trim the values
-  
+  // compute the views for the k-fold cross-validation
+  boost::mt19937 rng;
+  ds.shuffle(rng); // order the rows randomly
+  double ll_cond2 = model.conditional_log_likelihood(ds);
+  std::cout << "Verify cond. log-likelihood: " << ll_cond2 << std::endl;
+  std::vector<slice_view<finite_dataset> > train, test;
+  kfold_split(ds, num_folds, train, test); // for each fold, extract train&test
+
+  // compute the k-fold cross-validation error
+  double ll_test = 0.0;
+  for (size_t k = 0; k < num_folds; ++k) {
+    learner.learn(train[k], model);
+    ll_test += model.conditional_log_likelihood(test[k]);
+  }
+  std::cout << num_folds << "-fold CV log-likelihood: " << ll_test << std::endl;
+
   return 0;
 }

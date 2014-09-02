@@ -11,23 +11,27 @@ namespace sill {
 
   template <typename T = double>
   struct hybrid_record {
+    finite_var_vector finite_vars;
+    vector_var_vector vector_vars;
     hybrid_values<T> values;
     T weight;
     
     hybrid_record()
       : weight(0.0) { }
 
-    hybrid_record(size_t nfinite, size_t nvector, T weight = 0.0)
-      : values(nfinite, nvector), weight(weight) { }
-
-    hybrid_record(const std::vector<size_t>& finite,
-                  const arma::Col<T>& vector,
-                  T weight)
-      : values(finite, vector), weight(weight) { }
-
-    void resize(size_t nfinite, size_t nvector) {
-      values.resize(nfinite, nvector);
+    explicit hybrid_record(const var_vector& vars, T weight = 0.0)
+      : weight(weight) {
+      split(vars, finite_vars, vector_vars);
+      values.resize(finite_vars.size(), vector_size(vector_vars));
     }
+
+    hybrid_record(const finite_var_vector& finite_vars,
+                  const vector_var_vector& vector_vars,
+                  T weight = 0.0)
+      : finite_vars(finite_vars),
+        vector_vars(vector_vars),
+        values(finite_vars.size(), vector_size(vector_vars)),
+        weight(weight) { }
 
     size_t size() const {
       return values.finite.size() + values.vector.size();
@@ -35,6 +39,21 @@ namespace sill {
 
     bool operator==(const hybrid_record& other) const {
       return values == other.values && weight == other.weight;
+    }
+
+    void extract(assignment& a) const {
+      assert(finite_vars.size() == values.finite.size());
+      for (size_t i = 0; i < finite_vars.size(); ++i) {
+        a[finite_vars[i]] = values.finite[i];
+      }
+      size_t col = 0;
+      foreach (vector_variable* v, vector_vars) {
+        arma::Col<T>& value = a[v];
+        value.set_size(v->size());
+        for (size_t i = 0; i < v->size(); ) {
+          value[i++] = values.vector[col++];
+        }
+      }
     }
   };
 

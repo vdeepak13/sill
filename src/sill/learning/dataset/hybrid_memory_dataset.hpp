@@ -5,6 +5,7 @@
 #include <sill/learning/dataset/finite_memory_dataset.hpp>
 #include <sill/learning/dataset/vector_memory_dataset.hpp>
 #include <sill/learning/dataset/slice_view.hpp>
+#include <sill/math/permutations.hpp>
 
 #include <algorithm>
 #include <stdexcept>
@@ -89,9 +90,10 @@ namespace sill {
       finite_var_vector finite_vars;
       vector_var_vector vector_vars;
       split(variables, finite_vars, vector_vars);
-      finite_record    fr = finite_ds.record(row, finite_vars);
-      vector_record<T> vr = vector_ds.record(row, vector_vars);
-      return hybrid_record<T>(fr.values, vr.values, vr.weight);
+      hybrid_record<T> result(finite_vars, vector_vars, vector_ds.weights[row]);
+      result.values.finite = finite_ds.record(row, finite_vars).values;
+      result.values.vector = vector_ds.record(row, vector_vars).values;
+      return result;
     }
 
     //! Returns a view representing a contiguous range of rows
@@ -127,11 +129,31 @@ namespace sill {
       vector_ds.insert(nrows);
     }
 
+    //! Randomly permutes the rows
+    template <typename RandomNumberGenerator>
+    void shuffle(RandomNumberGenerator& rng) {
+      permute(randperm(size(), rng));
+    }
+
+
+    //! Swaps this dataset with the other
+    void swap(hybrid_memory_dataset& other) {
+      hybrid_dataset<T>::swap(other);
+      finite_ds.swap(other.finite_ds);
+      vector_ds.swap(other.vector_ds);
+    }
+
     // Protected functions
     //========================================================================
   protected:
     typedef typename hybrid_dataset<T>::iterator_state_type iterator_state_type;
     using hybrid_dataset<T>::args;
+
+    // reorders the rows using the given permutation
+    void permute(const std::vector<size_t>& permutation) {
+      finite_ds.permute(permutation);
+      vector_ds.permute(permutation);
+    }
 
     aux_data* init(const var_vector& args, iterator_state_type& state) const {
       finite_var_vector finite_vars;

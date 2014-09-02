@@ -3,6 +3,7 @@
 
 #include <sill/learning/dataset/finite_dataset.hpp>
 #include <sill/learning/dataset/slice_view.hpp>
+#include <sill/math/permutations.hpp>
 
 #include <algorithm>
 #include <stdexcept>
@@ -81,7 +82,7 @@ namespace sill {
 
     finite_record record(size_t row, const finite_var_vector& vars) const {
       assert(row < num_inserted);
-      finite_record result(vars.size(), weights[row]);
+      finite_record result(vars, weights[row]);
       for (size_t i = 0; i < vars.size(); ++i) {
         result.values[i] = col_ptr[safe_get(arg_index, vars[i])][row];
       }
@@ -136,6 +137,24 @@ namespace sill {
       }
     }
 
+    //! Randomly permutes the rows
+    template <typename RandomNumberGenerator>
+    void shuffle(RandomNumberGenerator& rng) {
+      permute(randperm(num_inserted, rng));
+    }
+
+    //! Swaps this dataset with the other
+    void swap(finite_memory_dataset& ds) {
+      finite_dataset::swap(ds);
+      std::swap(arg_index, ds.arg_index);
+      std::swap(data,      ds.data);
+      std::swap(weights,   ds.weights);
+      std::swap(col_ptr,   ds.col_ptr);
+      std::swap(num_allocated, ds.num_allocated);
+      std::swap(num_inserted,  ds.num_inserted);
+      std::swap(num_cols,      ds.num_cols);
+    }
+
     // Protected functions
     //========================================================================
   protected:
@@ -159,6 +178,22 @@ namespace sill {
       }
       weights[num_inserted] = weight;
       ++num_inserted;
+    }
+
+    //! Reorders the rows according the given permutation
+    void permute(const std::vector<size_t>& permutation) {
+      assert(permutation.size() == num_inserted);
+      finite_memory_dataset ds;
+      ds.initialize(args, num_inserted);
+      std::vector<size_t> values(num_cols);
+      for (size_t row = 0; row < num_inserted; ++row) {
+        size_t prow = permutation[row];
+        for (size_t col = 0; col < num_cols; ++col) {
+          values[col] = col_ptr[col][prow];
+        }
+        ds.insert(values, weights[prow]);
+      }
+      swap(ds);
     }
 
     aux_data* init(const finite_var_vector& args,
