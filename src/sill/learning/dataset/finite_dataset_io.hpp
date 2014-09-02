@@ -36,7 +36,7 @@ namespace sill {
 
     std::string line;
     size_t line_number = 0;
-    finite_record r(vars.size());
+    finite_record r(vars);
     while (std::getline(in, line)) {
       std::vector<const char*> tokens;
       if (format.parse(vars.size(), line, line_number, tokens)) {

@@ -91,6 +91,11 @@ namespace sill {
   protected:
     typedef raw_record_iterator_state<vector_record<T> > iterator_state_type;
 
+    //! swaps the arguments of this dataset and ds
+    void swap(vector_dataset& ds) {
+      std::swap(args, ds.args);
+    }
+
     //! initializes the data structures in the record iterator
     virtual aux_data* init(const vector_var_vector& args,
                            iterator_state_type& state) const = 0;

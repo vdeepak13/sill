@@ -110,8 +110,10 @@ namespace sill {
           std::find(labels.begin(), labels.end(), str);
         if (it == labels.end()) {
           std::ostringstream os;
-          os << "Unknown value " << str << " for variable " << v->name();
-          throw new std::invalid_argument(os.str());
+          os << "Unknown value \"" << str
+             << "\" for variable \"" << v->name()
+             << "\"";
+          throw std::invalid_argument(os.str());
         }
         return it - labels.begin();
       }
@@ -192,11 +194,11 @@ namespace sill {
           if (info.is_finite()) {
             return info.as_finite();
           } else {
-            throw std::domain_error("Variable " + name + " if not finite");
+            throw std::domain_error("Variable \"" + name + "\" if not finite");
           }
         }
       }
-      throw std::out_of_range("Could not find the variable " + name);
+      throw std::out_of_range("Could not find the variable \"" + name + "\"");
     }
 
     /**
@@ -242,11 +244,11 @@ namespace sill {
           if (info.is_vector()) {
             return info.as_vector();
           } else {
-            throw std::domain_error("Variable " + name + " if not a vector");
+            throw std::domain_error("Variable \"" + name + "\" if not a vector");
           }
         }
       }
-      throw std::out_of_range("Could not find the variable " + name);
+      throw std::out_of_range("Could not find the variable \"" + name + "\"");
     }
 
     /**
@@ -277,7 +279,7 @@ namespace sill {
           return info.as_vector();
         }
       }
-      throw std::out_of_range("Could not find the variable " + name);
+      throw std::out_of_range("Could not find the variable \"" + name + "\"");
     }
 
     /**
@@ -339,23 +341,32 @@ namespace sill {
       foreach(const config_entry& entry, config["variables"]) {
         if (entry.second.compare(0, 7, "vector(") == 0) {
           std::string param = entry.second.substr(7, entry.second.size() - 8);
-          size_t dim = parse_string<size_t>(param);
-          if (dim == 0) {
-            throw std::out_of_range(entry.first + ": vector variables must have dim. > 0");
+          size_t dim;
+          if (!parse_string(param, dim) || dim == 0) {
+            std::string msg = 
+              "Invalid specification of vector variable \"" + entry.first +
+              "\": " + entry.second;
+            throw std::invalid_argument(msg);
           }
           vars.push_back(variable_info(u.new_vector_variable(entry.first, dim)));
         } else if (entry.second.compare(0, 7, "finite(") == 0) {
           std::string param = entry.second.substr(7, entry.second.size() - 8);
-          size_t arity = parse_string<size_t>(param);
-          if (arity <= 1) {
-            throw std::out_of_range(entry.first + ": finite variables must have arity > 1");
+          size_t arity;
+          if (!parse_string(param, arity) || arity <= 1) {
+            std::string msg = 
+              "Invalid specification of finite variable \"" + entry.first + 
+              "\": " + entry.second;
+            throw std::invalid_argument(msg);
           }
           vars.push_back(variable_info(u.new_finite_variable(entry.first, arity)));
         } else { // finite variable with named values
           std::vector<std::string> values;
-          string_split(entry.second, ",", values);
+          string_split(entry.second, ", ", values);
           if (values.size() <= 1) {
-            throw std::out_of_range(entry.first + ": finite variables must have arity > 1");
+            std::string msg =
+              "Invalid specification of finite variable \"" + entry.first +
+              "\": " + entry.second + " (must have arity > 1)";
+            throw std::invalid_argument(msg);
           }
           finite_variable* v = u.new_finite_variable(entry.first, values.size());
           vars.push_back(variable_info(v, values));
@@ -377,7 +388,8 @@ namespace sill {
         } else if (entry.first == "weighted") {
           weighted = parse_string<bool>(entry.second);
         } else {
-          std::cerr << "Invalid option \"" << entry.first << "\", ignoring" << std::endl;
+          std::cerr << "Unknown option \"" << entry.first
+                    << "\", ignoring" << std::endl;
         }
       }
     }

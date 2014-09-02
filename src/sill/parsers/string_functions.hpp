@@ -210,26 +210,27 @@ namespace sill {
 
   /**
    * Parses a string as a value of type T.
-   * \throw runtime_error if the format is invalid
+   * \throw invalid_argument if the format is invalid
    */
   template <typename T>
   T parse_string(const std::string& s) {
     T val;
     if (!parse_string(s, val)) {
-      throw std::runtime_error("Could not parse the string " + s);
+      throw std::invalid_argument("Could not parse the string \"" + s + "\"");
     }
     return val;
   }
 
   /**
    * Parses a string as a value of type T.
-   * \throw runtime_error if the format is invalid
+   * \throw invalid_argument if the format is invalid
    */
   template <typename T>
   T parse_string(const char* s) {
     T val;
     if (!parse_string(s, val)) {
-      throw std::runtime_error("Could not parse the string " + std::string(s));
+      throw std::invalid_argument("Could not parse the string \"" + 
+                                  std::string(s) + "\"");
     }
     return val;
   }

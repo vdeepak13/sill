@@ -51,7 +51,7 @@ namespace sill {
     /**
      * Learns a model using the supplied dataset and specified regularization
      * parameters for the prior and feature CPDs.
-     * \return the log-likleihood of the training set
+     * \return the log-likelihood of the training set
      */
     real_type learn(const dataset_type& ds, const param_type& params,
                     model_type& model) {

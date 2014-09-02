@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ds.initialize(v);
   
   // insert a record
-  finite_record r(3);
+  finite_record r(v);
   r.values[0] = 2;
   r.values[1] = 0;
   r.values[2] = 1;
@@ -88,7 +88,7 @@ BOOST_AUTO_TEST_CASE(test_iterator_comparisons) {
   
   finite_memory_dataset ds;
   ds.initialize(v);
-  ds.insert(finite_record(3));
+  ds.insert(finite_record(v));
 
   finite_dataset::record_iterator it1, end1;
   boost::tie(it1, end1) = ds.records(v);
@@ -217,15 +217,15 @@ BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
   BOOST_CHECK_SMALL(kl, 0.05);
 }
 
-// BOOST_FIXTURE_TEST_CASE(test_shuffle, fixture) {
-//   factor_mle<table_factor> estim(&ds);
-//   table_factor mle1 = estim(v);
-//   ds.shuffle(rng);
-//   table_factor mle2 = estim(v);
-//   double kl = mle1.relative_entropy(mle2);
-//   std::cout << "Shuffle: " << kl << std::endl;
-//   BOOST_CHECK_SMALL(kl, 1e-10);
-// }
+BOOST_FIXTURE_TEST_CASE(test_shuffle, fixture) {
+  factor_mle<table_factor> estim(&ds);
+  table_factor mle1 = estim(v);
+  ds.shuffle(rng);
+  table_factor mle2 = estim(v);
+  double kl = mle1.relative_entropy(mle2);
+  std::cout << "Shuffle: " << kl << std::endl;
+  BOOST_CHECK_SMALL(kl, 1e-10);
+}
 
 BOOST_AUTO_TEST_CASE(test_load) {
   int argc = boost::unit_test::framework::master_test_suite().argc;

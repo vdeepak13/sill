@@ -20,6 +20,7 @@ namespace sill {
     typedef typename FeatureF::domain_type     domain_type;
     typedef typename FeatureF::assignment_type assignment_type;
     typedef typename FeatureF::dataset_type    dataset_type;
+    typedef typename dataset_type::record_type record_type;
 
     // helper typedef until we use C++11
     typedef std::pair<variable_type* const, FeatureF> variable_cpd_pair;
@@ -38,7 +39,7 @@ namespace sill {
     explicit naive_bayes(const table_factor& prior,
                          const std::vector<FeatureF> feature_cpds = 
                          std::vector<FeatureF>())
-      : prior_() {
+      : prior_(prior) {
       check_prior(prior_);
       foreach(const FeatureF& cpd, feature_cpds) {
         add_feature(cpd);
@@ -73,11 +74,6 @@ namespace sill {
 
     // Queries
     //===================================================================
-    //! Returns the prior distribution
-    const table_factor prior() const {
-      return prior_;
-    }
-    
     //! Returns the label variable
     finite_variable* label_var() const {
       if (prior_.arguments().empty()) {
@@ -86,6 +82,27 @@ namespace sill {
       return *prior_.arguments().begin();
     }
 
+    //! Returns the features in the model
+    domain_type features() const {
+      domain_type result;
+      foreach (const variable_cpd_pair& p, features_) {
+        result.insert(p.first);
+      }
+      return result;
+    }
+
+    //! Returns all the variables in the model
+    domain_type arguments() const {
+      domain_type result = features();
+      result.insert(label_var());
+      return result;
+    }
+
+    //! Returns the prior distribution
+    const table_factor prior() const {
+      return prior_;
+    }
+    
     //! Returns the feature CPD
     const FeatureF& feature_cpd(variable_type* v) const {
       return safe_get(features_, v);
@@ -98,14 +115,13 @@ namespace sill {
 
     //! Returns the posterior distribution conditioned on an assignment
     table_factor posterior(const assignment_type& a) const {
-      assert(!a.count(label_var()));
       table_factor result = prior_;
       foreach (const variable_cpd_pair& p, features_) {
-        if (a.count(p.first)) {
-          result *= table_factor(p.second.restrict(a));
-        }
+        assignment_type a_feature;
+        a_feature[p.first] = safe_get(a, p.first);
+        result *= table_factor(p.second.restrict(a_feature));
       }
-      return result;
+      return result.normalize();
     }
 
     //! Returns the probability of an assignment to label and features
@@ -122,6 +138,18 @@ namespace sill {
       real_type result = prior_.log_likelihood(ds);
       foreach (const variable_cpd_pair& p, features_) {
         result += p.second.log_likelihood(ds);
+      }
+      return result;
+    }
+
+    //! Returns the conditional log-likelihood of a dataset
+    real_type conditional_log_likelihood(const dataset_type& ds) const {
+      real_type result = 0;
+      assignment_type a;
+      foreach (const record_type& r, ds.records(make_vector(arguments()))) {
+        r.extract(a);
+        table_factor conditional = posterior(a);
+        result += r.weight * std::log(conditional(a));
       }
       return result;
     }

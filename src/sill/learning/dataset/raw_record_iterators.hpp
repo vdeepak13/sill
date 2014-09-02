@@ -58,9 +58,8 @@ namespace sill {
 
     // begin constructor
     raw_record_iterator(Dataset* dataset, const var_vector_type& args)
-      : dataset(dataset), row(0), rows_left(0) {
+      : dataset(dataset), row(0), rows_left(0), record(args) {
       aux.reset(dataset->init(args, state));
-      record.resize(state.elems.size());
       load_advance();
     }
 
@@ -161,9 +160,8 @@ namespace sill {
 
     // begin constructor
     raw_const_record_iterator(const Dataset* dataset, const var_vector_type& args)
-      : dataset(dataset), row(0), rows_left(0) {
+      : dataset(dataset), row(0), rows_left(0), record(args) {
       aux.reset(dataset->init(args, state));
-      record.resize(state.elems.size());
       load_advance();
     }
 

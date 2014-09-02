@@ -31,7 +31,7 @@ namespace sill {
 
     std::string line;
     size_t line_number = 0;
-    hybrid_record<T> r(ds.finite_cols(), ds.vector_cols());
+    hybrid_record<T> r(vars);
     while (std::getline(in, line)) { 
       std::vector<const char*> tokens;
       if (format.parse(r.size(), line, line_number, tokens)) {
