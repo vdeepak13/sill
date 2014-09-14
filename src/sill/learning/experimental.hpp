@@ -69,6 +69,7 @@ namespace sill {
   class markov_chain {
     typedef typename Factor::variable_type variable_type;
     typedef discrete_process<variable_type>   process_type;
+    typedef sequence_dataset<typename Factor::dataset_type> dataset_type;
     markov_chain(process_type* process, size_t order = 1);
     markov_chain(const Factor& initial, const Factor& transition);
     Factor& initial();
