@@ -140,6 +140,19 @@ BOOST_FIXTURE_TEST_CASE(sliding_window_selected, fixture) {
   BOOST_CHECK(it == end);
 }
 
+BOOST_FIXTURE_TEST_CASE(sliding_window_record, fixture) {
+  sliding_view<finite_dataset> view = ds.sliding(0);
+  finite_var_vector vars = variables(procs, current_step);
+  finite_record r = view.record(2, vars);
+
+  BOOST_CHECK_EQUAL(r.variables, vars);
+  BOOST_CHECK_EQUAL(r.values.size(), 3);
+  BOOST_CHECK_EQUAL(r.values[0], 1);
+  BOOST_CHECK_EQUAL(r.values[1], 2);
+  BOOST_CHECK_EQUAL(r.values[2], 0);
+  BOOST_CHECK_EQUAL(r.weight, 2.0);
+}
+
 BOOST_FIXTURE_TEST_CASE(fixed0, fixture) {
   fixed_view<finite_dataset> view = ds.fixed(0);
   finite_dataset::const_record_iterator it, end;
@@ -191,4 +204,18 @@ BOOST_FIXTURE_TEST_CASE(fixed01_selected, fixture) {
 
   // have we reached the end?
   BOOST_CHECK(it == end);
+}
+
+BOOST_FIXTURE_TEST_CASE(fixed_record_selected, fixture) {
+  fixed_view<finite_dataset> view = ds.fixed(0);
+  finite_var_vector vars;
+  vars.push_back(procs[0]->at(1));
+  vars.push_back(procs[2]->at(0));
+  finite_record r = view.record(0, vars);
+
+  BOOST_CHECK_EQUAL(r.variables, vars);
+  BOOST_CHECK_EQUAL(r.values.size(), 2);
+  BOOST_CHECK_EQUAL(r.values[0], 1);
+  BOOST_CHECK_EQUAL(r.values[1], 2);
+  BOOST_CHECK_EQUAL(r.weight, 0.5);
 }
