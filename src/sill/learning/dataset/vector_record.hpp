@@ -23,7 +23,7 @@ namespace sill {
     vector_record()
       : weight(0.0) { }
 
-    explicit vector_record(const vector_var_vector& vars, T weight = 0.0)
+    explicit vector_record(const vector_var_vector& vars, T weight = 1.0)
       : variables(vars),
         values(vector_size(vars), arma::fill::zeros),
         weight(weight) { }

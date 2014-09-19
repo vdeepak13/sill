@@ -18,6 +18,10 @@ namespace sill {
   // forward declaration
   template <typename BaseDS> class slice_view;
 
+  // forward declaration; to use this class (e.g., in sequence_dataset), include
+  // #include <sill/learning/dataset/finite_sequence_record.hpp>
+  class finite_sequence_record;
+
   /**
    * A dataset that stores observations only for finite variables.
    * \see Dataset
@@ -33,6 +37,9 @@ namespace sill {
 
     typedef raw_record_iterator<finite_dataset>       record_iterator;
     typedef raw_const_record_iterator<finite_dataset> const_record_iterator;
+
+    // types for sequence_dataset class
+    typedef finite_sequence_record sequence_record_type;
 
     //! Default constructor
     finite_dataset() { }

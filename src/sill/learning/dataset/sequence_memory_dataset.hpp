@@ -2,6 +2,7 @@
 #define SILL_SEQUENCE_MEMORY_DATASET_HPP
 
 #include <sill/learning/dataset/sequence_dataset.hpp>
+#include <sill/learning/dataset/slice_view.hpp>
 #include <sill/math/permutations.hpp>
 
 #include <boost/noncopyable.hpp>
@@ -18,36 +19,44 @@ namespace sill {
   class sequence_memory_dataset
     : public sequence_dataset<BaseDS>, boost::noncopyable {
   public:
+    // types for the SliceableDataset concept
     typedef slice_view<sequence_dataset<BaseDS> > slice_view_type;
 
-    // Bring the record(row) implementation up to this class
+    // bring some types up from the base class
+    typedef typename BaseDS::argument_type        variable_type;
+    typedef discrete_process<variable_type>       argument_type;
+    typedef std::set<argument_type*>              domain_type;
+    typedef std::vector<argument_type*>           arg_vector_type;
+    typedef typename BaseDS::assignment_type      assignment_type;
+    typedef typename BaseDS::sequence_record_type record_type;
+
+    // some useful typedefs
+    typedef typename record_type::weight_type weight_type;
+
+    // bring the record(row) implementation up to this class
     using sequence_dataset<BaseDS>::record;
 
     //! Creates an uninitialized dataset
     sequence_memory_dataset() { }
 
-    //! Frees the memory associated with the dataset
+    //! Releases the memory owned by the records in this dataset
     ~sequence_memory_dataset() {
-      foreach(record_type& r, records) {
+      foreach(record_type& r, records_) {
         r.free_memory();
       }
     }
-    
+
     /**
      * Initializes the dataset with the given sequence of processes
      * and pre-allocates memory for the given number of rows.
      * It is an error to call initialize() more than once.
      */
     void initialize(const arg_vector_type& procs, size_t capacity = 1) {
-      if (data) {
+      if (this->num_arguments() > 0) {
         throw std::logic_error("Attempt to call initialize() more than once.");
       }
-      
       sequence_dataset<BaseDS>::initialize(procs);
-      data.reserve(capacity);
-      for (size_t i = 0; i < procs.size(); ++i) {
-        arg_index[procs[i]] = i;
-      }
+      records_.reserve(capacity);
     }
 
     /**
@@ -60,25 +69,23 @@ namespace sill {
     }
 
     size_t size() const {
-      return records.size();
+      return records_.size();
     }
 
     size_t capacity() const {
-      return records.capacity();
+      return records_.capacity();
     }
 
     void reserve(size_t new_capacity) {
-      records.reserve(new_capacity);
+      records_.reserve(new_capacity);
     }
 
     record_type record(size_t row, const arg_vector_type& args) const {
-      assert(row < records.size());
+      assert(row < records_.size());
+      typename record_type::proc_indices_type indices;
+      this->index_map.indices(args, indices);
       record_type result(args);
-      std::vector<size_t> indices(args.size());
-      for (size_t i = 0; i < args.size(); ++i) {
-        indices[i] = safe_get(arg_index, args[i]);
-      }
-      result.load(records[row], indices);
+      result.load(records_[row], indices);
       return result;
     }
 
@@ -100,34 +107,39 @@ namespace sill {
     //! Inserts the values in this dataset's ordering.
     void insert(const record_type& r) {
       r.check_compatible(this->args);
-      records.push_back(r);
+      records_.push_back(r);
     }
 
-    //! Inserts the values from an assignment (all variables and indices
-    //! must be present).
+    //! Inserts the values from an assignment (all variables must be
+    //! present, and the time steps must form a contiguous range [0; t).
     void insert(const assignment_type& a, weight_type weight = 1.0) {
-      records.push_back(record_type(this->args, a, weight));
+      record_type r(this->args);
+      r.assign(a, weight);
+      records_.push_back(r);
     }
 
-    //! Inserts the given number of rows with empty sequences.
-    void insert(size_t nrows) {
-      /// tood:
-    }
+    // does this make sense?
+//     //! Inserts the given number of rows with empty sequences.
+//     void insert(size_t nrows) {
+//       /// tood:
+//     }
+
     //! Randomly permutes the sequences
     template <typename RandomNumberGenerator>
     void shuffle(RandomNumberGenerator& rng) {
-      permute(records, rng);
+      permute(records_, rng);
     }
 
     // Protected functions
     //========================================================================
+  protected:
+    typedef typename sequence_dataset<BaseDS>::iterator_state_type
+      iterator_state_type;
+
     aux_data* init(const arg_vector_type& args,
                    iterator_state_type& state) const {
-      state.indices.reserve(args.size());
-      for (size_t i = 0; i < args.size() ; ++i) {
-        state.indices[i] = safe_get(arg_index, args[i]);
-      }
-      state.records = &records[0];
+      this->index_map.indices(args, state.indices);
+      state.records = &records_[0];
       return NULL;
     }
 
@@ -140,21 +152,21 @@ namespace sill {
     size_t load(size_t n,
                 iterator_state_type& state,
                 aux_data* data) const {
-      return std::min(n, size_t(&records[0] + records.size() - state.records));
+      return std::min(n, size_t(&records_[0] + records_.size() - state.records));
     }
 
     void save(iterator_state_type& state, aux_data* data) { } 
 
     void print(std::ostream& out) const {
-      out << "sequence_memory_dataset(N=" << size() << ", args=" << args << ")";
+      out << "sequence_memory_dataset(N=" << size()
+          << ", args=" << this->args << ")";
     }
 
     // Private data members
     //========================================================================
   private:
-    // arg_vector_type args;  // in the base class
-    std::map<argument_type*, size_t> arg_index; // the index of each process
-    std::vector<record_type> records; // the data in row-major format
+    // args and index_map are in the base class
+    std::vector<record_type> records_;
     
   }; // class sequence_memory_dataset
 

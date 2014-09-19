@@ -23,7 +23,8 @@ namespace sill {
     const weight_type*      weights; // the pointer to the next weight
     std::vector<size_t>     e_step;  // the step size for each column
     size_t                  w_step;  // the step size for the weight
-  };
+
+  }; // struct raw_record_iterator_state
   
   // =======================================================================
 

@@ -108,10 +108,9 @@ namespace sill {
   //! Returns the size of a collection of vector variables
   //! \relates vector_variable
   template <typename Range>
-  size_t vector_size(const Range& variables) {
-    concept_assert((InputRangeConvertible<Range, vector_variable*>));
+  size_t vector_size(const Range& args) {
     size_t size = 0;
-    foreach(vector_variable* v, variables) size += v->size();
+    foreach(typename Range::value_type arg, args) size += arg->size();
     return size;
   }
 

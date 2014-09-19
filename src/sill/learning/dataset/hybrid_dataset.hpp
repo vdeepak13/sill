@@ -6,12 +6,20 @@
 #include <sill/learning/dataset/finite_dataset.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/dataset/hybrid_record.hpp>
+#include <sill/learning/dataset/hybrid_record_iterator_state.hpp>
 
 #include <iterator>
 
 #include <boost/shared_ptr.hpp>
 
 namespace sill {
+
+  // forward declaration
+  template <typename BaseDS> class slice_view;
+
+  // forward declaration; to use this class (e.g., in sequence_dataset), include
+  // #include <sill/learning/dataset/hybrid_sequence_record.hpp>
+  template <typename T> class hybrid_sequence_record;
 
   /**
    * A dataset that can store observations for both finite and vector variables.
@@ -34,8 +42,8 @@ namespace sill {
     using finite_dataset::records;
     using vector_dataset<T>::records;
 
-    // Types for the Dataset concept
-    typedef variable         variable_type;
+    // types for the Dataset concept
+    typedef variable         argument_type;
     typedef domain           domain_type;
     typedef var_vector       var_vector_type;
     typedef assignment       assignment_type;
@@ -43,6 +51,9 @@ namespace sill {
 
     struct record_iterator;
     struct const_record_iterator;
+
+    // types for the sequence_dataset class
+    typedef hybrid_sequence_record<T> sequence_record_type;
 
     //! Default constructor
     hybrid_dataset() { }
@@ -146,19 +157,7 @@ namespace sill {
     typedef raw_record_iterator_state<vector_record<T> > vector_state_type;
 
     // a class that stores the iterator state visible to the dataset
-    struct iterator_state_type {
-      finite_state_type* finite;
-      vector_state_type* vector;
-      iterator_state_type(finite_state_type* finite)
-        : finite(finite), vector(NULL) { }
-
-      iterator_state_type(vector_state_type* vector)
-        : finite(NULL), vector(vector) { }
-
-      iterator_state_type(finite_state_type* finite,
-                          vector_state_type* vector)
-        : finite(finite), vector(vector) { }
-    };
+    typedef hybrid_record_iterator_state<T> iterator_state_type;
 
     //! swaps the arguments of this dataset and ds
     void swap(hybrid_dataset& ds) {

@@ -1,7 +1,11 @@
 #ifndef SILL_SEQUENCE_DATASET_HPP
 #define SILL_SEQUENCE_DATASET_HPP
 
-#include <sill/base/discrete_process.hp>
+#include <sill/base/discrete_process.hpp>
+#include <sill/learning/dataset/fixed_view.hpp>
+#include <sill/learning/dataset/sliding_view.hpp>
+
+#include <iostream>
 
 #include <boost/random/uniform_int.hpp>
 
@@ -11,14 +15,16 @@ namespace sill {
    * A dataset where each datapoint is a sequence of random variables.
    * \tparam BaseDS Base (static) dataset that determines the variable type
    *         and storage (see finite_dataset, vector_dataset, or hybrid_dataset)
+   * \see Dataset
    */
   template <typename BaseDS>
   class sequence_dataset {
-
+  public:
     typedef typename BaseDS::argument_type        variable_type;
     typedef discrete_process<variable_type>       argument_type;
     typedef std::set<argument_type*>              domain_type;
     typedef std::vector<argument_type*>           arg_vector_type;
+    typedef std::vector<argument_type*>           var_vector_type;
     typedef typename BaseDS::assignment_type      assignment_type;
     typedef typename BaseDS::sequence_record_type record_type;
     
@@ -40,6 +46,14 @@ namespace sill {
     //! Returns the columns of this dataset.
     const arg_vector_type& arg_vector() const { return args; }
 
+    //! Returns the number of processes in this dataset.
+    size_t num_arguments() const { return args.size(); }
+
+    //! Returns the mapping from processes / variables to record indices
+    const typename record_type::index_map_type& index_mapping() const {
+      return index_map;
+    }
+
     //! Returns a single data point in the dataset's natural ordering.
     record_type record(size_t row) const { return record(row, args); }
 
@@ -56,21 +70,27 @@ namespace sill {
 
     //! Returns immutable records for the specified processes.
     std::pair<const_record_iterator, const_record_iterator>
-    records(const arg_vector_type& args) {
+    records(const arg_vector_type& args) const {
       return std::make_pair(const_record_iterator(this, args),
                             const_record_iterator(size()));
     }
 
-    //! Returns a sliding view that exposes subsequences of each datapoint
+    //! Returns a sliding view that exposes subsequences of each row
     sliding_view<BaseDS>
     sliding(size_t history) const {
       return sliding_view<BaseDS>(this, history);
     }
 
-    //! Returns a fixed view that exposes a fixed subsequence of each datapoint
+    //! Returns a fixed view that exposes a single datapoint of each row
     fixed_view<BaseDS>
-    fixed(size_t start, size_t stop = start + 1) const {
-      return fixed_view<BaseDS>(this, start, stop);
+    fixed(size_t index) const {
+      return fixed_view<BaseDS>(this, index, index + 1);
+    }
+
+    //! Returns a fixed view that exposes a fixed subsequence of each row
+    fixed_view<BaseDS>
+    fixed(size_t first, size_t last) const {
+      return fixed_view<BaseDS>(this, first, last);
     }
     
     //! Draws a random sample from this dataset.
@@ -79,7 +99,7 @@ namespace sill {
                        RandomNumberGenerator& rng) const {
       assert(!empty());
       boost::uniform_int<size_t> uniform(0, size() - 1);
-      return record(uniform(rng), vars);
+      return record(uniform(rng), args);
     }
 
     // Utility functions, invoked by the iterators and subclasses
@@ -88,8 +108,10 @@ namespace sill {
     //! datastructure used internally by the iterators to store
     //! to store the iterator state visible to the dataset
     struct iterator_state_type {
-      std::vector<size_t> indices; // the processes to extract
-      record_type*        records; // the pointer to the next record
+      //! the processes to extract
+      typename record_type::proc_indices_type indices;
+      //! the pointer to the next record
+      const record_type* records;
     };
     
     //! initializes the data structures in the record iterator
@@ -113,10 +135,26 @@ namespace sill {
     virtual void print(std::ostream& out) const = 0;
 
     //! initializes the variables in this dataset
-    void initialize(const arg_vector_type& vars) { args = vars; }
+    void initialize(const arg_vector_type& procs) {
+      args = procs;
+      index_map.initialize(procs);
+    }
 
-    //! The variables in the dataset's internal ordering of columns.
+    //! The processes in the dataset's internal ordering of columns.
     arg_vector_type args;
+
+    //! The mapping from processes / variables to indices in the record
+    typename record_type::index_map_type index_map;
+
+    // friends
+    friend class record_iterator;
+    friend class const_record_iterator;
+    friend class slice_view<sequence_dataset<BaseDS> >;
+
+    friend std::ostream& operator<<(std::ostream& out, const sequence_dataset& ds) {
+      ds.print(out);
+      return out;
+    }
 
   public:
     //! iterator over sequence records with mutable access
@@ -130,7 +168,7 @@ namespace sill {
       // begin constructor
       record_iterator(sequence_dataset* dataset,
                       const arg_vector_type& args)
-        : dataset(dataset), row(0), rows_left(0) {
+        : dataset(dataset), row(0), rows_left(0), record(args) {
         aux.reset(dataset->init(args, state));
         load_advance();
       }
@@ -178,7 +216,7 @@ namespace sill {
       sequence_dataset* dataset;       // the underlying dataset
       size_t row;                      // the logical row in the dataset
       size_t rows_left;                // 0 indicates we need to fetch more data
-      state_type state;                // the iterator state visible to the dataset
+      iterator_state_type state;       // the iterator state visible to the dataset
       boost::shared_ptr<aux_data> aux; // auxiliary data used by the dataset
       record_type record;              // user-facing data
       
@@ -199,23 +237,23 @@ namespace sill {
 
     //! iterator over sequence records with const access
     class const_record_iterator
-      : public std::iterator<std::forward_iterator_tag, record_type> {
+      : public std::iterator<std::forward_iterator_tag, const record_type> {
     public:
       // singular and past-the-end constructor
       explicit const_record_iterator(size_t endrow = 0)
         : dataset(NULL), row(endrow) { }
 
       // begin constructor
-      const_record_iterator(sequence_dataset* dataset,
+      const_record_iterator(const sequence_dataset* dataset,
                             const arg_vector_type& args)
-        : dataset(dataset), row(0), rows_left(0) {
+        : dataset(dataset), row(0), rows_left(0), record(args) {
         aux.reset(dataset->init(args, state));
         load_advance();
       }
 
       // record iterator conversions are expensive, so we make them explicit
-      explicit const_record_iterator(const recorrd_iterator& it)
-        : datset(it.dataset),
+      explicit const_record_iterator(const record_iterator& it)
+        : dataset(it.dataset),
           row(it.row),
           rows_left(it.rows_left),
           state(it.state),
@@ -276,7 +314,7 @@ namespace sill {
       const sequence_dataset* dataset; // the underlying dataset
       size_t row;                      // the logical row in the dataset
       size_t rows_left;                // 0 indicates we need to fetch more data
-      state_type state;                // the iterator state visible to the dataset
+      iterator_state_type state;       // the iterator state visible to the dataset
       boost::shared_ptr<aux_data> aux; // auxiliary data used by the dataset
       record_type record;              // user-facing data
       

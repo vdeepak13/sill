@@ -1,5 +1,5 @@
-#ifndef SILL_SLIDING_VIEW_HPP
-#define SILL_SLIDING_VIEW_HPP
+#ifndef SILL_FIXED_VIEW_HPP
+#define SILL_FIXED_VIEW_HPP
 
 #include <sill/base/discrete_process.hpp>
 #include <sill/learning/dataset/aux_data.hpp>
@@ -14,14 +14,14 @@ namespace sill {
   template <typename BaseDS> class sequence_dataset;
 
   /**
-   * A view of sequence datasets over a moving, fixed-size sliding window
-   * over the sequence data.
+   * A view of sequence datasets over a moving, fixed-size fixed window
+   * over the sequence data. 
    * \todo allow mutations?
    */
   template <typename BaseDS>
-  class sliding_view : public BaseDS {
+  class fixed_view : public BaseDS {
   public:
-    // Bring in some types from BaseDS
+    // bring in some types from BaseDS
     typedef typename BaseDS::argument_type   argument_type;
     typedef typename BaseDS::var_vector_type var_vector_type;
     typedef typename BaseDS::record_type     record_type;
@@ -33,50 +33,49 @@ namespace sill {
     typedef typename sequence_record_type::var_indices_type var_indices_type;
 
     //! Default constructor. Creates an uninitialized view
-    sliding_view()
-      : dataset_(NULL), window_(0) { }
+    fixed_view()
+      : dataset_(NULL), first_(0), last_(0) { }
 
-    //! Constructs a sliding view for the given sequence dataset
-    sliding_view(const sequence_dataset<BaseDS>* dataset, size_t window)
-      : dataset_(dataset), window_(window) {
-      assert(window <= 1); // need to clean up discrete_process to support >1
+    //! Constructs a fixed view for the given sequence dataset
+    fixed_view(const sequence_dataset<BaseDS>* dataset, size_t first, size_t last)
+      : dataset_(dataset), first_(first), last_(last) {
+      assert(first < last);
 
       // initialize the variables
       var_vector_type vars;
-      vars.reserve((window+1) * dataset->num_arguments());
+      vars.reserve((last - first) * dataset->num_arguments());
       foreach (process_type* proc, dataset->arg_vector()) {
-        vars.push_back(proc->current());
-        if (window == 1) vars.push_back(proc->next());
+        for (size_t t = first; t < last; ++t) {
+          vars.push_back(proc->at(t));
+        }
       }
       BaseDS::initialize(vars);
 
-      // compute the (cumulative) size for each record in the underlying dataset
-      size_t sum = 0;
-      cum_size_.reserve(dataset->size());
+      // compute the mapping from logical rows to the rows in the underlying dataset
+      size_t row = 0;
       std::vector<process_type*> no_procs;
       foreach(const sequence_record_type& r, dataset->records(no_procs)) {
-        if (r.num_steps() > window) {
-          sum += r.num_steps() - window;
+        if (r.num_steps() >= last) {
+          physical_rows_.push_back(row);
         }
-        cum_size_.push_back(sum);
+        ++row;
       }
     }
 
-    //! Returns the logical number of rows in this view
+    //! Returns an upperbound on the number of rows in this dataset
+    //! (some rows in the original dataset may be skipped if they
+    //! do not contain all the steps).
     size_t size() const {
-      return cum_size_.empty() ? 0 : cum_size_.back();
+      return physical_rows_.size();
     }
 
     //! Returns a single data point for a subset of variables
+    //! todo: do some elementary pre-computation to speed this up
     record_type record(size_t row, const var_vector_type& vars) const {
       assert(row < size());
-      size_t ds_row =
-        std::upper_bound(cum_size_.begin(), cum_size_.end(), row) - 
-        cum_size_.begin();
-      size_t offset = // TODO this needs to be fixed after process refactor
-        (ds_row > 0) ? row - cum_size_[ds_row-1] : row;
+      size_t ds_row = physical_rows_[row];
       var_indices_type var_indices;
-      dataset_->index_mapping().indices(vars, offset, var_indices);
+      dataset_->index_mapping().indices(vars, var_indices);
       record_type result(vars);
       dataset_->record(ds_row).extract(var_indices, result);
       return result;
@@ -97,7 +96,7 @@ namespace sill {
                    iterator_state_type& state) const {
       view_data& d = *(new view_data);
       std::vector<process_type*> procs =
-        make_vector(discrete_processes(make_domain(vars)));
+        make_vector(discrete_processes(make_domain(vars)));      
       boost::tie(d.it, d.end) = dataset_->records(procs);
       d.start = true;
       typename sequence_record_type::index_map_type index_map(procs);
@@ -108,7 +107,7 @@ namespace sill {
     void advance(ptrdiff_t diff,
                  iterator_state_type& state,
                  aux_data* data) const {
-      throw std::logic_error("sliding_view does not support advance()");
+      throw std::logic_error("fixed_view does not support advance()");
     }
 
     // loads rows (n is ignored)
@@ -120,14 +119,14 @@ namespace sill {
       // advance to the next valid position
       do {
         if (d.start) { d.start = false; } else { ++d.it; }
-      } while (d.it != d.end && d.it->num_steps() <= window_);
+      } while (d.it != d.end && d.it->num_steps() < last_);
 
       // if not at the end, extract the state
       if (d.it == d.end) {
         return 0;
       } else {
         d.it->extract(d.indices, state);
-        return d.it->num_steps() - window_;
+        return 1;
       }
     }
   
@@ -136,7 +135,7 @@ namespace sill {
 
     // prints the summary of this view to a stream
     void print(std::ostream& out) const {
-      out << "sliding_view(N=" << size() << ", window=" << window_ << ") "
+      out << "fixed_view(N=" << size() << ", " << first_ << ", " << last_ << ") "
           << "base dataset: " << dataset_;
     }
     
@@ -150,10 +149,11 @@ namespace sill {
 
   private:
     const sequence_dataset<BaseDS>* dataset_;
-    size_t window_;
-    std::vector<size_t> cum_size_;
+    size_t first_;
+    size_t last_;
+    std::vector<size_t> physical_rows_;
 
-  }; // class sliding_view
+  }; // class fixed_view
 
 } // namespace sill
 
