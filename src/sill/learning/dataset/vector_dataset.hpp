@@ -18,6 +18,10 @@ namespace sill {
   // forward declaration
   template <typename BaseDS> class slice_view;
 
+  // forward declaration; to use this class (e.g., in sequence_dataset), include
+  // #include <sill/learning/dataset/vector_sequence_record.hpp>
+  template <typename T> class vector_sequence_record;
+
   /**
    * A dataset that stores observations only for vector variables.
    * 
@@ -37,6 +41,9 @@ namespace sill {
 
     typedef raw_record_iterator<vector_dataset>       record_iterator;
     typedef raw_const_record_iterator<vector_dataset> const_record_iterator;
+
+    // types for the sequence_dataset class
+    typedef vector_sequence_record<T> sequence_record_type;
 
     //! Default constructor
     vector_dataset() { }

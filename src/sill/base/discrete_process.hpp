@@ -180,6 +180,148 @@ namespace sill {
 
   //! A timed process over vector variables
   typedef discrete_process<vector_variable> vector_discrete_process;
+  
+  /**
+   * Template specialization for discrete process over arbitrary variable.
+   * Only supports finite and vector variables at the moment.
+   */
+  template <>
+  class discrete_process<variable> : public process {
+    // Public type and constant declarations
+    //==========================================================================
+  public:
+    //! The variable type associated with this process
+    typedef variable variable_type;
+
+    //! The type that represents an index
+    typedef int index_type;
+
+    // Private data members and constructors
+    //==========================================================================
+  private:
+    finite_discrete_process* finite;
+    vector_discrete_process* vector;
+
+  public:
+    // documentation inherited from the base class
+    void save(oarchive& ar) const{
+      process::save(ar);
+      assert(false); // unsupported for now
+//       if (finite) { ar << *finite; }
+//       if (vector) { ar << *vector; }
+    }
+
+    // documentation inherited from the base class
+    void load(iarchive& ar) {
+      process::load(ar);
+      assert(false); // unsupported for now
+    }
+
+    // Public functions
+    //==========================================================================
+  public:
+    //! Default constructor (only used by serialization)
+    discrete_process()
+      : finite(NULL), vector(NULL) { }
+
+    //! Constructs a finite process
+    discrete_process(finite_discrete_process* finite)
+      : process(finite->name()), finite(finite), vector(NULL) { }
+
+    //! Constructs a vector process
+    discrete_process(vector_discrete_process* vector)
+      : process(vector->name()), finite(NULL), vector(vector) { }
+    
+    //! Deletes the allocated processes
+    ~discrete_process() {
+      if (finite) { delete finite; }
+      if (vector) { delete vector; }
+    }
+
+    //! Returns true if the process is finite
+    bool is_finite() const {
+      return finite;
+    }
+
+    //! Returns true if the process is vector
+    bool is_vector() const {
+      return vector;
+    }
+
+    //! Casts this process to a finite one
+    finite_discrete_process* as_finite() const {
+      return finite;
+    }
+    
+    //! Casts this process to a vector one
+    vector_discrete_process* as_vector() const {
+      return vector;
+    }
+
+    //! Conversion to human-readable representation
+    operator std::string() const {
+      return "#P(" + name() + "|DT|" 
+        + boost::lexical_cast<std::string>(size()) + ")";
+    }
+
+    //! Returns the dimensionality / cardinality
+    size_t size() const {
+      if (finite) { return finite->size(); }
+      if (vector) { return vector->size(); }
+      return 0;
+    }
+
+    // documentation copied from the base class
+    variable* at_any(const boost::any& index) const {
+      if (finite) { return finite->at_any(index); }
+      if (vector) { return vector->at_any(index); }
+      return NULL;
+    }
+
+    /**
+     * Returns an instance of the process at the given time step.
+     * This function is guaranteed to return the same variable
+     * object in multiple invocations. 
+     */
+    variable* at(int step) const {
+      if (finite) { return finite->at(step); }
+      if (vector) { return vector->at(step); }
+      return NULL;
+    }
+
+    /**
+     * Returns a special instance that represents the generic
+     * variable at the 'current' time step.
+     */
+    variable* current() const {
+      if (finite) { return finite->current(); }
+      if (vector) { return vector->current(); }
+      return NULL;
+    }
+
+    /**
+     * Returns a special instance that represents the generic
+     * variable at the 'next' time step.
+     */
+    variable* next() const {
+      if (finite) { return finite->next(); }
+      if (vector) { return vector->next(); }
+      return NULL;
+    }
+
+    // documentation inherited from the base class
+    void save_variable(oarchive& ar, variable* v) const {
+      ar << boost::any_cast<int>(v->index());
+    }
+
+    // documentation inherited from the base class
+    variable* load_variable(iarchive& ar) const {
+      int index;
+      ar >> index;
+      return at(index);
+    }
+
+  }; // class discrete_process<variable>
 
   //! Returns a subset of variables at the specified time step.  All
   //! variables must be indexed by int, or else boost::bad_any_cast is thrown.
@@ -190,6 +332,32 @@ namespace sill {
     foreach(Variable* v, vars)
       if (boost::any_cast<int>(v->index()) == step) result.insert(v);
     return result;
+  }
+
+  /**
+   * Returns the processes associated with a set of variables.
+   * \relates dicrete_process
+   */
+  template <typename V>
+  std::set<discrete_process<V>*> discrete_processes(const std::set<V*>& vars) {
+    return processes<discrete_process<V> >(vars);
+  }
+
+  /**
+   * Splits the vector of processes into finite and vectors,
+   * maintaining the ordering.
+   * \relates discrete_process
+   */
+  inline void split(const std::vector<discrete_process<variable>*>& procs,
+                    std::vector<finite_discrete_process*>& finite_procs,
+                    std::vector<vector_discrete_process*>& vector_procs) {
+    foreach(discrete_process<variable>* p, procs) {
+      if (p->is_finite()) {
+        finite_procs.push_back(p->as_finite());
+      } else if (p->is_vector()) { 
+        vector_procs.push_back(p->as_vector());
+      }
+    }
   }
 
   //! @} group base_types

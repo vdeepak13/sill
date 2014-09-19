@@ -1,6 +1,7 @@
 #ifndef SILL_FINITE_RECORD_HPP
 #define SILL_FINITE_RECORD_HPP
 
+#include <sill/base/finite_assignment.hpp>
 #include <sill/base/finite_variable.hpp>
 
 #include <iostream>
@@ -22,7 +23,7 @@ namespace sill {
     finite_record() 
       : weight(0.0) { }
 
-    explicit finite_record(const finite_var_vector& vars, double weight = 0.0)
+    explicit finite_record(const finite_var_vector& vars, double weight = 1.0)
       : variables(vars), values(vars.size()), weight(weight) { }
 
     finite_record(const finite_var_vector& vars,

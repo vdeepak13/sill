@@ -1,7 +1,9 @@
 #ifndef SILL_HYBRID_RECORD_HPP
 #define SILL_HYBRID_RECORD_HPP
 
+#include <sill/base/assignment.hpp>
 #include <sill/base/hybrid_values.hpp>
+#include <sill/base/variable_utils.hpp>
 
 #include <iostream>
 

@@ -11,6 +11,31 @@ namespace sill {
     5) clean up validation.
   */
 
+  /*
+    Discrete process learners:
+    parameter learning of dynamic Bayesian networks (fully observed case):
+    - like learning a BN, but tied parameters
+    - sliding view over a subset of variables (child and its parents)
+    - when the DBN factor is moment_gaussian, table_factor, hybrid<moment_gaussian>
+      etc., can do this efficiently using sliding view of hybrid dataset
+    
+    parameter learning of HMMs (fully observed case):
+    - same as learning DBNs
+    - sliding view over two successive time steps to learn the transition model
+    - sliding view over individual time steps to learn the observation model
+    
+    Baum-Welch:
+    - for each observation sequence, compute the conditional probability of the
+      hidden states, given the observation; this gives us the virtual counts
+    - recompute the prior model (normalized sum of the conditional joints)
+    - recompute the observation model (sum of observations weighted by the
+      posterior probability of the state given the sequence)
+
+    Sparse sequence record:
+    - 
+
+  */
+
   //! Draws samples from the distribution
   template <typename Factor>
   class factor_sampler {
@@ -171,8 +196,7 @@ namespace sill {
     assignment_type arg_max(const assignment_type& a);
     double likelihood(const assignment_type& a);
   };
-  
-    
+      
   class hmm_learner {
     typedef hmm<StateF, EmitF>                model_type;
     typedef typename ...                      domain_type;
