@@ -43,17 +43,25 @@ namespace sill {
   }
 
   size_t num_assignments(const finite_domain& vars) {
-    double logn(log_num_assignments(vars));
-    if (std::log(std::numeric_limits<size_t>::max()) < logn)
-      throw std::out_of_range("num_assignments overflowed size_t");
-    return (size_t)(round(std::exp(logn)));
+    size_t count = 1;
+    foreach(finite_variable* v, vars) {
+      if (std::numeric_limits<size_t>::max() / v->size() <= count) {
+        throw std::out_of_range("num_assignments possibly overflows size_t");
+      }
+      count *= v->size();
+    }
+    return count;
   }
 
-  double log_num_assignments(const finite_domain& vars) {
-    double logn = 0.;
-    foreach(finite_variable* v, vars)
-      logn += std::log(v->size());
-    return logn;
+  size_t num_assignments(const finite_var_vector& vars) {
+    size_t count = 1;
+    foreach(finite_variable* v, vars) {
+      if (std::numeric_limits<size_t>::max() / v->size() <= count) {
+        throw std::out_of_range("num_assignments possibly overflows size_t");
+      }
+      count *= v->size();
+    }
+    return count;
   }
 
   oarchive& operator<<(oarchive& ar, finite_variable* const &v){

@@ -108,16 +108,10 @@ namespace sill {
   size_t num_assignments(const finite_domain& vars);
 
   /**
-   * Counts the number of assignments to the supplied set of finite variables.  
-   * @param  domain a set of finite variables; 
-   * @return the log of the product of the sizes of the variables
-   *
-   * \relates finite_variable
-   * @todo Merge this with num_assignments, and make num_assignments return
-   *       a logarithmic type.  I tried this but could not get things to compile
-   *       afterwards.
+   * Returns the number of assignments to the supplied collection of
+   * finite variables. Assumes the variables are distinct.
    */
-  double log_num_assignments(const finite_domain& vars);
+  size_t num_assignments(const finite_var_vector& vars);
 
   //! @} group base_types
 

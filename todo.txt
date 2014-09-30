@@ -53,6 +53,8 @@
    - change the table generator to take actual arguments (not logspace)
    - refactor the CRF factors
    - clean up and simplify the optimization code
+   - marginal() => is_marginal(), standardize arg_vector, head_vector() etc.
+   - get rid of hacks in the table_factor and dense_table
 
 8. more examples / applications:
    - viterbi algorithm

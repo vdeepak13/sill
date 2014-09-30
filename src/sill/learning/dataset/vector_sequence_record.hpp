@@ -18,7 +18,7 @@
 #include <sill/macros_def.hpp>
 
 namespace sill {
-
+  
   /**
    * A class that represents a sequence of vector values for a number of
    * discrete processes. By default, the values are not owned by the
@@ -178,9 +178,40 @@ namespace sill {
      * indexed with "current" time index.
      */
     void extract(size_t t, vector_assignment& a) const {
+      assert(t < num_steps_);
       for (size_t i = 0; i < values_.size(); ++i) {
         size_t len = processes_[i]->size();
         copy(values_[i] + t, len, a[processes_[i]->current()]); // private function
+      }
+    }
+
+    /**
+     * Extracts a single time step into a vector.
+     */
+    void extract(size_t t, arma::Col<T>& values) const {
+      assert(t < num_steps_);
+      values.set_size(num_dims_);
+      T* dest = values.begin();
+      for (size_t i = 0; i < values_.size(); ++i) {
+        size_t len = processes_[i]->size();
+        copy(values_[i] + t, len, dest); // private function
+        dest += len;
+      }
+    }
+
+    /**
+     * Extracts a closed range of time steps into a vector.
+     */
+    void extract(size_t t1, size_t t2, arma::Col<T>& values) const {
+      assert(t1 <= t2 && t2 < num_steps());
+      values.set_size(num_dims_ * (t2-t1+1));
+      T* dest = values.begin();
+      for (size_t t = t1; t <= t2; ++t) {
+        for (size_t i = 0; i < values_.size(); ++i) {
+          size_t len = processes_[i]->size();
+          copy(values_[i] + t, len, dest); // private function
+          dest += len;
+        }
       }
     }
 
@@ -244,6 +275,14 @@ namespace sill {
     }
 
     /**
+     * Allocates memory for the given number of steps and sets the weight.
+     * Does not initialize the values.
+     */
+    void assign(size_t num_steps, T weight) {
+      assign(new T[num_dims_ * num_steps], num_steps, weight);
+    }
+
+    /**
      * Assigns data to this record. The data is stored in process-major order,
      * that is, first the entire sequence for the first process, then for the
      * second process, etc. The value count must be divisible by the number
@@ -284,6 +323,22 @@ namespace sill {
         }
       } else {
         assign(NULL, 0, weight);
+      }
+    }
+
+    /**
+     * Sets the values for the given time step.
+     */
+    void set(size_t t, const arma::Col<T>& values) {
+      assert(values.size() == num_dims_);
+      const T* src = values.begin();
+      for (size_t i = 0; i < num_processes(); ++i) {
+        size_t len = processes_[i]->size();
+        T* dest = values_[i] + t;
+        for (size_t k = 0; k < len; ++k) {
+          *dest = *src++;
+          dest += num_steps_;
+        }
       }
     }
 

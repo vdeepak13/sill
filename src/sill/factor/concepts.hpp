@@ -10,6 +10,7 @@
 #include <sill/base/assignment.hpp>
 #include <sill/copy_ptr.hpp>
 #include <sill/factor/factor_evaluator.hpp>
+#include <sill/factor/factor_sampler.hpp>
 #include <sill/global.hpp>
 #include <sill/learning/factor_mle/factor_mle.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
@@ -187,6 +188,12 @@ namespace sill {
     typename F::result_type operator()(const index_type& index) const;
 
     /**
+     * Returns a factor that is equivalent to this factor, but has the
+     * variables ordered according to vars.
+     */
+    F reorder(const typename F::var_vector_type& vars) const;
+
+    /**
      * A helper class that can be used to evaluate the factor efficiently.
      * The primary template simply invokes F::operator(); this template can
      * be further specialized to evalute the factor more efficiently.
@@ -321,6 +328,12 @@ namespace sill {
      * A free function that multiplies a distributino factor and a constant.
      */
     friend F operator*(typename F::result_type x, const F& f);
+
+    /**
+     * A helper class that can draw samples from distribution represented by
+     * this factor in the factor's internal ordering of variables.
+     */
+    friend class factor_sampler<F>;
 
     // TODO: fix this
     concept_usage(DistributionFactor) {

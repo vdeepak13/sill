@@ -178,3 +178,61 @@ BOOST_FIXTURE_TEST_CASE(conversions, fixture) {
   canonical_gaussian cg(dom_xy, mat("1 -1; -1 1"), zeros(2), -0.918939);
   BOOST_CHECK(are_close(canonical_gaussian(mg), cg, 1e-5));
 }
+
+BOOST_AUTO_TEST_CASE(test_mg_reorder_marginal) {
+  universe u;
+  vector_variable* x = u.new_vector_variable("x", 2);
+  vector_variable* y = u.new_vector_variable("y", 1);
+  vector_var_vector xy = make_vector(x, y);
+  vector_var_vector yx = make_vector(y, x);
+
+  moment_gaussian f_xy(xy, "1 2 3", "3 1 0.5; 1 2 0.1; 0.5 0.1 1");
+  moment_gaussian f_yx(yx, "3 1 2", "1 0.5 0.1; 0.5 3 1; 0.1 1 2");
+  BOOST_CHECK(f_xy.reorder(xy) == f_xy);
+  BOOST_CHECK(f_xy.reorder(yx) == f_yx);
+  BOOST_CHECK(f_yx.reorder(xy) == f_xy);
+}
+
+BOOST_AUTO_TEST_CASE(test_mg_reorder_conditional) {
+  universe u;
+  vector_variable* x = u.new_vector_variable("x", 1);
+  vector_variable* y = u.new_vector_variable("y", 1);
+  vector_variable* z = u.new_vector_variable("z", 1);
+  vector_var_vector xv = make_vector(x);
+  vector_var_vector yz = make_vector(y, z);
+  vector_var_vector zy = make_vector(z, y);
+  vector_var_vector xyz = make_vector(x, y, z);
+  vector_var_vector xzy = make_vector(x, z, y);
+
+  moment_gaussian f_xyz(xv, "1", "3", yz, "2 4");
+  moment_gaussian f_xzy(xv, "1", "3", zy, "4 2");
+  BOOST_CHECK(f_xyz.reorder(xyz) == f_xyz);
+  BOOST_CHECK(f_xyz.reorder(xzy) == f_xzy);
+}
+
+BOOST_AUTO_TEST_CASE(test_mg_marginal_sampler) {
+  universe u;
+  vector_variable* x = u.new_vector_variable("x", 1);
+  vector_variable* y = u.new_vector_variable("y", 1);
+  vector_var_vector xy = make_vector(x, y);
+ 
+  moment_gaussian f(xy, "1 -1", "2 1; 1 2");
+  factor_sampler<moment_gaussian> sampler(f);
+  boost::lagged_fibonacci607 rng;
+  
+  size_t nsamples = 100000;
+  vec mean = zeros(2);
+  mat cov = zeros(2, 2);
+  vec sample;
+  for (size_t i = 0; i < nsamples; ++i) {
+    sampler(sample, rng);
+    mean += sample;
+    cov  += sample * sample.t();
+  }
+  mean /= nsamples;
+  cov  /= nsamples;
+  cov -= mean * mean.t();
+
+  BOOST_CHECK_SMALL(norm(mean - f.mean(), "inf"), 1e-2);
+  BOOST_CHECK_SMALL(norm(cov - f.covariance(), "inf"), 1e-2);
+}

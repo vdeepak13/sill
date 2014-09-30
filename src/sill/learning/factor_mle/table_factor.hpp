@@ -37,6 +37,11 @@ namespace sill {
       return factor;
     }
 
+    table_factor operator()(const finite_var_vector& head,
+                            const finite_var_vector& tail) const {
+      return operator()(concat(head, tail)).conditional(make_domain(tail));
+    }
+
     //! Returns the marginal distribution over a subset of variables
     table_factor operator()(const finite_domain& vars) const {
       return operator()(make_vector(vars));

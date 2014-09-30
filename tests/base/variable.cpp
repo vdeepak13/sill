@@ -31,3 +31,29 @@ BOOST_AUTO_TEST_CASE(test_constructors) {
   BOOST_CHECK_EQUAL(q->size(), 2);
   BOOST_CHECK_EQUAL(q->id(), 3);
 }
+
+BOOST_AUTO_TEST_CASE(test_num_assignments) {
+  universe u;
+  
+  finite_var_vector v;
+  v.push_back(u.new_finite_variable("a", 2));
+  v.push_back(u.new_finite_variable("b", 3));
+  v.push_back(u.new_finite_variable("c", 4));
+  v.push_back(u.new_finite_variable("d", 5));
+  v.push_back(u.new_finite_variable("e", 6));
+  v.push_back(u.new_finite_variable("f", 7));
+  v.push_back(u.new_finite_variable("g", 8));
+  v.push_back(u.new_finite_variable("h", 9));
+  v.push_back(u.new_finite_variable("i", 10));
+  v.push_back(u.new_finite_variable("j", 11));
+
+  BOOST_CHECK_EQUAL(num_assignments(v), 39916800);
+  BOOST_CHECK_EQUAL(num_assignments(make_domain(v)), 39916800);
+
+  v.push_back(u.new_finite_variable("k", 1000));
+  v.push_back(u.new_finite_variable("l", 1000));
+  v.push_back(u.new_finite_variable("m", 1000));
+  v.push_back(u.new_finite_variable("n", 1000));
+  BOOST_CHECK_THROW(num_assignments(v), std::out_of_range);
+  BOOST_CHECK_THROW(num_assignments(make_domain(v)), std::out_of_range);
+}

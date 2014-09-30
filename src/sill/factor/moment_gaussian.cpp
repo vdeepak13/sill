@@ -196,6 +196,15 @@ namespace sill {
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
 
+  double moment_gaussian::log_likelihood(const vector_dataset<>& ds) const {
+    canonical_gaussian cg(*this);
+    double ll = 0.0;
+    foreach (const vector_record<>& r, ds.records(cg.arg_vector())) {
+      ll += r.weight * log(cg(r.values));
+    }
+    return ll;
+  }
+
   moment_gaussian&
   moment_gaussian::operator*=(const moment_gaussian& x) {
     return (*this = (*this) * x);
@@ -343,6 +352,29 @@ namespace sill {
       }
     }
     return *this;
+  }
+
+  moment_gaussian
+  moment_gaussian::reorder(const vector_var_vector& vars) const {
+    assert(vars.size() == arguments().size());
+
+    // head vars must always come first in the vars vector
+    vector_var_vector head_vars(vars.begin(), vars.begin() + head().size());
+    vector_var_vector tail_vars(vars.begin() + head().size(), vars.end());
+    assert(make_domain(head_list) == make_domain(head_vars));
+    assert(make_domain(tail_list) == make_domain(tail_vars));
+
+    // get the indices
+    uvec head_ind = indices(head_vars);
+    uvec tail_ind = indices(tail_vars);
+    
+    // return the factor
+    return moment_gaussian(head_vars,
+                           cmean(head_ind),
+                           cov(head_ind, head_ind),
+                           tail_vars,
+                           coeff(head_ind, tail_ind),
+                           likelihood);
   }
 
   moment_gaussian moment_gaussian::conditional(const vector_domain& B) const {

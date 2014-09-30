@@ -6,6 +6,7 @@
 #include <sill/base/stl_util.hpp>
 #include <sill/base/vector_assignment.hpp>
 #include <sill/factor/factor.hpp>
+#include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/dataset_old/vector_record.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
@@ -16,9 +17,6 @@
 #include <sill/macros_def.hpp>
 
 namespace sill {
-
-  // Forward declaration
-  template <typename T> class vector_dataset;
 
   /**
    * The base class of all Guassians

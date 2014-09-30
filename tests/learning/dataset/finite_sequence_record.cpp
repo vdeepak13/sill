@@ -37,7 +37,7 @@ BOOST_FIXTURE_TEST_CASE(test_construct, fixture) {
 BOOST_FIXTURE_TEST_CASE(test_assign, fixture) {
   finite_sequence_record r(procs);
 
-  // test vector assignment
+  // vector assignment
   std::vector<size_t> valvec;
   valvec.push_back(0);
   valvec.push_back(1);
@@ -57,7 +57,7 @@ BOOST_FIXTURE_TEST_CASE(test_assign, fixture) {
   std::cout << r << std::endl;
   r.free_memory();
 
-  // test pointer assignment
+  // pointer assignment
   size_t* values = new size_t[4];
   values[0] = 1;
   values[1] = 0;
@@ -73,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE(test_assign, fixture) {
   BOOST_CHECK_EQUAL(r(1, 1), 1);
   r.free_memory();
 
-  // test finite_assignment assignment
+  // finite_assignment assignment
   finite_assignment a;
   a[procs[0]->at(1)] = 1;
   a[procs[0]->at(0)] = 0;
@@ -87,6 +87,20 @@ BOOST_FIXTURE_TEST_CASE(test_assign, fixture) {
   BOOST_CHECK_EQUAL(r(0, 1), 1);
   BOOST_CHECK_EQUAL(r(1, 0), 1);
   BOOST_CHECK_EQUAL(r(1, 1), 2);
+
+  // setting a particular time step
+  std::vector<size_t> values1;
+  values1.push_back(2);
+  values1.push_back(1);
+  r.set(1, values1);
+  BOOST_CHECK_EQUAL(r.num_steps(), 2);
+  BOOST_CHECK_EQUAL(r.size(), 4);
+  BOOST_CHECK_EQUAL(r.weight(), 2.0);
+  BOOST_CHECK_EQUAL(r(0, 0), 0);
+  BOOST_CHECK_EQUAL(r(0, 1), 2);
+  BOOST_CHECK_EQUAL(r(1, 0), 1);
+  BOOST_CHECK_EQUAL(r(1, 1), 1);
+
   r.free_memory();
 }
 
@@ -101,7 +115,7 @@ BOOST_FIXTURE_TEST_CASE(test_extract, fixture) {
   values[5] = 3;
   r.assign(values, 3, 0.5);
 
-  // test extract all
+  // extract an assignment for all
   finite_assignment a_all;
   r.extract(a_all);
   BOOST_CHECK_EQUAL(a_all.size(), 6);
@@ -112,14 +126,30 @@ BOOST_FIXTURE_TEST_CASE(test_extract, fixture) {
   BOOST_CHECK_EQUAL(a_all[procs[1]->at(1)], 2);
   BOOST_CHECK_EQUAL(a_all[procs[1]->at(2)], 3);
   
-  // test extract current
+  // extract assignment at t
   finite_assignment a_cur;
   r.extract(1, a_cur);
   BOOST_CHECK_EQUAL(a_cur.size(), 2);
   BOOST_CHECK_EQUAL(a_cur[procs[0]->current()], 1);
   BOOST_CHECK_EQUAL(a_cur[procs[1]->current()], 2);
+
+  // extract values at t
+  std::vector<size_t> values1;
+  r.extract(1, values1);
+  BOOST_CHECK_EQUAL(values1.size(), 2);
+  BOOST_CHECK_EQUAL(values1[0], 1);
+  BOOST_CHECK_EQUAL(values1[1], 2);
   
-  // test extract pointers
+  // extract values for a time range
+  std::vector<size_t> values12;
+  r.extract(1, 2, values12);
+  BOOST_CHECK_EQUAL(values12.size(), 4);
+  BOOST_CHECK_EQUAL(values12[0], 1);
+  BOOST_CHECK_EQUAL(values12[1], 2);
+  BOOST_CHECK_EQUAL(values12[2], 0);
+  BOOST_CHECK_EQUAL(values12[3], 3);
+  
+  // extract pointers
   std::vector<size_t*> ptrs;
   std::vector<std::pair<size_t,size_t> > indices;
   indices.push_back(std::make_pair(1, 2));
@@ -131,7 +161,7 @@ BOOST_FIXTURE_TEST_CASE(test_extract, fixture) {
   BOOST_CHECK_EQUAL(state.elems[1], values+0);
   BOOST_CHECK_EQUAL(*state.weights, 0.5);
   
-  // test extract record
+  // extract record
   finite_record rt;
   r.extract(indices, rt);
   BOOST_CHECK_EQUAL(rt.values.size(), 2);
