@@ -49,13 +49,13 @@ namespace sill {
 
       // compute the initial distribution
       fixed_view<typename F::dataset_type> fixed = ds.fixed(0);
-      factor_mle<F> mle_init(&fixed);
+      factor_mle<F> mle_init(&fixed, params);
       model.initial(mle_init(model.current()));
       ll += model.initial().log_likelihood(fixed);
       
       // compute the transition model
       sliding_view<typename F::dataset_type> sliding = ds.sliding(order);
-      factor_mle<F> mle_transition(&sliding);
+      factor_mle<F> mle_transition(&sliding, params);
       model.transition(mle_transition(model.next(), model.current()));
       ll += model.transition().log_likelihood(sliding);
 

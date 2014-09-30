@@ -46,7 +46,6 @@
    - fix chow-liu
    - more efficient sampling from BNs and decomposable models
    - try different initialization once we have better sampling of MGs
-   - change the dataset2 design to allow on-disk datasets.
    - clean up the subset_iterator code
    - marginal() test => is_marginal() 
    - merged datasets
@@ -55,6 +54,7 @@
    - clean up and simplify the optimization code
    - marginal() => is_marginal(), standardize arg_vector, head_vector() etc.
    - get rid of hacks in the table_factor and dense_table
+   - simplify the storage format of vector datasets
 
 8. more examples / applications:
    - viterbi algorithm

@@ -8,6 +8,10 @@ using namespace sill;
 typedef std::vector<vector_discrete_process*> proc_vector_type;
 
 template class vector_sequence_record<double>;
+template void load_tabular(const std::string&, const symbolic_format&,
+                           vector_sequence_record<>&);
+template void save_tabular(const std::string&, const symbolic_format&,
+                           const vector_sequence_record<>&);
 
 struct fixture {
   fixture() {

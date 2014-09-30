@@ -298,7 +298,9 @@ namespace sill {
   void load_tabular(const std::string& filename,
                     const symbolic_format& format,
                     hybrid_sequence_record<T>& record) {
-    //record.check_comatible(format.all_processes());
+    if (record.num_processes() != format.discrete_procs.size()) {
+      throw std::logic_error("The record and format must have the same processes.");
+    }
 
     std::ifstream in(filename);
     if (!in) {
@@ -319,15 +321,17 @@ namespace sill {
         size_t col = format.skip_cols;
         size_t fi = 0;
         size_t vi = 0;
-        foreach(const symbolic_format::variable_info& var, format.vars) {
-          if (var.is_finite()) {
-            finite_vals[fi++].push_back(var.parse(tokens[col++]));
-          } else if (var.is_vector()) {
-            for (size_t j = 0; j < var.size(); ++j) {
+        foreach(const symbolic_format::discrete_process_info& info,
+                format.discrete_procs) {
+          if (info.is_finite()) {
+            finite_vals[fi++].push_back(info.parse(tokens[col++]));
+          } else if (info.is_vector()) {
+            size_t len = info.size();
+            for (size_t j = 0; j < len; ++j) {
               vector_vals[vi++].push_back(parse_string<T>(tokens[col++]));
             }
           } else {
-            throw std::logic_error("Unsupported variable type " + var.name());
+            throw std::logic_error("Unsupported variable type " + info.name());
           }
         }
         assert(finite_cols == fi);
@@ -360,7 +364,9 @@ namespace sill {
   void save_tabular(const std::string& filename,
                     const symbolic_format& format,
                     const hybrid_sequence_record<T>& record) {
-    //record.check_compatible(format.all_processes());
+    if (record.num_processes() != format.discrete_procs.size()) {
+      throw std::logic_error("The record and format must have the same processes.");
+    }
     
     std::ofstream out(filename);
     if (!out) {
@@ -379,14 +385,15 @@ namespace sill {
       }
       size_t fi = 0;
       size_t vi = 0;
-      for(size_t i = 0; i < format.vars.size(); ++i) {
-        const symbolic_format::variable_info& var = format.vars[i];
-        if (var.is_finite()) {
+      for(size_t i = 0; i < format.discrete_procs.size(); ++i) {
+        const symbolic_format::discrete_process_info& info = format.discrete_procs[i];
+        if (info.is_finite()) {
           if (i > 0) { out << separator; }
-          var.print(out, record.finite()(fi++, t));
+          info.print(out, record.finite()(fi++, t));
         } else {
           const T* ptr = record.vector().value_ptr(vi++, t);
-          for (size_t j = 0; j < var.size(); ++j) {
+          size_t len = info.size();
+          for (size_t j = 0; j < len; ++j) {
             if (i || j) { out << separator; }
             out << *ptr;
             ptr += num_steps;
