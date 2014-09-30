@@ -355,13 +355,18 @@ namespace sill {
   }
 
   /**
-   * Loads a single sequence in a tabular format.
+   * Loads a single sequence in a tabular format. The record must be initialized.
    * \relates finite_sequence_record
    */
   inline void load_tabular(const std::string& filename,
                            const symbolic_format& format,
                            finite_sequence_record& record) {
-    //record.check_compatible(format.finite_processes());
+    if (!format.is_finite_discrete()) {
+      throw std::domain_error("The format contains process(es) that are not finite");
+    }
+    if (record.num_processes() != format.discrete_procs.size()) {
+      throw std::logic_error("The record and format must have the same processes.");
+    }
 
     std::ifstream in(filename);
     if (!in) {
@@ -377,7 +382,8 @@ namespace sill {
       std::vector<const char*> tokens;
       if (format.parse(num_processes, line, line_number, tokens)) {
         for (size_t i = 0; i < num_processes; ++i) {
-          values[i].push_back(format.vars[i].parse(tokens[i + format.skip_cols]));
+          const char* token = tokens[i + format.skip_cols];
+          values[i].push_back(format.discrete_procs[i].parse(token));
         }
       }
     }
@@ -398,8 +404,13 @@ namespace sill {
   inline void save_tabular(const std::string& filename,
                            const symbolic_format& format,
                            const finite_sequence_record& record) {
-    //record.check_compatible(format.finite_processes());
-    
+    if (!format.is_finite_discrete()) {
+      throw std::domain_error("The format contains process(es) that are not finite");
+    }
+    if (record.num_processes() != format.discrete_procs.size()) {
+      throw std::logic_error("The record and format must have the same processes.");
+    }
+
     std::ofstream out(filename);
     if (!out) {
       throw std::runtime_error("Cannot open the file " + filename);
@@ -417,7 +428,7 @@ namespace sill {
       }
       for (size_t i = 0; i < num_processes; ++i) {
         if (i > 0) { out << separator; }
-        format.vars[i].print(out, record(i, t));
+        format.discrete_procs[i].print(out, record(i, t));
       }
       out << std::endl;
     }

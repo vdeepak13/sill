@@ -6,6 +6,10 @@
 using namespace sill;
 
 template class hybrid_sequence_record<double>;
+template void load_tabular(const std::string&, const symbolic_format&,
+                           hybrid_sequence_record<>&);
+template void save_tabular(const std::string&, const symbolic_format&,
+                           const hybrid_sequence_record<>&);
 
 typedef std::vector<discrete_process<variable>*> proc_vector_type;
 typedef discrete_process<variable> process_type;

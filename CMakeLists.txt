@@ -78,6 +78,7 @@ endif(MSVC)
 
 find_package(Boost 1.40 COMPONENTS 
               program_options 
+              filesystem
               iostreams  # deprecate together with MPI
               date_time
               thread

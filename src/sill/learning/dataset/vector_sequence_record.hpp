@@ -431,7 +431,12 @@ namespace sill {
   void load_tabular(const std::string& filename,
                     const symbolic_format& format,
                     vector_sequence_record<T>& record) {
-    //record.check_comatible(format.vector_processes());
+    if (!format.is_vector_discrete()) {
+      throw std::domain_error("The format contains process(es) that are not vector");
+    }
+    if (record.num_processes() != format.discrete_procs.size()) {
+      throw std::logic_error("The record and format must have the same processes.");
+    }
 
     std::ifstream in(filename);
     if (!in) {
@@ -469,8 +474,13 @@ namespace sill {
   void save_tabular(const std::string& filename,
                     const symbolic_format& format,
                     const vector_sequence_record<T>& record) {
-    //record.check_compatible(format.vector_processes());
-    
+    if (!format.is_vector_discrete()) {
+      throw std::domain_error("The format contains process(es) that are not vector");
+    }
+    if (record.num_processes() != format.discrete_procs.size()) {
+      throw std::logic_error("The record and format must have the same processes.");
+    }
+
     std::ofstream out(filename);
     if (!out) {
       throw std::runtime_error("Cannot open the file " + filename);
@@ -489,7 +499,8 @@ namespace sill {
       }
       for (size_t i = 0; i < num_processes; ++i) {
         const T* ptr = record.value_ptr(i, t);
-        for (size_t j = 0; j < record.vec_size(i); ++j) {
+        size_t len = record.processes()[i]->size();
+        for (size_t j = 0; j < len; ++j) {
           if (i || j) { out << separator; }
           out << *ptr;
           ptr += num_steps;
