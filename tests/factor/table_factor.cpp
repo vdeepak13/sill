@@ -116,8 +116,26 @@ BOOST_AUTO_TEST_CASE(test_pow) {
   BOOST_CHECK(are_close(pow(f, 2), f_pow, 1e-10));
 }
 
+BOOST_AUTO_TEST_CASE(test_reorder) {
+  universe u;
+  finite_variable* a = u.new_finite_variable("a", 2);
+  finite_variable* b = u.new_finite_variable("b", 3);
+  
+  finite_var_vector ab = make_vector(a, b);
+  finite_var_vector ba = make_vector(b, a);
+
+  boost::array<double, 6> ab_vals = {0.5, 1, 1.5, 2, 2.5, 3};
+  boost::array<double, 6> ba_vals = {0.5, 1.5, 2.5, 1, 2, 3};
+  
+  table_factor ab_f = make_dense_table_factor(ab, ab_vals);
+  table_factor ba_f = make_dense_table_factor(ba, ba_vals);
+  
+  BOOST_CHECK(ab_f.reorder(ab) == ab_f);
+  BOOST_CHECK(ab_f.reorder(ba) == ba_f);
+}
+
 BOOST_AUTO_TEST_CASE(test_sampling) {
-    // dataset parameters
+  // dataset parameters
   size_t nsamples = 100000;
   size_t nvars = 2;
   size_t arity = 4;
@@ -142,6 +160,63 @@ BOOST_AUTO_TEST_CASE(test_sampling) {
   BOOST_CHECK_CLOSE(true_entropy, cross_entropy / nsamples, 1.0 /* percent */);
 
   // TODO: test conditioning and computing log likelihoods
+}
+
+BOOST_AUTO_TEST_CASE(test_marginal_sampler) {
+    // dataset parameters
+  size_t nsamples = 100000;
+  size_t nvars = 2;
+  size_t arity = 4;
+
+  universe u;
+  finite_domain vars;
+  for (size_t i = 0; i < nvars; ++i)
+    vars.insert(u.new_finite_variable(arity));
+  boost::mt11213b rng;
+
+  // Create a model to sample from.
+  table_factor f = uniform_factor_generator()(vars, rng);
+  f.normalize();
+
+  // Test log likelihood.
+  double true_entropy = f.entropy();
+  double cross_entropy = 0;
+  std::vector<size_t> sample;
+  factor_sampler<table_factor> sampler(f);
+  for (size_t i = 0; i < nsamples; ++i) {
+    sampler(sample, rng);
+    cross_entropy -= std::log(f(sample));
+  }
+  BOOST_CHECK_CLOSE(true_entropy, cross_entropy / nsamples, 1.0 /* percent */);
+}
+
+BOOST_AUTO_TEST_CASE(test_conditional_sampler) {
+  // dataset parameters
+  size_t nsamples = 100000;
+  size_t arity = 4;
+
+  universe u;
+  finite_variable* head = u.new_finite_variable(arity);
+  finite_variable* tail = u.new_finite_variable(arity);
+
+  // Create a model to sample from
+  boost::mt11213b rng;
+  uniform_factor_generator gen;
+  table_factor f = gen(make_domain(head), make_domain(tail), rng);
+
+  // For each assignment to tail, draw a number of samples and compare to f
+  factor_sampler<table_factor> sampler(f, make_vector(head));
+  std::vector<size_t> sample;
+  for (size_t val = 0; val < arity; ++val) {
+    std::vector<size_t> tail_index(1, val);
+    table_factor g(make_domain(head), 0);
+    for (size_t i = 0; i < nsamples; ++i) {
+      sampler(sample, tail_index, rng);
+      ++g(sample);
+    }
+    double diff = norm_1(f.restrict(make_assignment(tail, val)), g / nsamples);
+    BOOST_CHECK_SMALL(diff, 0.01);
+  }
 }
 
 BOOST_AUTO_TEST_CASE(test_comparison) {

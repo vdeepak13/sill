@@ -173,6 +173,31 @@ namespace sill {
     }
 
     /**
+     * Extracts a single time step into a vector of values.
+     */
+    void extract(size_t t, std::vector<size_t>& values) const {
+      assert(t < num_steps_);
+      values.resize(num_processes());
+      for (size_t i = 0; i < values_.size(); ++i) {
+        values[i] = values_[i][t];
+      }
+    }
+
+    /**
+     * Extracts a closed range of time steps into a vector of values.
+     */
+    void extract(size_t t1, size_t t2, std::vector<size_t>& values) const {
+      assert(t1 <= t2 && t2 < num_steps());
+      values.resize(num_processes() * (t2-t1+1));
+      size_t* dest = &values[0];
+      for (size_t t = t1; t <= t2; ++t) {
+        for (size_t i = 0; i < values_.size(); ++i) {
+          *dest++ = values_[i][t];
+        }
+      }
+    }
+
+    /**
      * Extracts the values for the variables with given indices.
      */
     void extract(const var_indices_type& indices,
@@ -226,6 +251,14 @@ namespace sill {
     }
 
     /**
+     * Allocates memory for the given number of steps and sets the weight.
+     * Does not initialize the values.
+     */
+    void assign(size_t num_steps, double weight) {
+      assign(new size_t[num_processes() * num_steps], num_steps, weight);
+    }
+
+    /**
      * Assigns data to this record. The data is stored in process-major order,
      * that is, first the entire sequence for the first process, then for the
      * second process, etc. The values pointer becomes owned by this record
@@ -264,6 +297,16 @@ namespace sill {
         }
       } else {
         assign(NULL, 0, weight);
+      }
+    }
+
+    /**
+     * Sets the values for the given time step.
+     */
+    void set(size_t t, const std::vector<size_t>& values) {
+      assert(values.size() == num_processes());
+      for (size_t i = 0; i < num_processes(); ++i) {
+        values_[i][t] = values[i];
       }
     }
 

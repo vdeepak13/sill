@@ -1,5 +1,5 @@
-#ifndef SILL_VECTOR_DATASET_HPP
-#define SILL_VECTOR_DATASET_HPP
+#ifndef SILL_VECTOR_DATASET_OLD_HPP
+#define SILL_VECTOR_DATASET_OLD_HPP
 
 #include <fstream>
 #include <string>

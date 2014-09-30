@@ -860,9 +860,19 @@ namespace sill {
        * this.
        */
       size_t operator()(const index_type& index) const {
+        assert(multiplier_.size() == index.size());
         size_t offset = 0;
         for (size_t d = 0; d < multiplier_.size(); ++d)
           offset += multiplier_[d] * index[d];
+        return offset;
+      }
+
+      size_t operator()(const index_type& index, size_t nhead) const {
+        assert(multiplier_.size() == index.size() + nhead);
+        size_t offset = 0;
+        for (size_t d = nhead; d < multiplier_.size(); ++d) {
+          offset += multiplier_[d] * index[d-nhead];
+        }
         return offset;
       }
 
@@ -881,6 +891,17 @@ namespace sill {
           offset = offset % multiplier_[d];
         }
         return ind;
+      }
+
+      void index(size_t offset, size_t nhead, index_type& ind) const {
+        ind.resize(nhead);
+        if (nhead < multiplier_.size()) {
+          nhead %= multiplier_[nhead];
+        }
+        for (int d = nhead-1; d >= 0; --d) {
+          ind[d] = offset / multiplier_[d];
+          offset = offset % multiplier_[d];
+        }
       }
 
     }; // class offset_functor

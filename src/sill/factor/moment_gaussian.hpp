@@ -257,6 +257,9 @@ namespace sill {
       return operator()(a).log_value();
     }
 
+    //! Returns the log-likelihood of this factor given a dataset
+    double log_likelihood(const vector_dataset<>& ds) const;
+
     //! multiplies in another factor
     moment_gaussian& operator*=(const moment_gaussian& x);
 
@@ -281,6 +284,9 @@ namespace sill {
       
     //! implements Factor::subst_args
     moment_gaussian& subst_args(const vector_var_map& map);
+
+    //! implements IndexableFactor::reorder
+    moment_gaussian reorder(const vector_var_vector& args) const;
 
     //! If this factor represents P(A,B|C), then this returns P(A|B,C).
     moment_gaussian conditional(const vector_domain& B) const;

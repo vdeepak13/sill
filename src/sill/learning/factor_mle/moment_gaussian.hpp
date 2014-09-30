@@ -30,11 +30,6 @@ namespace sill {
       assert(dataset->size() > 0);
     }
 
-    //! Returns the marginal distribution over a subset of variables
-    moment_gaussian operator()(const vector_domain& vars) const {
-      return operator()(make_vector(vars));
-    }
-
     //! Returns the marginal distribution over a sequence of variables
     moment_gaussian operator()(const vector_var_vector& vars) const {
       size_t n = vector_size(vars);
@@ -62,6 +57,23 @@ namespace sill {
       }
 
       return moment_gaussian(vars, mean, cov);
+    }
+
+    //! Returns the conditional distribution p(head | tail)
+    moment_gaussian operator()(const vector_var_vector& head,
+                               const vector_var_vector& tail) const {
+      return operator()(concat(head, tail)).conditional(make_domain(tail));
+    }
+
+    //! Returns the marginal distribution over a subset of variables
+    moment_gaussian operator()(const vector_domain& vars) const {
+      return operator()(make_vector(vars));
+    }
+
+    //! Returns the conditional distribution p(head | tail)
+    moment_gaussian operator()(const vector_domain& head,
+                               const vector_domain& tail) const {
+      return operator()(set_union(head, tail)).conditional(tail);
     }
 
     //! Returns the marginal distribution over a subset of variables

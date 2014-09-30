@@ -156,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE(sliding_window_record, fixture) {
 BOOST_FIXTURE_TEST_CASE(fixed0, fixture) {
   fixed_view<finite_dataset> view = ds.fixed(0);
   finite_dataset::const_record_iterator it, end;
-  finite_var_vector vars = variables(procs, 0);
+  finite_var_vector vars = variables(procs, current_step);
   boost::tie(it, end) = view.records(vars);
   
   // check the arguments
@@ -182,6 +182,7 @@ BOOST_FIXTURE_TEST_CASE(fixed0, fixture) {
   BOOST_CHECK(it == end);
 }
 
+/*
 BOOST_FIXTURE_TEST_CASE(fixed01_selected, fixture) {
   sliding_view <finite_dataset> view = ds.sliding(1);
   finite_dataset::const_record_iterator it, end;
@@ -219,3 +220,4 @@ BOOST_FIXTURE_TEST_CASE(fixed_record_selected, fixture) {
   BOOST_CHECK_EQUAL(r.values[1], 2);
   BOOST_CHECK_EQUAL(r.weight, 0.5);
 }
+*/

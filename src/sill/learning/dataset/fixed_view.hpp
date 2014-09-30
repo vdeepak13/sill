@@ -39,15 +39,17 @@ namespace sill {
     //! Constructs a fixed view for the given sequence dataset
     fixed_view(const sequence_dataset<BaseDS>* dataset, size_t first, size_t last)
       : dataset_(dataset), first_(first), last_(last) {
-      assert(first < last);
+      //assert(first < last);
+      assert(last == first + 1); // todo: generalize
 
       // initialize the variables
       var_vector_type vars;
       vars.reserve((last - first) * dataset->num_arguments());
       foreach (process_type* proc, dataset->arg_vector()) {
-        for (size_t t = first; t < last; ++t) {
-          vars.push_back(proc->at(t));
-        }
+        vars.push_back(proc->current()); // todo: generlize
+//         for (size_t t = first; t < last; ++t) {
+//           vars.push_back(proc->at(t));
+//         }
       }
       BaseDS::initialize(vars);
 
@@ -75,7 +77,7 @@ namespace sill {
       assert(row < size());
       size_t ds_row = physical_rows_[row];
       var_indices_type var_indices;
-      dataset_->index_mapping().indices(vars, var_indices);
+      dataset_->index_mapping().indices(vars, first_, var_indices);
       record_type result(vars);
       dataset_->record(ds_row).extract(var_indices, result);
       return result;
@@ -100,7 +102,7 @@ namespace sill {
       boost::tie(d.it, d.end) = dataset_->records(procs);
       d.start = true;
       typename sequence_record_type::index_map_type index_map(procs);
-      index_map.indices(vars, d.indices);
+      index_map.indices(vars, first_, d.indices);
       return &d;
     }
 

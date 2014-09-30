@@ -305,6 +305,21 @@ namespace sill {
     return *this;
   }
 
+  namespace {
+    struct select_second {
+      double operator()(double x, double y) { return y; }
+    };
+  }
+
+  table_factor
+  table_factor::reorder(const finite_var_vector& vars) const {
+    table_factor result(vars);
+    result.table_data.join_with(table(),
+                                make_dim_map(arg_seq, result.var_index),
+                                select_second());
+    return result;
+  }
+
   void
   table_factor::marginal(const finite_domain& retain, table_factor& f) const {
     collapse(std::plus<result_type>(), 0, retain, f);

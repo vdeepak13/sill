@@ -38,7 +38,7 @@ BOOST_FIXTURE_TEST_CASE(test_construct, fixture) {
 BOOST_FIXTURE_TEST_CASE(test_assign, fixture) {
   vector_sequence_record<> r(procs);
 
-  // test vector assignment
+  // vector assignment
   std::vector<double> valvec;
   valvec.push_back(1);
   valvec.push_back(2);
@@ -59,7 +59,7 @@ BOOST_FIXTURE_TEST_CASE(test_assign, fixture) {
   std::cout << r << std::endl;
   r.free_memory();
 
-  // test pointer assignment
+  // pointer assignment
   double* values = new double[3];
   values[0] = 1;
   values[1] = 0.5;
@@ -73,7 +73,7 @@ BOOST_FIXTURE_TEST_CASE(test_assign, fixture) {
   BOOST_CHECK_EQUAL(r.value_ptr(1, 0)[0], 0.25);
   r.free_memory();
 
-  // test vector_assignment assignment
+  // vector_assignment assignment
   vector_assignment a;
   a[procs[0]->at(0)] = "1 2";
   a[procs[1]->at(0)] = "4";
@@ -89,6 +89,19 @@ BOOST_FIXTURE_TEST_CASE(test_assign, fixture) {
   BOOST_CHECK_EQUAL(r.value_ptr(0, 1)[0], 8);
   BOOST_CHECK_EQUAL(r.value_ptr(0, 1)[2], 16);
   BOOST_CHECK_EQUAL(r.value_ptr(1, 1)[0], 32);
+
+  // setting a particular time step
+  arma::vec values1 = "1 0.5 0.25";
+  r.set(1, values1);
+  BOOST_CHECK_EQUAL(r.num_steps(), 2);
+  BOOST_CHECK_EQUAL(r.size(), 6);
+  BOOST_CHECK_EQUAL(r.weight(), 2.0);
+  BOOST_CHECK_EQUAL(r.value_ptr(0, 0)[0], 1);
+  BOOST_CHECK_EQUAL(r.value_ptr(0, 0)[2], 2);
+  BOOST_CHECK_EQUAL(r.value_ptr(1, 0)[0], 4);
+  BOOST_CHECK_EQUAL(r.value_ptr(0, 1)[0], 1);
+  BOOST_CHECK_EQUAL(r.value_ptr(0, 1)[2], 0.5);
+  BOOST_CHECK_EQUAL(r.value_ptr(1, 1)[0], 0.25);
   r.free_memory();
 }
 
@@ -103,7 +116,7 @@ BOOST_FIXTURE_TEST_CASE(test_extract, fixture) {
   values[5] = 32;
   r.assign(values, 2, 0.5);
 
-  // test extract all
+  // extract an assignment for all
   vector_assignment a_all;
   r.extract(a_all);
   BOOST_CHECK_EQUAL(a_all.size(), 4);
@@ -112,14 +125,33 @@ BOOST_FIXTURE_TEST_CASE(test_extract, fixture) {
   BOOST_CHECK(equal(a_all[procs[1]->at(0)], vec("16")));
   BOOST_CHECK(equal(a_all[procs[1]->at(1)], vec("32")));
   
-  // test extract current
+  // extract assignment at t
   vector_assignment a_cur;
   r.extract(1, a_cur);
   BOOST_CHECK_EQUAL(a_cur.size(), 2);
   BOOST_CHECK(equal(a_cur[procs[0]->current()], vec("2 8")));
   BOOST_CHECK(equal(a_cur[procs[1]->current()], vec("32")));
+
+  // extract values at t
+  arma::vec values1;
+  r.extract(1, values1);
+  BOOST_CHECK_EQUAL(values1.size(), 3);
+  BOOST_CHECK_EQUAL(values1[0], 2);
+  BOOST_CHECK_EQUAL(values1[1], 8);
+  BOOST_CHECK_EQUAL(values1[2], 32);
+
+  // extract values for a time range
+  arma::vec values01;
+  r.extract(0, 1, values01);
+  BOOST_CHECK_EQUAL(values01.size(), 6);
+  BOOST_CHECK_EQUAL(values01[0], 1);
+  BOOST_CHECK_EQUAL(values01[1], 4);
+  BOOST_CHECK_EQUAL(values01[2], 16);
+  BOOST_CHECK_EQUAL(values01[3], 2);
+  BOOST_CHECK_EQUAL(values01[4], 8);
+  BOOST_CHECK_EQUAL(values01[5], 32);
   
-  // test extract pointers
+  // extract pointers
   std::vector<std::pair<size_t,size_t> > indices;
   indices.push_back(std::make_pair(1, 0));
   indices.push_back(std::make_pair(0, 1));
@@ -131,7 +163,7 @@ BOOST_FIXTURE_TEST_CASE(test_extract, fixture) {
   BOOST_CHECK_EQUAL(state.elems[2], values+3);
   BOOST_CHECK_EQUAL(*state.weights, 0.5);
   
-  // test extract record
+  // extract record
   vector_record<> rt;
   r.extract(indices, rt);
   BOOST_CHECK(equal(rt.values, vec("16 2 8")));

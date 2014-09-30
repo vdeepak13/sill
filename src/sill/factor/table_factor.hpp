@@ -14,6 +14,8 @@
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/global.hpp>
 #include <sill/factor/factor.hpp>
+#include <sill/factor/factor_evaluator.hpp>
+#include <sill/factor/factor_sampler.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional.hpp>
 #include <sill/learning/dataset/finite_dataset.hpp>
@@ -163,6 +165,9 @@ namespace sill {
     result_type operator()(const finite_record_old& r) const {
       return v(r);
     }
+    result_type operator()(const index_type& index) const {
+      return table_data(index);
+    }
     result_type operator()(size_t i) const {
       return v(i);
     }
@@ -175,6 +180,9 @@ namespace sill {
     }
     result_type& operator()(const finite_record_old& r) {
       return v(r);
+    }
+    result_type& operator()(const index_type& index) {
+      return table_data(index);
     }
     result_type& operator()(size_t i) {
       return v(i);
@@ -258,7 +266,7 @@ namespace sill {
       return std::log(v(i));
     }
 
-    //! Returns the log-likelihood of a dataset
+    //! Returns the log-likelihood of this factor given a dataset
     double log_likelihood(const finite_dataset& ds) const {
       double result = 0.0;
       foreach (const finite_record& r, ds.records(arg_seq)) {
@@ -523,6 +531,9 @@ namespace sill {
 
     //! implements Factor::subst_args
     table_factor& subst_args(const finite_var_map& var_map);
+
+    //! implements IndexableFactor::reorder
+    table_factor reorder(const finite_var_vector& vars) const;
 
     //! implements DistributionFactor::marginal
     table_factor marginal(const finite_domain& retain) const {
@@ -1294,6 +1305,81 @@ namespace sill {
   typedef boost::function<table_factor(const finite_domain&,
                                        const finite_domain&)>
     conditional_table_factor_fn;
+
+  template <>
+  class factor_sampler<table_factor> {
+  public:
+    typedef std::vector<size_t> index_type;
+    typedef finite_var_vector   var_vector_type;
+    
+    //! Creates a sampler for a marginal distribution
+    factor_sampler(const table_factor& factor)
+      : table_(factor.table()),
+        nhead_(table_.arity()),
+        ntail_(0),
+        nelems_(table_.size()) {
+      compute_cumulative_sums();
+    }
+
+    //! Create a sampler for a conditional distribution p(head | rest)
+    factor_sampler(const table_factor& factor,
+                   const finite_var_vector& head)
+      : table_(factor.table()),
+        nhead_(head.size()),
+        ntail_(table_.arity() - nhead_),
+        nelems_(num_assignments(head)) {
+      assert(nhead_ <= table_.arity());
+      assert(std::equal(head.begin(), head.end(), factor.arg_vector().begin()));
+      assert(table_.size() % nelems_ == 0);
+      compute_cumulative_sums();
+    }
+
+    //! Draw a random sample from a marginal distribution
+    template <typename RandomNumberGenerator>
+    void operator()(index_type& sample, RandomNumberGenerator& rng) const {
+      assert(ntail_ == 0);
+      dense_table<double>::const_iterator begin = table_.begin();
+      boost::random::uniform_real_distribution<> unif01;
+      size_t offset =
+        std::upper_bound(begin, begin + nelems_, unif01(rng)) - begin;
+      if (offset >= nelems_) { offset = nelems_ - 1; }
+      table_.offset.index(offset, nhead_, sample);
+    }
+
+    //! Draw a random sample from a conditional distributino
+    template <typename RandomNumberGenerator>
+    void operator()(index_type& sample, const index_type& tail,
+                    RandomNumberGenerator& rng) const {
+      assert(tail.size() == ntail_);
+      size_t start = table_.offset(tail, nhead_);
+      dense_table<double>::const_iterator begin = table_.begin() + start;
+      boost::random::uniform_real_distribution<> unif01;
+      size_t offset =
+        std::upper_bound(begin, begin + nelems_, unif01(rng)) - begin;
+      if (offset >= nelems_) { offset = nelems_ - 1; }
+      table_.offset.index(offset, nhead_, sample);
+    }
+
+  private:
+    void compute_cumulative_sums() {
+      dense_table<double>::iterator it = table_.begin();
+      while (it != table_.end()) {
+        double sum = 0.0;
+        for (size_t i = 0; i < nelems_; ++i) {
+          sum += *it;
+          *it = sum;
+          ++it;
+        }
+        assert(std::abs(sum - 1.0) < 1e-10); // is this stable?
+      }
+    }
+
+    dense_table<double> table_;
+    size_t nhead_;
+    size_t ntail_;
+    size_t nelems_;
+
+  }; // class factor_sampler<table_factor>
 
   // Traits
   //============================================================================
