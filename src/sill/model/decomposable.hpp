@@ -1418,6 +1418,17 @@ namespace sill {
       return *this;
     }
 
+    F restrict_flatten(const assignment_type& a) const {
+      F result(1.0);
+      foreach(vertex v, jt.vertices()) {
+        result *= jt[v].restrict(a);
+      }
+      foreach(edge e, jt.edges()) {
+        result /= jt[e].restrict(a);
+      }
+      return result;
+    }
+
     /**
      * Marginalizes a set of variables out of this decomposable model.
      *

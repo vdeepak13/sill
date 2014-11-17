@@ -58,7 +58,7 @@ void def_factor() {
     .def(init<finite_var_vector,vector_double>())
     .def("arguments", &table_factor::arguments, return_value_policy<copy_const_reference>())
     .def("size", &table_factor::size)
-    .def("arg_list", &table_factor::arg_list, return_value_policy<copy_const_reference>())
+    .def("arg_vector", &table_factor::arg_vector, return_value_policy<copy_const_reference>())
     .def("__iter__", iterator<dense_table<double> >())
     .def("v", tab_evala)
     .def("v", tab_evali)

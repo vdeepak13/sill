@@ -164,7 +164,7 @@ struct junction_tree_registrar
       //.def(init<const cluster_graph<vertex, vertex_property, edge_property>&>())
       .def("initialize", &junction_tree_registrar::initialize_vc)
       .def("swap", &Graph::swap)
-      .def("neihgbors", &Graph::neighbors)
+      .def("neighbors", &Graph::neighbors)
       .def("vertex_properties", &Graph::vertex_properties)
       .def("edge_properties", &Graph::edge_properties)
       .def("root", &Graph::root)

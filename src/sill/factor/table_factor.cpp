@@ -651,6 +651,10 @@ namespace sill {
   // =====================================================================
 
   table_factor& table_factor::operator+=(const table_factor& y) { 
+    if (arg_seq == y.arg_seq) {
+      table_data.join_with(y.table(), std::plus<table_factor::result_type>());
+      return *this;
+    }
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
@@ -674,7 +678,11 @@ namespace sill {
     return *this;
   }
 
-  table_factor& table_factor::operator*=(const table_factor& y) { 
+  table_factor& table_factor::operator*=(const table_factor& y) {
+//     if (arg_seq == y.arg_seq) {
+//       table_data.join_with(y.table(), std::multiplies<table_factor::result_type>());
+//       return *this;
+//     }
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),

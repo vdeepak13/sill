@@ -100,6 +100,25 @@ namespace sill {
       sill::copy(values, table_data.begin());
     }
 
+    table_factor& operator=(const table_factor& other) {
+      if (this == &other) {
+        return *this;
+      }
+      if (arg_seq == other.arg_seq) {
+        assert(args == other.args);
+        assert(var_index == other.var_index);
+        assert(table_data.shape() == other.table_data.shape());
+        std::copy(other.begin(), other.end(), table_data.begin());
+      } else {
+        args = other.args;
+        var_index = other.var_index;
+        arg_seq = other.arg_seq;
+        table_data = other.table_data;
+        index = other.index;
+      }
+      return *this;
+    }
+
     //! Exchanges the content of two factors
     void swap(table_factor& f);
 
@@ -444,6 +463,29 @@ namespace sill {
                                make_dim_map(f.arg_seq, var_index),
                                agg_op);
       }
+    }
+
+    void restrict_multiply(const finite_assignment& a, table_factor& f) const {
+      assert(arg_seq.size() == 2);
+      assert(f.arg_seq.size() == 1);
+      assert(arg_seq[0] == f.arg_seq[0]);
+      size_t offset = table_data.offset.get_multiplier(1) * safe_get(a, arg_seq[1]);
+      for (size_t i = 0; i < f.size(); ++i) {
+        f.table_data.begin()[i] *= begin()[i + offset];
+      }
+//       if (f.arg_seq.size() > arg_seq.size()) {
+//         throw std::runtime_error("oops 1");
+//       }
+//       for (size_t i = 0; i < f.args_seq.size(); ++i) {
+//         if (arg_seq[i] != f.arg_seq[i] || a.count(arg_seq[i])) {
+//           throw std::runtime_error("oops 2");
+//         }
+//       }
+//       size_t offset = 0;
+//       for (size_t i = f.arg_seq.size(); i < arg_seq.size(); ++i) {
+//         offset += table_data.offset.get_multiplier(i) * safe_get(a, arg_seq[i]);
+//       }
+      
     }
 
     //! implements Factor::restrict
@@ -1346,7 +1388,7 @@ namespace sill {
       table_.offset.index(offset, nhead_, sample);
     }
 
-    //! Draw a random sample from a conditional distributino
+    //! Draw a random sample from a conditional distribution
     template <typename RandomNumberGenerator>
     void operator()(index_type& sample, const index_type& tail,
                     RandomNumberGenerator& rng) const {

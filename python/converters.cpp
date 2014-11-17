@@ -5,6 +5,7 @@
 #include <sill/base/finite_assignment.hpp>
 #include <sill/base/vector_variable.hpp>
 #include <sill/base/vector_assignment.hpp>
+#include <sill/factor/table_factor.hpp>
 
 #include <boost/python.hpp>
 #include <boost/python/detail/prefix.hpp>
@@ -225,5 +226,6 @@ void variable_converters() {
 void container_converters() {
   from_python_sequence<std::vector<double> >();
   from_python_sequence<std::vector<size_t> >();
+  from_python_sequence<std::vector<table_factor> >();
   // todo: to_python for these
 }

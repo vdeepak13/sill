@@ -352,6 +352,19 @@ namespace sill {
 #endif
     }
 
+    //! implements Table::join_with
+    template <typename JoinOp>
+    void join_with(const dense_table& y, JoinOp op) {
+      concept_assert((BinaryFunction<JoinOp,T,T,T>));
+      assert(shape_ == y.shape_);
+      iterator it = begin();
+      const_iterator y_it = y.begin(), y_end = y.end();
+      for (; y_it != y_end; ++it, ++y_it) {
+        *it = op(*it, *y_it);
+      }
+    }
+
+
     //! implements Table::aggregate
     //! \todo Do we require that the table is initialized to op.left_identity()?
     template <typename AggOp>
@@ -867,11 +880,15 @@ namespace sill {
         return offset;
       }
 
-      size_t operator()(const index_type& index, size_t nhead) const {
-        assert(multiplier_.size() == index.size() + nhead);
+      /**
+       * Calculates the offset associated with the supplied index,
+       * assuming the first nlower-order dimensions are equal to 0.
+       */
+      size_t operator()(const index_type& index, size_t nlower) const {
+        assert(multiplier_.size() == index.size() + nlower);
         size_t offset = 0;
-        for (size_t d = nhead; d < multiplier_.size(); ++d) {
-          offset += multiplier_[d] * index[d-nhead];
+        for (size_t d = nlower; d < multiplier_.size(); ++d) {
+          offset += multiplier_[d] * index[d-nlower];
         }
         return offset;
       }
@@ -893,12 +910,14 @@ namespace sill {
         return ind;
       }
 
-      void index(size_t offset, size_t nhead, index_type& ind) const {
-        ind.resize(nhead);
-        if (nhead < multiplier_.size()) {
-          nhead %= multiplier_[nhead];
-        }
-        for (int d = nhead-1; d >= 0; --d) {
+      /**
+       * Computes the index corresponding to the given offset, for the first
+       * nlower dimensions.
+       * \param offset < multiplier_[nlower]
+       */
+      void index(size_t offset, size_t nlower, index_type& ind) const {
+        ind.resize(nlower);
+        for (int d = nlower-1; d >= 0; --d) {
           ind[d] = offset / multiplier_[d];
           offset = offset % multiplier_[d];
         }
