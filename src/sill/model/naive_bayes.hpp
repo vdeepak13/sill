@@ -1,6 +1,7 @@
 #ifndef SILL_NAIVE_BAYES_HPP
 #define SILL_NAIVE_BAYES_HPP
 
+#include <sill/boost_unordered_utils.hpp>
 #include <sill/base/finite_variable.hpp>
 #include <sill/factor/table_factor.hpp>
 
@@ -69,7 +70,7 @@ namespace sill {
       if (f == label_var()) {
         f = *++cpd_args.begin();
       }
-      features_[f] = cpd;
+      features_[f] = cpd.reorder(make_vector(label_var(), f));
     }
 
     // Queries
@@ -99,13 +100,13 @@ namespace sill {
     }
 
     //! Returns the prior distribution
-    const table_factor prior() const {
+    const table_factor& prior() const {
       return prior_;
     }
     
     //! Returns the feature CPD
     const FeatureF& feature_cpd(variable_type* v) const {
-      return safe_get(features_, v);
+      return get(features_, v);
     }
 
     //! Returns true if the model contains the given variable
@@ -113,15 +114,19 @@ namespace sill {
       return v == label_var() || features_.count(v);
     }
 
+    //! Returns the prior multiplied by the likelihood of the assignment
+    void joint(const assignment_type& a, table_factor& result) const {
+      result = prior_;
+      foreach (const variable_cpd_pair& p, features_) {
+        p.second.restrict_multiply(a, result);
+      }
+    }
+
     //! Returns the posterior distribution conditioned on an assignment
     table_factor posterior(const assignment_type& a) const {
-      table_factor result = prior_;
-      foreach (const variable_cpd_pair& p, features_) {
-        assignment_type a_feature;
-        a_feature[p.first] = safe_get(a, p.first);
-        result *= table_factor(p.second.restrict(a_feature));
-      }
-      return result.normalize();
+      table_factor tmp;
+      joint(a, tmp);
+      return tmp.normalize();
     }
 
     //! Returns the probability of an assignment to label and features
@@ -152,6 +157,15 @@ namespace sill {
         result += r.weight * std::log(conditional(a));
       }
       return result;
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, const naive_bayes& nb) {
+      out << "Prior:" << std::endl << nb.prior_ << std::endl;
+      out << "CPDs: " << std::endl;
+      foreach(const variable_cpd_pair& p, nb.features_) {
+        out << p.second << std::endl;
+      }
+      return out;
     }
 
   private:

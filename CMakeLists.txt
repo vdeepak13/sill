@@ -31,7 +31,7 @@ endfunction(add_prefix)
 # used for the class branch, not the lab branch: subdirs(src examples
 # EXCLUDE_FROM_ALL tests timings projects) (Remove EXCLUDE_FROM_ALL
 # for lab branch.)
-subdirs(src examples tests timings)
+subdirs(src examples tests timings tools) # python)
 
 # This would make the if statements easier to read
 # set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
@@ -82,6 +82,7 @@ find_package(Boost 1.40 COMPONENTS
               iostreams  # deprecate together with MPI
               date_time
               thread
+              # python
               unit_test_framework
 	      system REQUIRED)
 
