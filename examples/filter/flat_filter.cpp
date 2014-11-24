@@ -4,7 +4,7 @@
 
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/dynamic_bayesian_network.hpp>
-#include <sill/inference/flat_filter.hpp>
+#include <sill/inference/filtering/flat_filter.hpp>
 
 int main(int argc, char** argv) {
   using namespace sill;

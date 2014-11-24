@@ -7,8 +7,8 @@
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
-#include <sill/inference/asynchronous_bethe_bp.hpp>
-#include <sill/inference/residual_bethe_bp.hpp>
+#include <sill/inference/loopy/asynchronous_bethe_bp.hpp>
+#include <sill/inference/loopy/residual_bethe_bp.hpp>
 #include <sill/model/markov_network.hpp>
 
 #include <sill/macros_def.hpp>

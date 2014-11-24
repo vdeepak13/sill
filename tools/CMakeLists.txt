@@ -1,4 +1,4 @@
 project(tools)
 link_libraries(sill ${Boost_LIBRARIES})
-subdirs(dataset)
+subdirs(dataset model)
 

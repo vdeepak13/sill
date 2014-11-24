@@ -1,0 +1,18 @@
+add_executable(belief_propagation belief_propagation.cpp)
+add_executable(bethe_bp bethe_bp.cpp)
+#add_executable(denoise denoise.cpp)
+add_executable(gbp gbp.cpp)
+#add_executable(image_segmentation image_segmentation.cpp)
+add_executable(kikuchi kikuchi.cpp)
+add_executable(protein_inference protein_inference.cpp)
+add_executable(taueps_quant taueps_quant.cpp)
+
+find_package(TCMALLOC)
+if(TCMALLOC_FOUND) 
+  target_link_libraries(protein_inference tcmalloc)
+endif()
+
+add_test(belief_propagation belief_propagation)
+add_test(bethe_bp bethe_bp)
+add_test(gbp gbp)
+add_test(kikuchi kikuchi)

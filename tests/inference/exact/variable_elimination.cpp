@@ -9,7 +9,7 @@
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
 
-#include "../factor/predicates.hpp"
+#include "../../factor/predicates.hpp"
 
 #include <sill/macros_def.hpp>
 

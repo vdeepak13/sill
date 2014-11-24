@@ -5,7 +5,7 @@
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
-#include <sill/inference/belief_propagation.hpp>
+#include <sill/inference/loopy/belief_propagation.hpp>
 #include <sill/model/markov_network.hpp>
 
 #include <boost/random/mersenne_twister.hpp>

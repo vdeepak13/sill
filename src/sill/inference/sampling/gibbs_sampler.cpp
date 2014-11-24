@@ -1,4 +1,4 @@
-#include <sill/inference/gibbs_sampler.hpp>
+#include <sill/inference/sampling/gibbs_sampler.hpp>
 
 #include <sill/macros_def.hpp>
 

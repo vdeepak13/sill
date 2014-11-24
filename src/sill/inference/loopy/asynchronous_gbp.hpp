@@ -1,7 +1,7 @@
 #ifndef SILL_ASYNCHRONOUS_GBP_HPP
 #define SILL_ASYNCHRONOUS_GBP_HPP
 
-#include <sill/inference/gbp.hpp>
+#include <sill/inference/loopy/gbp.hpp>
 #include <sill/graph/graph_traversal.hpp>
 
 #include <sill/macros_def.hpp>

@@ -15,7 +15,7 @@
 #include <sill/factor/norms.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
-#include <sill/inference/bp_convergence_measures.hpp>
+#include <sill/inference/loopy/bp_convergence_measures.hpp>
 
 // This include should always be last
 #include <sill/macros_def.hpp>

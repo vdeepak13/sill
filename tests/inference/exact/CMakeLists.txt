@@ -1,0 +1,5 @@
+add_executable(junction_tree_inference junction_tree_inference.cpp)
+add_executable(variable_elimination variable_elimination.cpp)
+
+add_test(junction_tree_inference junction_tree_inference)
+add_test(variable_elimination variable_elimination)

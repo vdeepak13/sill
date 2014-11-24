@@ -9,10 +9,10 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 
-#include <sill/inference/asynchronous_gbp.hpp>
-#include <sill/inference/asynchronous_gbp_pc.hpp>
-#include <sill/inference/kikuchi.hpp>
-#include <sill/inference/bethe.hpp>
+#include <sill/inference/loopy/asynchronous_gbp.hpp>
+#include <sill/inference/loopy/asynchronous_gbp_pc.hpp>
+#include <sill/inference/loopy/kikuchi.hpp>
+#include <sill/inference/loopy/bethe.hpp>
 
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>

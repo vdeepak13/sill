@@ -14,7 +14,7 @@
 
 #include <sill/model/interfaces.hpp>
 #include <sill/model/cluster_graph.hpp>
-#include <sill/inference/variable_elimination.hpp>
+#include <sill/inference/exact/variable_elimination.hpp>
 
 #include <sill/range/concepts.hpp>
 
