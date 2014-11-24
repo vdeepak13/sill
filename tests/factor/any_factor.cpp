@@ -6,7 +6,7 @@
 
 #include <sill/factor/any_factor.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/inference/junction_tree_inference.hpp>
+#include <sill/inference/exact/junction_tree_inference.hpp>
 #include <sill/stl_io.hpp>
 
 #include <sill/range/algorithm.hpp>

@@ -1,7 +1,7 @@
 #ifndef SILL_RESIDUAL_BETHE_BP
 #define SILL_RESIDUAL_BETHE_BP
 
-#include <sill/inference/bethe_bp.hpp>
+#include <sill/inference/loopy/bethe_bp.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
 
 #include <sill/macros_def.hpp>

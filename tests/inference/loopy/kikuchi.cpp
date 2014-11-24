@@ -3,7 +3,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/model/region_graph.hpp>
-#include <sill/inference/kikuchi.hpp>
+#include <sill/inference/loopy/kikuchi.hpp>
 
 #include <sill/macros_def.hpp>
 

@@ -9,8 +9,8 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/grid_graph.hpp>
 #include <sill/graph/min_degree_strategy.hpp>
-#include <sill/inference/junction_tree_inference.hpp>
-#include <sill/inference/variable_elimination.hpp>
+#include <sill/inference/exact/junction_tree_inference.hpp>
+#include <sill/inference/exact/variable_elimination.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
 

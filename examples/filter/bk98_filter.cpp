@@ -5,7 +5,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/dynamic_bayesian_network.hpp>
 #include <sill/model/junction_tree.hpp>
-#include <sill/inference/bk98_filter.hpp>
+#include <sill/inference/filtering/bk98_filter.hpp>
 
 int main(int argc, char** argv) {
   using namespace sill;

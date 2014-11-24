@@ -26,10 +26,10 @@
 #include <sill/parallel/pthread_tools.hpp>
 #include <sill/parallel/timer.hpp>
 
-#include <sill/inference/residual_splash_bp.hpp>
-// #include <sill/inference/binary_residual_splash_bp.hpp>
-#include <sill/inference/blf_residual_splash_bp.hpp>
-#include <sill/inference/gibbs_engine.hpp>
+#include <sill/inference/loopy/residual_splash_bp.hpp>
+// #include <sill/inference/loopy/binary_residual_splash_bp.hpp>
+#include <sill/inference/loopy/blf_residual_splash_bp.hpp>
+#include <sill/inference/sampling/gibbs_engine.hpp>
 
 
 

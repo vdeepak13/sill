@@ -21,7 +21,7 @@
 #include <sill/model/junction_tree.hpp>
 #include <sill/model/model_functors.hpp>
 #include <sill/model/normalization_error.hpp>
-#include <sill/inference/variable_elimination.hpp>
+#include <sill/inference/exact/variable_elimination.hpp>
 
 #include <sill/macros_def.hpp>
 

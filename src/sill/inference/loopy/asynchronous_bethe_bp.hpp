@@ -1,7 +1,7 @@
 #ifndef SILL_ASYNCHRONOUS_BETHE_BP
 #define SILL_ASYNCHRONOUS_BETHE_BP
 
-#include <sill/inference/bethe_bp.hpp>
+#include <sill/inference/loopy/bethe_bp.hpp>
 
 #include <sill/macros_def.hpp>
 

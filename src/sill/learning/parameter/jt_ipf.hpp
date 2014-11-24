@@ -7,7 +7,7 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/norms.hpp>
 #include <sill/model/decomposable.hpp>
-#include <sill/inference/junction_tree_inference.hpp>
+#include <sill/inference/exact/junction_tree_inference.hpp>
 
 #include <sill/macros_def.hpp>
 

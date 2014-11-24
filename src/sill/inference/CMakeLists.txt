@@ -1,4 +1,4 @@
 
 set(SILL_INFERENCE_SOURCES
-  gibbs_sampler
+  sampling/gibbs_sampler
   PARENT_SCOPE)

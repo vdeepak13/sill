@@ -3,7 +3,7 @@
 #include <sill/variable.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/random.hpp>
-#include <sill/inference/belief_propagation.hpp>
+#include <sill/inference/loopy/belief_propagation.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/dense_table.hpp>
 

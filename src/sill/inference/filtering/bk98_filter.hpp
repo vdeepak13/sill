@@ -5,7 +5,7 @@
 #include <sill/model/decomposable.hpp>
 #include <sill/model/dynamic_bayesian_network.hpp>
 #include <sill/inference/interfaces.hpp>
-#include <sill/inference/variable_elimination.hpp>
+#include <sill/inference/exact/variable_elimination.hpp>
 
 #include <sill/macros_def.hpp>
 

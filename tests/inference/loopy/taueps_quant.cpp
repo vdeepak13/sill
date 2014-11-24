@@ -26,7 +26,7 @@
 #include <sill/parsers/detect_file_format.hpp>
 #include <sill/parsers/alchemy.hpp>
 
-#include <sill/inference/blf_residual_splash_bp.hpp>
+#include <sill/inference/loopy/blf_residual_splash_bp.hpp>
 
 
 #include <sill/factor/norms.hpp>
