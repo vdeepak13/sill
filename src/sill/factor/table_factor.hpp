@@ -285,7 +285,7 @@ namespace sill {
       return std::log(v(i));
     }
 
-    //! Returns the log-likelihood of this factor given a dataset
+    //! Returns the log-likelihood of the dataset given this factor
     double log_likelihood(const finite_dataset& ds) const {
       double result = 0.0;
       foreach (const finite_record& r, ds.records(arg_seq)) {
@@ -1014,7 +1014,7 @@ namespace sill {
     //! The arguments of this factor.
     finite_domain args;
 
-    //! A mapping from the arguments' identifiers to \f$[1, ..., k)\f$.
+    //! A mapping from the arguments' identifiers to \f$[0, ..., k)\f$.
     var_index_map var_index;
 
     //! A mapping from the dimensions to the arguments.

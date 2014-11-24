@@ -55,6 +55,7 @@
    - marginal() => is_marginal(), standardize arg_vector, head_vector() etc.
    - get rid of hacks in the table_factor and dense_table
    - simplify the storage format of vector datasets
+   - logical_or -> bit_orx
 
 8. more examples / applications:
    - viterbi algorithm
