@@ -1,3 +1,4 @@
+add_executable(bipartite_graph bipartite_graph.cpp)
 add_executable(constrained_triangulation constrained_triangulation.cpp)
 add_executable(directed_graph directed_graph.cpp)
 add_executable(directed_multigraph directed_multigraph.cpp)
@@ -6,6 +7,7 @@ add_executable(graph_memory graph_memory.cpp)
 add_executable(triangulation triangulation.cpp)
 add_executable(undirected_graph undirected_graph.cpp)
 
+add_test(bipartite_graph bipartite_graph)
 add_test(constrained_triangulation constrained_triangulation)
 add_test(directed_graph directed_graph)
 add_test(directed_multigraph directed_multigraph)
