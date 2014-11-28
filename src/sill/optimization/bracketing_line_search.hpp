@@ -1,5 +1,5 @@
-#ifndef SILL_LINE_SEARCH_HPP
-#define SILL_LINE_SEARCH_HPP
+#ifndef SILL_BRACKETING_LINE_SEARCH_HPP
+#define SILL_BRACKETING_LINE_SEARCH_HPP
 
 #include <sill/math/constants.hpp>
 #include <sill/optimization/opt_step.hpp>
@@ -15,56 +15,67 @@
 
 namespace sill {
 
-  //! Parameters for line_search.
-  struct line_search_parameters {
-
-    //! If the change in objective is less than this value,
-    //! then the line search will declare convergence.
-    //!  (default = .000001)
-    double convergence_zero;
-
-    //! If the step size eta (times the ls_step_magnitude option) is less than
-    //! ls_eta_zero_multiplier * convergence_zero,
-    //! then the line search will declare convergence.
-    //!  (default = .0000001)
-    double ls_eta_zero_multiplier;
-
-    //! The magnitude of the step size when eta == 1; this allows the search
-    //! to determine convergence in terms of the absolute value of the
-    //! actual step size, rather than in terms of the multiplier eta.
-    //!  (default = 1)
-    double ls_step_magnitude;
-
-    //! Initial step size multiplier to try.
-    //!  (default = 1)
-    double ls_init_eta;
-
-    //! Value (> 1) by which the step size multiplier eta is
-    //! multiplied/divided by on each step of the search.
-    //!  (default = 2)
-    double ls_eta_mult;
+  /**
+   * Parameters for bracketing_line_search.
+   * \ingroup optimization_algorithms
+   */
+  template <typename RealType>
+  struct bracketing_line_search_parameters {
 
     /**
-     * Print debugging info:
-     *  - 0: none (default)
-     *  - 1: some
-     *  - higher values: revert to highest level of debugging
+     * If the change in the objective is less than this value (>=0),
+     * then the line search will declare convergence.
      */
-    size_t debug;
+    RealType convergence;
 
-    line_search_parameters();
+    /**
+     * Value (>1) by which the step size is multiplied / divided by
+     * when searching for the initial brackets.
+     */
+    RealType multiplier;
 
-    virtual ~line_search_parameters() { }
+    /**
+     * If the step size reaches this value (>=0), the line search will throw 
+     * an opt_step_not_found exception.
+     */
+    RealType min_step;
 
-    bool valid() const;
+    /**
+     * If the step size reaches this value (>=0), the line search will throw
+     * an opt_step_not_found exception.
+     */
+    RealType max_step;
 
-    void print(std::ostream& out, const std::string& line_prefix = "") const;
+    bracketing_line_search_parameters(RealType convergence = 1e-6,
+                                      RealType multiplier = 2.0,
+                                      RealType min_step = 1e-10,
+                                      RealType max_step = 1e+10)
+      : convergence(convergence),
+        multiplier(multiplier),
+        min_step(min_step),
+        max_step(max_step) {
+      assert(valid());
+    }
 
-    void save(oarchive& ar) const;
+    bool valid() const {
+      return convergence >= 0.0 && multiplier > 1.0 && min_step >= 0.0;
+    }
 
-    void load(iarchive& ar);
+    void save(oarchive& ar) const {
+      ar << convergence << multiplier << min_step;
+    }
 
-  }; // struct line_search_parameters
+    void load(iarchive& ar) {
+      ar >> convergence >> multiplier >> min_step;
+    }
+
+    friend std::ostream&
+    operator<<(std::ostream& out, const bracketing_line_search_parameters& p) {
+      out << p.convergence << ' ' << p.multiplier << ' ' << p.min_step;
+      return out;
+    }
+
+  }; // struct bracketing_line_search_parameters
 
   /**
    * Class for doing a line search from a point x in a given direction
@@ -78,18 +89,181 @@ namespace sill {
    * This option permits approximate line search using the Wolfe conditions
    * or similar criteria.
    *
-   * @todo Modify this so that the caller can call a step() function.
-   *
-   * @author Joseph Bradley
-   *
    * \ingroup optimization_algorithms
    */
-  class line_search
-    : public real_opt_step {
+  template <typename Vec>
+  class bracketing_line_search : public real_opt_step {
 
-    // Protected data and methods
+    // Public types
     //==========================================================================
-  protected:
+  public:
+    typedef typename Vec::value_type real_type;
+    typedef bracketing_line_search_parameters<real_type> param_type;
+    typedef wolfe_conditions_parameters<real_type> wolfe_param_type;
+    typedef boost::function<real_type(const Vec&)> objective_fn;
+    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
+
+    // Public functions
+    //==========================================================================
+  public:
+    /**
+     * Constructs an object that performs line search with objective
+     * function alone. This is preferable when evaluating the objective
+     * is much cheaper than the gradient.
+     */
+    explicit bracketing_line_search(const objective_fn& objective,
+                                    const param_type& params = param_type())
+      : f_(objective),
+        params_(params) {
+      assert(params.valid());
+    }
+    
+    /**
+     * Constructs an object that performs line search using gradient.
+     * This is preferable when evaluating the gradient is cheap.
+     */
+    bracketing_line_search(const objective_fn& objective,
+                           const gradient_fn& gradient,
+                           const param_type& params = param_type())
+      : f_(objective, gradient),
+        params_(params) {
+      assert(params.valid());
+    }
+
+    /**
+     * Constructs an objective tht performs line search using gradient
+    
+    real_type apply(Vec& x, const Vec& direction) {
+      f_.line(&x, &direction);
+      real_type t = gradient_ ? find_step_derivative() : find_step_objective();
+      real_type value = f_(t);
+      x = f_.last_input();
+      return value;
+    }
+
+    // Private data and functions
+    //==========================================================================
+  private:
+    /**
+     * Returns the step size that makes derivative approximately zero.
+     */
+    real_type find_step_derivative() {
+      // make sure that the left derivative is < 0
+      real_type left = 0.0;
+      real_type left_deriv = f_.derivative(left);
+      if (left_deriv > 0.0) {
+        throw std::invalid_argument("The function is increasing along the "
+                                    "specified direction");
+      } else if (left_deriv == 0.0) {
+        return left;
+      }
+
+      // find the right bound s.t. the right derivative >= 0
+      real_type right = 1.0;
+      real_type right_deriv = f_.derivative(right);
+      while (right_deriv < 0.0) {
+        right *= params_.multiplier;
+        if (right > params_.max_step) {
+          throw std::opt_step_not_found("Could not find right bound <= " +
+                                        to_string(params_.max_step));
+        }
+        right_deriv = f_.derivative(right);
+      }
+
+      // do binary search until we shrink the bracket sufficiently
+      // convergence must be < min_step, so that we don't
+      // converge too early before we actually moved the left pointer
+      // alternative: force left to increase before convergence
+      while (right - left > params_.convergence) {
+        real_type mid = (left + right) / 2.0;
+        real_type mid_deriv = f_.derivative(mid);
+        if (mid_deriv < 0.0) {
+          left = mid;
+          left_deriv = mid_deriv;
+        } else {
+          right = mid;
+          right_deriv = mid_deriv;
+        }
+        if (right < params_.min_step) {
+          throw std::opt_step_not_found("Step size is too small");
+        }
+      }
+
+      // the left side of the bracket is guaranteed to have lower objective
+      // than the start
+      return left;
+    }
+
+    /**
+     * Returns the step size that approximately minimizes the objective value.
+     * This is achieved by maintaining three step sizes, left, mid, and right,
+     * such that f(mid) < f(0), f(mid) < f(left), f(mid) < f(right).
+     * We declare convergence once |right-left| becomes sufficiently small,
+     * returning mid as the result. This function works for both convex
+     * and non-convex, multi-modal objectives and is guaranteed to decrease
+     * the objective value.
+     */
+    real_type find_step_objective() {
+      typedef typename line_function<Vec>::value_type value_type;
+      value_type left  = f_.value(0.0);
+      value_type mid   = f_.value(1.0);
+      value_type right = mid;
+      
+      // identify the initial bracket
+      if (right.obj > left.obj) {
+        mid = f_.value(1.0 / params_.multiplier);
+        while (mid.obj > left.obj) {
+          right = mid;
+          mid = f_.value(mid.pos / params_.multiplier);
+          if (right.pos < params_.min_step) {
+            throw opt_step_not_found("Step size too small in bounding");
+          }
+        }
+      } else {
+        right = f_.value(params_.multiplier);
+        while (right.obj < mid.obj) {
+          left = mid;
+          mid = right;
+          right = f_.value(right.pos * params_.multiplier);
+          if (right.pos > params_.max_step) {
+            throw opt_step_not_found("Step size too large in bounding");
+          }
+        }
+      }
+
+      // do binary search while maintaining the invariant
+      while (right.pos - left.pos > params_.convergence) {
+        value_type mid_left = f_.value((left.pos + mid.pos) / 2.0);
+        value_type mid_right = f_.value((mid.pos + right.pos) / 2.0);
+        if (mid_left.obj > mid.obj && mid_right.obj > mid.obj) {
+          left = mid_left;
+          right = mid_right;
+        } else if (mid_left.obj < mid_right.obj) {
+          right = mid;
+          mid = mid_left;
+        } else {
+          left = mid;
+          mid = mid_right;
+        }
+        if (right.pos < params_.min_step) {
+          throw std::opt_step_not_found("Step size is too small");
+        }
+      }
+
+      return left;
+    }
+
+    line_function<Vec> f_;
+    objective_fn objective_;
+    gradient_fn gradient_;
+    param_type params_;
+    size_t bounding_steps_;
+    size_t searching_steps_;
+
+
+
+
+
 
     line_search_parameters params;
 
