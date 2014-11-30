@@ -2,9 +2,8 @@
 #include <sill/model/naive_bayes.hpp>
 #include <sill/learning/dataset/finite_memory_dataset.hpp>
 #include <sill/learning/dataset/finite_dataset_io.hpp>
-#include <sill/learning/factor_mle/table_factor.hpp>
 #include <sill/learning/parameter/naive_bayes_em.hpp>
-#include <sill/learning/parameter/naive_bayes_learner.hpp>
+#include <sill/learning/parameter/naive_bayes_mle.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -52,10 +51,10 @@ int main(int argc, char** argv) {
   // create the naive Bayes EM learner with the latent variable label
   // and features all variables in the dataset other than "class"
   finite_variable* class_var = format.finite_var("class");
-  finite_domain feature_vars = format.finite_vars();
-  feature_vars.erase(class_var);
-  finite_variable* label_var = u.new_finite_variable("label", num_clusters);
-  naive_bayes_em<table_factor> learner(label_var, feature_vars);
+  finite_var_vector features = format.finite_var_vec();
+  features.erase(std::find(features.begin(), features.end(), class_var));
+  finite_variable* label = u.new_finite_variable("label", num_clusters);
+  naive_bayes_em<table_factor> em_learner(label, features);
 
   // normalize the dataset
   finite_memory_dataset ds;
@@ -64,28 +63,28 @@ int main(int argc, char** argv) {
   // train the model on the normalized data,
   // using the default regularization parameters (set to 0)
   naive_bayes<table_factor> best_model;
-  double best_ll = -std::numeric_limits<double>::infinity();
+  double best_bound = -std::numeric_limits<double>::infinity();
   naive_bayes_em<table_factor>::param_type params;
   if (argc > 3) { params.max_iters = atoi(argv[3]); }
   for (unsigned seed = 0; seed < num_restarts; ++seed) {
     naive_bayes<table_factor> model;
-    double ll = learner.learn(ds, params, model);
+    double bound = em_learner.learn(ds, params, model);
     std::cout << "Seed " << seed
-              << ": ll=" << ll
-              << " (" << learner.num_iters() << " iterations)"
+              << ": ll >= " << bound
+              << " (" << em_learner.num_iters() << " iterations)"
               << std::endl;
     params.seed = seed;
-    if (ll > best_ll) {
-      best_ll = ll;
+    if (bound > best_bound) {
+      best_bound = bound;
       best_model = model;
     }
   }
 
-  std::cout << "best ll " << best_ll << std::endl;
+  std::cout << "best ll >= " << best_bound << std::endl;
   //std::cout << best_model << std::endl;
 
   // compute a human-readable representation of the clusters
-  mat counts = arma::zeros(label_var->size(), class_var->size());
+  mat counts = arma::zeros(label->size(), class_var->size());
   finite_assignment a;
   foreach(const finite_record& r, ds.records(ds.arg_vector())) {
     r.extract(a);
@@ -105,23 +104,23 @@ int main(int argc, char** argv) {
   }
 
   // train a classifier using the (fully observed) data
-  naive_bayes_learner<table_factor> observed_learner(class_var, feature_vars);
-  naive_bayes<table_factor> observed_model;
-  observed_learner.learn(ds, observed_model);
+  naive_bayes_mle<table_factor> mle_learner(class_var, features);
+  naive_bayes<table_factor> mle_model;
+  mle_learner.learn(ds, mle_model);
   
   // evaluate the accuracy of the two classifiers
-  size_t correct_observed = 0;
-  size_t correct_clusters = 0;
+  size_t correct_mle = 0;
+  size_t correct_em = 0;
   foreach(const finite_record& r, ds.records(ds.arg_vector())) {
     r.extract(a);
-    correct_observed +=
-      arg_max(observed_model.posterior(a))[class_var] == a[class_var];
-    correct_clusters +=
-      label_map[arg_max(best_model.posterior(a))[label_var]] == a[class_var];
+    correct_mle +=
+      arg_max(mle_model.posterior(a))[class_var] == a[class_var];
+    correct_em +=
+      label_map[arg_max(best_model.posterior(a))[label]] == a[class_var];
   }
 
-  std::cout << "correct observed: " << correct_observed << std::endl;
-  std::cout << "correct clusters: " << correct_clusters << std::endl;
+  std::cout << "correct mle: " << correct_mle << std::endl;
+  std::cout << "correct em : " << correct_em << std::endl;
 
   return 0;
 }

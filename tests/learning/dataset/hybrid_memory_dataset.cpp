@@ -5,7 +5,6 @@
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/learning/dataset/hybrid_dataset_io.hpp>
 #include <sill/learning/dataset/hybrid_memory_dataset.hpp>
-#include <sill/learning/factor_mle/table_factor.hpp>
 
 #include <boost/math/special_functions.hpp>
 #include <boost/random/mersenne_twister.hpp>

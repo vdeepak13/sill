@@ -68,6 +68,11 @@ namespace sill {
       assert(k > 0);
     }
 
+    //! Initializes the factor to teh given arguments and number of components
+    mixture(size_t k, const var_vector_type& args) : comps(k, F(args)) {
+      assert(k > 0);
+    }
+
     //! Initialize the mixture to be the sum of k identical components
     mixture(size_t k, const F& init) : comps(k, init) {
       assert(k > 0);

@@ -8,7 +8,6 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/bayesian_network.hpp>
 #include <sill/learning/dataset/finite_memory_dataset.hpp>
-#include <sill/learning/factor_mle/table_factor.hpp>
 #include <sill/learning/structure/chow_liu.hpp>
 
 #include <sill/macros_def.hpp>
@@ -57,7 +56,7 @@ BOOST_AUTO_TEST_CASE(test_simple) {
 
   // generate a dataset
   finite_memory_dataset data;
-  data.initialize(bn.arguments());
+  data.initialize(v);
   for (size_t i = 0; i < nsamples; ++i) {
     finite_assignment a = bn.sample(rng);
     //cout << i << ": " << a << endl;
@@ -65,7 +64,7 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   }
 
   // learn the model
-  chow_liu<table_factor> learner(make_domain(v));
+  chow_liu<table_factor> learner(v);
   decomposable<table_factor> dm;
   learner.learn(data, dm);
   

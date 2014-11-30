@@ -1,9 +1,9 @@
 #ifndef SILL_NAIVE_BAYES_EM_HPP
 #define SILL_NAIVE_BAYES_EM_HPP
 
+#include <sill/factor/factor_mle_incremental.hpp>
 #include <sill/model/naive_bayes.hpp>
-#include <sill/learning/factor_mle/factor_mle.hpp>
-#include <sill/learning/parameter/naive_bayes_initializers.hpp>
+#include <sill/learning/parameter/naive_bayes_init.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -21,9 +21,9 @@ namespace sill {
     typedef typename FeatureF::dataset_type dataset_type;
     
     // Other types
-    typedef typename FeatureF::variable_type variable_type;
-    typedef typename FeatureF::domain_type domain_type;
-    typedef typename factor_mle<FeatureF>::param_type feature_param_type;
+    typedef typename FeatureF::variable_type   variable_type;
+    typedef typename FeatureF::var_vector_type var_vector_type;
+    typedef typename factor_mle_incremental<FeatureF>::param_type feature_param_type;
 
     // Learner concept parameter type
     struct param_type {
@@ -48,9 +48,10 @@ namespace sill {
      * Constructs a learner for the given label variable and features.
      * The number of classes is implicitly represented in the label variable.
      */
-    naive_bayes_em(finite_variable* label, const domain_type& features)
+    naive_bayes_em(finite_variable* label, const var_vector_type& features)
       : label(label), features(features) {
-      assert(!features.count(label));
+      assert(std::find(features.begin(), features.end(), label) == 
+             features.end());
     }
 
     /**
@@ -111,50 +112,56 @@ namespace sill {
 
     /**
      * Performs one iteration of expectation-maximization.
-     * \return the log-likelihood of the previous model
+     * \return the lower-bound on the log-likelihood of the previous model
      */
     real_type iterate() {
       typedef typename FeatureF::assignment_type assignment_type;
       typedef typename dataset_type::record_type record_type;
-      typedef typename factor_mle<FeatureF>::weighted_estimator estimator_type;
+      typedef typename dataset_type::const_record_iterator record_iterator;
+      typedef factor_mle_incremental<FeatureF> estimator_type;
 
-      // allocate the feature estimators
-      factor_mle<FeatureF> estim(dataset, params);
-      std::vector<estimator_type> feature_estimators;
+      // allocate the feature estimators and data iterators
+      std::vector<estimator_type> feature_mle;
+      std::vector<record_iterator> feature_it;
+      feature_mle.reserve(features.size());
+      feature_it.reserve(features.size());
+      finite_var_vector label_vec(1, label);
+      var_vector_type feature_vec(1); 
       foreach(variable_type* feature, features) {
-        feature_estimators.push_back(
-          estim.weighted(make_vector(feature), make_vector(label))
-        );
+        feature_vec[0] = feature;
+        feature_mle.push_back(estimator_type(feature_vec, label_vec));
+        feature_it.push_back(dataset->records(feature_vec).first);
       }
 
       // expectation: the probability of the labels given each datapoint
       // maximization: accumulate the new prior and the feature CPDs
       assignment_type a;
-      real_type ll = 0.0;
-      table_factor weight;
+      real_type bound = 0.0;
+      table_factor ptail;
       table_factor new_prior;
-      foreach(const record_type& r, dataset->records(make_vector(features))) {
+      foreach(const record_type& r, dataset->records(features)) {
         r.extract(a);
-        model.joint(a, weight);
-        ll += std::log(weight.norm_constant());
-        weight.normalize();
-        new_prior += weight;
-        foreach (estimator_type& feature_estimator, feature_estimators) {
-          feature_estimator.process(weight);
+        model.joint(a, ptail);
+        real_type sump = ptail.norm_constant();
+        bound += r.weight * std::log(sump);
+        ptail *= r.weight / sump;
+        new_prior += ptail;
+        for (size_t i = 0; i < features.size(); ++i) {
+          feature_mle[i].process(feature_it[i]->values, ptail);
+          ++feature_it[i];
         }
-        // todo: record weight
       }
       
       // set the parameters of the new model
       assert(new_prior.arguments() == make_domain(label));
       model.set_prior(new_prior.normalize());
-      foreach (estimator_type& feature_estimator, feature_estimators) {
-        model.add_feature(feature_estimator.estimate());
+      for (size_t i = 0; i < features.size(); ++i) {
+        model.add_feature(feature_mle[i].estimate());
       }
 
       // return the log-likelihood
       ++niters;
-      return ll;
+      return bound;
     }
 
     /**
@@ -168,7 +175,7 @@ namespace sill {
   private:
     // persistent members
     finite_variable* label;
-    domain_type features;
+    var_vector_type features;
     
     // iteration-specific members
     const dataset_type* dataset;

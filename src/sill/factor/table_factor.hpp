@@ -15,6 +15,7 @@
 #include <sill/global.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/factor_evaluator.hpp>
+#include <sill/factor/factor_mle_incremental.hpp>
 #include <sill/factor/factor_sampler.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional.hpp>
@@ -128,6 +129,11 @@ namespace sill {
     //! Returns the argument set of this factor
     const finite_domain& arguments() const {
       return args;
+    }
+
+    //! Returns the number of arguments of this factor
+    size_t num_arguments() const {
+      return args.size();
     }
 
     //! Returns the underlying table // warning! this is not very safe!
@@ -1341,13 +1347,24 @@ namespace sill {
 
   // Utility classes
   //============================================================================
+
+  // do we need this? just use table_factor::marginal_fn
   typedef boost::function<table_factor(const finite_domain&)>
     marginal_table_factor_fn;
 
+  // do we need this? just use table_factor::conditional_fn
   typedef boost::function<table_factor(const finite_domain&,
                                        const finite_domain&)>
     conditional_table_factor_fn;
 
+  /**
+   * Specialization of factor_sampler for table factors.
+   *
+   * This class provides optimized sampling from table factors.
+   * The sampler precomputes the cumulative sums of the probabilities
+   * for each assignment to tail variables. Then, each sample is drawn
+   * by doing a binary search for a value drawn from Unif[0,1].
+   */
   template <>
   class factor_sampler<table_factor> {
   public:
@@ -1355,25 +1372,13 @@ namespace sill {
     typedef finite_var_vector   var_vector_type;
     
     //! Creates a sampler for a marginal distribution
-    factor_sampler(const table_factor& factor)
-      : table_(factor.table()),
-        nhead_(table_.arity()),
-        ntail_(0),
-        nelems_(table_.size()) {
-      compute_cumulative_sums();
+    explicit factor_sampler(const table_factor& factor) {
+      initialize(factor, factor.arg_vector());
     }
 
     //! Create a sampler for a conditional distribution p(head | rest)
-    factor_sampler(const table_factor& factor,
-                   const finite_var_vector& head)
-      : table_(factor.table()),
-        nhead_(head.size()),
-        ntail_(table_.arity() - nhead_),
-        nelems_(num_assignments(head)) {
-      assert(nhead_ <= table_.arity());
-      assert(std::equal(head.begin(), head.end(), factor.arg_vector().begin()));
-      assert(table_.size() % nelems_ == 0);
-      compute_cumulative_sums();
+    factor_sampler(const table_factor& factor, const finite_var_vector& head) {
+      initialize(factor, head);
     }
 
     //! Draw a random sample from a marginal distribution
@@ -1383,8 +1388,8 @@ namespace sill {
       dense_table<double>::const_iterator begin = table_.begin();
       boost::random::uniform_real_distribution<> unif01;
       size_t offset =
-        std::upper_bound(begin, begin + nelems_, unif01(rng)) - begin;
-      if (offset >= nelems_) { offset = nelems_ - 1; }
+        std::upper_bound(begin, begin + nelem_, unif01(rng)) - begin;
+      if (offset >= nelem_) { offset = nelem_ - 1; }
       table_.offset.index(offset, nhead_, sample);
     }
 
@@ -1397,17 +1402,27 @@ namespace sill {
       dense_table<double>::const_iterator begin = table_.begin() + start;
       boost::random::uniform_real_distribution<> unif01;
       size_t offset =
-        std::upper_bound(begin, begin + nelems_, unif01(rng)) - begin;
-      if (offset >= nelems_) { offset = nelems_ - 1; }
+        std::upper_bound(begin, begin + nelem_, unif01(rng)) - begin;
+      if (offset >= nelem_) { offset = nelem_ - 1; }
       table_.offset.index(offset, nhead_, sample);
     }
 
   private:
-    void compute_cumulative_sums() {
+    void initialize(const table_factor& factor, const finite_var_vector& head) {
+      // initialize the table and the dimensions
+      table_ = factor.table();
+      nhead_ = head.size();
+      ntail_ = factor.num_arguments() - nhead_;
+      nelem_ = num_assignments(head);
+      assert(nhead_ <= factor.num_arguments());
+      assert(std::equal(head.begin(), head.end(), factor.arg_vector().begin()));
+      assert(table_.size() % nelem_ == 0);
+
+      // compute cumulative sums of the factor elements
       dense_table<double>::iterator it = table_.begin();
       while (it != table_.end()) {
         double sum = 0.0;
-        for (size_t i = 0; i < nelems_; ++i) {
+        for (size_t i = 0; i < nelem_; ++i) {
           sum += *it;
           *it = sum;
           ++it;
@@ -1419,9 +1434,83 @@ namespace sill {
     dense_table<double> table_;
     size_t nhead_;
     size_t ntail_;
-    size_t nelems_;
+    size_t nelem_;
 
   }; // class factor_sampler<table_factor>
+
+
+  /**
+   * Specialization of factor_mle_incremental for table factors.
+   *
+   * This class computes the MLE using counts. 
+   */
+  template <>
+  class factor_mle_incremental<table_factor> {
+  public:
+    typedef finite_var_vector var_vector_type;
+    typedef std::vector<size_t> index_type;
+
+    struct param_type {
+      double smoothing;
+      param_type(double smoothing = 0.0)
+        : smoothing(smoothing) { }
+    };
+
+    factor_mle_incremental(const finite_var_vector& args,
+                           const param_type& params = param_type())
+      : factor_(args, params.smoothing), weight_(0.0) { }
+
+    factor_mle_incremental(const finite_var_vector& head,
+                           const finite_var_vector& tail,
+                           const param_type& params = param_type())
+      : factor_(concat(tail, head), params.smoothing),
+        tail_(tail),
+        weight_(0.0) { }
+      
+    void process(const index_type& values, double weight) {
+      factor_.table()(values) += weight;
+      weight_ += weight;
+    }
+
+    
+    /**
+     * Processes the data point for a conditional distribution when we
+     * observe a distribution over the tail variables, rather than a
+     * single value. This is useful in algorithms, such as EM.
+     *
+     * \param values The values of the head variables only
+     * \param ptail The distribution over the tail variables (its argument
+     *              vector must be identical to the tail of the estimate).
+     */
+    void process(const index_type& values, const table_factor& ptail) {
+      assert(ptail.arg_vector() == tail_);
+      size_t start = factor_.table().offset(values, tail_.size());
+      dense_table<double>::iterator dest = factor_.table().begin() + start;
+      foreach(double w, ptail.table()) {
+        *dest++ += w;
+      }
+      weight_ += ptail.norm_constant();
+    }
+
+    const table_factor& estimate() {
+      if (tail_.empty()) {
+        return factor_.normalize();
+      } else {
+        return factor_ /= factor_.marginal(make_domain(tail_));
+      }
+    }
+
+    double weight() {
+      return weight_;
+    }
+
+  private:
+    table_factor factor_;
+    finite_var_vector tail_;
+    double weight_;
+
+  }; // class factor_mle_incremental<table_factor>
+
 
   // Traits
   //============================================================================

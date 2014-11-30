@@ -1,7 +1,7 @@
-#ifndef SILL_MARKOV_CHAIN_LEARNER_HPP
-#define SILL_MARKOV_CHAIN_LEARNER_HPP
+#ifndef SILL_MARKOV_CHAIN_MLE_HPP
+#define SILL_MARKOV_CHAIN_MLE_HPP
 
-#include <sill/learning/factor_mle/factor_mle.hpp>
+#include <sill/factor/factor_mle.hpp>
 #include <sill/model/markov_chain.hpp>
 
 namespace sill {
@@ -11,7 +11,7 @@ namespace sill {
    * Models the Learner concept.
    */
   template <typename F>
-  class markov_chain_learner {
+  class markov_chain_mle {
   public:
     // Learner concept types
     typedef markov_chain<F> model_type;
@@ -25,7 +25,7 @@ namespace sill {
     /**
      * Constructs a learner for the given set of processes and order.
      */
-    explicit markov_chain_learner(const arg_vector_type& args, size_t order = 1)
+    explicit markov_chain_mle(const arg_vector_type& args, size_t order = 1)
       : args(args), order(order) { }
 
     /**
@@ -66,7 +66,7 @@ namespace sill {
     arg_vector_type args;
     size_t order;
 
-  }; // class markov_chain_learner
+  }; // class markov_chain_mle
   
 } // namespace sill
 

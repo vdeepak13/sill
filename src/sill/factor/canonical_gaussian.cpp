@@ -443,7 +443,7 @@ namespace sill {
   double canonical_gaussian::log_norm_constant() const {
     mat lambda_inv;
     if (lambda.is_empty())
-      return 0;
+      return log_mult;
     try {
       lambda_inv = inv(lambda);
     } catch(std::runtime_error& e) {

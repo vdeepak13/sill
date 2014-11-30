@@ -64,6 +64,13 @@ namespace sill {
 
   moment_gaussian::
   moment_gaussian(const vector_var_vector& head_list,
+                  logarithmic<double> likelihood)
+    : likelihood(likelihood) {
+    initialize(head_list, vector_var_vector());
+  }
+
+  moment_gaussian::
+  moment_gaussian(const vector_var_vector& head_list,
                   const vector_var_vector& tail_list,
                   logarithmic<double> likelihood)
     : likelihood(likelihood) {

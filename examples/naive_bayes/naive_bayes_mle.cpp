@@ -2,8 +2,7 @@
 #include <sill/model/naive_bayes.hpp>
 #include <sill/learning/dataset/finite_memory_dataset.hpp>
 #include <sill/learning/dataset/finite_dataset_io.hpp>
-#include <sill/learning/factor_mle/table_factor.hpp>
-#include <sill/learning/parameter/naive_bayes_learner.hpp>
+#include <sill/learning/parameter/naive_bayes_mle.hpp>
 #include <sill/learning/validation/cross_validation.hpp>
 
 int main(int argc, char** argv) {
@@ -22,10 +21,10 @@ int main(int argc, char** argv) {
 
   // create the naive Bayes learner with the label variable named "class"
   // and the remaining variables in the dataset being features
-  finite_variable* label_var = format.finite_var("class");
-  finite_domain feature_vars = format.finite_vars();
-  feature_vars.erase(label_var);
-  naive_bayes_learner<table_factor> learner(label_var, feature_vars);
+  finite_variable* label = format.finite_var("class");
+  finite_var_vector features = format.finite_var_vec();
+  features.erase(std::find(features.begin(), features.end(), label));
+  naive_bayes_mle<table_factor> learner(label, features);
 
   // train the model on all of the data,
   // using the default regularization parameters (set to 0)

@@ -2,35 +2,26 @@
 #define SILL_MIXTURE_EM_HPP
 
 #include <sill/factor/factor_evaluator.hpp>
+#include <sill/factor/factor_mle_incremental.hpp>
 #include <sill/factor/mixture.hpp>
-#include <sill/factor/moment_gaussian.hpp>
+#include <sill/learning/parameter/mixture_init.hpp>
 
 #include <iostream>
-
-#include <boost/random/mersenne_twister.hpp>
+#include <numeric>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
-
-  namespace impl {
-    inline void initialize_em(size_t num_components,
-                              const vector_domain& args,
-                              const vector_dataset<>* ds,
-                              const factor_mle<moment_gaussian>::param_type& params,
-                              unsigned seed,
-                              mixture<moment_gaussian>& mog);
-  }
 
   // the dataset size must not change after initialization
   template <typename F>
   class mixture_em {
   public:
     // Member types of the Learner concept
-    typedef typename F::real_type                real_type;
-    typedef mixture<F>                           model_type;
-    typedef typename factor_mle<F>::dataset_type dataset_type;
-    typedef typename factor_mle<F>::param_type   comp_param_type;
+    typedef typename F::real_type                          real_type;
+    typedef mixture<F>                                     model_type;
+    typedef typename F::dataset_type                       dataset_type;
+    typedef typename factor_mle_incremental<F>::param_type comp_param_type;
 
     struct param_type {
       comp_param_type comp_params;
@@ -53,16 +44,12 @@ namespace sill {
     };
 
     // Other types
-    typedef typename F::domain_type domain_type;
-
-  private:
-    typedef typename dataset_type::record_type   record_type;
-    typedef arma::Mat<real_type> mat_type;
-    typedef arma::Col<real_type> vec_type;
+    typedef typename F::var_vector_type var_vector_type;
+    typedef typename dataset_type::record_type record_type;
 
   public:
-    //! Creates the learner for the given arguments and number of components
-    mixture_em(size_t num_components, const domain_type& args)
+    //! Creates the learner for the given component count and arguments
+    mixture_em(size_t num_components, const var_vector_type& args)
       : num_components(num_components), args(args) { }
 
     //! Learns a mixture with default parameters
@@ -96,35 +83,47 @@ namespace sill {
                     unsigned seed = 0) {
       this->dataset = dataset;
       this->params = params;
-      impl::initialize_em(num_components, args, dataset, params, seed, model);
+      sill::initialize(num_components, args, *dataset, params, seed, model);
     }
 
     //! Performs one expectation and one maximization step
-    //! \return the log-likelihood of the previous model
+    //! \return (the lower bound) of the log-likelihood of the previous model
     real_type iterate() {
-      // expectation: probability of each datapoint under the components
-      mat_type weights(dataset->size(), model.size());
-      for (size_t c = 0; c < model.size(); ++c) {
-        factor_evaluator<F> eval(model[c]);
-        real_type* w = weights.colptr(c);
-        foreach(const record_type& r, dataset->records(eval.arg_vector())) {
-          *w++ = eval(r.values);
+      // initialize the evaluators and factor estimators for each component
+      std::vector<factor_evaluator<F> >       evaluators;
+      std::vector<factor_mle_incremental<F> > estimators;
+      evaluators.reserve(num_components);
+      estimators.reserve(num_components);
+      for (size_t i = 0; i < num_components; ++i) {
+        evaluators.push_back(factor_evaluator<F>(model[i]));
+        estimators.push_back(factor_mle_incremental<F>(args, params));
+      }
+
+      std::vector<real_type> p(num_components);
+      real_type bound = 0.0;
+      foreach (const record_type& r, dataset->records(args)) {
+        // compute the probability of the datapoint under each component
+        for (size_t i = 0; i < num_components; ++i) {
+          p[i] = evaluators[i](r.values);
+        }
+        real_type sump = std::accumulate(p.begin(), p.end(), real_type());
+        real_type mult = r.weight / sump;
+        bound += r.weight * std::log(sump);
+        
+        // update the estimates
+        for (size_t i = 0; i < num_components; ++i) {
+          estimators[i].process(r.values, p[i] * mult);
         }
       }
-      vec_type norms = sum(weights, 1);
-      for (size_t c = 0; c < model.size(); ++c) {
-        weights.col(c) /= norms;
-      }
-      real_type ll = sum(log(norms));
-
-      // maximization: recomputes the components.
-      factor_mle<F> estim(dataset, params);
-      for (size_t c = 0; c < model.size(); ++c) {
-        model[c] = estim(model.arguments(), weights.col(c));
+      
+      // recompute the components
+      for (size_t i = 0; i < num_components; ++i) {
+        model[i] = estimators[i].estimate();
+        model[i] *= estimators[i].weight();
       }
       model.normalize();
 
-      return ll;
+      return bound;
     }
 
     //! Returns the current estimate
@@ -135,7 +134,7 @@ namespace sill {
   private:
     // persistent members
     size_t num_components;
-    domain_type args;
+    var_vector_type args;
     
     // iteration-specific members
     const dataset_type* dataset;
@@ -143,37 +142,6 @@ namespace sill {
     mixture<F> model;
     
   }; // class mixture_em
-
-  // random initialization for mixtures of Gaussians
-  namespace impl {
-    inline void initialize_em(size_t num_components,
-                              const vector_domain& args,
-                              const vector_dataset<>* ds,
-                              const factor_mle<moment_gaussian>::param_type& params,
-                              unsigned seed,
-                              mixture<moment_gaussian>& mog) {
-      assert(num_components > 0);
-      assert(ds->size() >= num_components);
-
-      // generate the row indices that will determine the centers
-      // we want to be absolutely certain they are distinct.
-      // otherwise, EM will not compute distinct clusters
-      boost::mt19937 rng(seed);
-      boost::uniform_int<size_t> uniform(0, ds->size() - 1);
-      boost::unordered_set<size_t> random_rows;
-      while (random_rows.size() < num_components) {
-        random_rows.insert(uniform(rng));
-      }
-
-      // compute the covariance and set the random means
-      factor_mle<moment_gaussian> estim(ds, params);
-      mog = mixture_gaussian(num_components, estim(args));
-      size_t k = 0;
-      foreach(size_t row, random_rows) {
-        mog[k++].mean() = ds->record(row, mog[0].head()).values;
-      }
-    }
-  } // namespace impl
 
 } // namespace sill
 

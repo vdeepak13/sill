@@ -198,6 +198,38 @@ namespace sill {
   };
 
   /**
+   * Adds two objects in place.
+   */
+  template <typename T>
+  struct plus_assign {
+    T& operator()(T& a, const T& b) const { return a += b; }
+  };
+
+  /**
+   * Subtracts one object from another one in place.
+   */
+  template <typename T>
+  struct minus_assign {
+    T& operator()(T& a, const T& b) const { return a -= b; }
+  };
+
+  /**
+   * Multiplies two objects in place.
+   */
+  template <typename T>
+  struct multiplies_assign {
+    T& operator()(T& a, const T& b) const { return a *= b; }
+  };
+
+  /**
+   * Divides one object by another in place.
+   */
+  template <typename T>
+  struct divides_assign {
+    T& operator()(T& a, const T& b) const { return a /= b; }
+  };
+
+  /**
    * The division operator. Performs a / b. With the convention that 0 / 0 = 0
    */
   template <typename T>

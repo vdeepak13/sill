@@ -1,2 +1,2 @@
-add_executable(naive_bayes_learner naive_bayes_learner.cpp)
 add_executable(naive_bayes_em naive_bayes_em.cpp)
+add_executable(naive_bayes_mle naive_bayes_mle.cpp)

@@ -210,7 +210,7 @@ BOOST_AUTO_TEST_CASE(test_mg_reorder_conditional) {
   BOOST_CHECK(f_xyz.reorder(xzy) == f_xzy);
 }
 
-BOOST_AUTO_TEST_CASE(test_mg_marginal_sampler) {
+BOOST_AUTO_TEST_CASE(test_mg_marginal_sampler_mle) {
   universe u;
   vector_variable* x = u.new_vector_variable("x", 1);
   vector_variable* y = u.new_vector_variable("y", 1);
@@ -218,6 +218,7 @@ BOOST_AUTO_TEST_CASE(test_mg_marginal_sampler) {
  
   moment_gaussian f(xy, "1 -1", "2 1; 1 2");
   factor_sampler<moment_gaussian> sampler(f);
+  factor_mle_incremental<moment_gaussian> mle(f.head());
   boost::lagged_fibonacci607 rng;
   
   size_t nsamples = 100000;
@@ -228,6 +229,7 @@ BOOST_AUTO_TEST_CASE(test_mg_marginal_sampler) {
     sampler(sample, rng);
     mean += sample;
     cov  += sample * sample.t();
+    mle.process(sample, 1.0);
   }
   mean /= nsamples;
   cov  /= nsamples;
@@ -235,4 +237,6 @@ BOOST_AUTO_TEST_CASE(test_mg_marginal_sampler) {
 
   BOOST_CHECK_SMALL(norm(mean - f.mean(), "inf"), 1e-2);
   BOOST_CHECK_SMALL(norm(cov - f.covariance(), "inf"), 1e-2);
+  BOOST_CHECK_SMALL(f.relative_entropy(mle.estimate()), 1e-2);
+  BOOST_CHECK_CLOSE(mle.weight(), nsamples, 1e-2 /* percent */);
 }

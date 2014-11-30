@@ -72,8 +72,12 @@ namespace sill {
     explicit moment_gaussian(double value = 1)
       : likelihood(value) { }
 
-    //! Constructs a Gaussian for the specified collection of variables
+    //! Constructs a Gaussian for the specified set of variables
     explicit moment_gaussian(const vector_domain& head_list,
+                             logarithmic<double> likelihood = 1);
+
+    //! Constructs a Gaussian for the specified sequence of variables
+    explicit moment_gaussian(const vector_var_vector& head_list,
                              logarithmic<double> likelihood = 1);
 
     //! Constructs a Gaussian which will represent a conditional distribution

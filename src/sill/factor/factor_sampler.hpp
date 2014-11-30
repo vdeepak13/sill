@@ -21,7 +21,7 @@ namespace sill {
     typedef typename F::var_vector_type var_vector_type;
 
     //! Constructs the sampler for a marginal distribution
-    factor_sampler(const F& factor);
+    explicit factor_sampler(const F& factor);
 
     //! Constructs the sampler for a conditional distribution
     //! p(head | rest)
@@ -36,7 +36,7 @@ namespace sill {
     void operator()(index_type& head, const index_type& tail,
                     RandomNumberGenerator& rng) const;
     
-  }; // class factor_evaluator
+  }; // class factor_sampler
 
 } // namespace sill
 

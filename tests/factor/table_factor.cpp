@@ -162,8 +162,8 @@ BOOST_AUTO_TEST_CASE(test_sampling) {
   // TODO: test conditioning and computing log likelihoods
 }
 
-BOOST_AUTO_TEST_CASE(test_marginal_sampler) {
-    // dataset parameters
+BOOST_AUTO_TEST_CASE(test_marginal_sampler_mle) {
+  // dataset parameters
   size_t nsamples = 100000;
   size_t nvars = 2;
   size_t arity = 4;
@@ -174,23 +174,27 @@ BOOST_AUTO_TEST_CASE(test_marginal_sampler) {
     vars.insert(u.new_finite_variable(arity));
   boost::mt11213b rng;
 
-  // Create a model to sample from.
+  // Create a model to sample from
   table_factor f = uniform_factor_generator()(vars, rng);
   f.normalize();
 
-  // Test log likelihood.
+  // Test log likelihood
   double true_entropy = f.entropy();
   double cross_entropy = 0;
   std::vector<size_t> sample;
   factor_sampler<table_factor> sampler(f);
+  factor_mle_incremental<table_factor> mle(f.arg_vector());
   for (size_t i = 0; i < nsamples; ++i) {
     sampler(sample, rng);
     cross_entropy -= std::log(f(sample));
+    mle.process(sample, 1.0);
   }
   BOOST_CHECK_CLOSE(true_entropy, cross_entropy / nsamples, 1.0 /* percent */);
+  BOOST_CHECK_SMALL(f.relative_entropy(mle.estimate()), 1e-2);
+  BOOST_CHECK_CLOSE(mle.weight(), nsamples, 1e-2 /* percent */);
 }
 
-BOOST_AUTO_TEST_CASE(test_conditional_sampler) {
+BOOST_AUTO_TEST_CASE(test_conditional_sampler_mle) {
   // dataset parameters
   size_t nsamples = 100000;
   size_t arity = 4;
@@ -206,17 +210,23 @@ BOOST_AUTO_TEST_CASE(test_conditional_sampler) {
 
   // For each assignment to tail, draw a number of samples and compare to f
   factor_sampler<table_factor> sampler(f, make_vector(head));
+  factor_mle_incremental<table_factor> mle(make_vector(head), make_vector(tail));
   std::vector<size_t> sample;
   for (size_t val = 0; val < arity; ++val) {
     std::vector<size_t> tail_index(1, val);
+    std::vector<size_t> index(2, val);
     table_factor g(make_domain(head), 0);
     for (size_t i = 0; i < nsamples; ++i) {
       sampler(sample, tail_index, rng);
       ++g(sample);
+      index[1] = sample[0];
+      mle.process(index, 1.0);
     }
     double diff = norm_1(f.restrict(make_assignment(tail, val)), g / nsamples);
     BOOST_CHECK_SMALL(diff, 0.01);
   }
+  BOOST_CHECK_SMALL(norm_1(f, mle.estimate()), 5e-2);
+  BOOST_CHECK_CLOSE(mle.weight(), nsamples * arity, 1e-2 /* percent */);
 }
 
 BOOST_AUTO_TEST_CASE(test_comparison) {

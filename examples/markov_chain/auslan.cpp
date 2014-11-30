@@ -1,8 +1,7 @@
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/learning/factor_mle/moment_gaussian.hpp>
 #include <sill/learning/dataset/sequence_memory_dataset.hpp>
 #include <sill/learning/dataset/vector_sequence_record.hpp>
-#include <sill/learning/parameter/markov_chain_learner.hpp>
+#include <sill/learning/parameter/markov_chain_mle.hpp>
 #include <sill/parsers/string_functions.hpp>
 
 #include <boost/filesystem.hpp>
@@ -82,7 +81,7 @@ int main(int argc, char** argv) {
   
   // train the models
   model_map models;
-  markov_chain_learner<moment_gaussian> learner(processes, 1);
+  markov_chain_mle<moment_gaussian> learner(processes, 1);
   foreach(dataset_map::value_type& p, datasets) {
     std::cout << "Training model for sign " << p.first << std::endl;
     std::string sign = p.first;
