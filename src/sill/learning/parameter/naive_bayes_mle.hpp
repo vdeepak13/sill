@@ -1,8 +1,7 @@
-#ifndef SILL_NAIVE_BAYES_LEARNER_HPP
-#define SILL_NAIVE_BAYES_LEARNER_HPP
+#ifndef SILL_NAIVE_BAYES_MLE_HPP
+#define SILL_NAIVE_BAYES_MLE_HPP
 
 #include <sill/model/naive_bayes.hpp>
-#include <sill/learning/factor_mle/factor_mle.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -13,7 +12,7 @@ namespace sill {
    * Models the Learner concept.
    */
   template <typename FeatureF>
-  class naive_bayes_learner {
+  class naive_bayes_mle {
   public:
     // Learner concept types
     typedef naive_bayes<FeatureF>           model_type;
@@ -28,15 +27,16 @@ namespace sill {
     };
  
     // Other types
-    typedef typename FeatureF::variable_type variable_type;
-    typedef typename FeatureF::domain_type   domain_type;
+    typedef typename FeatureF::variable_type   variable_type;
+    typedef typename FeatureF::var_vector_type var_vector_type;
 
     /**
      * Constructs a learner for the given label variable and features.
      */
-    naive_bayes_learner(finite_variable* label, const domain_type& features)
+    naive_bayes_mle(finite_variable* label, const var_vector_type& features)
       : label(label), features(features) {
-      assert(!features.count(label));
+      assert(std::find(features.begin(), features.end(), label) ==
+             features.end());
     }
 
     /**
@@ -68,8 +68,9 @@ namespace sill {
     
   private:
     finite_variable* label;
-    domain_type features;
-  };
+    var_vector_type features;
+
+  }; // class naive_bayes_mle
 
 } // namespace sill
 

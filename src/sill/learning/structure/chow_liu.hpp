@@ -4,7 +4,7 @@
 #include <set>
 
 #include <sill/iterator/transform_output_iterator.hpp>
-#include <sill/learning/factor_mle/factor_mle.hpp>
+#include <sill/factor/factor_mle.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/projections.hpp>
 
@@ -41,8 +41,8 @@ namespace sill {
     /**
      * Constructs the Chow-Liu learner over the given argument set.
      */
-    chow_liu(const domain_type& dom)
-      : vars(dom.begin(), dom.end()) { }
+    chow_liu(const var_vector_type& vars)
+      : vars(vars) { }
 
     /**
      * Learns a decomposable model using the default parameters.

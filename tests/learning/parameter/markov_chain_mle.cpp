@@ -1,4 +1,4 @@
-#define BOOST_TEST_MODULE markov_chain_learner
+#define BOOST_TEST_MODULE markov_chain_mle
 #include <boost/test/unit_test.hpp>
 
 #include <sill/factor/moment_gaussian.hpp>
@@ -7,17 +7,15 @@
 #include <sill/learning/dataset/vector_sequence_record.hpp>
 #include <sill/learning/dataset/sequence_memory_dataset.hpp>
 #include <sill/learning/dataset/vector_sequence_record.hpp>
-#include <sill/learning/factor_mle/moment_gaussian.hpp>
-#include <sill/learning/factor_mle/table_factor.hpp>
-#include <sill/learning/parameter/markov_chain_learner.hpp>
+#include <sill/learning/parameter/markov_chain_mle.hpp>
 
 using namespace sill;
 
 template class markov_chain<moment_gaussian>;
 template class markov_chain<table_factor>;
 
-template class markov_chain_learner<moment_gaussian>;
-template class markov_chain_learner<table_factor>;
+template class markov_chain_mle<moment_gaussian>;
+template class markov_chain_mle<table_factor>;
 
 BOOST_AUTO_TEST_CASE(test_reconstruct) {
   size_t nchains = 1000;
@@ -47,7 +45,7 @@ BOOST_AUTO_TEST_CASE(test_reconstruct) {
   }
 
   // estimate a chain from the samples
-  markov_chain_learner<moment_gaussian> learner(xy);
+  markov_chain_mle<moment_gaussian> learner(xy);
   markov_chain<moment_gaussian> lchain;
   double ll = learner.learn(ds, lchain);
   

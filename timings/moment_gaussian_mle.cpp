@@ -1,9 +1,8 @@
 #include <boost/timer.hpp>
 
 #include <sill/base/universe.hpp>
-
+#include <sill/factor/moment_gaussian.hpp>
 #include <sill/learning/dataset/vector_memory_dataset.hpp>
-#include <sill/learning/factor_mle/moment_gaussian.hpp>
 
 #include <sill/macros_def.hpp>
 

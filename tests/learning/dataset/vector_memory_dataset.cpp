@@ -2,9 +2,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/base/universe.hpp>
+#include <sill/factor/moment_gaussian.hpp>
 #include <sill/learning/dataset/vector_dataset_io.hpp>
 #include <sill/learning/dataset/vector_memory_dataset.hpp>
-#include <sill/learning/factor_mle/moment_gaussian.hpp>
 
 #include <boost/math/special_functions.hpp>
 #include <boost/random/mersenne_twister.hpp>

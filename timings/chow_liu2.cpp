@@ -1,7 +1,7 @@
 #include <boost/timer.hpp>
 
+#include <sill/factor/table_factor.hpp>
 #include <sill/learning/dataset/finite_memory_dataset.hpp>
-#include <sill/learning/factor_mle/table_factor.hpp>
 #include <sill/learning/structure/chow_liu.hpp>
 #include <sill/model/random.hpp>
 
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
   for (size_t i = 0; i < ntrain; ++i) {
     cout << "Trial " << i << endl;
     factor_mle<table_factor> estim(&ds);
-    chow_liu<table_factor> chowliu(ds.arguments());
+    chow_liu<table_factor> chowliu(ds.arg_vector());
     chowliu.learn(estim, dm);
   }
   cout << "Chow-Liu using the new dataset: "

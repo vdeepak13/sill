@@ -10,9 +10,9 @@
 #include <sill/base/assignment.hpp>
 #include <sill/copy_ptr.hpp>
 #include <sill/factor/factor_evaluator.hpp>
+#include <sill/factor/factor_mle.hpp>
 #include <sill/factor/factor_sampler.hpp>
 #include <sill/global.hpp>
-#include <sill/learning/factor_mle/factor_mle.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/stl_concepts.hpp>

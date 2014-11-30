@@ -1,17 +1,16 @@
 #define BOOST_TEST_MODULE mixture_em
 #include <boost/test/unit_test.hpp>
 
+#include <sill/base/universe.hpp>
+#include <sill/factor/moment_gaussian.hpp>
+#include <sill/learning/dataset/vector_memory_dataset.hpp>
+#include <sill/learning/parameter/mixture_em.hpp>
+
 #include <boost/math/special_functions/round.hpp>
 #include <boost/random/lagged_fibonacci.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/tuple/tuple_io.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
-
-#include <sill/base/universe.hpp>
-
-#include <sill/learning/dataset/vector_memory_dataset.hpp>
-#include <sill/learning/factor_mle/moment_gaussian.hpp>
-#include <sill/learning/parameter/mixture_em.hpp>
 
 #include <algorithm>
 
@@ -30,16 +29,15 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   // size_t niters = 100;
 
   universe u;
-  vector_var_vector var_vec = u.new_vector_variables(1, 2); // 1 2D variable
-  vector_domain vars = make_domain(var_vec);
+  vector_var_vector vars = u.new_vector_variables(1, 2); // 1 2D variable
   
   mixture_gaussian original(k, vars);
-  original[0] = moment_gaussian(var_vec, "-2 0", "1 0.5; 0.5 1");
-  original[1] = moment_gaussian(var_vec, "2 -2", "1 0.2; 0.2 1");
-  original[2] = moment_gaussian(var_vec, "2 +2", "1 -0.2; -0.2 1");
+  original[0] = moment_gaussian(vars, "-2 0", "1 0.5; 0.5 1");
+  original[1] = moment_gaussian(vars, "2 -2", "1 0.2; 0.2 1");
+  original[2] = moment_gaussian(vars, "2 +2", "1 -0.2; -0.2 1");
 
   vector_memory_dataset<> data;
-  data.initialize(var_vec, nsamples);
+  data.initialize(vars, nsamples);
 
   boost::lagged_fibonacci607 rng;
   for (size_t i = 0; i < nsamples; ++i) {
@@ -47,10 +45,10 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   }
 
 
-  mixture_em<moment_gaussian> engine(k, vars);
-//   engine.initialize(&data);
+  mixture_em<moment_gaussian> learner(k, vars);
+//   learner.initialize(&data);
 //   for(size_t i = 0; i < niters; ++i) {
-//     double log_lik = engine.iterate();
+//     double log_lik = learner.iterate();
 //     cout << "Iteration " << i << ", log-likelihood " << log_lik << endl;
 //   }
   mixture_em<moment_gaussian>::param_type params;
@@ -58,7 +56,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   params.seed = 123;
 
   mixture_gaussian estimate;
-  engine.learn(data, params, estimate);
+  learner.learn(data, params, estimate);
 
   // retrieve the components in the canonical order
   std::vector<boost::tuple<double,double,size_t> > centers(k);
