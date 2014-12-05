@@ -2,6 +2,7 @@
 #define SILL_GLOBAL_HPP
 
 #include <cassert>
+#include <cmath>
 #include <iosfwd> 
 #include <utility>
 
@@ -19,6 +20,10 @@ namespace sill {
 
   // standard type to represent difference
   using std::ptrdiff_t;
+
+  // bring in log and exp to allow uniform handling of T and logarithmic<T>
+  using std::log;
+  using std::exp;
 
   //! Type deduction will fail unless the arguments have the same type.
   template <typename T> void same_type(const T&, const T&) { }

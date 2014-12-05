@@ -611,7 +611,7 @@ namespace sill {
 
     //! Returns the normalization constant
     double norm_constant() const {
-      return table_data.aggregate(std::plus<double>(), 0);
+      return collapse(std::plus<double>(), 0.0);
     }
 
     //! Normalizes the factor in-place
@@ -643,14 +643,14 @@ namespace sill {
 
     //! Returns the maximum value in the factor
     result_type maximum() const {
-      return table_data.aggregate(sill::maximum<result_type>(), 
-                                  -std::numeric_limits<double>::infinity());
+      return collapse(sill::maximum<result_type>(), 
+                      -std::numeric_limits<double>::infinity());
     }
 
     //! Returns the maximum value in the factor
     result_type minimum() const {
-      return table_data.aggregate(sill::minimum<result_type>(), 
-                                  std::numeric_limits<double>::infinity());
+      return collapse(sill::minimum<result_type>(), 
+                      std::numeric_limits<double>::infinity());
     }
 
     //! Returns a sample from the factor, which is assumed to be normalized
@@ -715,9 +715,7 @@ namespace sill {
      * defining some kind of map_collapse function.
      */
     double entropy(double base) const {
-      table_type tmp(table_data);
-      tmp.update(entropy_operator<result_type>(base));
-      return tmp.aggregate(std::plus<result_type>(), 0.0);
+      return collapse(entropy_operator<result_type>(base), 0.0);
     }
 
     /**
@@ -727,7 +725,7 @@ namespace sill {
      * defining some kind of map_collapse function.
      */
     double entropy() const {
-      return entropy(std::exp(1.));
+      return collapse(entropy_operator<result_type>(), 0.0);
     }
 
     /**
@@ -1463,7 +1461,7 @@ namespace sill {
     factor_mle_incremental(const finite_var_vector& head,
                            const finite_var_vector& tail,
                            const param_type& params = param_type())
-      : factor_(concat(tail, head), params.smoothing),
+      : factor_(concat(head, tail), params.smoothing),
         tail_(tail),
         weight_(0.0) { }
       
@@ -1483,16 +1481,21 @@ namespace sill {
      *              vector must be identical to the tail of the estimate).
      */
     void process(const index_type& values, const table_factor& ptail) {
+      size_t nhead = values.size();
+      size_t ntail = tail_.size();
       assert(ptail.arg_vector() == tail_);
-      size_t start = factor_.table().offset(values, tail_.size());
+      assert(nhead + ntail == factor_.arguments().size());
+      size_t start = factor_.table().offset(values, 0);
       dense_table<double>::iterator dest = factor_.table().begin() + start;
+      size_t increment = factor_.table().offset.get_multiplier(nhead);
       foreach(double w, ptail.table()) {
-        *dest++ += w;
+        *dest += w;
+        dest += increment;
       }
       weight_ += ptail.norm_constant();
     }
 
-    const table_factor& estimate() {
+    table_factor& estimate() {
       if (tail_.empty()) {
         return factor_.normalize();
       } else {

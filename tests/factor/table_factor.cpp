@@ -1,13 +1,13 @@
 #define BOOST_TEST_MODULE table_factor
 #include <boost/test/unit_test.hpp>
 
-#include <iostream>
-
-#include <boost/random/mersenne_twister.hpp>
-
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/learning/dataset_old/record_conversions.hpp>
+
+#include <iostream>
+
+#include <boost/random/mersenne_twister.hpp>
 
 #include "predicates.hpp"
 
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE(test_conditional_sampler_mle) {
     for (size_t i = 0; i < nsamples; ++i) {
       sampler(sample, tail_index, rng);
       ++g(sample);
-      index[1] = sample[0];
+      index[0] = sample[0];
       mle.process(index, 1.0);
     }
     double diff = norm_1(f.restrict(make_assignment(tail, val)), g / nsamples);

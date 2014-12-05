@@ -167,7 +167,8 @@ namespace sill {
   /**
    * A concept that preresents a factor that can be indexed efficiently.
    * The factor defines a factor-specific index type that can be used to
-   * evaluate the factor using operator().
+   * evaluate the factor using operator(). For conditional factors, the
+   * ordering of variables in the index is always (head, tail).
    *
    * Even if the factor is not IndexableFactor, its value an be still evaluated
    * by passing assignment_type to operator(), though this operation may not
@@ -184,12 +185,16 @@ namespace sill {
 
     /**
      * Returns the value of the factor for the given index.
+     * For conditional factors, the index is specified in the order
+     * (head, tail).
      */
     typename F::result_type operator()(const index_type& index) const;
 
     /**
      * Returns a factor that is equivalent to this factor, but has the
      * variables ordered according to vars.
+     * \deprecated This will no longer be necessary / desirable once we
+     *             unify Factor and CRFfactor.
      */
     F reorder(const typename F::var_vector_type& vars) const;
 

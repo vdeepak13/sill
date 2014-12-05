@@ -15,69 +15,28 @@ namespace sill {
 
   // Constructors, conversion, and initialization
   //============================================================================
-  void canonical_gaussian::
-  initialize(const forward_range<vector_variable*>& args, bool use_default) {
-    // Check the matrix sizes
-    arg_list.clear();
-    arg_list.insert(arg_list.end(), args.begin(), args.end());
-    size_t n = vector_size(arg_list);
-    // Initialize the variable indices
-    compute_indices(arg_list);
-
-    if (use_default) {
-      // Initialize the matrices
-      lambda = zeros(n, n);
-      eta = zeros(n);
-      log_mult = 0;
-    } else {
-      assert(lambda.n_rows == n && lambda.n_cols == n);
-      assert(eta.size() == n);
-    }
+  canonical_gaussian::
+  canonical_gaussian(const vector_domain& args, logarithmic<double> value)
+    : gaussian_factor(args), log_mult(log(value)) {
+    initialize(make_vector(args));
   }
 
   canonical_gaussian::
-  canonical_gaussian(const vector_domain& args)
-    : gaussian_factor(args), log_mult(0) {
-    initialize(make_vector(args), true);
-  }
-
-  canonical_gaussian::
-  canonical_gaussian(const vector_domain& args, double value)
-    : gaussian_factor(args), log_mult(std::log(value)) {
-    initialize(make_vector(args), true);
-  }
-
-  canonical_gaussian::
-  canonical_gaussian(const vector_var_vector& args)
-    : gaussian_factor(args), log_mult(0) {
-    initialize(args, true);
-  }
-
-  canonical_gaussian::
-  canonical_gaussian(const vector_var_vector& args, double value)
-    : gaussian_factor(args), log_mult(std::log(value)) {
-    initialize(args, true);
-  }
-
-  canonical_gaussian::
-  canonical_gaussian(const forward_range<vector_variable*>& args, double value)
-    : gaussian_factor(args), log_mult(std::log(value)) {
-    initialize(args, true);
+  canonical_gaussian(const vector_var_vector& args, logarithmic<double> value)
+    : gaussian_factor(args), log_mult(log(value)) {
+    initialize(args);
   }
 
   canonical_gaussian::
   canonical_gaussian(const vector_var_vector& args,
                      const mat& lambda,
                      const vec& eta,
-                     double log_mult)
-    : gaussian_factor(make_domain(args)), lambda(lambda), eta(eta),
-      log_mult(log_mult) {
-    // assert(symmetric(lambda));
-    initialize(args, false);
+                     double log_mult) {
+    reset(args, lambda, eta, log_mult);
   }
 
-
-  canonical_gaussian::canonical_gaussian(const moment_gaussian& mg) {
+  canonical_gaussian::canonical_gaussian(const moment_gaussian& mg)
+    : gaussian_factor(mg.arguments()) {
     size_t nhead = mg.size_head();
     size_t ntail = mg.size_tail();
     size_t n = nhead + ntail;
@@ -86,7 +45,6 @@ namespace sill {
 
     // Initialize the argument list
     arg_list = concat(mg.head_list, mg.tail_list);
-    args = vector_domain(arg_list.begin(), arg_list.end());
 
     // Initialize the argument map
     compute_indices(arg_list);
@@ -114,23 +72,30 @@ namespace sill {
               + as_scalar(trans(mg.cmean) * invcov * mg.cmean));
   }
 
-  canonical_gaussian::operator std::string() const {
-    std::ostringstream out;
-    out << *this;
-    return out.str();
+  void canonical_gaussian::initialize(const vector_var_vector& args) {
+    arg_list = args;
+    compute_indices(args);
+    size_t n = vector_size(arg_list);
+    lambda = zeros(n, n);
+    eta = zeros(n);
   }
 
   void canonical_gaussian::reset(const vector_var_vector& args,
-                                 const mat& lambda, const vec& eta,
+                                 const mat& lambda,
+                                 const vec& eta,
                                  double log_mult) {
     this->args.clear();
     this->args.insert(args.begin(), args.end());
+    this->arg_list = args;
+    this->var_span.clear();
+    compute_indices(args);
+    
     this->lambda = lambda;
     this->eta = eta;
     this->log_mult = log_mult;
-    // assert(symmetric(lambda));
-    var_span.clear();
-    initialize(args, false);
+    size_t n = vector_size(arg_list);
+    assert(lambda.n_rows == n && lambda.n_cols == n);
+    assert(eta.n_rows == n);
   }
 
   // Serialization
@@ -341,19 +306,14 @@ namespace sill {
     vec vy = sill::concat(values(a, y));
     assert(vy.size() == iy.size());
 
+    double lm = log_mult + dot(eta(iy), vy)
+      - 0.5 * as_scalar(trans(vy) * lambda(iy,iy) * vy);
     if (x.empty()) {
-      return
-        canonical_gaussian(log_mult + dot(eta(iy), vy)
-                           - 0.5 * as_scalar(trans(vy) * lambda(iy,iy) * vy));
+      return canonical_gaussian(logarithmic<double>(lm, log_tag()));
+    } else {
+      return canonical_gaussian(x, lambda(ix,ix), eta(ix) - lambda(ix,iy)*vy, lm);
     }
-    else
-      return canonical_gaussian
-        (x,
-         lambda(ix, ix),
-         eta(ix) - lambda(ix, iy)*vy,
-         log_mult + dot(eta(iy), vy)
-         - 0.5 * as_scalar(trans(vy) * lambda(iy,iy) * vy));
-  } // restrict(a)
+  }
 
   void canonical_gaussian::
   restrict(const record_type& r, const vector_domain& r_vars,
@@ -397,15 +357,13 @@ namespace sill {
     r.vector_values(vy, y);
     assert(vy.size() == iy.size());
 
+    double lm = log_mult + dot(eta(iy), vy)
+      - 0.5*as_scalar(trans(vy) * lambda(iy,iy) * vy);
+
     if (x.empty()) {
-      f = canonical_gaussian(log_mult + dot(eta(iy), vy)
-                             - 0.5*as_scalar(trans(vy) * lambda(iy,iy) * vy));
+      f = canonical_gaussian(logarithmic<double>(lm, log_tag()));
     } else {
-      f = canonical_gaussian(x,
-                             lambda(ix, ix),
-                             eta(ix) - lambda(ix, iy)*vy,
-                             log_mult + dot(eta(iy), vy)
-                             - 0.5*as_scalar(vy * lambda(iy,iy) * vy));
+      f = canonical_gaussian(x, lambda(ix,ix), eta(ix) - lambda(ix,iy)*vy, lm);
     }
   } // restrict(f, r, r_vars, strict)
 

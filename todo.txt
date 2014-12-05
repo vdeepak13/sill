@@ -56,6 +56,10 @@
    - get rid of hacks in the table_factor and dense_table
    - simplify the storage format of vector datasets
    - logical_or -> bit_orx
+   - reduce the memory footprint of table factors
+   - strengthen the ordering of combine operations
+   - traits to distinguish marginal and conditional factors
+   - custom variables
 
 8. more examples / applications:
    - viterbi algorithm

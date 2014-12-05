@@ -37,6 +37,20 @@ namespace sill {
     return result;
   }
 
+  inline domain set_union(const domain& s, const finite_domain& t) {
+    domain result;
+    sill::set_union(s, make_converted<variable*>(t),
+                    std::inserter(result, result.begin()));
+    return result;
+  }
+
+  inline domain set_union(const domain& s, const vector_domain& t) {
+    domain result;
+    sill::set_union(s, make_converted<variable*>(t),
+                    std::inserter(result, result.begin()));
+    return result;
+  }
+
   /**
    * Returns the concatentaion of finite and vector variables.
    * \relates variable
@@ -78,6 +92,38 @@ namespace sill {
         break;
       }
     }
+  }
+
+  /**
+   * Returns all variables from the vector that are also present in
+   * the given associative container (set or map).
+   */
+  template <typename V, typename Container>
+  std::vector<V*>
+  intersect(const std::vector<V*>& vec, const Container& container) {
+    std::vector<V*> result;
+    foreach (V* v, vec) {
+      if (container.count(v)) {
+        result.push_back(v);
+      }
+    }
+    return result;
+  }
+
+  /**
+   * Returns all variables from the vector that are not present in
+   * the given associative container (set or map).
+   */
+  template <typename V, typename Container>
+  std::vector<V*>
+  difference(const std::vector<V*>& vec, const Container& container) {
+    std::vector<V*> result;
+    foreach (V* v, vec) {
+      if (!container.count(v)) {
+        result.push_back(v);
+      }
+    }
+    return result;
   }
 
 } // namespace sill

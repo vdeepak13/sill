@@ -6,11 +6,12 @@
 namespace sill {
 
   /**
-   * A utility class that represents a maximum-likelihood estimator
-   * of the factor distribution that is able to process data incrementally.
-   * The class constructor takes a vector of factor arguments (or the vectors
-   * of head and tail arguments), and provides functions that process each
-   * (weighted) data point and return the final estimate.
+   * A utility class that represents a maximum-likelihood estimator of
+   * the marginal or conditional distribution that is able to process data
+   * incrementally. The class constructor takes either a vector of factor
+   * arguments (for marginal distributions), or the head and tail arguments
+   * (for conditional distributions), and provides functions that process
+   * each weighted data point and return the final estimate.
    *
    * By itself, this template is not capable of anything; it must be
    * specialized for each factor type that can be estimated incrementally.
@@ -25,7 +26,7 @@ namespace sill {
   public:
     BOOST_STATIC_ASSERT_MSG(
       sizeof(Factor) == 0,
-      "Missing specialization of factor_mle_incremental for the given factor type"
+      "Missing specialization of factor_mle_incremental for this factor type"
     );
 
     //! The type representing a real value
@@ -41,14 +42,17 @@ namespace sill {
     struct param_type;
 
     /**
-     * Constructs a maximum-likelihood estimator over the given arguments.
+     * Constructs a maximum-likelihood estimator for a marginal distribution
+     * over the given arguments. This constructor is provided only when the
+     * Factor type suports marginal distributions.
      */
     factor_mle_incremental(const var_vector_type& args,
                            const param_type& params = param_type());
 
     /**
-     * Constructs a maximum-likelihood estimator over the given head and
-     * tail arguments.
+     * Constructs a maximum-likelihood estimator for a conditional distribution
+     * p(head | tail). This constructor is provided only when the Factor type
+     * supports conditional distributions.
      */
     factor_mle_incremental(const var_vector_type& head,
                            const var_vector_type& tail,
@@ -57,7 +61,7 @@ namespace sill {
     /**
      * Incorporates a single data point represented by an index and its weight.
      * If computing a conditional distribution, the indices must be passed in
-     * the (tail, head) order, not (head, tail)!
+     * the (head, tail) order.
      */
     void process(const index_type& index, real_type weight);
 
@@ -68,7 +72,7 @@ namespace sill {
     Factor estimate();
 
     /**
-     * Returns the total weight of the data incorporated into an estimate.
+     * Returns the total weight of the data incorporated into the estimate.
      */
     real_type weight() const;
 
