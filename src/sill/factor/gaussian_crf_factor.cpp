@@ -25,7 +25,9 @@ namespace sill {
       head_(Y_.begin(), Y_.end()), tail_(X_.begin(), X_.end()),
       ov(optimization_vector::size_type(vector_size(head_),vector_size(tail_)),
          0),
-      fixed_records_(false), conditioned_f(Y_, 0.), relabeled(false) {
+      fixed_records_(false),
+      conditioned_f(vector_var_vector(Y_.begin(), Y_.end())),
+      relabeled(false) {
     ov.zeros();
   }
 
@@ -37,7 +39,9 @@ namespace sill {
       tail_(Xdomain_ptr_->begin(), Xdomain_ptr_->end()),
       ov(optimization_vector::size_type(vector_size(head_),vector_size(tail_)),
          0),
-      fixed_records_(false), conditioned_f(Y_, 0.), relabeled(false) {
+      fixed_records_(false),
+      conditioned_f(vector_var_vector(Y_.begin(), Y_.end())),
+      relabeled(false) {
     ov.zeros();
   }
 
@@ -48,7 +52,7 @@ namespace sill {
     : base(make_domain(Y_),
            copy_ptr<vector_domain>(new vector_domain(make_domain(X_)))),
       head_(Y_), tail_(X_), ov(ov), fixed_records_(false),
-      conditioned_f(Y_, 0.), relabeled(false) {
+      conditioned_f(Y_), relabeled(false) {
     if (!ov.valid_size())
       throw std::invalid_argument
         (std::string("gaussian_crf_factor constructor:") +
@@ -64,7 +68,7 @@ namespace sill {
            copy_ptr<vector_domain>
            (new vector_domain(make_domain(lr.Xvector())))),
       head_(lr.Yvector()), tail_(lr.Xvector()),
-      fixed_records_(false), conditioned_f(head_, 0.), relabeled(false) {
+      fixed_records_(false), conditioned_f(head_), relabeled(false) {
     assert(head_.size() > 0);
     mat ds_cov;
     if (vector_size(head_) > 1) {
@@ -96,7 +100,7 @@ namespace sill {
            copy_ptr<vector_domain>
            (new vector_domain(make_domain(mg.tail())))),
       head_(mg.head()), tail_(mg.tail()), fixed_records_(false),
-      conditioned_f(head_, 0.), relabeled(false) {
+      conditioned_f(head_), relabeled(false) {
     mat inv_cov;
     bool result = inv(inv_cov, mg.covariance());
     if (!result) {

@@ -39,42 +39,26 @@ namespace sill {
     friend class moment_gaussian;
 
     //! Constructs a canonical Gaussian factor with no arguments
-    explicit canonical_gaussian(double value = 1) : log_mult(std::log(value)) { }
+    explicit canonical_gaussian(logarithmic<double> value = 1.0)
+      : log_mult(log(value)) { }
 
     /**
      * Constructs a canonical Gaussian factor with a given set of
      * arguments and zeroed parameters.
      */
-    explicit canonical_gaussian(const vector_domain& args);
-
-    /**
-     * Constructs a canonical Gaussian factor with a given set of
-     * arguments and zero parameters.
-     */
-    canonical_gaussian(const vector_domain& args, double value);
+    explicit canonical_gaussian(const vector_domain& args,
+                                logarithmic<double> value = 1.0);
 
     /**
      * Constructs a canonical Gaussian factor with a given set of
      * arguments and zeroed parameters, using the given variable ordering.
      */
-    explicit canonical_gaussian(const vector_var_vector& args);
+    explicit canonical_gaussian(const vector_var_vector& args,
+                                logarithmic<double> value = 1.0);
 
     /**
-     * Constructs a canonical Gaussian factor with a given set of
-     * arguments and zero parameters, using the given variable ordering.
-     */
-    canonical_gaussian(const vector_var_vector& args, double value);
-
-    /**
-     * Constructs a canonical Gaussian factor with a given set of
-     * arguments and zero parameters, using the given variable ordering.
-     */
-    canonical_gaussian(const forward_range<vector_variable*>& args,
-                       double value);
-
-    /**
-     * Constructs a canonical Gaussian factor with a given sequence of
-     * arguments.
+     * Constructs a canonical Gaussian factor with the given sequence of
+     * arguments and natural parameters.
      * \param args a sequence of variables
      * \param lambda the information matrix
      * \param eta the information vector
@@ -82,13 +66,15 @@ namespace sill {
     canonical_gaussian(const vector_var_vector& args,
                        const mat& lambda,
                        const vec& eta,
-                       double log_mult = 0);
+                       double log_mult = 0.0);
 
     //! Conversion from a moment_gaussian
     canonical_gaussian(const moment_gaussian& mg);
 
-    //! conversion to human-readable representation
-    operator std::string() const;
+    canonical_gaussian& operator=(double x) {
+      reset(vector_var_vector(), mat(), vec(), std::log(x));
+      return *this;
+    }
 
     /**
      * Mimics a constructor, but resets this factor rather than creating a
@@ -97,8 +83,10 @@ namespace sill {
      * \param lambda the information matrix
      * \param eta the information vector
      */
-    void reset(const vector_var_vector& args, const mat& lambda, const vec& eta,
-               double log_mult = 0);
+    void reset(const vector_var_vector& args,
+               const mat& lambda,
+               const vec& eta,
+               double log_mult = 0.0);
 
     // Serialization
     //==========================================================================
@@ -323,13 +311,10 @@ namespace sill {
     //==========================================================================
 
     /**
-     * Initializes this indices for the given arguments and checks
-     * matrix dimensions.
-     * \paran use_default
-     *        if true, resets the information matrix/vector to zero.
+     * Initializes this indices for the given arguments and initializes the
+     * information matrix and vector to zero. Leaves log-multiplier the same.
      */
-    void initialize(const forward_range<vector_variable*>& args,
-                    bool use_default);
+    void initialize(const vector_var_vector& args);
 
     void marginal(const vector_domain& retain,
                   bool renormalize,

@@ -53,14 +53,14 @@ namespace sill {
     // Forward declaration
     class index_iterator;
     
-    // Private data members
-    //==========================================================================
-  private:
     class offset_functor;
 #ifdef EXPERIMENTAL
     class offset_iterator;
 #endif
 
+    // Private data members
+    //==========================================================================
+  private:
     //! The dimensions of this table
     index_type shape_;
 
@@ -280,15 +280,23 @@ namespace sill {
       concept_assert((UnaryFunction<Function, T, T>));
       foreach(T& x, elts) x = f(x);
     }
+
+    template <typename Function>
+    void transform(const dense_table& x, Function fn) {
+      assert(shape() == x.shape());
+      for (size_t i = 0; i < elts.size(); ++i) {
+        elts[i] = fn(x.elts[i]);
+      }
+    }
     
     // Table joins and aggregations
     //==========================================================================
     //! implements Table::join
-    template <typename JoinOp>
-    void join(const dense_table& x, const dense_table& y,
+    template <typename U, typename JoinOp>
+    void join(const dense_table& x, const dense_table<U>& y,
               const index_type& x_dim_map, const index_type& y_dim_map,
               JoinOp op) {
-      concept_assert((BinaryFunction<JoinOp,T,T,T>));
+      concept_assert((BinaryFunction<JoinOp,T,U,T>));
 #ifdef EXPERIMENTAL
             // Get offset calculators for the two input tables.
 //      offset_iterator x_offset(x.shape(), this->shape(), x_dim_map);
@@ -321,10 +329,10 @@ namespace sill {
     }
 
     //! implements Table::join_with
-    template <typename JoinOp>
-    void join_with(const dense_table& y, const index_type& y_dim_map,
+    template <typename U, typename JoinOp>
+    void join_with(const dense_table<U>& y, const index_type& y_dim_map,
                    JoinOp op) {
-      concept_assert((BinaryFunction<JoinOp,T,T,T>));
+      concept_assert((BinaryFunction<JoinOp,T,U,T>));
 
 #ifdef EXPERIMENTAL
       // Get an offset calculator for y.
@@ -353,8 +361,8 @@ namespace sill {
     }
 
     //! implements Table::join_with
-    template <typename JoinOp>
-    void join_with(const dense_table& y, JoinOp op) {
+    template <typename U, typename JoinOp>
+    void join_with(const dense_table<U>& y, JoinOp op) {
       concept_assert((BinaryFunction<JoinOp,T,T,T>));
       assert(shape_ == y.shape_);
       iterator it = begin();
@@ -367,9 +375,9 @@ namespace sill {
 
     //! implements Table::aggregate
     //! \todo Do we require that the table is initialized to op.left_identity()?
-    template <typename AggOp>
-    void aggregate(const dense_table& x, const index_type& dim_map, AggOp op) {
-      concept_assert((BinaryFunction<AggOp,T,T,T>));
+    template <typename U, typename AggOp>
+    void aggregate(const dense_table<U>& x, const index_type& dim_map, AggOp op) {
+      concept_assert((BinaryFunction<AggOp,T,U,T>));
 #ifdef EXPERIMENTAL
       // Get an offset calculator that maps x indexes to z offsets.
 //      offset_iterator z_offset(this->shape(), x.shape(), dim_map);
@@ -396,10 +404,10 @@ namespace sill {
     }
 
     //! Aggregates all dimensions of the table and returns the result
-    template <typename AggOp>
-    T aggregate(AggOp op, T initialvalue) const {
-      concept_assert((BinaryFunction<AggOp,T,T,T>));
-      T result = initialvalue;
+    template <typename AggOp, typename U>
+    U aggregate(AggOp op, U initialvalue) const {
+      concept_assert((BinaryFunction<AggOp,U,T,U>));
+      U result = initialvalue;
       foreach(T value, elts){
         result = op(result, value);
       }
@@ -501,7 +509,19 @@ namespace sill {
       // Iterate over a subspace of the input table, copying to this table.
       foreach(const index_type& x_index, x.indices(restrict_map)) {
         size_t offset = z_offset(x_index);
-        elts[offset] = x(x_index); ;
+        elts[offset] = x(x_index);
+      }
+    }
+
+    template <typename U, typename Op>
+    void restrict(const dense_table<U>& x,
+                  const index_type& restrict_map,
+                  const index_type& dim_map,
+                  Op op) {
+      offset_functor z_offset(this->shape(), x.arity(), dim_map);
+      foreach (const index_type& x_index, x.indices(restrict_map)) {
+        size_t offset = z_offset(x_index);
+        elts[offset] = op(x(x_index));
       }
     }
 
@@ -795,7 +815,7 @@ namespace sill {
 
     }; // class index_iterator
 
-  private:
+  public:
 
     /**
      * An offset calculator is an object that translates table indices
@@ -881,14 +901,16 @@ namespace sill {
       }
 
       /**
-       * Calculates the offset associated with the supplied index,
-       * assuming the first nlower-order dimensions are equal to 0.
+       * Calculates the offset associated with the supplied partial index.
+       * The index is assumed to start at pos-th dimension, and may be
+       * shorter than the remaining dimensions. The index values in the
+       * omitted dimensions are assumed to be 0.
        */
-      size_t operator()(const index_type& index, size_t nlower) const {
-        assert(multiplier_.size() == index.size() + nlower);
+      size_t operator()(const index_type& index, size_t pos) const {
+        assert(multiplier_.size() <= index.size() + pos);
         size_t offset = 0;
-        for (size_t d = nlower; d < multiplier_.size(); ++d) {
-          offset += multiplier_[d] * index[d-nlower];
+        for (size_t i = 0; i < index.size(); ++i) {
+          offset += multiplier_[i + pos] * index[i];
         }
         return offset;
       }
@@ -1070,6 +1092,9 @@ namespace sill {
 
 #endif
 
+    // to allow conversions and multi-type joins
+    template <typename U> friend class dense_table;
+
   }; // class dense_table
 
   //! Writes a human-readable representation of the table.
@@ -1078,7 +1103,7 @@ namespace sill {
   std::ostream& operator<<(std::ostream& out, const dense_table<T>& table) {
     typedef typename dense_table<T>::index_type index_type;
     foreach(const index_type& index, table.indices()) {
-      sill::copy(index, std::ostream_iterator<T, char>(out, " "));
+      sill::copy(index, std::ostream_iterator<size_t, char>(out, " "));
       out << table(index) << std::endl;
     }
     return out;

@@ -12,7 +12,6 @@
 #include <sill/factor/traits.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
-#include <sill/range/forward_range.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -114,16 +113,10 @@ namespace sill {
      */
     explicit moment_gaussian(const canonical_gaussian& cg);
 
-//     /**
-//      * Conversion to a constant factor. The conversion is only supported
-//      * when the factor has no arguments; otherwise, a run-time assertion
-//      * is thrown.
-//      * @see a note on conversion operators in table_factor::o()
-//      */
-//     operator constant_factor() const;
-
-//     //! conversion to human-readable representation
-//     operator std::string() const;
+    moment_gaussian& operator=(logarithmic<double> likelihood) {
+      *this = moment_gaussian(likelihood); // TODO: optimize this
+      return *this;
+    }
 
     // Serialization
     //==========================================================================
@@ -158,6 +151,11 @@ namespace sill {
     //! Returns the tail variables
     const vector_var_vector& tail() const {
       return tail_list;
+    }
+
+    //! Returns the argument sequence of this factor
+    vector_var_vector arg_vector() const {
+      return concat(head_list, tail_list);
     }
 
     //! Returns true if the factor represents a marginal distribution
@@ -410,6 +408,11 @@ namespace sill {
   
   //! \relates moment_gaussian
   moment_gaussian operator*(const moment_gaussian& x, const moment_gaussian& y);
+
+  //! \relates moment_gaussian
+  inline moment_gaussian operator/(moment_gaussian x, logarithmic<double> a) {
+    return x /= a;
+  }
 
   //! \relates moment_gaussian
   double norm_inf(const moment_gaussian& x, const moment_gaussian& y);

@@ -11,7 +11,6 @@
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
 #include <sill/range/concepts.hpp>
-#include <sill/range/forward_range.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>
@@ -62,10 +61,6 @@ namespace sill {
 
     //! Initializes the given set of arguments
     gaussian_factor(const vector_var_vector& vars)
-      : args(vars.begin(), vars.end()) { }
-
-    //! Initializes the given set of arguments
-    gaussian_factor(const forward_range<vector_variable*>& vars)
       : args(vars.begin(), vars.end()) { }
 
     //! Assigns an index span to each variable in vars in an increasing order.

@@ -158,8 +158,22 @@ namespace sill {
       else
         throw std::logic_error("Cannot compute entropy of a negative value.");
     }
+
+    T operator()(T a, T b) {
+      return a + operator()(b);
+    }
   };
 
+  template <typename T, typename U = T>
+  struct multiplies {
+    T operator()(const T& a, const U& b) { return a * b; }
+  };
+
+  template <typename T, typename U = T>
+  struct divides {
+    T operator()(const T& a, const U& b) { return a / b; }
+  };
+  
   /**
    * The maximization operator, which models the symmetric binary
    * operator concept.  
@@ -200,33 +214,33 @@ namespace sill {
   /**
    * Adds two objects in place.
    */
-  template <typename T>
+  template <typename T, typename U = T>
   struct plus_assign {
-    T& operator()(T& a, const T& b) const { return a += b; }
+    T& operator()(T& a, const U& b) const { return a += b; }
   };
 
   /**
    * Subtracts one object from another one in place.
    */
-  template <typename T>
+  template <typename T, typename U = T>
   struct minus_assign {
-    T& operator()(T& a, const T& b) const { return a -= b; }
+    T& operator()(T& a, const U& b) const { return a -= b; }
   };
 
   /**
    * Multiplies two objects in place.
    */
-  template <typename T>
+  template <typename T, typename U = T>
   struct multiplies_assign {
-    T& operator()(T& a, const T& b) const { return a *= b; }
+    T& operator()(T& a, const U& b) const { return a *= b; }
   };
 
   /**
    * Divides one object by another in place.
    */
-  template <typename T>
+  template <typename T, typename U = T>
   struct divides_assign {
-    T& operator()(T& a, const T& b) const { return a /= b; }
+    T& operator()(T& a, const U& b) const { return a /= b; }
   };
 
   /**

@@ -68,7 +68,7 @@ namespace sill {
     F operator()(const var_vector_type& head,
                  const var_vector_type& tail) const {
       factor_mle_incremental<F> estimator(head, tail, params_);
-      foreach (const record_type& r, ds_->records(concat(tail, head))) {
+      foreach (const record_type& r, ds_->records(concat(head, tail))) {
         estimator.process(r.values, r.weight);
       }
       return estimator.estimate();

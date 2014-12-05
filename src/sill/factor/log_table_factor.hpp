@@ -499,7 +499,7 @@ namespace sill {
 
     //! Returns the normalization constant
     double norm_constant() const {
-      return table_data.aggregate(std::plus<double>(), 0);
+      return table_data.aggregate(std::plus<double>(), 0.0);
     }
 
     //! Normalizes the factor in-place
@@ -521,14 +521,13 @@ namespace sill {
 
     //! Returns the maximum value in the factor
     result_type maximum() const {
-      return table_data.aggregate(sill::maximum<result_type>(), 
-                                  result_type(0.0));
+      return collapse(sill::maximum<result_type>(), result_type(0.0));
     }
 
     //! Returns the maximum value in the factor
     result_type minimum() const {
-      return table_data.aggregate(sill::minimum<result_type>(), 
-                        result_type(std::numeric_limits<double>::infinity()));
+      return collapse(sill::minimum<result_type>(), 
+                      result_type(std::numeric_limits<double>::infinity()));
     }
 
     /**
@@ -538,9 +537,7 @@ namespace sill {
      * defining some kind of map_collapse function.
      */
     double entropy() const {
-      table_type tmp(table_data);
-      tmp.update(entropy_operator<result_type>());
-      return tmp.aggregate(std::plus<result_type>(), 0.0);
+      return collapse(std::plus<result_type>(), result_type(0.0));
     }
 
     /**

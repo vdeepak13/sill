@@ -41,6 +41,23 @@ namespace sill {
 
   }; // struct hybrid_values
 
+
+  template <typename T>
+  std::ostream& operator<<(std::ostream& out, const hybrid_values<T>& v) {
+    out << "[";
+    for (size_t i = 0; i < v.finite.size(); ++i) {
+      if (i > 0) { out << ' '; }
+      out << v.finite[i];
+    }
+    out << "] [";
+    for (size_t i = 0; i < v.vector.size(); ++i) {
+      if (i > 0) { out << ' '; }
+      out << v.vector[i];
+    }
+    out << "]";
+    return out;
+  }
+
 } // namespace sill
 
 #endif
