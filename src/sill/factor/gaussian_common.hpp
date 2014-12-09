@@ -186,17 +186,18 @@ namespace sill {
     typedef factor_mle_incremental<moment_gaussian> base;
 
     factor_mle_incremental(const vector_var_vector& args,
-                           const param_type& params = param_type())
+                   const param_type& params = param_type())
       : base(args, params) { }
 
     factor_mle_incremental(const vector_var_vector& head,
-                           const vector_var_vector& tail,
-                           const param_type& params = param_type())
+                   const vector_var_vector& tail,
+                   const param_type& params = param_type())
       : base(head, tail, params) { }
     
     canonical_gaussian estimate() const {
       return canonical_gaussian(base::estimate());
     }
+
   }; // factor_mle_incremental<canoical_gaussian>
   
 } // namespace sill

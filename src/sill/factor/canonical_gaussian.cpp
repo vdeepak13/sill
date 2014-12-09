@@ -380,6 +380,15 @@ namespace sill {
   }
 
   canonical_gaussian
+  canonical_gaussian::reorder(const vector_var_vector& args) const {
+    assert(args.size() == arguments().size());
+    return canonical_gaussian(args,
+                              inf_matrix(args),
+                              inf_vector(args),
+                              log_mult);
+  }
+
+  canonical_gaussian
   canonical_gaussian::conditional(const vector_domain& B) const {
     assert(includes(arguments(), B));
     canonical_gaussian PB(marginal(B));

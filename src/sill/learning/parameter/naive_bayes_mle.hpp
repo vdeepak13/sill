@@ -8,7 +8,9 @@
 namespace sill {
 
   /**
-   * A class that can learn naive Bayes models.
+   * A class that can learn naive Bayes models in a fully supervised manner.
+   * This learner supports datasets with missing values for features.
+   *
    * Models the Learner concept.
    */
   template <typename FeatureF>
@@ -58,9 +60,10 @@ namespace sill {
       factor_mle<table_factor> prior_mle(&ds, params.prior);
       model = naive_bayes<FeatureF>(prior_mle(make_domain(label)));
 
-      factor_mle<FeatureF> feature_mle(&ds, params.feature);
+      factor_mle<FeatureF> feature_mle(&ds, params.feature, STRICT_MISSING);
       foreach(variable_type* f, features) {
-        model.add_feature(feature_mle(make_domain(f), make_domain(label)));
+        model.add_feature(feature_mle(make_vector<variable_type>(f),
+                                      make_vector<variable_type>(label)));
       }
 
       return model.log_likelihood(ds);

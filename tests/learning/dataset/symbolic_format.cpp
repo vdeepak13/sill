@@ -40,9 +40,10 @@ BOOST_AUTO_TEST_CASE(test_load_save) {
   const char* filename2 = "symbolic_format_tmp.cfg";
   format.save_config(filename2);
 
-  boost::array<const char*, 10> lines = {
+  boost::array<const char*, 11> lines = {
     "[options]",
     "separator=\"\\t\"",
+    "missing=\"\"",
     "skip_rows=0",
     "skip_cols=1",
     "weighted=1",

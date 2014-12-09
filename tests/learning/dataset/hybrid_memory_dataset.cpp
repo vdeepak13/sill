@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ++vit;
 
   // check the remaining records
-  size_t rest[] = {3, 3, 3};
+  size_t rest[] = {-1, -1, -1};
   for (size_t i = 0; i < 10; ++i) {
     BOOST_CHECK_EQUAL(it->values.finite, std::vector<size_t>(rest, rest+3));
     BOOST_CHECK_EQUAL(it->weight, 1.0);
@@ -201,8 +201,9 @@ BOOST_AUTO_TEST_CASE(test_load) {
   format.load_config(dir + "/hybrid_format.cfg", u);
   load(dir + "/hybrid_data.txt", format, ds);
 
-  size_t fvalues[][2] = { {0, 2}, {1, 3}, {0, 0} };
-  double vvalues[][2] = { {33.0, 180.0}, {22.0, 178.0}, {11.0, 150.0} };
+  double nan = std::numeric_limits<double>::quiet_NaN();
+  size_t fvalues[][2] = { {-1, 2}, {1, 3}, {0, 0} };
+  double vvalues[][2] = { {33.0, nan}, {22.0, 178.0}, {11.0, 150.0} };
   double weights[] = {1.0, 2.0, 0.5};
   BOOST_CHECK_EQUAL(ds.size(), 3);
   size_t i = 0;
@@ -210,7 +211,11 @@ BOOST_AUTO_TEST_CASE(test_load) {
     BOOST_CHECK_EQUAL(r.values.finite[0], fvalues[i][0]);
     BOOST_CHECK_EQUAL(r.values.finite[1], fvalues[i][1]);
     BOOST_CHECK_CLOSE(r.values.vector[0], vvalues[i][0], 1e-10);
-    BOOST_CHECK_CLOSE(r.values.vector[1], vvalues[i][1], 1e-10);
+    if (boost::math::isnan(vvalues[i][1])) {
+      BOOST_CHECK(boost::math::isnan(r.values.vector[1]));
+    } else {
+      BOOST_CHECK_CLOSE(r.values.vector[1], vvalues[i][1], 1e-10);
+    }
     BOOST_CHECK_EQUAL(r.weight, weights[i]);
     ++i;
   }

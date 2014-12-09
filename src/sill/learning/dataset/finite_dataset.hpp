@@ -18,7 +18,7 @@ namespace sill {
   // forward declaration
   template <typename BaseDS> class slice_view;
 
-  // forward declaration; to use this class (e.g., in sequence_dataset), include
+  // forward declaration; to use this class (e.g., in sequence_dataset), use
   // #include <sill/learning/dataset/finite_sequence_record.hpp>
   class finite_sequence_record;
 

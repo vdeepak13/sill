@@ -100,16 +100,21 @@ namespace sill {
 
     // Queries
     //==========================================================================
-    //! Returns true if the assignmemnt contains a variable
-    bool contains(variable* v) const {
-      if (v->type() == variable::FINITE_VARIABLE) {
-        return (finite_assignment::count(dynamic_cast<finite_variable*>(v)) >0);
+    using finite_assignment::count;
+    using vector_assignment::count;
+
+    //! Returns 1 if the assignmemnt contains a variable
+    bool count(variable* v) const {
+      switch (v->type()) {
+      case variable::FINITE_VARIABLE:
+        return finite_assignment::count(dynamic_cast<finite_variable*>(v));
+      case variable::VECTOR_VARIABLE:
+        return vector_assignment::count(dynamic_cast<vector_variable*>(v));
+      default:
+        return 0;
       }
-      else if (v->type() == variable::VECTOR_VARIABLE) {
-        return (vector_assignment::count(dynamic_cast<vector_variable*>(v)) >0);
-      }
-      assert(false); return false;
     }
+
 
     //  undefined for now because vector_assignment's operator== is undefined
 //     //! Equality test
@@ -122,18 +127,23 @@ namespace sill {
 //       return !operator==(a);
 //     }
 
-    /*
-    size_t& operator[](finite_variable* v) {
-      return finite()[v];
-    }
-
-    vec& operator[](vector_variable* v) {
-      return vector()[v];
-    }
-    */
-
     // Mutators
     //==========================================================================
+    //! Removes a variable from the assignment
+    using finite_assignment::erase;
+    using vector_assignment::erase;
+
+    size_t erase(variable* v) {
+      switch (v->type()) {
+      case variable::FINITE_VARIABLE:
+        return finite_assignment::erase(dynamic_cast<finite_variable*>(v));
+      case variable::VECTOR_VARIABLE:
+        return vector_assignment::erase(dynamic_cast<vector_variable*>(v));
+      default:
+        return 0;
+      }
+    }
+
     //! Removes all elements from the assignment
     void clear() {
       finite_assignment::clear();

@@ -547,6 +547,38 @@ BOOST_AUTO_TEST_CASE(test_normalize) {
 }
 
 
+BOOST_AUTO_TEST_CASE(test_reorder) {
+  universe u;
+  finite_variable* x = u.new_finite_variable("x", 2);
+  finite_variable* y = u.new_finite_variable("y", 2);
+  vector_variable* v = u.new_vector_variable("v", 1);
+  vector_variable* w = u.new_vector_variable("w", 1);
+  finite_var_vector finite_vars = make_vector(x, y);
+  vector_var_vector vector_vars = make_vector(v, w);
+
+  hybrid_moment h(finite_vars, vector_vars);
+  h[0] = moment_gaussian(vector_vars, "1 2", "1 0; 0 2", 1.0);
+  h[1] = moment_gaussian(vector_vars, "2 3", "2 0; 0 3", 2.0);
+  h[2] = moment_gaussian(vector_vars, "3 4", "3 0; 0 4", 3.0);
+  h[3] = moment_gaussian(vector_vars, "5 6", "4 0; 0 5", 4.0);
+
+  hybrid_moment h2 = h.reorder(make_vector<variable>(y, w, x, v));
+  BOOST_CHECK_EQUAL(h2.arguments(), h.arguments());
+  BOOST_CHECK_EQUAL(h2.num_finite(), 2);
+  BOOST_CHECK_EQUAL(h2.num_vector(), 2);
+  BOOST_CHECK_EQUAL(h2.finite_args(), make_vector(y, x));
+  BOOST_CHECK_EQUAL(h2.vector_args(), make_vector(w, v));
+  BOOST_CHECK_CLOSE(double(h2[0].norm_constant()), 1.0, 1e-2 /* percent */);
+  BOOST_CHECK_CLOSE(double(h2[1].norm_constant()), 3.0, 1e-2 /* percent */);
+  BOOST_CHECK_CLOSE(double(h2[2].norm_constant()), 2.0, 1e-2 /* percent */);
+  BOOST_CHECK_CLOSE(double(h2[3].norm_constant()), 4.0, 1e-2 /* percent */);
+  BOOST_CHECK(equal(h2[0].mean(), vec("2 1")));
+  BOOST_CHECK(equal(h2[2].mean(), vec("3 2")));
+  BOOST_CHECK(equal(h2[0].covariance(), mat("2 0; 0 1")));
+  BOOST_CHECK(equal(h2[2].covariance(), mat("3 0; 0 2")));
+}
+
+
 BOOST_AUTO_TEST_CASE(test_evaluator) {
   universe u;
   finite_variable* x = u.new_finite_variable("x", 2);

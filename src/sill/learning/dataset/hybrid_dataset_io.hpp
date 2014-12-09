@@ -8,6 +8,8 @@
 #include <fstream>
 #include <iostream>
 
+#include <boost/math/special_functions/fpclassify.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -40,10 +42,24 @@ namespace sill {
         size_t vi = 0;
         foreach(const symbolic_format::variable_info& var, format.vars) {
           if (var.is_finite()) {
-            r.values.finite[fi++] = var.parse(tokens[col++]);
+            const char* token = tokens[col++];
+            if (token == format.missing) {
+              r.values.finite[fi++] = size_t(-1);
+            } else {
+              r.values.finite[fi++] = var.parse(token);
+            }
           } else if (var.is_vector()) {
-            for (size_t j = 0; j < var.size(); ++j) {
-              r.values.vector[vi++] = parse_string<T>(tokens[col++]);
+            size_t size = var.size();
+            if (std::count(&tokens[col], &tokens[col] + size, format.missing)) {
+              // TODO: warning if only a subset of columns missing
+              std::fill(&r.values.vector[vi], &r.values.vector[vi] + size,
+                        std::numeric_limits<T>::quiet_NaN());
+              col += size;
+              vi += size;
+            } else {
+              for (size_t j = 0; j < size; ++j) {
+                r.values.vector[vi++] = parse_string<T>(tokens[col++]);
+              }
             }
           } else {
             throw std::logic_error("Unsupported variable type " + var.name());
@@ -87,11 +103,21 @@ namespace sill {
       foreach(const symbolic_format::variable_info& var, format.vars) {
         if (var.is_finite()) {
           if (first) { first = false; } else { out << separator; }
-          var.print(out, r.values.finite[fi++]);
+          size_t value = r.values.finite[fi++];
+          if (value == size_t(-1)) {
+            out << format.missing;
+          } else {
+            var.print(out, value);
+          }
         } else {
           for (size_t j = 0; j < var.size(); ++j) {
             if (first) { first = false; } else { out << separator; }
-            out << r.values.vector[vi++];
+            T value = r.values.vector[vi++];
+            if (boost::math::isnan(value)) {
+              out << format.missing;
+            } else {
+              out << value;
+            }
           }
         }
       }

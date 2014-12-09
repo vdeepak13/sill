@@ -124,14 +124,7 @@ namespace sill {
     //! Inserts the given number of rows with unit weights and "undefined" values.
     void insert(size_t nrows) {
       check_initialized();
-
-      // compute the special "undefined" value for each variable
-      std::vector<size_t> values;
-      foreach(finite_variable* v, args) {
-        values.push_back(v->size());
-      }
-
-      // insert the rows
+      std::vector<size_t> values(args.size(), -1);
       for (size_t i = 0; i < nrows; ++i) {
         insert(values, 1.0); // protected function
       }

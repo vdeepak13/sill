@@ -17,7 +17,7 @@ namespace sill {
   // forward declaration
   template <typename BaseDS> class slice_view;
 
-  // forward declaration; to use this class (e.g., in sequence_dataset), include
+  // forward declaration; to use this class (e.g., in sequence_dataset), use
   // #include <sill/learning/dataset/hybrid_sequence_record.hpp>
   template <typename T> class hybrid_sequence_record;
 
@@ -129,6 +129,9 @@ namespace sill {
       return std::make_pair(const_record_iterator(this, vars),
                             const_record_iterator(size()));
     }
+
+    using finite_dataset::sample;
+    using vector_dataset<T>::sample;
 
     //! Draws a random sample from this dataset.
     template <typename RandomNumberGenerator>

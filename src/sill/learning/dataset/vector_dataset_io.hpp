@@ -4,10 +4,13 @@
 #include <sill/learning/dataset/symbolic_format.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/dataset/vector_memory_dataset.hpp>
+#include <sill/parsers/string_functions.hpp>
 
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+
+#include <boost/math/special_functions/fpclassify.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -41,8 +44,21 @@ namespace sill {
     while (std::getline(in, line)) {
       std::vector<const char*> tokens;
       if (format.parse(r.values.size(), line, line_number, tokens)) {
-        for (size_t i = 0; i < r.values.size(); ++i) {
-          r.values[i] = parse_string<T>(tokens[i + format.skip_cols]);
+        size_t col = format.skip_cols;
+        size_t i = 0;
+        foreach (vector_variable* v, vars) {
+          size_t size = v->size();
+          if (std::count(&tokens[col], &tokens[col] + size, format.missing)) {
+            // TODO: warning if only a subset of columns missing
+            std::fill(&r.values[i], &r.values[i] + size,
+                      std::numeric_limits<T>::quiet_NaN());
+            col += size;
+            i += size;
+          } else {
+            for (size_t j = 0; j < size; ++j) {
+              r.values[i++] = parse_string<T>(tokens[col++]);
+            }
+          }
         }
         r.weight = format.weighted ? parse_string<T>(tokens.back()) : 1.0;
         ds.insert(r);
@@ -81,7 +97,11 @@ namespace sill {
       }
       for (size_t i = 0; i < r.values.size(); ++i) {
         if (i > 0) { out << separator; }
-        out << r.values[i];
+        if (boost::math::isnan(r.values[i])) {
+          out << format.missing;
+        } else {
+          out << r.values[i];
+        }
       }
       if (format.weighted) {
         out << separator << r.weight;

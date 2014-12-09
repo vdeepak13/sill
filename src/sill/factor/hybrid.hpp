@@ -433,6 +433,20 @@ namespace sill {
     }
 
     /**
+     * Returns a factor with the arguments reordered.
+     */
+    hybrid reorder(const var_vector& new_order) const {
+      finite_var_vector finite_order;
+      vector_var_vector vector_order;
+      sill::split(new_order, finite_order, vector_order);
+      hybrid result(finite_order);
+      component_reorder_functor reorder_fn(&vector_order);
+      result.table_.join_with(table_, make_dim_map(finite_order), reorder_fn); 
+      result.args_.insert(vector_order.begin(), vector_order.end());
+      return result;
+    }
+
+    /**
      * Returns the normalization constant of this factor.
      */
     result_type norm_constant() const {
@@ -454,7 +468,9 @@ namespace sill {
       factor_evaluator<hybrid> evaluator(*this);
       real_type ll = 0.0;
       foreach (const record_type& r, ds.records(arg_vector())) {
-        ll += r.weight * log(evaluator(r.values));
+        if (!r.count_missing()) {
+          ll += r.weight * log(evaluator(r.values));
+        }
       }
       return ll;
     }
@@ -543,6 +559,13 @@ namespace sill {
       const vector_assignment* a;
       component_value_functor(const vector_assignment* a) : a(a) { }
       result_type operator()(const F& factor) const { return factor(*a); }
+    };
+
+    //! Reorders the arguments of the component
+    struct component_reorder_functor {
+      const vector_var_vector* v;
+      component_reorder_functor(const vector_var_vector* v) : v(v) { }
+      F operator()(const F&, const F& f) const { return f.reorder(*v); }
     };
 
     //! Computes the normalization constant of a given component
@@ -916,9 +939,9 @@ namespace sill {
       assert(ptail.arg_vector() == finite_tail_);
       assert(nhead + ntail == factor_.num_finite());
       size_t i = factor_.table().offset(values.finite, 0);
-      size_t increment = factor_.cumsum_.offset.get_multiplier(nhead);
+      size_t increment = factor_.table().offset.get_multiplier(nhead);
       foreach(double w, ptail.table()) {
-        estimators_[i]->process(values.vector, w);
+        estimators_[i].process(values.vector, w);
         i += increment;
       }
     }
@@ -933,7 +956,6 @@ namespace sill {
         return factor_.normalize();
       } else {
         return factor_ /= factor_.marginal(make_domain(finite_tail_));
-        //return factor_.normalize();
       }
     }
 

@@ -41,7 +41,12 @@ namespace sill {
       std::vector<const char*> tokens;
       if (format.parse(vars.size(), line, line_number, tokens)) {
         for (size_t i = 0; i < vars.size(); ++i) {
-          r.values[i] = format.vars[i].parse(tokens[i + format.skip_cols]);
+          const char* token = tokens[i + format.skip_cols];
+          if (token == format.missing) {
+            r.values[i] = -1;
+          } else {
+            r.values[i] = format.vars[i].parse(token);
+          }
         }
         r.weight = format.weighted ? parse_string<double>(tokens.back()) : 1.0;
         ds.insert(r);
@@ -79,7 +84,11 @@ namespace sill {
       }
       for (size_t i = 0; i < vars.size(); ++i) {
         if (i > 0) { out << separator; }
-        format.vars[i].print(out, r.values[i]);
+        if (r.values[i] == size_t(-1)) {
+          out << format.missing;
+        } else {
+          format.vars[i].print(out, r.values[i]);
+        }
       }
       if (format.weighted) {
         out << separator << r.weight;

@@ -58,8 +58,10 @@ namespace sill {
       }
     }
 
-    //! Adds a new feature or overwrites the existing one.
-    //! The prior must have already been set.
+    /**
+     * Adds a new feature or overwrites the existing one.
+     * The prior must have already been set.
+     */
     void add_feature(const FeatureF& cpd) {
       const domain_type& cpd_args = cpd.arguments();
       if (cpd_args.size() != 2 || !cpd_args.count(label_var())) {
@@ -70,7 +72,7 @@ namespace sill {
       if (f == label_var()) {
         f = *++cpd_args.begin();
       }
-      features_[f] = cpd.reorder(make_vector(label_var(), f));
+      features_[f] = cpd.reorder(make_vector<variable_type>(label_var(), f));
     }
 
     // Queries
@@ -118,7 +120,9 @@ namespace sill {
     void joint(const assignment_type& a, table_factor& result) const {
       result = prior_;
       foreach (const variable_cpd_pair& p, features_) {
-        p.second.restrict_multiply(a, result);
+        if (a.count(p.first)) {
+          p.second.restrict_multiply(a, result);
+        }
       }
     }
 
@@ -149,7 +153,7 @@ namespace sill {
 
     //! Returns the conditional log-likelihood of a dataset
     real_type conditional_log_likelihood(const dataset_type& ds) const {
-      real_type result = 0;
+      real_type result = 0.0;
       assignment_type a;
       foreach (const record_type& r, ds.records(make_vector(arguments()))) {
         r.extract(a);
@@ -159,11 +163,27 @@ namespace sill {
       return result;
     }
 
+    //! Computes the accuracy of the predictions for a dataset
+    real_type accuracy(const dataset_type& ds) const {
+      finite_variable* label = label_var();
+      real_type result = 0.0;
+      real_type weight = 0.0;
+      assignment_type a;
+      table_factor posterior;
+      foreach (const record_type& r, ds.records(make_vector(arguments()))) {
+        r.extract(a);
+        joint(a, posterior);
+        result += r.weight * (safe_get(arg_max(posterior), label) == a[label]);
+        weight += r.weight;
+      }
+      return result / weight;
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const naive_bayes& nb) {
       out << "Prior:" << std::endl << nb.prior_ << std::endl;
       out << "CPDs: " << std::endl;
       foreach(const variable_cpd_pair& p, nb.features_) {
-        out << p.second << std::endl;
+        out << p.second;
       }
       return out;
     }
@@ -177,12 +197,9 @@ namespace sill {
     
     table_factor prior_;
     boost::unordered_map<variable_type*, FeatureF> features_;
+
   }; // class naive_bayes
 
-  // Typedefs of standard models
-  typedef naive_bayes<table_factor>                    multinomial_naive_bayes;
-  //typedef naive_bayes<hybrid_factor<moment_gaussian> > gaussian_naive_bayes;
-    
 } // namespace sill
 
 #include <sill/macros_undef.hpp>

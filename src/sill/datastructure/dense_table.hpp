@@ -907,7 +907,7 @@ namespace sill {
        * omitted dimensions are assumed to be 0.
        */
       size_t operator()(const index_type& index, size_t pos) const {
-        assert(multiplier_.size() <= index.size() + pos);
+        assert(index.size() + pos <= multiplier_.size());
         size_t offset = 0;
         for (size_t i = 0; i < index.size(); ++i) {
           offset += multiplier_[i + pos] * index[i];

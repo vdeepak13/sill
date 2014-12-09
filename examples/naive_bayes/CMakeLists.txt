@@ -1,2 +1,3 @@
 add_executable(naive_bayes_em naive_bayes_em.cpp)
 add_executable(naive_bayes_mle naive_bayes_mle.cpp)
+add_executable(naive_bayes_hybrid naive_bayes_hybrid.cpp)

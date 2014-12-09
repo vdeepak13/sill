@@ -295,7 +295,9 @@ namespace sill {
     double log_likelihood(const finite_dataset& ds) const {
       double result = 0.0;
       foreach (const finite_record& r, ds.records(arg_seq)) {
-        result += r.weight * std::log(table()(r.values));
+        if (!r.count_missing()) {
+          result += r.weight * std::log(table()(r.values));
+        }
       }
       return result;
     }
@@ -1456,7 +1458,8 @@ namespace sill {
 
     factor_mle_incremental(const finite_var_vector& args,
                            const param_type& params = param_type())
-      : factor_(args, params.smoothing), weight_(0.0) { }
+      : factor_(args, params.smoothing),
+        weight_(0.0) { }
 
     factor_mle_incremental(const finite_var_vector& head,
                            const finite_var_vector& tail,
@@ -1464,13 +1467,15 @@ namespace sill {
       : factor_(concat(head, tail), params.smoothing),
         tail_(tail),
         weight_(0.0) { }
-      
+    
+    /**
+     * Processes a datapoint.
+     */
     void process(const index_type& values, double weight) {
       factor_.table()(values) += weight;
       weight_ += weight;
     }
 
-    
     /**
      * Processes the data point for a conditional distribution when we
      * observe a distribution over the tail variables, rather than a

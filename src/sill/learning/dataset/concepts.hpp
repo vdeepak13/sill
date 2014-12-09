@@ -4,6 +4,36 @@
 namespace sill {
 
   /**
+   * Represents a sequence of values for a sequence of variables,
+   * along with a weight.
+   * 
+   * \ingroup dataset_concepts
+   * \see finite_record, vector_record, hybrid_record
+   */
+  template <typename R>
+  struct Record {
+    //! The sequence of variables stored in this record.
+    typedef typename R::var_vector_type var_vector_type;
+
+    //! The assignment type corresponding to this record
+    typedef typename R::assignment_type assignment_type;
+
+    //! The type of values stored in this record
+    typedef typename R::values_type values_type;
+
+    //! The type of weight associated with this record
+    typedef typename R::weight_type weight_type;
+
+    //! Extracts the values stored in this record to an assignment
+    void extract(assignment_type& a) const;
+
+    friend operator<<(std::ostream& out, const Record& record);
+
+  }; // concept Record
+
+  // todo: static records, sequence records
+
+  /**
    * Represents a sequence of dense datapoints, where each column
    * is a variable of the specified type. Supports efficient 
    * iteration over all the data for a specified subset of the columns,
@@ -14,7 +44,7 @@ namespace sill {
    * performed without additional data lookups/transforms or allocs.
    *
    * \ingroup dataset_concepts
-   * \see finite_dataset, vector_dataset, dataset
+   * \see finite_dataset, vector_dataset, hybrid_dataset
    */
   template <typename DS>
   struct Dataset {
