@@ -60,6 +60,7 @@
    - strengthen the ordering of combine operations
    - traits to distinguish marginal and conditional factors
    - custom variables
+   - clean up factor concepts some more
 
 8. more examples / applications:
    - viterbi algorithm

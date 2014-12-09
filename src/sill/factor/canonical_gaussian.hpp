@@ -227,6 +227,9 @@ namespace sill {
     //! implements Factor::subst_args
     canonical_gaussian& subst_args(const vector_var_map& map);
 
+    //! implements IndexableFactor::reorder
+    canonical_gaussian reorder(const vector_var_vector& args) const;
+
     //! If this factor represents P(A,B), then this returns P(A|B).
     //! @todo Make this more efficient.
     canonical_gaussian conditional(const vector_domain& B) const;

@@ -113,6 +113,22 @@ namespace sill {
      */
     explicit moment_gaussian(const canonical_gaussian& cg);
 
+    moment_gaussian& operator=(const moment_gaussian& other) {
+      if (this == &other) {
+        return *this;
+      }
+      if (head_list != other.head_list || tail_list != other.tail_list) {
+        head_list = other.head_list;
+        tail_list = other.tail_list;
+        gaussian_factor::operator=(other);
+      }
+      cmean = other.cmean;
+      cov = other.cov;
+      coeff = other.coeff;
+      likelihood = other.likelihood;
+      return *this;
+    }
+
     moment_gaussian& operator=(logarithmic<double> likelihood) {
       *this = moment_gaussian(likelihood); // TODO: optimize this
       return *this;
@@ -396,6 +412,8 @@ namespace sill {
 
     friend moment_gaussian
     operator*(const moment_gaussian& x, const moment_gaussian& y);
+
+    friend std::ostream& operator<<(std::ostream&, const moment_gaussian&);
 
   }; // class moment_gaussian
 

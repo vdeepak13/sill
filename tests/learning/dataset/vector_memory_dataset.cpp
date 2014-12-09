@@ -244,12 +244,17 @@ BOOST_AUTO_TEST_CASE(test_load) {
   format.load_config(dir + "/vector_format.cfg", u);
   load(dir + "/vector_data.txt", format, ds);
 
-  double values[][3] = { {180, 0, 0}, {178.2, 1, 0}, {150.4, 2, 2} };
+  double nan = std::numeric_limits<double>::quiet_NaN();
+  double values[][3] = { {180, 0, 0}, {178.2, 1, 0}, {nan, 2, 2} };
   double weights[] = {1.0, 2.0, 0.5};
   BOOST_CHECK_EQUAL(ds.size(), 3);
   size_t i = 0;
   foreach(const vector_record<>& r, ds.records(format.vector_var_vec())) {
-    BOOST_CHECK_CLOSE(r.values[0], values[i][0], 1e-10);
+    if (boost::math::isnan(values[i][0])) {
+      BOOST_CHECK(boost::math::isnan(r.values[0]));
+    } else {
+      BOOST_CHECK_CLOSE(r.values[0], values[i][0], 1e-10);
+    }
     BOOST_CHECK_CLOSE(r.values[1], values[i][1], 1e-10);
     BOOST_CHECK_CLOSE(r.values[2], values[i][2], 1e-10);
     BOOST_CHECK_EQUAL(r.weight, weights[i]);

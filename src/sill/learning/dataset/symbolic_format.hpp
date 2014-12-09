@@ -240,6 +240,9 @@ namespace sill {
     //! Specifies the separator for the fields (default whitespace)
     std::string separator;
 
+    //! Specifies the symbol for missing values
+    std::string missing;
+
     //! The number of lines at the beginning of the file to skip (default = 0)
     size_t skip_rows;
 
@@ -596,6 +599,24 @@ namespace sill {
       config.load(filename);
       typedef std::pair<std::string, std::string> config_entry;
 
+      // load the options
+      foreach(const config_entry& entry, config["options"]) {
+        if (entry.first == "separator") {
+          separator = parse_escaped(entry.second);
+        } else if (entry.first == "missing") {
+          missing = parse_escaped(entry.second);
+        } else if (entry.first == "skip_rows") {
+          skip_rows = parse_string<size_t>(entry.second);
+        } else if (entry.first == "skip_cols") {
+          skip_cols = parse_string<size_t>(entry.second);
+        } else if (entry.first == "weighted") {
+          weighted = parse_string<bool>(entry.second);
+        } else {
+          std::cerr << "Unknown option \"" << entry.first
+                    << "\", ignoring" << std::endl;
+        }
+      }
+
       // load the variables
       foreach(const config_entry& entry, config["variables"]) {
         if (entry.second.compare(0, 7, "vector(") == 0) {
@@ -625,6 +646,12 @@ namespace sill {
             std::string msg =
               "Invalid specification of finite variable \"" + entry.first +
               "\": " + entry.second + " (must have arity > 1)";
+            throw std::invalid_argument(msg);
+          }
+          if (std::find(values.begin(), values.end(), missing) != values.end()) {
+            std::string msg =
+              "The missing value symbol \"" + missing + "\" must not be " +
+              "a value of finite variable \"" + entry.first + "\"";
             throw std::invalid_argument(msg);
           }
           finite_variable* v = u.new_finite_variable(entry.first, values.size());
@@ -668,6 +695,12 @@ namespace sill {
               "\": " + entry.second + " (must have arity > 1)";
             throw std::invalid_argument(msg);
           }
+          if (std::find(values.begin(), values.end(), missing) != values.end()) {
+            std::string msg =
+              "The missing value symbol \"" + missing + "\" must not be " +
+              "a value of finite discrete proces \"" + entry.first + "\"";
+            throw std::invalid_argument(msg);
+          }
           finite_discrete_process* p = new finite_discrete_process(name, values.size());
           discrete_procs.push_back(discrete_process_info(p, values));
         }
@@ -676,22 +709,6 @@ namespace sill {
       // empty formats are not allowed
       if (vars.empty() && discrete_procs.empty()) {
         throw std::out_of_range("Please specify at least one variable or process");
-      }
-
-      // load the parameters
-      foreach(const config_entry& entry, config["options"]) {
-        if (entry.first == "separator") {
-          separator = parse_escaped(entry.second);
-        } else if (entry.first == "skip_rows") {
-          skip_rows = parse_string<size_t>(entry.second);
-        } else if (entry.first == "skip_cols") {
-          skip_cols = parse_string<size_t>(entry.second);
-        } else if (entry.first == "weighted") {
-          weighted = parse_string<bool>(entry.second);
-        } else {
-          std::cerr << "Unknown option \"" << entry.first
-                    << "\", ignoring" << std::endl;
-        }
       }
     }
 
@@ -736,6 +753,7 @@ namespace sill {
 
       // store the options
       config.add("options", "separator", escape_string(separator));
+      config.add("options", "missing", escape_string(missing));
       config.add("options", "skip_rows", skip_rows);
       config.add("options", "skip_cols", skip_cols);
       config.add("options", "weighted", weighted);

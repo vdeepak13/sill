@@ -1,9 +1,15 @@
-# Standard datasets
+# Static datasets and supporting classes
+add_executable(finite_record finite_record.cpp)
+add_executable(vector_record vector_record.cpp)
+add_executable(hybrid_record hybrid_record.cpp)
 add_executable(finite_memory_dataset finite_memory_dataset.cpp)
 add_executable(vector_memory_dataset vector_memory_dataset.cpp)
 add_executable(hybrid_memory_dataset hybrid_memory_dataset.cpp)
 add_executable(symbolic_format symbolic_format.cpp)
 
+add_test(finite_record finite_record)
+add_test(vector_record vector_record)
+add_test(hybrid_record hybrid_record)
 add_test(finite_memory_dataset finite_memory_dataset ${CMAKE_CURRENT_LIST_DIR})
 add_test(vector_memory_dataset vector_memory_dataset ${CMAKE_CURRENT_LIST_DIR})
 add_test(hybrid_memory_dataset hybrid_memory_dataset ${CMAKE_CURRENT_LIST_DIR})

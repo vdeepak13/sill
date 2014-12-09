@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ++it;
 
   // check the remaining records
-  size_t rest[] = {3, 3, 3};
+  size_t rest[] = {-1, -1, -1};
   for (size_t i = 0; i < 10; ++i) {
     BOOST_CHECK_EQUAL(it->values, std::vector<size_t>(rest, rest+3));
     BOOST_CHECK_EQUAL(it->weight, 1.0);
@@ -237,7 +237,7 @@ BOOST_AUTO_TEST_CASE(test_load) {
   format.load_config(dir + "/finite_format.cfg", u);
   load(dir + "/finite_data.txt", format, ds);
 
-  size_t values[][3] = { {0, 0, 2}, {2, 1, 3}, {1, 0, 0} };
+  size_t values[][3] = { {0, -1, 2}, {2, 1, 3}, {1, 0, 0} };
   double weights[] = {1.0, 2.0, 0.5};
   BOOST_CHECK_EQUAL(ds.size(), 3);
   size_t i = 0;

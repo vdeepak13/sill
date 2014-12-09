@@ -11,6 +11,14 @@
 #include <sill/range/algorithm.hpp>
 
 #include <sill/macros_def.hpp>
+namespace arma {
+  std::ostream& operator<<(std::ostream& out, arma::span span) {
+    out << span.a << " " << span.b;
+    return out;
+  }
+  
+
+}
 
 namespace sill {
 
@@ -207,7 +215,9 @@ namespace sill {
     canonical_gaussian cg(*this);
     double ll = 0.0;
     foreach (const vector_record<>& r, ds.records(cg.arg_vector())) {
-      ll += r.weight * log(cg(r.values));
+      if (!r.count_missing()) {
+        ll += r.weight * log(cg(r.values));
+      }
     }
     return ll;
   }
@@ -497,16 +507,38 @@ namespace sill {
   // Free functions
   //============================================================================
 
-  std::ostream& operator<<(std::ostream& out, const moment_gaussian& mg) {
-    out << "#F(MG|" << mg.head() << "|\n"
-        << mg.mean() << "|\n"
-        << mg.covariance();
-    if (!mg.marginal()) {
-      out << "|\n"
-          << mg.tail() << "|\n"
-          << mg.coefficients();
+  std::ostream& print_vec(std::ostream& out, const arma::vec& vec) {
+    out << "[";
+    for (size_t i = 0; i < vec.size(); ++i) {
+      if (i > 0) out << " ";
+      out << std::setprecision(5) << vec[i];
     }
-    out << "|\n" << mg.norm_constant() << ")";
+    out << "]";
+    return out;
+  }
+
+  std::ostream& print_mat(std::ostream& out, const arma::mat& mat) {
+    out << "[";
+    for (size_t i = 0; i < mat.n_rows; ++i) {
+      if (i > 0) out << "; ";
+      for (size_t j = 0; j < mat.n_cols; ++j) {
+        if (j >0) out << " ";
+        out << std::setprecision(5) << mat(i,j);
+      }
+    }
+    out << "]";
+    return out;
+  }
+
+  std::ostream& operator<<(std::ostream& out, const moment_gaussian& mg) {
+    out << "#F(MG|" << mg.head() << "|";
+    print_vec(out, mg.mean()) << "|";
+    print_mat(out, mg.covariance()) << "|";
+    if (!mg.marginal()) {
+      out << mg.tail() << "|";
+      print_mat(out, mg.coefficients()) << "|";
+    }
+    out << mg.norm_constant() << ")";
     return out;
   }
 

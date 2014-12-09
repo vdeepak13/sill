@@ -10,7 +10,8 @@
 namespace sill {
 
   /**
-   * A class that learns a naive Bayes model when the class variable is not observed.
+   * A class that learns a naive Bayes model when the label variable is not
+   * observed. This learner supports datasets with missing values.
    */
   template <typename FeatureF>
   class naive_bayes_em {
@@ -147,7 +148,9 @@ namespace sill {
         ptail *= r.weight / sump;
         new_prior += ptail;
         for (size_t i = 0; i < features.size(); ++i) {
-          feature_mle[i].process(feature_it[i]->values, ptail);
+          if (feature_it[i]->count_missing() == 0) {
+            feature_mle[i].process(feature_it[i]->values, ptail);
+          }
           ++feature_it[i];
         }
       }
