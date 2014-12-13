@@ -1,5 +1,5 @@
-#ifndef SILL_DECOMPOSABLE_FRAGMENT_HPP
-#define SILL_DECOMPOSABLE_FRAGMENT_HPP
+#ifndef SILL_FRAGMENT_HPP
+#define SILL_FRAGMENT_HPP
 
 #include <stack>
 #include <map>
@@ -31,7 +31,7 @@ namespace sill {
    * \see Factor
    */
   template <typename F>
-  class decomposable_fragment : public factor {
+  class fragment : public factor {
     concept_assert((DistributionFactor<F>));
     
     // Public type declarations
@@ -75,28 +75,28 @@ namespace sill {
     }
 
     //! Default constructor
-    decomposable_fragment() : pls(new pl_vector()) { }
+    fragment() : pls(new pl_vector()) { }
 
     //! Singleton constructor
-    explicit decomposable_fragment(const prior_likelihood<F>& pl) 
+    explicit fragment(const prior_likelihood<F>& pl) 
       : args(pl.arguments()),
         pls(new pl_vector(1, pl)) { }
 
     //! Converts a prior to a decomposable fragment. 
-    //! Care must be taken that decomposable_fragment is not
+    //! Care must be taken that fragment is not
     //! constructed with a likelihood alone.
-    explicit decomposable_fragment(const F& prior)
+    explicit fragment(const F& prior)
       : args(prior.arguments()),
         pls(new pl_vector(1, factor_type(prior))) { }
 
     //! Conversion constructor
-    explicit decomposable_fragment(double val)
+    explicit fragment(double val)
       : pls(new pl_vector(1, factor_type(val))) { }
 
     //! Constructs a decomposable fragment for a collection of PL factors 
     //! The argument set will be the union of all of factors' argument sets
     template <typename Range>
-    explicit decomposable_fragment(const Range& factors) {
+    explicit fragment(const Range& factors) {
       concept_assert((InputRangeConvertible<Range, factor_type>));
       pls.reset(new pl_vector(boost::begin(factors), boost::end(factors)));
       args = sill::arguments(*pls); // from factor/opereations.hpp
@@ -104,7 +104,7 @@ namespace sill {
 
     //! Construct a decomposable fragment for a collection of PL factors
     template <typename Range>
-    explicit decomposable_fragment(const Range& factors, const domain_type& args)
+    explicit fragment(const Range& factors, const domain_type& args)
       : args(args) {
       concept_assert((InputRangeConvertible<Range, factor_type>));
       pls.reset(new pl_vector(boost::begin(factors), boost::end(factors)));
@@ -165,7 +165,7 @@ namespace sill {
 
     //! Returns true if two decomposable fragments are equal
     //! (i.e., have the same arguments and the same list of components).
-    bool operator==(const decomposable_fragment& other) const {
+    bool operator==(const fragment& other) const {
       assert(pls);
       assert(other.pls);
       return arguments() == other.arguments() && 
@@ -173,7 +173,7 @@ namespace sill {
     }
 
     //! Returns true if two decomposable fragments are not equal
-    bool operator!=(const decomposable_fragment& other) const {
+    bool operator!=(const fragment& other) const {
       return !operator==(other);
     }
 
@@ -200,7 +200,7 @@ namespace sill {
     //==========================================================================
 
     //! multiplies in another decomposable fragment
-    decomposable_fragment& operator*=(const decomposable_fragment& x) {
+    fragment& operator*=(const fragment& x) {
       pls->insert(pls->begin(), x.pls->begin(), x.pls->end());
       args.insert(x.args.begin(), x.args.end());
       return *this;
@@ -208,7 +208,7 @@ namespace sill {
 
     //! multiplies in a likelihood
     //! the arguments of the likelihood must be covered by at least one clique
-    decomposable_fragment& operator*=(const F& likelihood) {
+    fragment& operator*=(const F& likelihood) {
       foreach(factor_type& pl, *pls) {
         if (includes(pl.arguments(), likelihood.arguments())) {
           pl *= likelihood;
@@ -219,7 +219,7 @@ namespace sill {
     }
 
     //! multiplies in a constant
-    decomposable_fragment& operator*=(result_type val) {
+    fragment& operator*=(result_type val) {
       assert(!pls->empty());
       pls->front() *= val;
       return *this;
@@ -227,7 +227,7 @@ namespace sill {
 
     //! computes a marginal over set of variables
     //! this is a lazy operations: as many cliques are pruned as possible
-    decomposable_fragment marginal(const domain_type& retain) const {
+    fragment marginal(const domain_type& retain) const {
       if (includes(retain, arguments())) return *this; // not much to do
       
       // Construct the canonical tree
@@ -261,57 +261,57 @@ namespace sill {
       }
 
       // Now form a decomposable fragment using the remaining PL factors
-      return decomposable_fragment(jt.vertex_properties(),
+      return fragment(jt.vertex_properties(),
                                    set_intersect(arguments(), retain));
     }
 
     //! implements Factor::restrict_
-    //! Note: decomposable_fragments do not support the restrict operation
-    decomposable_fragment restrict(const assignment_type& a) const {
+    //! Note: fragments do not support the restrict operation
+    fragment restrict(const assignment_type& a) const {
       throw std::invalid_argument("Unsupported operation");
     }
 
     //! implements Factor::subst_args
-    decomposable_fragment& 
+    fragment& 
     subst_args(const std::map<variable_type*, variable_type*>& map) {
       args = subst_vars(args, map);
       foreach(factor_type& pl, *pls) pl.subst_args(map);
       return *this;
     }
 
-  }; // class decomposable_fragment
+  }; // class fragment
 
   //! Multiplies two decomposable fragments
-  //! \relates decomposable_fragment
+  //! \relates fragment
   template <typename F>
-  decomposable_fragment<F>
-  operator*(const decomposable_fragment<F>& x,
-            const decomposable_fragment<F>& y) {
-    return decomposable_fragment<F>(make_joined(x.factors(), y.factors()),
+  fragment<F>
+  operator*(const fragment<F>& x,
+            const fragment<F>& y) {
+    return fragment<F>(make_joined(x.factors(), y.factors()),
 				      set_union(x.arguments(), y.arguments()));
   }
 
   //! Multiplies a decomposable fragment and a likelihood
-  //! \relates decomposable_fragment
+  //! \relates fragment
   template <typename F>
-  decomposable_fragment<F>
-  operator*(decomposable_fragment<F> x, const F& likelihood) {
+  fragment<F>
+  operator*(fragment<F> x, const F& likelihood) {
     return x *= likelihood;
   }
 
   //! Multiplies a decomposable fragment and a likelihood
-  //! \relates decomposable_fragment
+  //! \relates fragment
   template <typename F>
-  decomposable_fragment<F>
-  operator*(const F& likelihood, decomposable_fragment<F> x) {
+  fragment<F>
+  operator*(const F& likelihood, fragment<F> x) {
     return x *= likelihood;
   }
 
   //! Prints a model fragment to a stream
-  //! relates decomposable_fragment
+  //! relates fragment
   template <typename F>
   std::ostream& 
-  operator<<(std::ostream& out, const decomposable_fragment<F>& df) {
+  operator<<(std::ostream& out, const fragment<F>& df) {
     out << "#F(DF|" << df.arguments() << "|" << df.cliques() << ")";
     return out;
   }
@@ -323,13 +323,13 @@ namespace sill {
   //! @{
 
   template <typename F>
-  struct has_multiplies<decomposable_fragment<F> > : public boost::true_type { };
+  struct has_multiplies<fragment<F> > : public boost::true_type { };
 
   template <typename F>
-  struct has_multiplies_assign<decomposable_fragment<F> > : public boost::true_type { };
+  struct has_multiplies_assign<fragment<F> > : public boost::true_type { };
 
   template <typename F>
-  struct has_marginal<decomposable_fragment<F> > : public boost::true_type { };
+  struct has_marginal<fragment<F> > : public boost::true_type { };
   
   //! @}
 
