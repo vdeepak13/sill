@@ -3,7 +3,7 @@
 
 #include <sill/global.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/serialization/serialize.hpp>
 

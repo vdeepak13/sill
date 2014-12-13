@@ -3,7 +3,7 @@
 
 
 #include <sill/parallel/pthread_tools.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/parallel/object_allocator.hpp>
 
 // This include should always be last

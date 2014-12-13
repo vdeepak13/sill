@@ -2,7 +2,7 @@
 
 #include <sill/base/stl_util.hpp>
 #include <sill/base/universe.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/macros_def.hpp>

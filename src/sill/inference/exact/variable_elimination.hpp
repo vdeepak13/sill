@@ -7,8 +7,8 @@
 #include <map>
 #include <set>
 
-#include <sill/factor/commutative_semiring.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/commutative_semiring.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/model/markov_graph.hpp>
 #include <sill/graph/elimination.hpp>
 

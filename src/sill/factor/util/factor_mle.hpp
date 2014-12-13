@@ -1,7 +1,7 @@
 #ifndef SILL_FACTOR_MLE_HPP
 #define SILL_FACTOR_MLE_HPP
 
-#include <sill/factor/factor_mle_incremental.hpp>
+#include <sill/factor/util/factor_mle_incremental.hpp>
 
 #include <stdexcept>
 

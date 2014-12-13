@@ -9,9 +9,9 @@
 
 #include <sill/base/assignment.hpp>
 #include <sill/copy_ptr.hpp>
-#include <sill/factor/factor_evaluator.hpp>
-#include <sill/factor/factor_mle.hpp>
-#include <sill/factor/factor_sampler.hpp>
+#include <sill/factor/util/factor_evaluator.hpp>
+#include <sill/factor/util/factor_mle.hpp>
+#include <sill/factor/util/factor_sampler.hpp>
 #include <sill/global.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/range/concepts.hpp>
@@ -488,7 +488,7 @@ namespace sill {
 
     //! The type which this factor f(Y,X) outputs to represent f(Y, X=x).
     //! For finite Y, this will probably be table_factor;
-    //! for vector Y, this will probably be a subtype of gaussian_factor.
+    //! for vector Y, this will probably be a subtype of gaussian_base.
     typedef typename F::output_factor_type output_factor_type;
 
     //! Type which parametrizes this factor, usable for optimization and

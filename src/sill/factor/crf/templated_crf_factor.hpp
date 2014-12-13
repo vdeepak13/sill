@@ -2,7 +2,7 @@
 #define SILL_TEMPLATED_CRF_FACTOR_HPP
 
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/factor/crf/learnable_crf_factor.hpp>
 #include <sill/learning/dataset_old/record_conversions.hpp>
 
 #include <sill/macros_def.hpp>

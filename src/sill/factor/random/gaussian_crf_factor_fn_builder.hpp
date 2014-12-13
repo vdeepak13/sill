@@ -2,7 +2,7 @@
 #define SILL_GAUSSIAN_CRF_FACTOR_FN_BUILDER_HPP
 
 #include <sill/factor/random/moment_gaussian_fn_builder.hpp>
-#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/crf/gaussian_crf_factor.hpp>
 
 namespace sill {
 

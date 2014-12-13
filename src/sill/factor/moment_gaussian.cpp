@@ -4,7 +4,7 @@
 #include <sill/base/vector_variable.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/math/constants.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/vector.hpp>
@@ -106,7 +106,7 @@ namespace sill {
   }
 
   moment_gaussian::moment_gaussian(const canonical_gaussian& cg)
-    : gaussian_factor(cg.arguments()), head_list(cg.arg_list),
+    : gaussian_base(cg.arguments()), head_list(cg.arg_list),
       coeff(cg.eta.size(),0), likelihood(cg.log_multiplier(), log_tag()) {
     // TO DO: Is likelihood set correctly?
     if (head_list.size() != 0) {
@@ -354,7 +354,7 @@ namespace sill {
 
   moment_gaussian&
   moment_gaussian::subst_args(const vector_var_map& map) {
-    gaussian_factor::subst_args(map);
+    gaussian_base::subst_args(map);
     // replace each element in head_list by going through the map
     foreach(vector_variable* &a, head_list) {
       if (map.count(a)) {

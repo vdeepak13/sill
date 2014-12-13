@@ -8,7 +8,7 @@
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/parallel/pthread_tools.hpp>
 #include <sill/parallel/binned_scheduling_queue.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 
 
 // This include should always be last

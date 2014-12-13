@@ -1,8 +1,8 @@
 #ifndef SILL_MODEL_PRODUCTS_HPP
 #define SILL_MODEL_PRODUCTS_HPP
 
-#include <sill/factor/gaussian_crf_factor.hpp>
-#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/crf/gaussian_crf_factor.hpp>
+#include <sill/factor/crf/table_crf_factor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/crf_model.hpp>
 #include <sill/model/decomposable.hpp>

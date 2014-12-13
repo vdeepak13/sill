@@ -8,7 +8,7 @@
 #include <boost/unordered_map.hpp>
 
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/factor/invalid_operation.hpp>
 #include <sill/model/interfaces.hpp>
 #include <sill/model/region_graph.hpp>

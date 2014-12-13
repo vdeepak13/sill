@@ -1,7 +1,7 @@
 #ifndef SILL_NAIVE_BAYES_EM_HPP
 #define SILL_NAIVE_BAYES_EM_HPP
 
-#include <sill/factor/factor_mle_incremental.hpp>
+#include <sill/factor/util/factor_mle_incremental.hpp>
 #include <sill/model/naive_bayes.hpp>
 #include <sill/learning/parameter/naive_bayes_init.hpp>
 

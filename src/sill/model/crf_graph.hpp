@@ -11,7 +11,7 @@
 #include <sill/copy_ptr.hpp>
 #include <sill/datastructure/set_index.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/crf_factor.hpp>
+#include <sill/factor/crf/crf_factor.hpp>
 #include <sill/graph/undirected_graph.hpp>
 #include <sill/graph/property_functors.hpp>
 #include <sill/iterator/map_value_iterator.hpp>

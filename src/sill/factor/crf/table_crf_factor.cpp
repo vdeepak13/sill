@@ -1,6 +1,6 @@
 
-#include <sill/factor/operations.hpp>
-#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/util/operations.hpp>
+#include <sill/factor/crf/table_crf_factor.hpp>
 
 #include <sill/macros_def.hpp>
 

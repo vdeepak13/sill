@@ -5,7 +5,7 @@
 #include <sill/factor/approx/hybrid_conditional.hpp>
 #include <sill/factor/approx/integration_points.hpp>
 #include <sill/factor/nonlinear_gaussian.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/math/function/linear.hpp>
 
 #include "predicates.hpp"

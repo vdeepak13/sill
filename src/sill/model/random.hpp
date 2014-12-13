@@ -4,12 +4,12 @@
 #include <sill/global.hpp>
 
 #include <sill/range/concepts.hpp>
-#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/crf/gaussian_crf_factor.hpp>
 #include <sill/factor/random/associative_factor_generator.hpp>
 #include <sill/factor/random/discrete_factor_generator.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/crf/table_crf_factor.hpp>
 #include <sill/math/permutations.hpp>
 #include <sill/model/bayesian_network.hpp>
 #include <sill/model/crf_model.hpp>

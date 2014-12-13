@@ -5,9 +5,9 @@
 
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/factor/factor_evaluator.hpp>
-#include <sill/factor/factor_mle_incremental.hpp>
-#include <sill/factor/factor_sampler.hpp>
+#include <sill/factor/util/factor_evaluator.hpp>
+#include <sill/factor/util/factor_mle_incremental.hpp>
+#include <sill/factor/util/factor_sampler.hpp>
 
 #include <boost/random/normal_distribution.hpp>
 

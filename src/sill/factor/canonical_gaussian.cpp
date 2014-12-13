@@ -3,7 +3,7 @@
 #include <sill/base/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/math/constants.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/serialization/serialize.hpp>
@@ -17,13 +17,13 @@ namespace sill {
   //============================================================================
   canonical_gaussian::
   canonical_gaussian(const vector_domain& args, logarithmic<double> value)
-    : gaussian_factor(args), log_mult(log(value)) {
+    : gaussian_base(args), log_mult(log(value)) {
     initialize(make_vector(args));
   }
 
   canonical_gaussian::
   canonical_gaussian(const vector_var_vector& args, logarithmic<double> value)
-    : gaussian_factor(args), log_mult(log(value)) {
+    : gaussian_base(args), log_mult(log(value)) {
     initialize(args);
   }
 
@@ -36,7 +36,7 @@ namespace sill {
   }
 
   canonical_gaussian::canonical_gaussian(const moment_gaussian& mg)
-    : gaussian_factor(mg.arguments()) {
+    : gaussian_base(mg.arguments()) {
     size_t nhead = mg.size_head();
     size_t ntail = mg.size_tail();
     size_t n = nhead + ntail;
@@ -369,7 +369,7 @@ namespace sill {
 
   canonical_gaussian&
   canonical_gaussian::subst_args(const vector_var_map& map) {
-    gaussian_factor::subst_args(map);
+    gaussian_base::subst_args(map);
 
     foreach(vector_variable* &a, arg_list) {
       if (map.count(a)) {

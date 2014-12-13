@@ -27,7 +27,7 @@
 // PRL Includes
 #include <sill/serializable.hpp>
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
 #include <sill/inference/parallel/message_data.hpp>

@@ -1,7 +1,7 @@
 #ifndef SILL_MARKOV_CHAIN_MLE_HPP
 #define SILL_MARKOV_CHAIN_MLE_HPP
 
-#include <sill/factor/factor_mle.hpp>
+#include <sill/factor/util/factor_mle.hpp>
 #include <sill/model/markov_chain.hpp>
 
 namespace sill {

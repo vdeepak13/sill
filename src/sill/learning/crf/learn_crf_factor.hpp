@@ -2,10 +2,10 @@
 #define SILL_LEARN_CRF_FACTOR_HPP
 
 #include <sill/base/variables.hpp>
-#include <sill/factor/hybrid_crf_factor.hpp>
-#include <sill/factor/gaussian_crf_factor.hpp>
-#include <sill/factor/log_reg_crf_factor.hpp>
-#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/crf/hybrid_crf_factor.hpp>
+#include <sill/factor/crf/gaussian_crf_factor.hpp>
+#include <sill/factor/crf/log_reg_crf_factor.hpp>
+#include <sill/factor/crf/table_crf_factor.hpp>
 #include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/parameter_old/learn_factor.hpp>
 #include <sill/learning/validation/model_validation_functor.hpp>

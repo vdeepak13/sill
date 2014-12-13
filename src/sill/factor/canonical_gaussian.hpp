@@ -2,9 +2,9 @@
 #define SILL_CANONICAL_GAUSSIAN_HPP
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/gaussian_factor.hpp>
+#include <sill/factor/gaussian_base.hpp>
 #include <sill/factor/invalid_operation.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/learning/dataset_old/vector_record.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
@@ -24,7 +24,7 @@ namespace sill {
    *
    * \ingroup factor_types
    */
-  class canonical_gaussian : public gaussian_factor {
+  class canonical_gaussian : public gaussian_base {
   public:
     // DistributionFactor concept types
     typedef boost::function<canonical_gaussian(const vector_domain&)>
@@ -458,6 +458,6 @@ namespace sill {
 #include <sill/macros_undef.hpp>
 
 #include <sill/factor/gaussian_common.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 
 #endif

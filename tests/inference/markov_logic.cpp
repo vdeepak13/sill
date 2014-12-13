@@ -24,7 +24,7 @@
 #include <sill/inference/loopy/round_robin_bp.hpp>
 #include <sill/inference/loopy/mk_propagation.hpp>
 
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/macros_def.hpp>
 
 

@@ -14,7 +14,7 @@
 #include <boost/unordered_set.hpp>
 // PRL Includes
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/math/gdl_enum.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/log_table_factor.hpp>

@@ -2,7 +2,7 @@
 #define SILL_TABLE_CRF_FACTOR_HPP
 
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/factor/crf/learnable_crf_factor.hpp>
 #include <sill/optimization/table_factor_opt_vector.hpp>
 
 #include <boost/function.hpp>

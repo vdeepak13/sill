@@ -2,7 +2,7 @@
 #define SILL_LOG_REG_CRF_FACTOR_HPP
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/factor/crf/learnable_crf_factor.hpp>
 #include <sill/learning/discriminative/multiclass2multilabel.hpp>
 #include <sill/learning/discriminative/multiclass_logistic_regression.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>

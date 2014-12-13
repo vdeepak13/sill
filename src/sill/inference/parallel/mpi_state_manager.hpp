@@ -19,7 +19,7 @@ class mpi_state_manager_protocol;
 #include <sill/parallel/pthread_tools.hpp>
 #include <sill/parallel/timer.hpp>
 #include <sill/parallel/binned_scheduling_queue.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/inference/parallel/message_data.hpp>
 #include <sill/inference/parallel/mpi_state_manager_protocol.hpp>
 #include <sill/model/mooij_kappen_derivatives.hpp>
