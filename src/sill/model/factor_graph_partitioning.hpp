@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <cstdio>
 
-// PRL Includes
+// SILL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/model/mooij_kappen_derivatives.hpp>
 

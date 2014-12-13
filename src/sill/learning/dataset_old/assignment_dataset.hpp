@@ -19,7 +19,7 @@ namespace sill {
 
   /**
    * A class that represents a dataset stored in assignments.
-   * (This should be used with PRL graphical models, not with PRL
+   * (This should be used with SILL graphical models, not with SILL
    *  discriminative learners.)
    *
    * \author Joseph Bradley

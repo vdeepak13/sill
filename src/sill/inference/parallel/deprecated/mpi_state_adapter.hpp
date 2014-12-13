@@ -21,7 +21,7 @@
 #include <boost/iostreams/stream.hpp>
 
 
-// PRL Includes
+// SILL Includes
 #include <sill/serializable.hpp>
 #include <sill/mpi/mpi_wrapper.hpp>
 #include <sill/mpi/mpi_consensus.hpp>

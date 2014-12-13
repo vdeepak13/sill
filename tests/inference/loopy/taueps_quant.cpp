@@ -15,7 +15,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 
-// PRL Includes
+// SILL Includes
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/model/factor_graph_model.hpp>

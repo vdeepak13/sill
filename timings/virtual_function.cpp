@@ -9,7 +9,7 @@
 
 /**
  * \file virtual_functions_timing.cpp
- * Test of virtual function calls for deciding how often to use them in PRL,
+ * Test of virtual function calls for deciding how often to use them in SILL,
  * such as in views of datasets.
  *
  * Types of views:

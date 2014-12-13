@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <limits>
 #include <boost/unordered_set.hpp>
-// PRL Includes
+// SILL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/util/norms.hpp>
 #include <sill/math/gdl_enum.hpp>

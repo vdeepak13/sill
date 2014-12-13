@@ -8,7 +8,7 @@
 boost::mt19937 rng;
 int n = 1000;
 
-// Insert the same keys into STL queues and PRL queues and make sure
+// Insert the same keys into STL queues and SILL queues and make sure
 // they spit out the keys in the same order.
 BOOST_AUTO_TEST_CASE(test_insert) {
   std::priority_queue<int> std_pq;
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   }
 }
 
-// Insert a bunch of items into the PRL queue, reprioritize them,
+// Insert a bunch of items into the SILL queue, reprioritize them,
 // and then make sure they come out in sorted order.
 BOOST_AUTO_TEST_CASE(test_reprioritize) {
   sill::mutable_queue<int, int> prl_pq;

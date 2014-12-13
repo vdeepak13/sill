@@ -11,7 +11,7 @@
 #include <sstream>
 #include <limits>
 
-// PRL Includes
+// SILL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/util/norms.hpp>
 #include <sill/math/gdl_enum.hpp>

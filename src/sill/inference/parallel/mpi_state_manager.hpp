@@ -14,7 +14,7 @@ class mpi_state_manager_protocol;
 // STL includes
 #include <map>
 
-// PRL Includes
+// SILL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/parallel/pthread_tools.hpp>
 #include <sill/parallel/timer.hpp>

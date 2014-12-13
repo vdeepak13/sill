@@ -20,7 +20,7 @@ namespace sill {
 
     /**
      * Numeric types codes.
-     * These correspond to those used in my NumericType2PRLCode function in
+     * These correspond to those used in my NumericType2SILLCode function in
      * Matlab.
      */
     enum matlab_type_code {
@@ -190,7 +190,7 @@ namespace sill {
     } // read_binary_vec() given matlab_type_code
 
     /**
-     * Read a dense PRL matrix from a file.
+     * Read a dense SILL matrix from a file.
      *
      * Format:
      *   m  (unsigned int)  (number of rows)
@@ -231,7 +231,7 @@ namespace sill {
     } // read_dense_matrix()
 
     /**
-     * Read a dense PRL vector from a file.
+     * Read a dense SILL vector from a file.
      *
      * Format:
      *   n  (unsigned int)   (number of elements)

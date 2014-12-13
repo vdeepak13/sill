@@ -220,7 +220,7 @@ namespace sill {
     } // end of for r
   } // end of create_network
   
-} // end of PRL NAMESPACE
+} // end of SILL NAMESPACE
 
 #include <sill/macros_undef.hpp>
 #endif

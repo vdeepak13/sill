@@ -26,4 +26,4 @@ namespace sill {
 
 } // namespace sill
 
-#endif //PRL_SERIALIZE_SET_HPP
+#endif //SILL_SERIALIZE_SET_HPP
