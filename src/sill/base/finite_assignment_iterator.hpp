@@ -76,7 +76,6 @@ namespace sill {
   
   /**
    * A range defined by two finite assignment iterators.
-   * This type is mapped by SWIG to an appropriate type in the target language.
    * \relates finite_assignment_iterator
    */
   typedef boost::iterator_range<finite_assignment_iterator> 

@@ -177,21 +177,17 @@ namespace sill {
     //! The next vertex id
     size_t next_vertex;
 
+    //! the underlying graph type
+    typedef undirected_graph<size_t, vertex_info, edge_info> graph_type;
 
     // Public type declarations
     // =========================================================================
   public:
-
-    //! the underlying graph type (needs to be public for SWIG)
-    typedef undirected_graph<size_t, vertex_info, edge_info> graph_type;
-
-    // Graph types
-    // (we use the specific types here, so that we do not have manually
-    //  instantiate the graph_type template in SWIG)
-    typedef size_t vertex;
+    // Graph types (copied from undirected_graph)
+    typedef size_t                  vertex;
     typedef undirected_edge<size_t> edge;
-    typedef VertexProperty vertex_property;
-    typedef EdgeProperty edge_property;
+    typedef VertexProperty          vertex_property;
+    typedef EdgeProperty            edge_property;
 
     // Graph iterators
     typedef typename graph_type::vertex_iterator    vertex_iterator;
@@ -594,150 +590,6 @@ namespace sill {
 
 } // namespace sill
 
-
 #include <sill/macros_undef.hpp>
 
-#endif // #ifndef SILL_CLUSTER_GRAPH_HPP
-
-
-
-
-#if 0
-    /**
-     * A constructor that builds a cluster graph which is a Bethe approximation
-     * (i.e. a factor graph).
-     */
-    template <typename ClusterRange>
-      cluster_graph(const ClusterRange& clusters) {
-      concept_assert((InputRangeConvertible<ClusterRange, node_set>));
-    initialize(clusters);
-    }
-
-    /**
-     * A constructor that builds a cluster graph which is a Bethe approximation
-     * (i.e. a factor graph), with the associated vertex properties for the
-     * cluster clusters.
-     *
-     * @param clusters          Clusters to add to the cluster graph.
-     * @param properties       Corresponding properties of the clusters.
-     * @param default_property Function for creating default property value for
-     *                         additional clusters which this constructor
-     *                         creates.  Must take the clusters and return the
-     *                         property.
-     *
-     * \todo Add concept_assert for properties and default_property.
-     */
-    template <typename ClusterRange, typename InputIterator,
-              typename DefaultPropertyConstructor>
-    cluster_graph(const ClusterRange& clusters, InputIterator properties,
-                  DefaultPropertyConstructor default_property
-                  = default_property_functor()) {
-      concept_assert((InputRangeConvertible<ClusterRange, node_set>));
-      initialize(clusters, properties, default_property);
-    }
-
-
-   /**
-     * This method initializes the edge structure of the cluster graph
-     * and the separators associated with each edge.
-     * It does a Bethe approximation (i.e. creates a factor graph):
-     *  - Keep all existing clusters (the clusters)
-     *  - Create a new cluster for every variable
-     *  - Connect each factor with the variables in its domain
-     * Note that if some clusters are single-variable clusters, there will be
-     * multiple clusters for that single variable.
-     */
-    virtual void initialize_edges() {
-      if (empty()) return;
-
-      // Create a cluster for each variable.
-      node_set variables;
-      set<vertex_descriptor> cluster_vertices(vertices());
-      foreach(vertex_descriptor v, cluster_vertices)
-        variables.insert(cluster(v));
-      std::map<node_type, vertex_descriptor> n2v;
-      foreach(node_type n, variables)
-        n2v[n] = add_vertex(node_set(n));
-
-      // For each cluster vertex,
-      //  create edges between it and the nodes for its variables.
-      foreach(vertex_descriptor v, cluster_vertices) {
-        foreach(node_type n, cluster(v))
-          add_edge(v, n2v[n]);
-      }
-    }
-
-    /**
-     * This method initializes the edge structure of the cluster graph
-     * and the separators associated with each edge.
-     * It does a Bethe approximation (i.e. creates a factor graph):
-     *  - Keep all existing clusters (the clusters)
-     *  - Create a new cluster for every variable
-     *  - Connect each factor with the variables in its domain
-     * Note that if some clusters are single-variable clusters, there will be
-     * multiple clusters for that single variable.
-     */
-    template <typename DefaultPropertyConstructor>
-    void initialize_edges(DefaultPropertyConstructor default_property) {
-      if (empty()) return;
-
-      // Create a cluster for each variable.
-      node_set variables;
-      set<vertex_descriptor> cluster_vertices(vertices());
-      foreach(vertex_descriptor v, cluster_vertices)
-        variables.insert(cluster(v));
-      std::map<node_type, vertex_descriptor> n2v;
-      foreach(node_type n, variables)
-        n2v[n] = add_vertex(node_set(n), default_property(node_set(n)));
-
-      // For each cluster vertex,
-      //  create edges between it and the nodes for its variables.
-      foreach(vertex_descriptor v, cluster_vertices) {
-        foreach(node_type n, cluster(v))
-          add_edge(v, n2v[n]);
-      }
-    }
-
-
-
-    /**
-     * A functor for creating a default vertex property.
-     * Used in cluster_graph constructor.
-     */
-    struct default_property_functor {
-      VertexProperty operator()(node_set n) {
-        return VertexProperty();
-      }
-    };
-
-
-    /**
-     * Initializes the cluster graph from a collection of triangulated clusters.
-     */
-    template <typename ClusterRange>
-    void initialize(const ClusterRange& clusters) {
-      concept_assert((InputRangeConvertible<ClusterRange, node_set>));
-      clear();
-      foreach(const node_set& cluster, clusters) add_vertex(cluster);
-      initialize_edges();
-    }
-
-    /**
-     * Initializes the cluster graph from a collection of triangulated clusters.
-     * The corresponding vertex properties are specified by properties, and
-     * default_property is used to initialize properties for edges.
-     */
-    template <typename ClusterRange, typename InputIterator,
-              typename DefaultPropertyConstructor>
-    void initialize(const ClusterRange& clusters, InputIterator properties,
-                    DefaultPropertyConstructor default_property
-                    = default_property_functor()) {
-      concept_assert((InputRangeConvertible<ClusterRange, node_set>));
-      clear();
-      foreach(const node_set& cluster, clusters)
-        add_vertex(cluster, *properties++);
-      initialize_edges(default_property);
-    }
-
-
-#endif // #if 0
+#endif 

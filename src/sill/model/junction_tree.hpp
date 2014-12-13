@@ -211,17 +211,14 @@ namespace sill {
     // Public type declarations
     // =========================================================================
   public:
-
-    //! the underlying graph type (needs to be public for SWIG)
+    //! the underlying graph type
     typedef undirected_graph<size_t, vertex_info, edge_info> graph_type;
 
     // Graph types
-    // (we use the specific types here, so that we do not have manually
-    //  instantiate the graph_type template in SWIG)
-    typedef size_t vertex;
+    typedef size_t                  vertex;
     typedef undirected_edge<size_t> edge;
-    typedef VertexProperty vertex_property;
-    typedef EdgeProperty edge_property;
+    typedef VertexProperty          vertex_property;
+    typedef EdgeProperty            edge_property;
 
     // Graph iterators
     typedef typename graph_type::vertex_iterator    vertex_iterator;
@@ -289,10 +286,6 @@ namespace sill {
       concept_assert((InputRangeConvertible<CliqueRange, node_set>));
       initialize(cliques);
     }
-
-  #ifdef SWIG
-    junction_tree(const std::vector<node_set>& cliques);
-  #endif
 
     /**
      * A constructor that builds the junction tree from the maximal

@@ -40,9 +40,7 @@ namespace sill {
     learnt_junction_tree(const CliqueRange& cliques,
                   typename CliqueRange::iterator * = 0)
       : base(cliques) { }
-  #ifdef SWIG
     learnt_junction_tree(const std::vector<node_set>& cliques);
-  #endif
     template <typename CliqueRange, typename InputIterator>
     learnt_junction_tree(const CliqueRange& cliques, InputIterator properties,
                          typename CliqueRange::iterator* = 0)

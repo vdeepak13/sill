@@ -31,15 +31,9 @@ namespace sill {
      * pointer to the associated property.  However, this pointer can only
      * be accessed through the associated graph. This permits graphs to
      * return iterators over edges and permits constant time lookup for
-     * the corresponding edge properties. 
-     * The property is stored as a void*, in order to decrease the number
-     * of types that need to be instantiated in SWIG. This design can lead
-     * to errors if one attempts to look up property in a graph, using an 
-     * edge constructed by a different graph. This error case does not seem
-     * very common, but it is possible. An alternative is to design a custom
-     * typemap in SWIG for edges.
-
-     **/ 
+     * the corresponding edge properties. The property is stored as a void*,
+     * to simplify the type of the edges.
+     */ 
     void* m_property;
 
     /**
@@ -60,11 +54,6 @@ namespace sill {
     //! Constructor which permits setting the edge_property
     directed_edge(Vertex source, Vertex target, void* property = NULL)
       : m_source(source), m_target(target), m_property(property) { }
-
-    // Stano: operator bool() is error-prone
-//     operator bool() const {
-//       return !(m_source == Vertex() && m_target == Vertex());
-//     }
 
     bool operator<(const directed_edge& other) const {
       return (m_source < other.m_source) || 

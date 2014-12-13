@@ -118,11 +118,8 @@ namespace sill {
       : base(factors), max_clique_size_(params.max_clique_size()),
         maximal_JTs_(params.maximal_JTs()) { }
 
-  #ifdef SWIG
-    // SWIG-compatible declaration of the above constructor
     learnt_decomposable(const std::vector<F>& factors,
                         parameters params = parameters());
-  #endif
 
     /**
      * Initializes the learnt_decomposable model to a given decomposable model.

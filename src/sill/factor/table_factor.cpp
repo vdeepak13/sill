@@ -415,8 +415,6 @@ namespace sill {
     return tanh(std::log(result) * 0.25);
   }
 
-
-  #ifndef SWIG // std::pair<variable, table_factor> not supported at the moment
   std::pair<finite_variable*, table_factor >
   table_factor::unroll(universe& u) const {
     size_t new_v_size = 1;
@@ -429,7 +427,6 @@ namespace sill {
       (new_args, std::vector<result_type>(values().first, values().second));
     return std::make_pair(new_v, newf);
   }
-  #endif
 
   table_factor
   table_factor::roll_up(const finite_var_vector& orig_arg_list) const {
