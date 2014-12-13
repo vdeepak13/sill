@@ -2,7 +2,7 @@
 #define SILL_TABLE_CRF_FACTOR_FN_BUILDER_HPP
 
 #include <sill/factor/random/table_factor_fn_builder.hpp>
-#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/crf/table_crf_factor.hpp>
 
 namespace sill {
 

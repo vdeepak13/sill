@@ -11,8 +11,8 @@
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/exponential_distribution.hpp>
 
-#include <sill/factor/norms.hpp>
-#include <sill/factor/commutative_semiring.hpp>
+#include <sill/factor/util/norms.hpp>
+#include <sill/factor/util/commutative_semiring.hpp>
 #include <sill/global.hpp>
 
 #include <sill/datastructure/mutable_queue.hpp>

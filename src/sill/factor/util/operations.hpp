@@ -1,7 +1,7 @@
 #ifndef SILL_FACTOR_OPERATIONS_HPP
 #define SILL_FACTOR_OPERATIONS_HPP
 
-#include <sill/factor/commutative_semiring.hpp>
+#include <sill/factor/util/commutative_semiring.hpp>
 #include <sill/factor/concepts.hpp>
 #include <sill/stl_concepts.hpp>
 

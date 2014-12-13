@@ -6,9 +6,9 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <sill/factor/gaussian_factor.hpp>
+#include <sill/factor/gaussian_base.hpp>
 #include <sill/factor/invalid_operation.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>
 #include <sill/math/logarithmic.hpp>
@@ -26,7 +26,7 @@ namespace sill {
    *
    * \ingroup factor_types
    */
-  class moment_gaussian : public gaussian_factor {
+  class moment_gaussian : public gaussian_base {
   public:
     // DistributionFactor concept types
     typedef boost::function<moment_gaussian(const vector_domain&)> marginal_fn_type;
@@ -120,7 +120,7 @@ namespace sill {
       if (head_list != other.head_list || tail_list != other.tail_list) {
         head_list = other.head_list;
         tail_list = other.tail_list;
-        gaussian_factor::operator=(other);
+        gaussian_base::operator=(other);
       }
       cmean = other.cmean;
       cov = other.cov;
@@ -466,6 +466,6 @@ namespace sill {
 #include <sill/macros_undef.hpp>
 
 #include <sill/factor/gaussian_common.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 
 #endif 

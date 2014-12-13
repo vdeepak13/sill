@@ -3,7 +3,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/gaussian_crf_factor.hpp>
+#include <sill/factor/crf/gaussian_crf_factor.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 
 #include <sill/macros_def.hpp>

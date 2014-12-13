@@ -1,5 +1,5 @@
 
-#include <sill/factor/log_reg_crf_factor.hpp>
+#include <sill/factor/crf/log_reg_crf_factor.hpp>
 
 #include <sill/macros_def.hpp>
 

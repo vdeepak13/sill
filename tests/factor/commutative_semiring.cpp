@@ -5,7 +5,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
-#include <sill/factor/commutative_semiring.hpp>
+#include <sill/factor/util/commutative_semiring.hpp>
 #include <sill/factor/table_factor.hpp>
 
 #include <boost/random/mersenne_twister.hpp>

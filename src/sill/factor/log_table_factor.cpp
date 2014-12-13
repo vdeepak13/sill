@@ -2,7 +2,7 @@
 
 #include <sill/math/logarithmic.hpp>
 #include <sill/base/universe.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/factor/log_table_factor.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/map.hpp>

@@ -9,7 +9,7 @@
 #include <sill/parallel/pthread_tools.hpp>
 #include <sill/parallel/timer.hpp>
 #include <sill/parallel/binned_scheduling_queue.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/parallel/object_allocator.hpp>
 #include <sill/inference/parallel/message_data.hpp>
 

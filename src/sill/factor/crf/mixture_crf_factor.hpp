@@ -1,7 +1,7 @@
 #ifndef SILL_MIXTURE_CRF_FACTOR_HPP
 #define SILL_MIXTURE_CRF_FACTOR_HPP
 
-#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/factor/crf/learnable_crf_factor.hpp>
 #include <sill/factor/mixture.hpp>
 #include <sill/optimization/hybrid_opt_vector.hpp>
 

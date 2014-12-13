@@ -8,7 +8,7 @@
 
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 
 #include "predicates.hpp"
 

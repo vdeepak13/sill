@@ -1,8 +1,8 @@
 #ifndef SILL_MIXTURE_EM_HPP
 #define SILL_MIXTURE_EM_HPP
 
-#include <sill/factor/factor_evaluator.hpp>
-#include <sill/factor/factor_mle_incremental.hpp>
+#include <sill/factor/util/factor_evaluator.hpp>
+#include <sill/factor/util/factor_mle_incremental.hpp>
 #include <sill/factor/mixture.hpp>
 #include <sill/learning/parameter/mixture_init.hpp>
 

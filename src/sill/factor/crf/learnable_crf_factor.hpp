@@ -1,7 +1,7 @@
 #ifndef SILL_LEARNABLE_CRF_FACTOR_HPP
 #define SILL_LEARNABLE_CRF_FACTOR_HPP
 
-#include <sill/factor/crf_factor.hpp>
+#include <sill/factor/crf/crf_factor.hpp>
 
 #include <sill/macros_def.hpp>
 

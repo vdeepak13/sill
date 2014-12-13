@@ -3,8 +3,8 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/base/universe.hpp>
-#include <sill/factor/log_reg_crf_factor.hpp>
-#include <sill/factor/table_crf_factor.hpp>
+#include <sill/factor/crf/log_reg_crf_factor.hpp>
+#include <sill/factor/crf/table_crf_factor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/crf/pwl_crf_learner.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>

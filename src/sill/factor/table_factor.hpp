@@ -14,9 +14,9 @@
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/global.hpp>
 #include <sill/factor/factor.hpp>
-#include <sill/factor/factor_evaluator.hpp>
-#include <sill/factor/factor_mle_incremental.hpp>
-#include <sill/factor/factor_sampler.hpp>
+#include <sill/factor/util/factor_evaluator.hpp>
+#include <sill/factor/util/factor_mle_incremental.hpp>
+#include <sill/factor/util/factor_sampler.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional.hpp>
 #include <sill/learning/dataset/finite_dataset.hpp>
@@ -1604,6 +1604,6 @@ namespace sill {
 
 #include <sill/macros_undef.hpp>
 
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 
 #endif // #ifndef SILL_TABLE_FACTOR_HPP

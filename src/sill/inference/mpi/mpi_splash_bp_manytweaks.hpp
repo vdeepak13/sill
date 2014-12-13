@@ -18,7 +18,7 @@
 #include <sill/mpi/mpi_consensus.hpp>
 #include <sill/inference/mpi/mpi_adapter.hpp>
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/math/gdl_enum.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/mutable_queue.hpp>

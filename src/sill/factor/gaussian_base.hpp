@@ -22,7 +22,7 @@ namespace sill {
    *
    * \ingroup factor_types
    */
-  class gaussian_factor : public factor {
+  class gaussian_base : public factor {
 
     // Public type declarations 
     //==========================================================================
@@ -54,13 +54,13 @@ namespace sill {
 
   protected:
     //! Default constructor
-    gaussian_factor() { }
+    gaussian_base() { }
 
     //! Initializes the given set of arguments
-    gaussian_factor(const vector_domain& vars) : args(vars) { }
+    gaussian_base(const vector_domain& vars) : args(vars) { }
 
     //! Initializes the given set of arguments
-    gaussian_factor(const vector_var_vector& vars)
+    gaussian_base(const vector_var_vector& vars)
       : args(vars.begin(), vars.end()) { }
 
     //! Assigns an index span to each variable in vars in an increasing order.
@@ -116,7 +116,7 @@ namespace sill {
         if (it == var_span.end()) {
           if (strict) {
             throw std::runtime_error
-              (std::string("gaussian_factor::indices(vars,ind,strict)") +
+              (std::string("gaussian_base::indices(vars,ind,strict)") +
                " called with some vars not included in this factor and" +
                " strict = true.");
           }
@@ -158,7 +158,7 @@ namespace sill {
         if (it == var_span.end()) {
           if (strict) {
             throw std::runtime_error
-              (std::string("gaussian_factor::indices(vars,ind,strict)") +
+              (std::string("gaussian_base::indices(vars,ind,strict)") +
                " called with some vars not included in this factor and" +
                " strict = true.");
           }
@@ -170,7 +170,7 @@ namespace sill {
       }
     }
 
-  }; // class gaussian_factor
+  }; // class gaussian_base
 
 }
 

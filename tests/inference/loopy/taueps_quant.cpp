@@ -29,7 +29,7 @@
 #include <sill/inference/loopy/blf_residual_splash_bp.hpp>
 
 
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/macros_def.hpp>
 
 

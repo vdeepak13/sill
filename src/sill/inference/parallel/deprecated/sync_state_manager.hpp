@@ -12,7 +12,7 @@
 // PRL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/parallel/timer.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/datastructures/mutable_queue.hpp>
 #include <sill/mpi/mpi_wrapper.hpp>
 

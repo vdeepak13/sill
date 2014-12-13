@@ -179,7 +179,7 @@ namespace sill {
     /**
      * The type which this factor f(Y,X) outputs to represent f(Y, X=x).
      * For finite Y, this will probably be table_factor;
-     * for vector Y, this will probably be gaussian_factor.
+     * for vector Y, this will probably be gaussian_base.
      */
     typedef typename crf_factor::output_factor_type output_factor_type;
 

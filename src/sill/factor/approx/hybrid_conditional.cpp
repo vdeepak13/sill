@@ -5,7 +5,7 @@
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/mixture.hpp>
 #include <sill/factor/nonlinear_gaussian.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 
 namespace sill {
 

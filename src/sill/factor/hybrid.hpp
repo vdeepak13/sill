@@ -4,9 +4,9 @@
 #include <sill/base/variable_utils.hpp>
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/factor/factor.hpp>
-#include <sill/factor/factor_evaluator.hpp>
-#include <sill/factor/factor_mle_incremental.hpp>
-#include <sill/factor/factor_sampler.hpp>
+#include <sill/factor/util/factor_evaluator.hpp>
+#include <sill/factor/util/factor_mle_incremental.hpp>
+#include <sill/factor/util/factor_sampler.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional.hpp>

@@ -3,7 +3,7 @@
 
 #include <sill/base/finite_assignment_iterator.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/learnable_crf_factor.hpp>
+#include <sill/factor/crf/learnable_crf_factor.hpp>
 #include <sill/optimization/hybrid_opt_vector.hpp>
 
 #include <sill/macros_def.hpp>

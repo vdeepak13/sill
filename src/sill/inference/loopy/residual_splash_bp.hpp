@@ -12,7 +12,7 @@
 
 // PRL Includes
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/norms.hpp>
+#include <sill/factor/util/norms.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
 #include <sill/inference/loopy/bp_convergence_measures.hpp>

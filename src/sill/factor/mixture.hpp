@@ -9,7 +9,7 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/moment_gaussian.hpp>
-#include <sill/factor/operations.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional/inplace.hpp>
 #include <sill/global.hpp>
