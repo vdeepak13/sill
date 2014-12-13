@@ -25,7 +25,7 @@ using namespace std;
 
 
 int main(int argc,char ** argv) {
-  cout << "Testing PRL mpi tools" << endl;
+  cout << "Testing SILL mpi tools" << endl;
 
   mpi_post_office mpi;
   

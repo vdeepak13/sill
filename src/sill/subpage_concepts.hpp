@@ -7,8 +7,8 @@
  *
  * \ref index "Back to Main Page"
  *
- * \section concepts_prl PRL Concepts
- * See the \ref group_concepts "PRL Concepts module" for a list of concepts
+ * \section concepts_prl SILL Concepts
+ * See the \ref group_concepts "SILL Concepts module" for a list of concepts
  *   and links to documentation.
  *
  * \section concepts_outside Concepts from Outside Libraries
@@ -25,7 +25,7 @@
  * - Imports all of 'boost::::concepts' in boost/graph/graph_concepts.hpp
  *    into prl.
  *
- * Concepts used in PRL:
+ * Concepts used in SILL:
  * - Graph<G>
  * - EdgeMutableGraph<G>
  * - AdjacencyGraph<G>
@@ -39,7 +39,7 @@
  * - Imports a bunch of concepts from pstade/oven/concepts.hpp into prl.
  * - Renames 'pstade::::oven' as 'range'
  *
- * Concepts used in PRL:
+ * Concepts used in SILL:
  * - ReadableForwardRange<Range>
  * - ReadableForwardRangeConvertible<Range, variable_h>
  * - SinglePassRange<Range>
@@ -59,7 +59,7 @@
  * See: prl/stl_concepts.hpp
  * - Imports a bunch of concepts from boost/concept_check.hpp into prl
  *
- * Concepts used in PRL: (NOTE: Some of these might belong elsewhere.)
+ * Concepts used in SILL: (NOTE: Some of these might belong elsewhere.)
  * - BinaryFunction<Op,T,T,T>
  * - DefaultConstructible<T>
  * - PairUniqueAssociativeContainer<Map>

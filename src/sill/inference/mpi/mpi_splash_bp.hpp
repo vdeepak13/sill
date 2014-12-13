@@ -11,7 +11,7 @@
 #include <sstream>
 #include <limits>
 
-// PRL Includes
+// SILL Includes
 #include <sill/base/stl_util.hpp>
 #include <sill/inference/interfaces.hpp>
 #include <sill/mpi/mpi_wrapper.hpp>

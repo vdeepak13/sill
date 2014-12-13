@@ -18,7 +18,7 @@
 // MPI Libraries
 #include <mpi.h>
 
-// PRL Includes
+// SILL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/mpi/mpi_wrapper.hpp>

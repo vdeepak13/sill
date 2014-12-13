@@ -30,7 +30,7 @@ namespace sill {
                       // and non-lifted
 
     FILETYPE_OTHER    // Any other format. Current parser defaults this to
-                      // the file created by the PRL serializer
+                      // the file created by the SILL serializer
   };
 
 

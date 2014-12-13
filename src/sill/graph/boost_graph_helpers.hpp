@@ -4,7 +4,7 @@
 /**
  * \file boost_graph_helper.hpp
  * This file contains a number of generic functions that convert BGL's 
- * free function calls to PRL graph member function calls.
+ * free function calls to SILL graph member function calls.
  */
 
 #include <utility>

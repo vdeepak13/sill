@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <limits>
 
-// PRL Includes
+// SILL Includes
 #include <sill/inference/interfaces.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/util/norms.hpp>

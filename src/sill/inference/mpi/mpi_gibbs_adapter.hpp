@@ -25,7 +25,7 @@
 #include <boost/iostreams/stream.hpp>
 
 
-// PRL Includes
+// SILL Includes
 #include <sill/serializable.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/util/norms.hpp>

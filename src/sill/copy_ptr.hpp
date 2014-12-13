@@ -163,7 +163,7 @@ namespace boost {
 
   /**
    * A traits declaration so the Boost library can infer the types
-   * associated with PRL pointers.
+   * associated with SILL pointers.
    */
   template <typename T>
   struct pointee<sill::copy_ptr<T> > { typedef T type; };

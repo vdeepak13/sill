@@ -22,7 +22,7 @@
 // Boost includes
 #include <boost/program_options.hpp>
 
-// PRL Includes
+// SILL Includes
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/canonical_table.hpp>
 
