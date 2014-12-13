@@ -48,6 +48,10 @@
    - marginal() => is_marginal(), standardize arg_vector, head_vector() etc.
    - get rid of hacks in the table_factor and dense_table
    - simplify the storage format of vector datasets
+   - implement pseudolikelihood for factor graphs
+     - possibly clean up factor graphs
+   - clean up the CRF factors, models, and learning
+   - improve the safety of *_network wrt factor mutations
    - logical_or -> bit_orx
    - reduce the memory footprint of table factors
    - strengthen the ordering of combine operations
