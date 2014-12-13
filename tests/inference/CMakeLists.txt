@@ -4,6 +4,7 @@ subdirs(
   mpi
   parallel
   sampling
+  variational
 )
 
 add_executable(markov_logic markov_logic.cpp)

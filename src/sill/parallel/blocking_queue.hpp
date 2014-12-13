@@ -110,7 +110,7 @@ namespace sill {
     /**
      * This function will block until the queue becomes empty
      * Returns true on success
-     * Returns false if the queue is no longer alove
+     * Returns false if the queue is no longer alive
     */
     bool wait_until_empty() {
       m_mutex.lock();
