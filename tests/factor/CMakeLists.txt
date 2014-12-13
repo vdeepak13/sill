@@ -1,7 +1,7 @@
 subdirs(random)
 
 add_executable(commutative_semiring commutative_semiring.cpp)
-add_executable(decomposable_fragment decomposable_fragment.cpp)
+add_executable(fragment fragment.cpp)
 add_executable(gaussian_crf_factor gaussian_crf_factor.cpp)
 add_executable(gaussian_factors gaussian_factors.cpp)
 add_executable(gaussian_sampling gaussian_sampling.cpp)
@@ -11,7 +11,7 @@ add_executable(nonlinear_gaussian nonlinear_gaussian.cpp)
 add_executable(table_factor table_factor.cpp)
 
 add_test(commutative_semiring commutative_semiring)
-add_test(decomposable_fragment decomposable_fragment)
+add_test(fragment fragment)
 add_test(gaussian_factors gaussian_factors)
 add_test(hybrid hybrid)
 add_test(mixture mixture)

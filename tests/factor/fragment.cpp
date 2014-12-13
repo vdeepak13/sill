@@ -4,7 +4,7 @@
 #include <boost/random/mersenne_twister.hpp>
 
 #include <sill/factor/canonical_gaussian.hpp>
-#include <sill/factor/decomposable_fragment.hpp>
+#include <sill/factor/fragment.hpp>
 #include <sill/factor/random/functional.hpp>
 #include <sill/factor/random/ising_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
@@ -19,8 +19,8 @@
 using namespace boost::unit_test;
 using namespace sill;
 
-template class decomposable_fragment<table_factor>;
-template class decomposable_fragment<canonical_gaussian>;
+template class fragment<table_factor>;
+template class fragment<canonical_gaussian>;
 
 void test_marginal(size_t m, size_t n) {
   assert(m * m >= 4); // we need at least 4 variables
@@ -38,7 +38,7 @@ void test_marginal(size_t m, size_t n) {
   shafer_shenoy<table_factor> ss(mn);
   ss.calibrate();
   ss.normalize();
-  decomposable_fragment<table_factor> df(ss.clique_beliefs());
+  fragment<table_factor> df(ss.clique_beliefs());
 
   // compute the corresponding decomposable model
   decomposable<table_factor> dm;
@@ -46,7 +46,7 @@ void test_marginal(size_t m, size_t n) {
 
   // compute the marginal over v0 and v3
   finite_domain v03 = make_domain(variables[0], variables[3]);
-  decomposable_fragment<table_factor> df03 = df.marginal(v03);
+  fragment<table_factor> df03 = df.marginal(v03);
   table_factor tf03 = df03.flatten();
   
   BOOST_CHECK(are_close(tf03, dm.marginal(v03), 1e-5));
