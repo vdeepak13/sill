@@ -6,7 +6,7 @@
 #include <boost/array.hpp>
 
 #include <sill/graph/undirected_graph.hpp>
-#include <sill/graph/min_degree_strategy.hpp>
+#include <sill/graph/algorithm/min_degree_strategy.hpp>
 #include <sill/model/junction_tree.hpp>
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(std::set<size_t>);

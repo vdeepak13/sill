@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/graph/directed_graph.hpp>
-#include <sill/graph/graph_traversal.hpp>
+#include <sill/graph/algorithm/graph_traversal.hpp>
 
 #include <vector>
 #include <algorithm>

@@ -3,7 +3,7 @@
 #include <boost/array.hpp>
 
 #include <sill/graph/undirected_graph.hpp>
-#include <sill/graph/tree_traversal.hpp>
+#include <sill/graph/algorithm/tree_traversal.hpp>
 
 struct write_edge_visitor {
   template <typename Graph>

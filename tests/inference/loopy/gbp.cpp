@@ -7,7 +7,7 @@
 #include <sill/factor/random/functional.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/graph/grid_graph.hpp>
+#include <sill/graph/special/grid_graph.hpp>
 
 #include <sill/inference/loopy/asynchronous_gbp.hpp>
 #include <sill/inference/loopy/asynchronous_gbp_pc.hpp>

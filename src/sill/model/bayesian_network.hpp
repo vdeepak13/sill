@@ -10,7 +10,7 @@
 #include <sill/model/bayesian_graph.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/model/model_functors.hpp>
-#include <sill/graph/graph_traversal.hpp>
+#include <sill/graph/algorithm/graph_traversal.hpp>
 #include <sill/graph/property_functors.hpp>
 
 #include <sill/range/transformed.hpp>

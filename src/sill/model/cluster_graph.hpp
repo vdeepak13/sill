@@ -9,10 +9,10 @@
 
 #include <sill/global.hpp>
 #include <sill/datastructure/set_index.hpp>
-#include <sill/graph/connected.hpp>
+#include <sill/graph/algorithm/test_connected.hpp>
+#include <sill/graph/algorithm/subgraph.hpp>
+#include <sill/graph/algorithm/test_tree.hpp>
 #include <sill/graph/property_functors.hpp>
-#include <sill/graph/subgraph.hpp>
-#include <sill/graph/test_tree.hpp>
 #include <sill/graph/undirected_graph.hpp>
 #include <sill/range/algorithm.hpp>
 #include <sill/range/concepts.hpp>
@@ -412,12 +412,12 @@ namespace sill {
 
     //! Returns true if the graph is connected
     bool connected() const {
-      return sill::is_connected(graph);
+      return sill::test_connected(graph);
     }
 
     //! Returns true if the cluster graph is a connected tree
     bool tree() const {
-      return num_edges() == num_vertices() - 1 && sill::is_connected(graph);
+      return num_edges() == num_vertices() - 1 && sill::test_connected(graph);
     }
 
     //! Returns true if the cluster graph satisfies

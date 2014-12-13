@@ -5,7 +5,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/graph/directed_multigraph.hpp>
-#include <sill/graph/graph_traversal.hpp>
+#include <sill/graph/algorithm/graph_traversal.hpp>
 
 #include <algorithm>
 #include <set>

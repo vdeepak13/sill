@@ -3,7 +3,7 @@
 
 #include <sill/graph/directed_graph.hpp>
 #include <sill/graph/directed_multigraph.hpp>
-#include <sill/graph/graph_traversal.hpp>
+#include <sill/graph/algorithm/graph_traversal.hpp>
 
 #include <boost/array.hpp>
 #include <boost/mpl/list.hpp>

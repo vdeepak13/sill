@@ -7,8 +7,8 @@
 #include <boost/array.hpp>
 
 #include <sill/graph/undirected_graph.hpp>
-#include <sill/graph/min_degree_strategy.hpp>
-#include <sill/graph/min_fill_strategy.hpp>
+#include <sill/graph/algorithm/min_degree_strategy.hpp>
+#include <sill/graph/algorithm/min_fill_strategy.hpp>
 #include <sill/model/learnt_junction_tree.hpp>
 
 

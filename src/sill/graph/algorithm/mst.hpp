@@ -4,9 +4,9 @@
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
 #include <boost/property_map/property_map.hpp>
 
-#include <sill/graph/index_map.hpp>
-#include <sill/graph/functor_property_map.hpp>
-#include <sill/graph/vertex_index.hpp>
+#include <sill/graph/algorithm/index_map.hpp>
+#include <sill/graph/algorithm/functor_property_map.hpp>
+#include <sill/graph/algorithm/vertex_index.hpp>
 #include <sill/stl_concepts.hpp>
 
 #include <sill/macros_def.hpp>
