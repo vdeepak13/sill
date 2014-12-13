@@ -784,7 +784,6 @@ namespace sill {
     //! \todo Stano: can we document this function more? Does it belong here?
     double bp_msg_derivative_ub(variable_type* x, variable_type* y) const;
 
-  #ifndef SWIG // std::pair<variable, table_factor> not supported at the moment
     /**
      * Unrolls the factor to be over a single variable new_v (created within
      * the given universe).
@@ -800,7 +799,6 @@ namespace sill {
      * @see create_indicator_factor, roll_up
      */
     std::pair<finite_variable*, table_factor > unroll(universe& u) const;
-  #endif
 
     /**
      * Rolls up a factor (which was unrolled to be over a single variable)

@@ -93,16 +93,14 @@ namespace sill {
     //! The record type of the factor
     typedef typename graphical_model<F>::record_type record_type;
 
-    //! The underlying graph type (needs to be public for SWIG)
+    //! The underlying graph type
     typedef junction_tree<variable_type*, F, F> jt_type;
 
-    // Graph types
-    // (we use the specific types here, so that we do not have manually
-    //  instantiate the jt_type template in SWIG)
-    typedef size_t vertex;
+    // Graph types (copied from junction_tree)
+    typedef size_t                  vertex;
     typedef undirected_edge<size_t> edge;
-    typedef F vertex_property;
-    typedef F edge_property;
+    typedef F                       vertex_property;
+    typedef F                       edge_property;
 
     // Graph iterators
     typedef typename jt_type::vertex_iterator    vertex_iterator;

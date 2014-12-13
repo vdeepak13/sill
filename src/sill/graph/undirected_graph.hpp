@@ -80,18 +80,11 @@ namespace sill {
     class in_edge_iterator;  //!< Iterator over incoming edges to a node
     class out_edge_iterator; //!< Iterator over outgoing edges from a node
 
-  #ifndef SWIG  
     //! Iterator over all vertices
     typedef map_key_iterator<vertex_data_map>   vertex_iterator;
 
     //! Iterator over neighbors of a single vertex
     typedef map_key_iterator<edge_property_map> neighbor_iterator;
-  #else
-    // It's simpler if SWIG believes that vertex iterators are member classes,
-    // so that we do not have to tell it about map_key_iterator
-    class vertex_iterator;
-    class neighbor_iterator;
-  #endif
 
     // Constructors and destructors
     //==========================================================================

@@ -127,20 +127,17 @@ namespace sill {
     //! The next vertex id
     size_t next_vertex;
     
+    //! the underlying graph type
+    typedef directed_graph<size_t, vertex_info, edge_info> graph_type;
+    
     // Public type declarations
     // =========================================================================
   public:
-
-    //! the underlying graph type (needs to be public for SWIG)
-    typedef directed_graph<size_t, vertex_info, edge_info> graph_type;
-    
     // Graph types
-    // (we use the specific types here, so that we do not have manually
-    //  instantiate the graph_type template in SWIG)
-    typedef size_t vertex;
+    typedef size_t                vertex;
     typedef directed_edge<size_t> edge;
-    typedef VertexProperty vertex_property;
-    typedef EdgeProperty edge_property;
+    typedef VertexProperty        vertex_property;
+    typedef EdgeProperty          edge_property;
 
     // Graph iterators
     typedef typename graph_type::vertex_iterator    vertex_iterator;

@@ -95,16 +95,6 @@ namespace sill {
     return g.get_edge(u, v);
   }
 
-  /* Conflicts with SWIG declaration
-  template <typename G>
-  std::pair<typename G::out_edge_iterator,
-	    typename G::out_edge_iterator>
-  edge_range(typename G::vertex u,
-	     typename G::vertex v, const G& g, typename G::bgl* = 0){
-    return g.edges(u, v);
-  }
-  */
-  
   // Modification
   ///////////////
   template <typename G>

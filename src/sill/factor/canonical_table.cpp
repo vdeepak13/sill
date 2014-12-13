@@ -192,7 +192,6 @@ namespace sill {
   }
 
 
-  #ifndef SWIG // std::pair<variable, canonical_table> not supported at the moment
   std::pair<finite_variable*, canonical_table >
   canonical_table::unroll(universe& u) const {
     size_t new_v_size = 1;
@@ -205,7 +204,7 @@ namespace sill {
       (new_args, std::vector<result_type>(values().first, values().second));
     return std::make_pair(new_v, newf);
   }
-  #endif
+
 
   canonical_table
   canonical_table::roll_up(const finite_var_vector& orig_arg_list) const {

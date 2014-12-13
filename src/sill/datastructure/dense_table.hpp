@@ -219,7 +219,6 @@ namespace sill {
       return std::make_pair(elts.begin(), elts.end());
     }
 
-  #ifndef SWIG
     //! Returns the index associated with an iterator position
     index_type index(const_iterator it) const {
       assert(it >= begin() && it < end());
@@ -246,7 +245,6 @@ namespace sill {
       return std::make_pair(index_iterator(&shape_, &restrict_map),
                             index_iterator());
     }
-    #endif
 
     //! implements Table::operator()
     const T& operator()(const index_type& i) const {

@@ -32,12 +32,10 @@ namespace sill {
     //! The type of domain used by this graph
     typedef std::set<Node> domain_type;
     
-    typedef undirected_edge< Node > edge;
-    // unfortunately, writing "typedef typename base::edge edge" makes it
-    // difficult to properly detect the underlying type in SWIG
+    typedef undirected_edge<Node> edge;
 
     //! The base class
-    typedef undirected_graph< Node, VertexProperty, EdgeProperty > base;
+    typedef undirected_graph<Node, VertexProperty, EdgeProperty> base;
 
     using base::make_clique;
 

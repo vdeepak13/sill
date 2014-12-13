@@ -231,18 +231,14 @@ namespace sill {
     typedef impl::crf_graph_vertex_info<output_variable_type,
                                         input_variable_type,
                                         VertexProperty> vertex_info;
-
-  public:
-
-    //! The underlying graph type (needs to be public for SWIG)
+    
     typedef undirected_graph<size_t, vertex_info, void_> graph_type;
 
+  public:
     // Graph types
-    // (We use the specific types here, so that we do not have manually
-    //  instantiate the graph_type template in SWIG.)
-    typedef typename graph_type::vertex          vertex;
-    typedef typename graph_type::edge            edge;
-    typedef VertexProperty vertex_property;
+    typedef typename graph_type::vertex vertex;
+    typedef typename graph_type::edge   edge;
+    typedef VertexProperty              vertex_property;
 
     // Graph iterators
     typedef typename graph_type::vertex_iterator    vertex_iterator;
