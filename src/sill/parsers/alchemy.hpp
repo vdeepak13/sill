@@ -13,7 +13,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/model/lifted_factor_graph_model.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/parsers/string_functions.hpp>
@@ -26,7 +26,7 @@ namespace sill {
    * Print a single factor as a single line of text in the alchemy
    * factor format.
    */
-  void print_alchemy(const log_table_factor & f,
+  void print_alchemy(const canonical_table & f,
                      std::ostream& out){
     bool first_line = true;
     foreach(const finite_variable* v, f.arg_vector()){
@@ -84,13 +84,13 @@ namespace sill {
    * that the entries in the file are in the same order that they
    * should be in the linear table representing the factor.
    */
-  void parse_alchemy_factor(log_table_factor& factor,
+  void parse_alchemy_factor(canonical_table& factor,
                       std::vector<size_t> &weight,
                      const std::string& line){
-  // NOTE: the code below uses log_table_factor::table(). this code will only
-    // work with log_table_factor and not table_factor
+  // NOTE: the code below uses canonical_table::table(). this code will only
+    // work with canonical_table and not table_factor
     
-    typedef log_table_factor factor_type;
+    typedef canonical_table factor_type;
     typedef factor_type::table_type table_type;
 
     table_type& tbl = factor.table();

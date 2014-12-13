@@ -157,7 +157,7 @@ namespace sill {
             if (typeid(F) == typeid(table_factor)) {
               *table_iter = std::max(value, REGULARIZATION);
             }
-            else if (typeid(F) == typeid(log_table_factor)) {
+            else if (typeid(F) == typeid(canonical_table)) {
               *table_iter = std::log(std::max(value, REGULARIZATION));
             }
             table_iter++;

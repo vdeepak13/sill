@@ -18,7 +18,7 @@
 #include <sill/factor/util/norms.hpp>
 #include <sill/math/gdl_enum.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/datastructure/mutable_queue.hpp>
 #include <sill/model/factor_graph_partitioning.hpp>
 #include <sill/datastructure/circular_queue.hpp>

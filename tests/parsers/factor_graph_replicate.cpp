@@ -5,14 +5,14 @@
 #include <map>
 #include <sill/parsers/detect_file_format.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/parsers/alchemy.hpp>
 #include <sill/macros_def.hpp>
 
 using namespace std;
 using namespace sill;
 
-typedef factor_graph_model<log_table_factor> factor_graph_model_type;
+typedef factor_graph_model<canonical_table> factor_graph_model_type;
 typedef factor_graph_model_type::factor_type factor_type;
 
 const double SPLITPROB = 0.3;
@@ -50,8 +50,8 @@ int main(int argc, const char* argv[]) {
     }
   }
   
-  std::vector<log_table_factor> new_factors;
-  foreach(const log_table_factor &f, fg.factors()) {
+  std::vector<canonical_table> new_factors;
+  foreach(const canonical_table &f, fg.factors()) {
     // check if there are any changes to this factor
     bool changes = false;
     foreach(finite_variable* v, f.arguments()) {
@@ -61,7 +61,7 @@ int main(int argc, const char* argv[]) {
       }
     }
     if (changes) {
-      log_table_factor newf = f;
+      canonical_table newf = f;
       newf.subst_args(vmap);
       new_factors.push_back(newf);
     }

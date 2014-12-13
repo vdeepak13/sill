@@ -12,7 +12,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/bayesian_network.hpp>
 #include <sill/factor/table_factor.hpp>
-//#include <sill/factor/log_table_factor.hpp>
+//#include <sill/factor/canonical_table.hpp>
 #include <sill/macros_def.hpp>
 
 namespace sill {
@@ -37,7 +37,7 @@ namespace sill {
   bool parse_bn(universe& u, bayesian_network<table_factor>& bn, 
                 const std::string& filename) {
     // NOTE: the code below uses table_factor::table(). this code will only
-    // work with table_factor and not log_table_factor
+    // work with table_factor and not canonical_table
     typedef factor_type::table_type table_type;
     
     // Open an input file stream

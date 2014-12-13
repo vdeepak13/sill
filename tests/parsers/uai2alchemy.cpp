@@ -25,7 +25,7 @@
 
 // PRL Includes
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 
 #include <sill/parsers/detect_file_format.hpp>
 
@@ -40,7 +40,7 @@ namespace po = boost::program_options;
 using namespace std;
 using namespace sill;
 
-typedef factor_graph_model<log_table_factor>   factor_graph_type;
+typedef factor_graph_model<canonical_table>   factor_graph_type;
 typedef factor_graph_type::factor_type         factor_type;
 typedef factor_graph_type::vertex_type         vertex_type;
 typedef factor_graph_type::variable_type       variable_type;

@@ -1,5 +1,5 @@
-#ifndef SILL_LOG_TABLE_FACTOR_HPP
-#define SILL_LOG_TABLE_FACTOR_HPP
+#ifndef SILL_CANONICAL_TABLE_HPP
+#define SILL_CANONICAL_TABLE_HPP
 
 #include <map>
 #include <algorithm>
@@ -32,7 +32,7 @@ namespace sill {
    * \ingroup factor_types
    * \see Factor
    */
-  class log_table_factor : public factor {
+  class canonical_table : public factor {
  
     // Public type declarations
     //==========================================================================
@@ -121,29 +121,29 @@ namespace sill {
     void load(iarchive & ar);
 
     //! Default constructor for a factor with no arguments, i.e.,  a constant.
-    explicit log_table_factor(double default_value = 0.0) {
+    explicit canonical_table(double default_value = 0.0) {
       initialize(this->arguments(), result_type(default_value));
     }
 
-    explicit log_table_factor(result_type default_value) {
+    explicit canonical_table(result_type default_value) {
       initialize(this->arguments(), default_value);
     }
 
     //! Creates a factor with the specified arguments. The table
     //! geometry will respect the specified order of arguments.
-    log_table_factor(const forward_range<finite_variable*>& arguments,
+    canonical_table(const forward_range<finite_variable*>& arguments,
                      result_type default_value)
       : args(boost::begin(arguments), boost::end(arguments)) {
       initialize(arguments, default_value);
     }
 
-    explicit log_table_factor(const finite_var_vector& arguments,
+    explicit canonical_table(const finite_var_vector& arguments,
                           result_type default_value = 0.0)
       : args(arguments.begin(), arguments.end()) {
       initialize(arguments, default_value);
     }
 
-    log_table_factor(const finite_var_vector& arguments,
+    canonical_table(const finite_var_vector& arguments,
                      const std::vector<result_type>& values)
       : args(arguments.begin(), arguments.end()) {
       initialize(arguments, 0);
@@ -151,13 +151,13 @@ namespace sill {
       sill::copy(values, table_data.begin());
     }
 
-    log_table_factor(const log_table_factor& factor) {
+    canonical_table(const canonical_table& factor) {
       (*this) = factor;
     }
 
 
     //! Conversion from a table_factor.
-    explicit log_table_factor(const table_factor& f)
+    explicit canonical_table(const table_factor& f)
       : args(f.arguments()), arg_seq(f.arg_vector()),
         table_data(f.table().shape()) {
       var_index.clear();
@@ -179,7 +179,7 @@ namespace sill {
 //     }
 
     //! Exchanges the content of two factors
-    void swap(log_table_factor& f);
+    void swap(canonical_table& f);
 
     // Accessors and comparison operators
     //==========================================================================
@@ -355,10 +355,10 @@ namespace sill {
     }
 
     //! Returns true if the two factors have the same argument sets and values
-    bool operator==(const log_table_factor& other) const;
+    bool operator==(const canonical_table& other) const;
 
     //! Assignment operator
-    log_table_factor& operator=(const log_table_factor& other) {
+    canonical_table& operator=(const canonical_table& other) {
       args = other.args;
       var_index = other.var_index;
       arg_seq = other.arg_seq;
@@ -367,14 +367,14 @@ namespace sill {
     }
 
     //! Returns true if the two factors do not have the same arguments or values
-    bool operator!=(const log_table_factor& other) const {
+    bool operator!=(const canonical_table& other) const {
       return !(*this == other);
     }
 
 //     //! Returns true if *this precedes other in the lexicographical ordering
 //     //! The lexicographical ordering first compares the arguments and then
 //     //! the values in the natural order of the arguments.
-//     bool operator<(const log_table_factor& other) const;
+//     bool operator<(const canonical_table& other) const;
 
     /**
      * Applies the supplied functor to all values of the factor.  Note
@@ -400,7 +400,7 @@ namespace sill {
      * B(i) = sum_{j,k} A(i,j,k)
      */
     template <typename AggOp>
-    log_table_factor collapse(AggOp agg_op, 
+    canonical_table collapse(AggOp agg_op, 
                               result_type initialvalue,
                               const finite_domain& retained) const {
       // If the retained arguments contain the arguments of this factor,
@@ -409,7 +409,7 @@ namespace sill {
   
       // Initialize the table with the initial value
       finite_domain newargs = set_intersect(arguments(), retained);
-      log_table_factor factor(newargs, initialvalue);
+      canonical_table factor(newargs, initialvalue);
   
       factor.table_data.aggregate(table(),
                              make_dim_map(factor.arg_seq, var_index),
@@ -432,7 +432,7 @@ namespace sill {
      */
     template <typename AggOp>
     void collapse(AggOp agg_op, result_type initialvalue,
-                  const finite_domain& retained, log_table_factor& f) const {
+                  const finite_domain& retained, canonical_table& f) const {
       finite_var_vector newargs;
       foreach(finite_variable* v, arg_seq)
         if (retained.count(v) != 0)
@@ -477,20 +477,20 @@ namespace sill {
     }
   
     //! implements Factor::restrict
-    log_table_factor restrict(const finite_assignment& a) const;
+    canonical_table restrict(const finite_assignment& a) const;
 
     //! implements Factor::subst_args
     //! \todo Strengthen the requirement on var_map
-    log_table_factor& subst_args(const finite_var_map& var_map);
+    canonical_table& subst_args(const finite_var_map& var_map);
 
     //! implements DistributionFactor::marginal
-    log_table_factor marginal(const finite_domain& retain) const {
+    canonical_table marginal(const finite_domain& retain) const {
       return collapse(std::plus<result_type>(), 0, retain);
     }
 
     //! Computes marginal, storing result in factor f.
     //! If f is pre-allocated, this avoids reallocation.
-    void marginal(log_table_factor& f, const finite_domain& retain) const;
+    void marginal(canonical_table& f, const finite_domain& retain) const;
 
     //! implements DistributionFactor::is_normalizable
     bool is_normalizable() const {
@@ -503,17 +503,17 @@ namespace sill {
     }
 
     //! Normalizes the factor in-place
-    log_table_factor& normalize();
+    canonical_table& normalize();
 
     //! Computes the maximum for each assignment to the given variables
-    log_table_factor maximum(const finite_domain& retain) const {
+    canonical_table maximum(const finite_domain& retain) const {
       return collapse(sill::maximum<result_type>(), 
                       result_type(0.0),
                       retain);
     }
 
     //! Computes the minimum for each assignment to the given variables
-    log_table_factor minimum(const finite_domain& retain) const {
+    canonical_table minimum(const finite_domain& retain) const {
       return collapse(sill::minimum<result_type>(), 
                       result_type(std::numeric_limits<double>::infinity()),
                       retain);
@@ -556,7 +556,7 @@ namespace sill {
      * @param f the factor to which the KL divergence is computed
      * @return  the KL divergence (in natural logarithmic units)
      */
-    double relative_entropy(const log_table_factor& f) const {
+    double relative_entropy(const canonical_table& f) const {
       assert(this->arguments() == f.arguments());
       double res = combine_collapse(*this, f, kld_operator<result_type>(), 
                                     std::plus<result_type>(), 0.0);
@@ -564,9 +564,9 @@ namespace sill {
       return res;
     }
 
-    double js_divergence(const log_table_factor& f) const {
+    double js_divergence(const canonical_table& f) const {
       assert(this->arguments() == f.arguments());
-      log_table_factor m = combine(*this, f, std::plus<result_type>());
+      canonical_table m = combine(*this, f, std::plus<result_type>());
       foreach(result_type& r, m.table_data) {
         r /= 2.0;
       }
@@ -576,7 +576,7 @@ namespace sill {
       return res;
       
     }
-    double cross_entropy(const log_table_factor& f) const {
+    double cross_entropy(const canonical_table& f) const {
       assert(this->arguments() == f.arguments());
       return combine_collapse(*this, f, cross_entropy_operator<double>(), 
                             std::plus<double>(), 0.0);
@@ -605,7 +605,7 @@ namespace sill {
      * @return pair: newly created variable, new table factor
      * @see create_indicator_factor, roll_up
      */
-    std::pair<finite_variable*, log_table_factor > unroll(universe& u) const;
+    std::pair<finite_variable*, canonical_table > unroll(universe& u) const;
 
     /**
      * Rolls up a factor (which was unrolled to be over a single variable)
@@ -619,7 +619,7 @@ namespace sill {
      * \todo Change this so that orig_vars is a general range--but figure out
      *       how to assert that the range is ordered (and isn't just a set).
      */
-    log_table_factor
+    canonical_table
     roll_up(const finite_var_vector& orig_arg_list) const;
 
     // Combine and collapse operations
@@ -627,11 +627,11 @@ namespace sill {
     
     //! Combines the two factors
     template <typename CombineOp>
-    static log_table_factor
-    combine(const log_table_factor& x, const log_table_factor& y, CombineOp op) {
+    static canonical_table
+    combine(const canonical_table& x, const canonical_table& y, CombineOp op) {
       finite_domain arguments = set_union(x.arguments(), y.arguments());
 
-      log_table_factor factor(arguments, result_type());
+      canonical_table factor(arguments, result_type());
       factor.table_data.join(x.table(), y.table(),
                         make_dim_map(x.arg_seq, factor.var_index),
                         make_dim_map(y.arg_seq, factor.var_index),
@@ -644,7 +644,7 @@ namespace sill {
 
     //! Combines two factors and collapse
     template <typename CombineOp, typename AggOp>
-    static double combine_collapse(const log_table_factor& x, const log_table_factor& y,
+    static double combine_collapse(const canonical_table& x, const canonical_table& y,
                                  CombineOp combine_op, AggOp agg_op, 
                                  result_type initialvalue) {
       concept_assert((BinaryFunction<CombineOp,result_type,result_type,result_type>));
@@ -671,7 +671,7 @@ namespace sill {
      */
     template <typename Pred>
     static boost::optional< std::pair<result_type, result_type> >
-    combine_find(const log_table_factor& x, const log_table_factor& y, Pred predicate) {
+    combine_find(const canonical_table& x, const canonical_table& y, Pred predicate) {
       concept_assert((BinaryPredicate<Pred, result_type, result_type>));
       var_index_map var_index = make_index_map(set_union(x.arguments(), y.arguments()));
       return dense_table<result_type>::join_find(x.table(), y.table(),
@@ -691,110 +691,110 @@ namespace sill {
      *  i.e. 
      *  A += B
      *  will perform the operation A(i,j,k...) += B(i,j,k,...)
-     *  The resulting log_table_factor will have arguments union(arg(A), arg(B))
+     *  The resulting canonical_table will have arguments union(arg(A), arg(B))
      */
-    log_table_factor& operator+=(const log_table_factor& y);
+    canonical_table& operator+=(const canonical_table& y);
     
     /** Elementwise subtraction of two table factors. 
      *  i.e. 
      *  A -= B
      *  will perform the operation A(i,j,k...) -= B(i,j,k,...)
-     *  The resulting log_table_factor will have arguments union(arg(A), arg(B))
+     *  The resulting canonical_table will have arguments union(arg(A), arg(B))
      */
-    log_table_factor& operator-=(const log_table_factor& y);
+    canonical_table& operator-=(const canonical_table& y);
 
 
     /** Elementwise multiplication of two table factors. 
      *  i.e. 
      *  A *= B
      *  will perform the operation A(i,j,k...) *= B(i,j,k,...)
-     *  The resulting log_table_factor will have arguments union(arg(A), arg(B))
+     *  The resulting canonical_table will have arguments union(arg(A), arg(B))
      */
-    log_table_factor& operator*=(const log_table_factor& y);
+    canonical_table& operator*=(const canonical_table& y);
      
     /** Elementwise division of two table factors. 
      *  i.e. 
      *  A /= B
      *  will perform the operation A(i,j,k...) /= B(i,j,k,...)
-     *  The resulting log_table_factor will have arguments union(arg(A), arg(B))
+     *  The resulting canonical_table will have arguments union(arg(A), arg(B))
      */
-    log_table_factor& operator/=(const log_table_factor& y);
+    canonical_table& operator/=(const canonical_table& y);
   
       /** Elementwise logical AND of two table factors. 
      *  i.e. 
      *  A.logical_and(B)
      *  will perform the operation A(i,j,k...) = A(i,j,k...) && B(i,j,k,...)
-     *  The resulting log_table_factor will have arguments union(arg(A), arg(B))
+     *  The resulting canonical_table will have arguments union(arg(A), arg(B))
      */
-    log_table_factor& logical_and(const log_table_factor& y);
+    canonical_table& logical_and(const canonical_table& y);
   
       /** Elementwise logical OR of two table factors. 
      *  i.e. 
      *  A.logical_or(B)
      *  will perform the operation A(i,j,k...) = A(i,j,k...) || B(i,j,k,...)
-     *  The resulting log_table_factor will have arguments union(arg(A), arg(B))
+     *  The resulting canonical_table will have arguments union(arg(A), arg(B))
      */
-    log_table_factor& logical_or(const log_table_factor& y);
+    canonical_table& logical_or(const canonical_table& y);
     /** Elementwise maximum of two table factors. 
      *  i.e. 
      *  A.elementwise_max(B)
      *  will perform the operation A(i,j,k...) = max(A(i,j,k,...), B(i,j,k,...))
-     *  The resulting log_table_factor will have arguments union(arg(A), arg(B))
+     *  The resulting canonical_table will have arguments union(arg(A), arg(B))
      */
-    log_table_factor& max(const log_table_factor& y);
+    canonical_table& max(const canonical_table& y);
 
     /** Elementwise minimum of two table factors. 
      *  i.e. 
      *  A.elementwise_min(B)
      *  will perform the operation A(i,j,k...) = min(A(i,j,k,...), B(i,j,k,...))
-     *  The resulting log_table_factor will have arguments union(arg(A), arg(B))
+     *  The resulting canonical_table will have arguments union(arg(A), arg(B))
      */
-    log_table_factor& min(const log_table_factor& y);
+    canonical_table& min(const canonical_table& y);
 
-  }; // class log_table_factor
+  }; // class canonical_table
 
 
 
 // Free functions
 //============================================================================
   //! Writes a human-readable representation of the table factor
-  //! \relates log_table_factor
-  std::ostream& operator<<(std::ostream& out, const log_table_factor& f);
+  //! \relates canonical_table
+  std::ostream& operator<<(std::ostream& out, const canonical_table& f);
 
   //! Returns the L1 distance between two factors
   
-  double norm_1(const log_table_factor& x, const log_table_factor& y);
+  double norm_1(const canonical_table& x, const canonical_table& y);
 
   //! Returns the L-infinity distance between two factors
   
-  double norm_inf(const log_table_factor& x, const log_table_factor& y);
+  double norm_inf(const canonical_table& x, const canonical_table& y);
 
   //! Returns the L-infinity distance between two factors in log space
   
-  double norm_inf_log(const log_table_factor& x,
-          const log_table_factor& y);
+  double norm_inf_log(const canonical_table& x,
+          const canonical_table& y);
 
   //! Returns the L1 distance between two factors in log space
   
-  double norm_1_log(const log_table_factor& x,
-          const log_table_factor& y);
+  double norm_1_log(const canonical_table& x,
+          const canonical_table& y);
 
 
   //! Returns \f$(1-a)f_1 + a f_2\f$
   
-  log_table_factor weighted_update(const log_table_factor& f1,
-                                      const log_table_factor& f2,
+  canonical_table weighted_update(const canonical_table& f1,
+                                      const canonical_table& f2,
                                       double a);
 
   //! Returns \f$f^a\f$
   
-  log_table_factor pow(const log_table_factor& f, double a);
+  canonical_table pow(const canonical_table& f, double a);
 
   //! Returns an assignment that achieves the maximum value
-  finite_assignment arg_max(const log_table_factor& f);
+  finite_assignment arg_max(const canonical_table& f);
 
   //! Returns an assignment that achieves the minimum value
-  finite_assignment arg_min(const log_table_factor& f);
+  finite_assignment arg_min(const canonical_table& f);
 
   /**
    * Constructs a dense table factor filled by the given value vector.
@@ -805,12 +805,12 @@ namespace sill {
    *                val_vec = <1,2,3,4>, then this sets table<x1=0,x2=0> = 1,
    *                table<x1=1,x2=0> = 2, table<x1=0,x2=1> = 3,
    *                table<x1=1,x2=1> = 4.
-   * \relates log_table_factor
+   * \relates canonical_table
    */
   template <typename Range>
-  log_table_factor make_dense_log_table_factor(const finite_var_vector& arguments,
+  canonical_table make_dense_canonical_table(const finite_var_vector& arguments,
                                  const Range& values) {
-    log_table_factor factor(arguments, 0);
+    canonical_table factor(arguments, 0);
     assert(values.size() == factor.size());
     sill::copy(values, boost::begin(factor.values()));
     return factor;
@@ -822,79 +822,79 @@ namespace sill {
   /** Elementwise addition of two table factors. 
    *   X = A + B
    *   will perform the operation X(i,j,k...) = A(i,j,k...) + B(i,j,k,...)
-   *   The resulting log_table_factor will have arguments union(arg(A), arg(B))
+   *   The resulting canonical_table will have arguments union(arg(A), arg(B))
    */
-  inline log_table_factor operator+(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine(x, y, std::plus<log_table_factor::result_type>());
+  inline canonical_table operator+(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine(x, y, std::plus<canonical_table::result_type>());
   }
   
   /** Elementwise subtraction of two table factors. 
    *   X = A - B
    *   will perform the operation X(i,j,k...) = A(i,j,k...) - B(i,j,k,...)
-   *   The resulting log_table_factor will have arguments union(arg(A), arg(B))
+   *   The resulting canonical_table will have arguments union(arg(A), arg(B))
    */
-  inline log_table_factor operator-(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine(x, y, std::minus<log_table_factor::result_type>());
+  inline canonical_table operator-(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine(x, y, std::minus<canonical_table::result_type>());
   }
   
   /** Elementwise multiplication of two table factors. 
    *   X = A * B
    *   will perform the operation X(i,j,k...) = A(i,j,k...) * B(i,j,k,...)
-   *   The resulting log_table_factor will have arguments union(arg(A), arg(B))
+   *   The resulting canonical_table will have arguments union(arg(A), arg(B))
    */
-  inline log_table_factor operator*(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine(x, y, 
-                              std::multiplies<log_table_factor::result_type>());
+  inline canonical_table operator*(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine(x, y, 
+                              std::multiplies<canonical_table::result_type>());
   }
   
   /** Elementwise division of two table factors. 
    *   X = A / B
    *   will perform the operation X(i,j,k...) = A(i,j,k...) / B(i,j,k,...)
-   *   The resulting log_table_factor will have arguments union(arg(A), arg(B))
+   *   The resulting canonical_table will have arguments union(arg(A), arg(B))
    */
-  inline log_table_factor operator/(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine(x, y, 
-                              safe_divides<log_table_factor::result_type>());
+  inline canonical_table operator/(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine(x, y, 
+                              safe_divides<canonical_table::result_type>());
   }
   
   /** Elementwise logical AND of two table factors. 
    *   X = A && B
    *   will perform the operation X(i,j,k...) = A(i,j,k...) && B(i,j,k,...)
-   *   The resulting log_table_factor will have arguments union(arg(A), arg(B))
+   *   The resulting canonical_table will have arguments union(arg(A), arg(B))
    */
-  inline log_table_factor operator&&(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine(x, y, 
-                              logical_and<log_table_factor::result_type>());
+  inline canonical_table operator&&(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine(x, y, 
+                              logical_and<canonical_table::result_type>());
   }
   
   /** Elementwise logical OR of two table factors. 
    *   X = A || B
    *   will perform the operation X(i,j,k...) = A(i,j,k...) || B(i,j,k,...)
-   *   The resulting log_table_factor will have arguments union(arg(A), arg(B))
+   *   The resulting canonical_table will have arguments union(arg(A), arg(B))
    */
-  inline log_table_factor operator||(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine(x, y, 
-                              logical_or<log_table_factor::result_type>());
+  inline canonical_table operator||(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine(x, y, 
+                              logical_or<canonical_table::result_type>());
   }
 
   /** Elementwise max of two table factors. 
    *   X = elmentwise_max(A, B)
    *   will perform the operation X(i,j,k...) = max(A(i,j,k...), B(i,j,k,...))
-   *   The resulting log_table_factor will have arguments union(arg(A), arg(B))
+   *   The resulting canonical_table will have arguments union(arg(A), arg(B))
    */
-  inline log_table_factor max(const log_table_factor& x, 
-                              const log_table_factor& y) {
-    return log_table_factor::combine(x, y, maximum<log_table_factor::result_type>());
+  inline canonical_table max(const canonical_table& x, 
+                              const canonical_table& y) {
+    return canonical_table::combine(x, y, maximum<canonical_table::result_type>());
   }
   
   /** Elementwise min of two table factors. 
    *   X = elmentwise_min(A, B)
    *   will perform the operation X(i,j,k...) = min(A(i,j,k...), B(i,j,k,...))
-   *   The resulting log_table_factor will have arguments union(arg(A), arg(B))
+   *   The resulting canonical_table will have arguments union(arg(A), arg(B))
    */
-  inline log_table_factor min(const log_table_factor& x, 
-                              const log_table_factor& y) {
-    return log_table_factor::combine(x, y, minimum<log_table_factor::result_type>());
+  inline canonical_table min(const canonical_table& x, 
+                              const canonical_table& y) {
+    return canonical_table::combine(x, y, minimum<canonical_table::result_type>());
   }
 
 } // namespace sill

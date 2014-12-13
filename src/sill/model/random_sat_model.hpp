@@ -10,7 +10,7 @@
 #include <sill/base/universe.hpp>
 #include <sill/math/random.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/model/factor_graph_model.hpp>
 
 #include <sill/macros_def.hpp>
