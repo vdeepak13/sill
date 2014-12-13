@@ -1,5 +1,5 @@
-#ifndef SILL_TEST_TREE_HPP
-#define SILL_TEST_TREE_HPP
+#ifndef SILL_TEST_CYCLIC_HPP
+#define SILL_TEST_CYCLIC_HPP
 
 #include <sill/datastructure/mutable_queue.hpp>
 

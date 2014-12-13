@@ -10,7 +10,7 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/util/arguments_functor.hpp>
-#include <sill/graph/tree_traversal.hpp>
+#include <sill/graph/algorithm/tree_traversal.hpp>
 
 #include <sill/model/interfaces.hpp>
 #include <sill/model/cluster_graph.hpp>

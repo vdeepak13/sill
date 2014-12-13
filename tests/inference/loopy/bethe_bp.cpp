@@ -6,7 +6,7 @@
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/graph/grid_graph.hpp>
+#include <sill/graph/special/grid_graph.hpp>
 #include <sill/inference/loopy/asynchronous_bethe_bp.hpp>
 #include <sill/inference/loopy/residual_bethe_bp.hpp>
 #include <sill/model/markov_network.hpp>

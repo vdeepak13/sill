@@ -5,11 +5,11 @@
 #include <functional>
 #include <set>
 
-#include <sill/graph/grid_graph.hpp>
+#include <sill/graph/special/grid_graph.hpp>
 #include <sill/stl_io.hpp>
-#include <sill/graph/triangulation.hpp>
-#include <sill/graph/min_degree_strategy.hpp>
-#include <sill/graph/min_fill_strategy.hpp>
+#include <sill/graph/algorithm/triangulation.hpp>
+#include <sill/graph/algorithm/min_degree_strategy.hpp>
+#include <sill/graph/algorithm/min_fill_strategy.hpp>
 #include <sill/graph/undirected_graph.hpp>
 
 #include <sill/macros_def.hpp>

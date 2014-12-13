@@ -5,7 +5,7 @@
 #include <sill/factor/concepts.hpp>
 
 #include <sill/graph/bidirectional.hpp>
-#include <sill/graph/min_fill_strategy.hpp>
+#include <sill/graph/algorithm/min_fill_strategy.hpp>
 #include <sill/model/junction_tree.hpp>
 #include <sill/model/interfaces.hpp>
 

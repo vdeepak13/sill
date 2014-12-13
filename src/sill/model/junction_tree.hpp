@@ -10,13 +10,13 @@
 #include <sill/global.hpp>
 #include <sill/range/algorithm.hpp>
 #include <sill/datastructure/set_index.hpp>
+#include <sill/graph/algorithm/mst.hpp>
+#include <sill/graph/algorithm/subgraph.hpp>
+#include <sill/graph/algorithm/tree_traversal.hpp>
+#include <sill/graph/algorithm/triangulation.hpp>
 #include <sill/graph/concepts.hpp>
-#include <sill/graph/undirected_graph.hpp>
 #include <sill/graph/property_functors.hpp>
-#include <sill/graph/tree_traversal.hpp>
-#include <sill/graph/triangulation.hpp>
-#include <sill/graph/mst.hpp>
-#include <sill/graph/subgraph.hpp>
+#include <sill/graph/undirected_graph.hpp>
 #include <sill/model/markov_graph.hpp>
 
 #include <sill/model/cluster_graph.hpp> //! For the conversion constructor

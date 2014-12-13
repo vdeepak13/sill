@@ -4,9 +4,9 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int_distribution.hpp>
 
-#include <sill/graph/min_fill_strategy.hpp>
-//#include <sill/graph/min_degree_strategy.hpp>
-#include <sill/graph/triangulation.hpp>
+#include <sill/graph/algorithm/min_fill_strategy.hpp>
+//#include <sill/graph/algorithm/min_degree_strategy.hpp>
+#include <sill/graph/algorithm/triangulation.hpp>
 #include <sill/graph/undirected_graph.hpp>
 
 #include <iostream>

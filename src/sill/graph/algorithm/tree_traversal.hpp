@@ -7,7 +7,7 @@
 #include <iterator>
 
 #include <sill/global.hpp>
-#include <sill/graph/output_edge_visitor.hpp>
+#include <sill/graph/algorithm/output_edge_visitor.hpp>
 #include <sill/range/reversed.hpp>
 
 #include <sill/macros_def.hpp>

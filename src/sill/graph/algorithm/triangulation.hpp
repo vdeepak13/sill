@@ -9,7 +9,7 @@
 #include <set>
 
 #include <sill/datastructure/set_index.hpp>
-#include <sill/graph/elimination.hpp>
+#include <sill/graph/algorithm/elimination.hpp>
 
 #include <sill/macros_def.hpp>
 

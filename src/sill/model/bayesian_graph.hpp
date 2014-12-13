@@ -5,8 +5,9 @@
 #include <set>
 #include <map>
 
+#include <sill/graph/algorithm/ancestors.hpp>
+#include <sill/graph/algorithm/descendants.hpp>
 #include <sill/graph/directed_graph.hpp>
-#include <sill/graph/ancestors_descendants.hpp>
 #include <sill/model/markov_graph.hpp>
 
 #include <sill/macros_def.hpp>

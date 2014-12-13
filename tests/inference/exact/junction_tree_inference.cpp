@@ -7,8 +7,8 @@
 #include <sill/factor/random/functional.hpp>
 #include <sill/factor/random/ising_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/graph/grid_graph.hpp>
-#include <sill/graph/min_degree_strategy.hpp>
+#include <sill/graph/special/grid_graph.hpp>
+#include <sill/graph/algorithm/min_degree_strategy.hpp>
 #include <sill/inference/exact/junction_tree_inference.hpp>
 #include <sill/inference/exact/variable_elimination.hpp>
 #include <sill/model/markov_network.hpp>

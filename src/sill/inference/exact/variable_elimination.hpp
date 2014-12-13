@@ -10,7 +10,7 @@
 #include <sill/factor/util/commutative_semiring.hpp>
 #include <sill/factor/util/operations.hpp>
 #include <sill/model/markov_graph.hpp>
-#include <sill/graph/elimination.hpp>
+#include <sill/graph/algorithm/elimination.hpp>
 
 #include <sill/stl_concepts.hpp>
 

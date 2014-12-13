@@ -5,7 +5,7 @@
 #include <sill/factor/random/functional.hpp>
 #include <sill/factor/random/ising_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/graph/grid_graph.hpp>
+#include <sill/graph/special/grid_graph.hpp>
 #include <sill/inference/sampling/gibbs_sampler.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/random.hpp>

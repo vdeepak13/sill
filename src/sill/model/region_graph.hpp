@@ -5,10 +5,11 @@
 #include <set>
 
 #include <sill/datastructure/set_index.hpp>
+#include <sill/graph/algorithm/ancestors.hpp>
+#include <sill/graph/algorithm/descendants.hpp>
+#include <sill/graph/algorithm/graph_traversal.hpp>
 #include <sill/graph/directed_graph.hpp>
 #include <sill/graph/property_functors.hpp>
-#include <sill/graph/ancestors_descendants.hpp>
-#include <sill/graph/graph_traversal.hpp>
 
 #include <sill/range/forward_range.hpp>
 #include <sill/range/transformed.hpp>

@@ -11,7 +11,7 @@ namespace sill {
   //! Returns true if an undirected graph is connected
   //! \ingroup graph_algorithms
   template <typename Graph>
-  bool is_connected(const Graph& graph) {
+  bool test_connected(const Graph& graph) {
     // TODO: concept checking
     typedef typename Graph::vertex vertex;
     if (graph.empty()) return true;

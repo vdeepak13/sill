@@ -13,8 +13,8 @@
 #include <sill/factor/factor.hpp>
 #include <sill/factor/util/operations.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/graph/tree_traversal.hpp>
-#include <sill/graph/min_degree_strategy.hpp>
+#include <sill/graph/algorithm/min_degree_strategy.hpp>
+#include <sill/graph/algorithm/tree_traversal.hpp>
 #include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/evaluation/error_measures.hpp>
 #include <sill/model/interfaces.hpp>
