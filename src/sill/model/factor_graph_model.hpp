@@ -7,7 +7,7 @@
 #include <sill/factor/concepts.hpp>
 #include <sill/model/interfaces.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/range/forward_range.hpp>
 
 #include <sill/serialization/serialize.hpp>
@@ -1026,7 +1026,7 @@ public:
 
   inline std::ostream&
   operator<<(std::ostream& out,
-             const factor_graph_model<log_table_factor>::vertex_type& v) {
+             const factor_graph_model<canonical_table>::vertex_type& v) {
     if(v.is_variable()) {
       // return out << v.variable();
       return out << "variable";

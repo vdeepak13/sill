@@ -29,7 +29,7 @@ namespace sill {
                           decomposable<table_factor>& fg, 
                           const std::string& filename) {
     // NOTE: the code below uses table_factor::table(). this code will only
-    // work with table_factor and not log_table_factor
+    // work with table_factor and not canonical_table
     
     // Define types
     typedef factor_type::table_type table_type;

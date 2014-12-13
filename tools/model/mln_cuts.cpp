@@ -12,7 +12,7 @@
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/model/factor_graph_partitioning.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/parsers/alchemy.hpp>
 
 #include <sill/macros_def.hpp>
@@ -26,7 +26,7 @@ using namespace std;
 using namespace sill;
 
 
-typedef factor_graph_model<log_table_factor> factor_graph_model_type;
+typedef factor_graph_model<canonical_table> factor_graph_model_type;
 typedef factor_graph_model_type::factor_type factor_type;
 typedef factor_graph_model_type::vertex_type vertex_type;
 typedef factor_graph_model_type::variable_type variable_type;

@@ -12,7 +12,7 @@
 
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/inference/parallel/residual_splash_engine.hpp>
 #include <sill/inference/parallel/round_robin_engine.hpp>
 #include <sill/inference/parallel/basic_state_manager.hpp>
@@ -32,7 +32,7 @@ using namespace sill;
 
 #define ROUND_ROBIN
 
-typedef factor_graph_model<log_table_factor> factor_graph_model_type;
+typedef factor_graph_model<canonical_table> factor_graph_model_type;
 typedef factor_graph_model_type::factor_type factor_type;
 typedef factor_graph_model_type::vertex_type vertex_type;
 typedef factor_graph_model_type::variable_type variable_type;

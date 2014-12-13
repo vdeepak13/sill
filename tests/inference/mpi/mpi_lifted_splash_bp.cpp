@@ -10,7 +10,7 @@
 
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/model/lifted_factor_graph_model.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <boost/program_options.hpp>
 #include <sill/parallel/timer.hpp>
 
@@ -28,9 +28,9 @@ namespace po = boost::program_options;
 
 using namespace sill;
 
-typedef log_table_factor factor_type;
+typedef canonical_table factor_type;
 typedef lifted_factor_graph_model<factor_type> model_type;
-typedef factor_graph_partition<log_table_factor> partition_type;
+typedef factor_graph_partition<canonical_table> partition_type;
 typedef partition_type::algorithm partition_algorithm_type;
 typedef factor_graph_inference<model_type> engine_type;
 
@@ -83,7 +83,7 @@ struct ground_truths {
   finite_assignment mapassg;   // ground truth map assignment
  
   bool hasbeliefs;     // true if truebeliefs is set
-  std::map<finite_variable*, log_table_factor> truebeliefs; // ground truth marginals
+  std::map<finite_variable*, canonical_table> truebeliefs; // ground truth marginals
 
 };
 
@@ -248,10 +248,10 @@ void parse_ground_truths(universe &u,
 
 
 
-std::map<finite_variable*, log_table_factor> 
+std::map<finite_variable*, canonical_table> 
       collect_beliefs(finite_domain vars, engine_type &engine) {
       
-  std::map<finite_variable*, log_table_factor> ret;
+  std::map<finite_variable*, canonical_table> ret;
   foreach(finite_variable* f, vars) {
     ret[f] = engine.belief(f);
   }
@@ -271,7 +271,7 @@ void inference_statistics(model_type &fg,
     finite_assignment mapassg;
     engine.map_assignment(mapassg);
     
-    std::map<finite_variable*, log_table_factor> blfs = 
+    std::map<finite_variable*, canonical_table> blfs = 
                                       collect_beliefs(fg.arguments(), engine);
 
     // some statistics which do not depend on the truth
@@ -290,7 +290,7 @@ void inference_statistics(model_type &fg,
     
     if (truths.hasbeliefs) {
       // compute the norm1 error over all the beliefs
-      factor_norm_1<log_table_factor> norm;
+      factor_norm_1<canonical_table> norm;
       stats.blf_totalnorm1error = 0.0;
       foreach(finite_variable* i, fg.arguments()) {
         double d = norm(truths.truebeliefs[i],engine.belief(i));
@@ -385,7 +385,7 @@ void exec_root_node(mpi_post_office &po, input_parameters &params) {
     output_statistics(stats, params.statusfile);
     
     
-    std::map<finite_variable*, log_table_factor> blfs = 
+    std::map<finite_variable*, canonical_table> blfs = 
                                     collect_beliefs(fg.arguments(), *engine);
     // save results if asked to
     if (params.uaioutput.length() > 0) {

@@ -19,7 +19,7 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/parsers/string_functions.hpp>
 #include <sill/parsers/alchemy.hpp>
@@ -494,7 +494,7 @@ namespace sill{
           arguments.push_back(v);
         }
 
-        log_table_factor factor(arguments, logarithmic<double>(0.0, log_tag()));
+        canonical_table factor(arguments, logarithmic<double>(0.0, log_tag()));
         finite_assignment assignment;
 
         // nontrivially satisfying assignment - everything is true
@@ -523,7 +523,7 @@ namespace sill{
         std::vector<finite_variable *> arguments;
         arguments.push_back(from);
         arguments.push_back(to);
-        log_table_factor factor(arguments, logarithmic<double>(0.0, log_tag()));
+        canonical_table factor(arguments, logarithmic<double>(0.0, log_tag()));
         finite_assignment assignment;
         assignment[from] = 1;
         assignment[to] = 1;

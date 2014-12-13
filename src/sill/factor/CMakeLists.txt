@@ -1,6 +1,6 @@
 set(SILL_FACTOR_SOURCES
   canonical_gaussian
-  log_table_factor
+  canonical_table
   moment_gaussian
   mixture
   nonlinear_gaussian

@@ -3,7 +3,7 @@
 #include <sill/math/logarithmic.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/factor/util/norms.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/map.hpp>
 #include <sill/base/stl_util.hpp>
@@ -13,18 +13,18 @@ namespace sill {
 
   // Serialization
   //============================================================================
-  void log_table_factor::save(oarchive& ar) const {
+  void canonical_table::save(oarchive& ar) const {
     ar << args << arg_seq << table_data << var_index;
   }
 
-  void log_table_factor::load(iarchive& ar) {
+  void canonical_table::load(iarchive& ar) {
     ar >> args >> arg_seq >> table_data >> var_index;
   }
 
   // Accessors
   //============================================================================
   
-  void log_table_factor::swap(log_table_factor& f) {
+  void canonical_table::swap(canonical_table& f) {
     args.swap(f.args);
     var_index.swap(f.var_index);
     arg_seq.swap(f.arg_seq);
@@ -35,14 +35,14 @@ namespace sill {
   }
 
 
-  finite_assignment_range log_table_factor::assignments() const {
+  finite_assignment_range canonical_table::assignments() const {
     return std::make_pair(finite_assignment_iterator(arg_seq),
                           finite_assignment_iterator());
   }
 
 
 
-  bool log_table_factor::operator==(const log_table_factor& other) const {
+  bool canonical_table::operator==(const canonical_table& other) const {
     if (arguments() == other.arguments()) {
       if (arg_seq == other.arg_seq) // can directly compare the tables
         return table() == other.table();
@@ -52,7 +52,7 @@ namespace sill {
     else return false;
   }
 
-//   bool log_table_factor::operator<(const log_table_factor& other) const {
+//   bool canonical_table::operator<(const canonical_table& other) const {
 //     if (this->arguments() < other.arguments()) return true;
 
 //     if (this->arguments() == other.arguments()) {
@@ -66,8 +66,8 @@ namespace sill {
 //   }
 
 
-  log_table_factor
-  log_table_factor::restrict(const finite_assignment& a) const {
+  canonical_table
+  canonical_table::restrict(const finite_assignment& a) const {
     finite_domain retained;
     //more efficient set difference, the domain of the factor is
     //supposed to be small, but evidence size can be very large
@@ -80,7 +80,7 @@ namespace sill {
     if(retained.size() == arguments().size())
       return *this;
 
-    log_table_factor factor(retained, result_type());
+    canonical_table factor(retained, result_type());
     // TODO: only need to initialize the table's dimensions, not its elements
 
     factor.table_data.restrict(table(),
@@ -89,8 +89,8 @@ namespace sill {
     return factor;
   }
 
-  log_table_factor&
-  log_table_factor::subst_args(const finite_var_map& var_map) {
+  canonical_table&
+  canonical_table::subst_args(const finite_var_map& var_map) {
     args = subst_vars(args, var_map);
     // Compute the new var_index of the arguments, so it matches up
     // with the current var_index.
@@ -102,12 +102,12 @@ namespace sill {
   }
 
   void
-  log_table_factor::marginal(log_table_factor& f,
+  canonical_table::marginal(canonical_table& f,
                              const finite_domain& retain) const {
     collapse(std::plus<result_type>(), 0, retain, f);
   }
 
-  log_table_factor& log_table_factor::normalize() {
+  canonical_table& canonical_table::normalize() {
       result_type max_value = maximum();
 
       if (std::isinf(max_value.log_value())) return *this;
@@ -128,7 +128,7 @@ namespace sill {
   }
  
   // TODO (Stano): this should be cleaned up to not use assignment_iterator
-  double log_table_factor::mutual_information(const finite_domain& fd1,
+  double canonical_table::mutual_information(const finite_domain& fd1,
                                             const finite_domain& fd2) const {
     assert(set_disjoint(fd1, fd2));
     assert(includes(args, fd1) && includes(args, fd2));
@@ -136,9 +136,9 @@ namespace sill {
     finite_assignment_iterator fa_end;
     double mi = 0;
     if (args.size() > fd1.size() + fd2.size()) {
-      log_table_factor fctr(marginal(set_union(fd1,fd2)));
-      log_table_factor fctr1(fctr.marginal(fd1));
-      log_table_factor fctr2(fctr.marginal(fd2));
+      canonical_table fctr(marginal(set_union(fd1,fd2)));
+      canonical_table fctr1(fctr.marginal(fd1));
+      canonical_table fctr2(fctr.marginal(fd2));
       while (fa_it != fa_end) {
         const finite_assignment& fa = *fa_it;
         mi += fctr.v(fa) *
@@ -146,8 +146,8 @@ namespace sill {
         ++fa_it;
       }
     } else {
-      log_table_factor fctr1(marginal(fd1));
-      log_table_factor fctr2(marginal(fd2));
+      canonical_table fctr1(marginal(fd1));
+      canonical_table fctr2(marginal(fd2));
       while (fa_it != fa_end) {
         const finite_assignment& fa = *fa_it;
         mi += v(fa) * (logv(fa)
@@ -158,7 +158,7 @@ namespace sill {
     return mi;
   }
 
-  double log_table_factor::bp_msg_derivative_ub(variable_type* x,
+  double canonical_table::bp_msg_derivative_ub(variable_type* x,
                                             variable_type* y) const {
     double result = 1;
     // get it in index coordinates
@@ -192,30 +192,30 @@ namespace sill {
   }
 
 
-  #ifndef SWIG // std::pair<variable, log_table_factor> not supported at the moment
-  std::pair<finite_variable*, log_table_factor >
-  log_table_factor::unroll(universe& u) const {
+  #ifndef SWIG // std::pair<variable, canonical_table> not supported at the moment
+  std::pair<finite_variable*, canonical_table >
+  canonical_table::unroll(universe& u) const {
     size_t new_v_size = 1;
     foreach(finite_variable* v, arg_seq)
       new_v_size *= v->size();
     finite_variable* new_v = u.new_finite_variable(new_v_size);
     finite_var_vector new_args;
     new_args.push_back(new_v);
-    log_table_factor newf
+    canonical_table newf
       (new_args, std::vector<result_type>(values().first, values().second));
     return std::make_pair(new_v, newf);
   }
   #endif
 
-  log_table_factor
-  log_table_factor::roll_up(const finite_var_vector& orig_arg_list) const {
+  canonical_table
+  canonical_table::roll_up(const finite_var_vector& orig_arg_list) const {
     assert(args.size() == 1);
     finite_variable* arg = *(args.begin());
     size_t s = 1;
     foreach(finite_variable* v, orig_arg_list)
       s *= v->size();
     assert(s == arg->size());
-    log_table_factor newf
+    canonical_table newf
       (orig_arg_list,
        std::vector<result_type>(values().first, values().second));
     return newf;
@@ -223,7 +223,7 @@ namespace sill {
 
 
   finite_assignment
-  log_table_factor::assignment(const index_type& index) const {
+  canonical_table::assignment(const index_type& index) const {
     finite_assignment a;
     assert(index.size() == arg_seq.size());
     for(size_t i = 0; i < index.size(); i++)
@@ -234,7 +234,7 @@ namespace sill {
   // Private helper functions
   //==========================================================================
 
-  void log_table_factor::initialize(
+  void canonical_table::initialize(
                           const forward_range<finite_variable*>& arguments,
                           result_type default_value) {
     using namespace boost;
@@ -255,8 +255,8 @@ namespace sill {
     table_data = dense_table<result_type>(geometry, default_value);
   }
 
-  log_table_factor::index_type
-  log_table_factor::make_dim_map(const finite_var_vector& vars,
+  canonical_table::index_type
+  canonical_table::make_dim_map(const finite_var_vector& vars,
                                     const var_index_map& to_map) {
     // return make_vector(to_map.values(vars)); <-- slow
     dense_table<result_type>::index_type map(vars.size());
@@ -266,8 +266,8 @@ namespace sill {
     return map;
   }
 
-  log_table_factor::index_type
-  log_table_factor::make_restrict_map(const finite_var_vector& vars,
+  canonical_table::index_type
+  canonical_table::make_restrict_map(const finite_var_vector& vars,
                                          const finite_assignment& a) {
     size_t retained = std::numeric_limits<size_t>::max();
     dense_table<result_type>::index_type map(vars.size(), retained);
@@ -279,7 +279,7 @@ namespace sill {
   }
 
   std::map<finite_variable*, size_t>
-  log_table_factor::make_index_map(const finite_domain& vars) {
+  canonical_table::make_index_map(const finite_domain& vars) {
     std::map<finite_variable*, size_t> var_index;
     size_t i = 0;
     foreach(finite_variable* v, vars) var_index[v] = i++;
@@ -288,164 +288,164 @@ namespace sill {
 
   // Free functions
   //============================================================================
-  std::ostream& operator<<(std::ostream& out, const log_table_factor& f) {
+  std::ostream& operator<<(std::ostream& out, const canonical_table& f) {
     out << f.arg_vector() << std::endl;
     out << f.table();
     return out;
   }
 
-  double norm_1(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine_collapse
-      (x, y, abs_difference<log_table_factor::result_type>(), 
-       std::plus<log_table_factor::result_type>(), 0.0);
+  double norm_1(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine_collapse
+      (x, y, abs_difference<canonical_table::result_type>(), 
+       std::plus<canonical_table::result_type>(), 0.0);
   }
 
-  double norm_inf(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine_collapse
-      (x, y, abs_difference<log_table_factor::result_type>(),
-       maximum<log_table_factor::result_type>(), 0);
+  double norm_inf(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine_collapse
+      (x, y, abs_difference<canonical_table::result_type>(),
+       maximum<canonical_table::result_type>(), 0);
   }
 
   
-  double norm_inf_log(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine_collapse
+  double norm_inf_log(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine_collapse
       (x, y, 
-       abs_difference_log<log_table_factor::result_type>(), 
-       maximum<log_table_factor::result_type>(), 
+       abs_difference_log<canonical_table::result_type>(), 
+       maximum<canonical_table::result_type>(), 
        -std::numeric_limits<double>::infinity());
   }
 
   
-  double norm_1_log(const log_table_factor& x, const log_table_factor& y) {
-    return log_table_factor::combine_collapse
+  double norm_1_log(const canonical_table& x, const canonical_table& y) {
+    return canonical_table::combine_collapse
          (x, y, 
-         abs_difference_log<log_table_factor::result_type>(), 
-         std::plus<log_table_factor::result_type>(), 0.0);
+         abs_difference_log<canonical_table::result_type>(), 
+         std::plus<canonical_table::result_type>(), 0.0);
   }
 
 
   
-  log_table_factor weighted_update(const log_table_factor& f1,
-                                      const log_table_factor& f2,
+  canonical_table weighted_update(const canonical_table& f1,
+                                      const canonical_table& f2,
                                       double a) {
-    return log_table_factor::combine(f1, f2, 
-           weighted_plus<log_table_factor::result_type>(1-a, a));
+    return canonical_table::combine(f1, f2, 
+           weighted_plus<canonical_table::result_type>(1-a, a));
   }
 
   
-  log_table_factor pow(const log_table_factor& f, double a) {
+  canonical_table pow(const canonical_table& f, double a) {
     using std::pow;
-    log_table_factor result(f);
-    foreach(log_table_factor::result_type& x, result.table()) {
+    canonical_table result(f);
+    foreach(canonical_table::result_type& x, result.table()) {
       x = pow(x, a);
     }
     return result;
   }
 
-  finite_assignment arg_max(const log_table_factor& f) {
-    log_table_factor::table_type::const_iterator it = max_element(f.values());
+  finite_assignment arg_max(const canonical_table& f) {
+    canonical_table::table_type::const_iterator it = max_element(f.values());
     return f.assignment(f.table().index(it));
   }
 
-  finite_assignment arg_min(const log_table_factor& f) {
-    log_table_factor::table_type::const_iterator it = min_element(f.values());
+  finite_assignment arg_min(const canonical_table& f) {
+    canonical_table::table_type::const_iterator it = min_element(f.values());
     return f.assignment(f.table().index(it));
   }
   // Operator Overloads
   // =====================================================================
-  log_table_factor& log_table_factor::operator+=(const log_table_factor& y) { 
+  canonical_table& canonical_table::operator+=(const canonical_table& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      std::plus<log_table_factor::result_type>());
+                      std::plus<canonical_table::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, std::plus<log_table_factor::result_type>());
+      *this = combine(*this, y, std::plus<canonical_table::result_type>());
     }
     return *this;
   }
   
-  log_table_factor& log_table_factor::operator-=(const log_table_factor& y) { 
+  canonical_table& canonical_table::operator-=(const canonical_table& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      std::minus<log_table_factor::result_type>());
+                      std::minus<canonical_table::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, std::minus<log_table_factor::result_type>());
+      *this = combine(*this, y, std::minus<canonical_table::result_type>());
     }
     return *this;
   }
 
-  log_table_factor& log_table_factor::operator*=(const log_table_factor& y) { 
+  canonical_table& canonical_table::operator*=(const canonical_table& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      std::multiplies<log_table_factor::result_type>());
+                      std::multiplies<canonical_table::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, std::multiplies<log_table_factor::result_type>());
+      *this = combine(*this, y, std::multiplies<canonical_table::result_type>());
     }
     return *this;
   }
 
-  log_table_factor& log_table_factor::operator/=(const log_table_factor& y) { 
+  canonical_table& canonical_table::operator/=(const canonical_table& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                           safe_divides<log_table_factor::result_type>());
+                           safe_divides<canonical_table::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, safe_divides<log_table_factor::result_type>());
+      *this = combine(*this, y, safe_divides<canonical_table::result_type>());
     }
     return *this;
   }
 
-  log_table_factor& log_table_factor::logical_and(const log_table_factor& y) { 
+  canonical_table& canonical_table::logical_and(const canonical_table& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      sill::logical_and<log_table_factor::result_type>());
+                      sill::logical_and<canonical_table::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, sill::logical_and<log_table_factor::result_type>());
+      *this = combine(*this, y, sill::logical_and<canonical_table::result_type>());
     }
     return *this;
   }
 
 
-  log_table_factor& log_table_factor::logical_or(const log_table_factor& y) { 
+  canonical_table& canonical_table::logical_or(const canonical_table& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      sill::logical_or<log_table_factor::result_type>());
+                      sill::logical_or<canonical_table::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, sill::logical_or<log_table_factor::result_type>());
+      *this = combine(*this, y, sill::logical_or<canonical_table::result_type>());
     }
     return *this;
   }
   
-  log_table_factor& log_table_factor::max(const log_table_factor& y) { 
+  canonical_table& canonical_table::max(const canonical_table& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      sill::maximum<log_table_factor::result_type>());
+                      sill::maximum<canonical_table::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, sill::maximum<log_table_factor::result_type>());
+      *this = combine(*this, y, sill::maximum<canonical_table::result_type>());
     }
     return *this;
   }
 
-  log_table_factor& log_table_factor::min(const log_table_factor& y) { 
+  canonical_table& canonical_table::min(const canonical_table& y) { 
     if (includes(this->arguments(), y.arguments())) {
       // We can implement the combination efficiently.
       table_data.join_with(y.table(), make_dim_map(y.arg_seq, var_index),
-                      sill::minimum<log_table_factor::result_type>());
+                      sill::minimum<canonical_table::result_type>());
     } else {
       // Revert to the standard implementation
-      *this = combine(*this, y, sill::minimum<log_table_factor::result_type>());
+      *this = combine(*this, y, sill::minimum<canonical_table::result_type>());
     }
     return *this;
   }

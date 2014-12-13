@@ -13,7 +13,7 @@
 
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/log_table_factor.hpp>
+#include <sill/factor/canonical_table.hpp>
 
 #include <sill/parallel/timer.hpp>
 #include <sill/parsers/alchemy.hpp>
@@ -35,7 +35,7 @@ using namespace std;
 using namespace sill;
 
 
-typedef factor_graph_model<log_table_factor>   factor_graph_type;
+typedef factor_graph_model<canonical_table>   factor_graph_type;
 typedef factor_graph_type::factor_type   factor_type;
 typedef factor_graph_type::vertex_type   vertex_type;
 typedef factor_graph_type::variable_type variable_type;
@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
   // save_statistics(universe, fg);
 
   finite_assignment truth;
-  std::map<finite_variable*, log_table_factor> truebeliefs;
+  std::map<finite_variable*, canonical_table> truebeliefs;
   
   if (truthdir.length() > 0) {
     alchemy_parse_truthdir(universe,truth,truthdir,true);
@@ -284,7 +284,7 @@ int main(int argc, char* argv[]) {
 //     truth_logprob=alchemy_compute_truthlogprob(fg,engine,truth);
 //   }
 //   if (belieffile.length() > 0) {
-//     factor_norm_1<log_table_factor> norm;
+//     factor_norm_1<canonical_table> norm;
 //     foreach(finite_variable* i, fg.arguments()) {
 //       double d = norm(truebeliefs[i],engine.belief(i));
 //       //double d = truebeliefs[i].relative_entropy(engine.belief(i));
