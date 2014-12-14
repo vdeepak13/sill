@@ -45,8 +45,8 @@ namespace sill {
              + "options");
       sub_desc.add_options()
         ((opt_prefix + "kind").c_str(),
-         po::value<std::string>(&kind)->default_value("filled"),
-         "Kind of factor: filled/ising/associative")
+         po::value<std::string>(&kind)->default_value("uniform"),
+         "Kind of factor: associative/discrete/ising/uniform")
         ((opt_prefix + "period").c_str(),
          po::value<size_t>(&period)->default_value(0),
          "Alternation period. If 0, only the default is used.");

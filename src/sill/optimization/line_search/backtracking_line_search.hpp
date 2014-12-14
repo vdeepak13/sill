@@ -1,7 +1,7 @@
 #ifndef SILL_BACKTRACKING_LINE_SEARCH_HPP
 #define SILL_BACKTRACKING_LINE_SEARCH_HPP
 
-#include <sill/optimization/opt_step.hpp>
+#include <sill/optimization/line_search/line_search.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <boost/function.hpp>
@@ -30,7 +30,7 @@ namespace sill {
 
     /**
      * If the step size reaches this value (>=0), the line search will throw 
-     * an opt_step_too_small exception.
+     * an line_search_failed exception.
      */
     RealType min_step;
 
@@ -90,7 +90,7 @@ namespace sill {
    * \ingroup optimization_algorithms
    */
   template <typename Vec>
-  class backtracking_line_search : public opt_step<Vec> {
+  class backtracking_line_search : public line_search<Vec> {
     // Public types
     //==========================================================================
   public:
@@ -105,27 +105,24 @@ namespace sill {
     backtracking_line_search(const objective_fn& objective,
                              const gradient_fn& gradient,
                              const param_type& params = param_type())
-      : f_(objective),
-        objective_(objective),
-        gradient_(gradient),
-        params_(params) {
+      : f_(objective, gradient), params_(params) {
       assert(params.valid());
     }
 
-    real_type apply(Vec& x, const Vec& direction) {
-      real_type threshold = params_.acceptance * dot(direction, gradient_(x));
-      f_.line(&x, &direction);
-      real_type f0 = objective_(x);
+    real_type step(const Vec& x, const Vec& direction) {
+      f_.reset(&x, &direction);
+      real_type threshold = params_.acceptance * f_.slope(0.0);
+      real_type f0 = f_(0.0);
       real_type t = 1.0;
       while (t > params_.min_step && f_(t) > f0 + t * threshold) {
         t *= params_.discount;
       }
       if (t <= params_.min_step) {
-        throw opt_step_too_small("Reached the minimum step size " + 
-                                 to_string(params_.min_step));
+        throw line_search_failed(
+          "Reached the minimum step size " + to_string(params_.min_step)
+        );
       } else {
-        x = f_.last_input();
-        return f_.last_value();
+        return t;
       }
     }
 
@@ -133,8 +130,6 @@ namespace sill {
     //==========================================================================
   private:
     line_function<Vec> f_;
-    objective_fn objective_;
-    gradient_fn gradient_;
     param_type params_;
 
   }; // class backtracking_line_search
