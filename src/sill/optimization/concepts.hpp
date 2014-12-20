@@ -8,14 +8,7 @@
 
 #include <sill/macros_def.hpp>
 
-/**
- * \file concepts.hpp Concepts for convex optimization.
- */
-
 namespace sill {
-
-  //! \addtogroup optimization_concepts
-  //! @{
 
   /**
    * Concept for a data structure for the variables being optimized over;
@@ -23,6 +16,8 @@ namespace sill {
    * For many apps, the variables might be stored more naturally in a
    * collection of matrices and vectors, but this abstraction allows
    * optimization algorithms to treat the variables as a vector object.
+   *
+   * \ingroup optimization_concepts
    */
   template <typename V>
   struct OptimizationVector
@@ -103,53 +98,6 @@ namespace sill {
     static std::ostream& out;
 
   }; // struct OptimizationVector
-
-  /**
-   * Concept for a functor which computes an objective for line search
-   * for different step sizes.
-   */
-  template <class F>
-  struct LineSearchObjectiveFunctor {
-
-    //! Computes the value of the objective for step size eta.
-    double objective(double eta) const;
-
-    //! Returns true if this functor recommends early stopping.
-    bool stop_early() const;
-
-    concept_usage(LineSearchObjectiveFunctor) {
-      sill::same_type(d, f.objective(d));
-      sill::same_type(b, f.stop_early());
-    }
-
-  private:
-    double d;
-    static const F& f;
-    bool b;
-
-  }; // struct LineSearchObjectiveFunctor
-
-  /**
-   * Concept for a functor which computes a gradient
-   * for line search for different step sizes.
-   */
-  template <class F>
-  struct LineSearchGradientFunctor {
-
-    //! Computes the gradient of the objective (w.r.t. eta) for step size eta.
-    double gradient(double eta) const;
-
-    concept_usage(LineSearchGradientFunctor) {
-      sill::same_type(d, f.gradient(d));
-    }
-
-  private:
-    double d;
-    static const F& f;
-
-  }; // struct LineSearchGradientFunctor
-
-  //! @} group optimization_concepts
 
 } // namespace sill
 

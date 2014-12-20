@@ -3,6 +3,9 @@
 
 #include <sill/global.hpp>
 #include <sill/optimization/concepts.hpp>
+#include <sill/line_search/line_step_value.hpp>
+
+#include <boost/function.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -14,33 +17,47 @@ namespace sill {
    * has been chosen.
    *
    * \ingroup optimization_algorithms
+   *
    * \tparam Vec a class that satisfies the OptimizationVector concept.
    */
   template <typename Vec>
   class line_search {
     concept_assert(OptimizationVector<Vec>)
   public:
-    //! The type that represents the position and the objective value
+    //! The storage type of the vector
     typedef typename Vec::value_type real_type;
+
+    //! A type that represents the step and the corresponding objective value
+    typedef line_step_value<real_type> result_type;
+
+    //! A type that represents the objective function
+    typedef boost::function<real_type(const Vec&)> objective_fn;
+    
+    //! A type that represents the gradient of the objective
+    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
 
     //! Default constructor
     line_search()
-      : bracketing_steps_(0), selection_steps_(0) { }
+      : bounding_steps_(0), selection_steps_(0) { }
 
     //! Destructor
     virtual ~line_search() { }
 
-    //! Compute the step in the given direction
-    virtual real_type step(const Vec& x, const Vec& direction) = 0;
+    //! Sets the objective and the gradient used in the search
+    virtual void reset(const objective_fn& objective,
+                       const gradient_fn& gradient) = 0;
 
-    //! Returns the number of bracketing steps performed so far
-    size_t bracketing_steps() const { return bracketing_steps_; }
+    //! Compute the step in the given direction
+    virtual result_type step(const Vec& x, const Vec& direction) = 0;
+
+    //! Returns the number of bounding steps performed so far
+    size_t bounding_steps() const { return bracketing_steps_; }
 
     //! Returns the number of selection steps performed so far
     size_t selection_steps() const { return selection_steps_; }
 
   protected:
-    size_t bracketing_steps_;
+    size_t bounding_steps_;
     size_t selection_steps_;
 
   }; // class line_search

@@ -64,7 +64,10 @@ namespace sill {
 
     friend std::ostream&
     operator<<(std::ostream& out, const bracketing_line_search_parameters& p) {
-      out << p.convergence << ' ' << p.multiplier << ' ' << p.min_step;
+      out << p.convergence << ' '
+          << p.multiplier << ' '
+          << p.min_step << ' '
+          << p.max_step;
       return out;
     }
 

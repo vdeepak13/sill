@@ -1,6 +1,8 @@
 #ifndef SILL_LINE_FUNCTION_HPP
 #define SILL_LINE_FUNCTION_HPP
 
+#include <sill/optimization/line_search/line_step_value.hpp>
+
 #include <boost/function.hpp>
 
 namespace sill {
@@ -17,30 +19,38 @@ namespace sill {
   class line_function {
   public:
     typedef typename Vec::value_type real_type;
-    struct value_type {
-      real_type pos;
-      real_type val;
-      pos_value(real_type pos, real_type val) : pos(pos), val(val) { }
-    };
+    typedef line_step_value<real_type> value_type;
     typedef boost::function<real_type(const Vec&)> objective_fn;
     typedef boost::function<const Vec&(const Vec&)> gradient_fn;
 
     /**
      * Creates a line function with the given base function and gradient.
      */
-    explicit line_function(const objective_fn& objective,
+    explicit line_function(const objective_fn& objective = NULL,
                            const gradient_fn& gradient = NULL)
       : objective_(objective),
         gradient_(gradient),
         origin_(NULL),
         direction_(NULL),
         new_line_(true) { }
+
+    /**
+     * Sets the underlying objective and gradient.
+     */
+    void reset(const objectve_fn& objective,
+               const gradient_fn& gradient = NULL) {
+      objective_ = objective;
+      gradient_ = gradient;
+      origin_ = NULL;
+      direction_ = NULL;
+      new_line = true;
+    }
     
     /**
      * Selects the line to be restricted to in terms of the origin and
      * direction.
      */
-    void reset(const Vec* origin, const Vec* direction) {
+    void set_line(const Vec* origin, const Vec* direction) {
       origin_ = origin;
       direction_ = direction;
       new_line_ = true;
@@ -49,38 +59,38 @@ namespace sill {
     /**
      * Evaluates the function at the given position.
      */
-    real_type operator()(real_type pos) {
-      return value(pos);
+    real_type operator()(real_type step) {
+      return value(step);
     }
 
     /**
      * Evaluates the function at the given position.
      */
-    real_type value(real_type pos) {
-      cache_input(pos);
+    real_type value(real_type step) {
+      cache_input(step);
       return objective_(input_);
     }
 
     /**
      * Returns the position-value pair for the given position.
      */
-    value_type pos_value(real_type pos) {
-      return value_type(pos, value(pos));
+    value_type step_value(real_type step) {
+      return value_type(step, value(step));
     }
 
     /**
      * Returns the derivative (slope) at the given position.
      */
-    real_type slope()(real_type pos) {
-      cache_input(pos);
+    real_type slope()(real_type step) {
+      cache_input(step);
       return dot(*direction, gradient_(input_));
     }
 
     /**
      * Returns the position-slope pair for the given position.
      */
-    value_type pos_slope(real_type pos) {
-      return value_type(pos, slope(pos));
+    value_type step_slope(real_type step) {
+      return value_type(step, slope(step));
     }
 
     /**
@@ -94,15 +104,12 @@ namespace sill {
     /**
      * Updates the input for the given position if the position has changed.
      */
-    void cache_input(real_type pos) {
-      if (new_line_ || pos_ != pos) {
-        pos_ = pos;
-        if (pos == 0.0) {
-          input_ = *origin_;
-        } else {
-          input_ = *direction_;
-          input_ *= pos;
-          input_ += *origin_;
+    void cache_input(real_type step) {
+      if (new_line_ || step_ != step) {
+        step_ = step;
+        input_ = *origin;
+        if (step != 0.0) {
+          input_ += *direction_ * step;
         }
         new_line_ = false;
       }
@@ -112,8 +119,8 @@ namespace sill {
     gradient_fn gradient_;
     const Vec* origin_;
     const Vec* direction_;
-    bool input_set_;
-    real_type pos_;
+    bool new_line_;
+    real_type step_;
     Vec input_;
 
   }; // class line_function

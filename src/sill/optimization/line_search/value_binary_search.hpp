@@ -29,7 +29,9 @@ namespace sill {
     //==========================================================================
   public:
     typedef typename Vec::value_type real_type;
+    typedef line_step_value<real_type> result_type;
     typedef boost::function<real_type(const Vec&)> objective_fn;
+    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
     typedef bracketing_line_search_parameters<real_type> param_type;
 
     // Public functions
@@ -39,23 +41,21 @@ namespace sill {
      * Constructs an object that performs line search with objective
      * function alone.
      */
-    explicit value_binary_search(const objective_fn& objective,
-                                 const param_type& params = param_type())
-      : f_(objective), params_(params) {
+    explicit value_binary_search(const param_type& params = param_type())
+      : params_(params) {
       assert(params.valid());
     }
-    
-    /**
-     * Computes the step along the given direction.
-     */
-    real_type step(const Vec& x, const Vec& direction) {
-      typedef typename line_function<Vec>::value_type value_type;
 
-      // reset the function to the given line
-      f_.resert(&x, &direction);
-      value_type left  = f_.pos_value(0.0);
-      value_type mid   = f_.pos_value(1.0);
-      value_type right = mid;
+    void reset(const objective_fn& objective, const gradient_fn& gradient) {
+      f_.reset(objective, gradient);
+    }
+    
+    result_type step(const Vec& x, const Vec& direction) {
+      // set the line
+      f_.set_line(&x, &direction);
+      result_type left  = f_.step_value(0.0);
+      result_type mid   = f_.step_value(1.0);
+      result_type right = mid;
       
       // identify the initial bracket
       if (right.val > left.val) { // shrink mid until its objective is < left
@@ -63,8 +63,8 @@ namespace sill {
         while (mid.val > left.val) {
           ++bounding_steps_;
           right = mid;
-          mid = f_.pos_value(mid.pos / params_.multiplier);
-          if (right.pos < params_.min_step) {
+          mid = f_.step_value(mid.step / params_.multiplier);
+          if (right.step < params_.min_step) {
             throw line_search_failed("Step size too small in bounding");
           }
         }
@@ -74,18 +74,18 @@ namespace sill {
           ++bounding_steps_;
           left = mid;
           mid = right;
-          right = f_.pos_value(right.pos * params_.multiplier);
-          if (right.pos > params_.max_step) {
+          right = f_.step_value(right.step * params_.multiplier);
+          if (right.step > params_.max_step) {
             throw line_search_failed("Step size too large in bounding");
           }
         }
       }
 
       // do binary search while maintaining the invariant
-      while (right.pos - left.pos > params_.convergence || left.pos == 0.0) {
+      while (right.step - left.step > params_.convergence || left.step == 0.0) {
         ++selection_steps_;
-        value_type mid_left = f_.pos_value((left.pos + mid.pos) / 2.0);
-        value_type mid_right = f_.pos_value((mid.pos + right.pos) / 2.0);
+        value_type mid_left = f_.step_value((left.step + mid.step) / 2.0);
+        value_type mid_right = f_.step_value((mid.step + right.step) / 2.0);
         if (mid_left.val > mid.val && mid_right.val > mid.val) {
           left = mid_left;
           right = mid_right;
@@ -96,12 +96,12 @@ namespace sill {
           left = mid;
           mid = mid_right;
         }
-        if (right.pos < params_.min_step) {
-          throw line_search_failed("Step size is too small");
+        if (right.step < params_.min_step) {
+          throw line_search_failed("Step size too small in selection");
         }
       }
 
-      return mid.pos;
+      return mid;
     }
 
   private:
