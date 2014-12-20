@@ -95,6 +95,7 @@ namespace sill {
     //==========================================================================
   public:
     typedef typename Vec::value_type real_type;
+    typedef line_step_value<real_type> result_type;
     typedef backtracking_line_search_parameters<real_type> param_type;
     typedef boost::function<real_type(const Vec&)> objective_fn;
     typedef boost::function<const Vec&(const Vec&)> gradient_fn;
@@ -102,27 +103,30 @@ namespace sill {
     // Public functions
     //==========================================================================
   public:
-    backtracking_line_search(const objective_fn& objective,
-                             const gradient_fn& gradient,
-                             const param_type& params = param_type())
-      : f_(objective, gradient), params_(params) {
+    backtracking_line_search(const param_type& params = param_type())
+      : params_(params) {
       assert(params.valid());
     }
 
-    real_type step(const Vec& x, const Vec& direction) {
-      f_.reset(&x, &direction);
+    void reset(const objective_fn& objective, const gradient_fn& gradient) {
+      f_.reset(objective, gradient);
+    }
+
+    result_type step(const Vec& x, const Vec& direction) {
+      f_.set_line(&x, &direction);
       real_type threshold = params_.acceptance * f_.slope(0.0);
       real_type f0 = f_(0.0);
-      real_type t = 1.0;
-      while (t > params_.min_step && f_(t) > f0 + t * threshold) {
-        t *= params_.discount;
+      result_type r = f_.step_value(1.0);
+      while (r.step > params_.min_step &&
+             r.value > f0 + r.step * threshold) {
+        r = f_.step_value(r.step * params_.discount);
       }
-      if (t <= params_.min_step) {
+      if (r.step <= params_.min_step) {
         throw line_search_failed(
           "Reached the minimum step size " + to_string(params_.min_step)
         );
       } else {
-        return t;
+        return r;
       }
     }
 

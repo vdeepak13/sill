@@ -12,7 +12,7 @@
 
 namespace sill {
 
-  // TODO defaults
+  // TODO check defaults
 
   /**
    * Class for parsing command-line options that specify line saerch
@@ -85,13 +85,13 @@ namespace sill {
         return new exponential_decay_search(decay);
       }
       if (algorithm == "backtrack") {
-        return new backtracking_line_search(f, g, backtrack);
+        return new backtracking_line_search(backtrack);
       }
       if (algorithm == "value_binary") {
-        return new value_binary_search(f, bracketing);
+        return new value_binary_search(bracketing);
       }
       if (algorithm == "slope_bianry") {
-        return new slope_binary_saerch(f, g, bracketing);
+        return new slope_binary_saerch(bracketing);
         // TODO: Wolfe conditions
       }
       throw std::invalid_argument("Invalid algorithm");
