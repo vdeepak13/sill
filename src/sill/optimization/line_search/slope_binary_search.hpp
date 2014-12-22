@@ -3,9 +3,14 @@
 
 #include <sill/global.hpp>
 #include <sill/optimization/line_search/bracketing_line_search.hpp>
+#include <sill/optimization/line_search/line_function.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/optimization/line_search/line_search_failed.hpp>
+#include <sill/optimization/line_search/line_search_result.hpp>
 #include <sill/optimization/line_search/wolfe_conditions.hpp>
+#include <sill/parsers/string_functions.hpp>
+
+#include <boost/bind.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -28,7 +33,7 @@ namespace sill {
     //==========================================================================
   public:
     typedef typename Vec::value_type real_type;
-    typedef line_step_value<real_type> result_type;
+    typedef line_search_result<real_type> result_type;
     typedef boost::function<real_type(const Vec&)> objective_fn;
     typedef boost::function<const Vec&(const Vec&)> gradient_fn;
     typedef bracketing_line_search_parameters<real_type> param_type;
@@ -41,7 +46,7 @@ namespace sill {
      * Constructs the line search object.
      * The search stops when the bracket becomes sufficiently small.
      */
-    slope_binary_search(const param_type& params = param_type())
+    explicit slope_binary_search(const param_type& params = param_type())
       : params_(params) {
       assert(params.valid());
     }
@@ -51,39 +56,39 @@ namespace sill {
      * The search stops when the bracket becomes sufficiently small or
      * the Wolfe conditions with given parameters are met.
      */
-    slope_binary_search(const wolfe_param_type& wolfe_params,
-                        const param_type& params = param_type())
-      : wolfe_(boost::bind(&line_function<Vec>::value, &f_),
-               boost::bind(&line_function<Vec>::slope, &f_),
+    slope_binary_search(const param_type& params,
+                        const wolfe_param_type& wolfe_params)
+      : wolfe_(boost::bind(&line_function<Vec>::value, &f_, _1),
+               boost::bind(&line_function<Vec>::slope, &f_, _1),
                wolfe_params),
         params_(params) {
       assert(params.valid());
     }
 
     void reset(const objective_fn& objective, const gradient_fn& gradient) {
-      r_.reset(objective, gradient);
+      f_.reset(objective, gradient);
     }
 
     result_type step(const Vec& x, const Vec& direction) {
       // reset the function to the given line and initialize the Wolfe conds
-      f_.set_line(&x, &direction);
+      f_.line(&x, &direction);
       wolfe_.reset();
 
       // make sure that the left derivative is < 0
-      result_type left = f_.step_slope(0.0);
+      result_type left = f_.slope_result(0.0);
       if (left.value > 0.0) {
         throw line_search_failed(
           "The function is increasing along the specified direction"
         );
       } else if (left.value == 0.0) {
-        return f.step_value(left.step);
+        return f_.value_result(left.step);
       }
 
       // find the right bound s.t. the right derivative >= 0
-      result_type right = f_.step_slope(1.0);
+      result_type right = f_.slope_result(1.0);
       while (right.value < 0.0) {
-        ++bounding_steps_;
-        right = f_.step_slope(right.step * params_.multiplier);
+        ++(this->bounding_steps_);
+        right = f_.slope_result(right.step * params_.multiplier);
         if (right.step > params_.max_step) {
           throw line_search_failed(
             "Could not find right bound <= " + to_string(params_.max_step)
@@ -94,15 +99,15 @@ namespace sill {
       // perform binary search until we shrink the bracket sufficiently
       // and we have moved the left pointer
       while (right.step - left.step > params_.convergence || left.step == 0.0) {
-        ++selection_steps_;
-        result_type mid = f_.step_slope((left + right) / 2.0);
+        ++(this->selection_steps_);
+        result_type mid = f_.slope_result((left.step + right.step) / 2);
         if (mid.value < 0.0) {
           left = mid;
         } else {
           right = mid;
         }
         if (mid.value == 0.0 || wolfe_(mid.step)) {
-          return f_.step_value(mid.step);
+          return f_.value_result(mid.step);
         }
         if (right.step < params_.min_step) {
           throw line_search_failed("Step size is too small in selection");
@@ -111,7 +116,11 @@ namespace sill {
 
       // the left side of the bracket is guaranteed to have lower objective
       // than the start
-      return f_.step_value(left.step);
+      return f_.value_result(left.step);
+    }
+
+    void print(std::ostream& out) const {
+      out << "slope_binary_search(" << params_ << ", " << wolfe_.params() << ")";
     }
 
     // Private data
@@ -120,9 +129,6 @@ namespace sill {
     line_function<Vec> f_;
     wolfe_conditions<real_type> wolfe_;
     param_type params_;
-
-    using line_search<Vec>::bounding_steps_;
-    using line_search<Vec>::selection_steps_;
 
   }; // class slope_binary_search
 

@@ -37,8 +37,8 @@ namespace sill {
       po::options_description sub_desc(desc_prefix + "line search options");
       sub_desc.add_options()
         ("algorithm",
-         po::value<std::string>(&type)->default_value("decay"),
-         "The line search algorithm (decay/backtrack/value_binary/slope_binary")
+         po::value<std::string>(&algorithm)->default_value("decay"),
+         "The line search algorithm (decay, backtrack, slope_binary, value_binary)")
         ("initial",
          po::value<real_type>(&decay.initial),
          "Initial step size")
@@ -79,31 +79,29 @@ namespace sill {
      * Return the line saerch object with parameters set according to the
      * command-line options.
      */
-    line_search<Vec>* get() const {
+    line_search<Vec>* get() {
       backtrack.min_step = bracketing.min_step;
       if (algorithm == "decay") {
-        return new exponential_decay_search(decay);
+        return new exponential_decay_search<Vec>(decay);
       }
       if (algorithm == "backtrack") {
-        return new backtracking_line_search(backtrack);
+        return new backtracking_line_search<Vec>(backtrack);
       }
       if (algorithm == "value_binary") {
-        return new value_binary_search(bracketing);
+        return new value_binary_search<Vec>(bracketing);
       }
-      if (algorithm == "slope_bianry") {
-        return new slope_binary_saerch(bracketing);
-        // TODO: Wolfe conditions
+      if (algorithm == "slope_binary") {
+        return new slope_binary_search<Vec>(bracketing, wolfe);
       }
       throw std::invalid_argument("Invalid algorithm");
     }
 
   private:
     std::string algorithm;
-    real_type min_step;
-    real_type max_step;
     exponential_decay_search_parameters<real_type> decay;
     backtracking_line_search_parameters<real_type> backtrack;
-    bracketing_line_search_parameters<real_type>   bracketing;
+    bracketing_line_search_parameters<real_type> bracketing;
+    typename wolfe_conditions<real_type>::param_type wolfe;
 
   }; // class line_search_builder
 

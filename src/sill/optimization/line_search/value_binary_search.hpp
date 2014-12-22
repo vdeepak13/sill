@@ -1,9 +1,12 @@
 #ifndef SILL_VALUE_BINARY_SEARCH_HPP
 #define SILL_VALUE_BINARY_SEARCH_HPP
 
+#include <sill/global.hpp>
 #include <sill/optimization/line_search/bracketing_line_search.hpp>
+#include <sill/optimization/line_search/line_function.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
-#include <sill/optimization/line_saerch/line_search_failed.hpp>
+#include <sill/optimization/line_search/line_search_failed.hpp>
+#include <sill/optimization/line_search/line_search_result.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -29,7 +32,7 @@ namespace sill {
     //==========================================================================
   public:
     typedef typename Vec::value_type real_type;
-    typedef line_step_value<real_type> result_type;
+    typedef line_search_result<real_type> result_type;
     typedef boost::function<real_type(const Vec&)> objective_fn;
     typedef boost::function<const Vec&(const Vec&)> gradient_fn;
     typedef bracketing_line_search_parameters<real_type> param_type;
@@ -52,29 +55,29 @@ namespace sill {
     
     result_type step(const Vec& x, const Vec& direction) {
       // set the line
-      f_.set_line(&x, &direction);
-      result_type left  = f_.step_value(0.0);
-      result_type mid   = f_.step_value(1.0);
+      f_.line(&x, &direction);
+      result_type left  = f_.value_result(0.0);
+      result_type mid   = f_.value_result(1.0);
       result_type right = mid;
       
       // identify the initial bracket
-      if (right.val > left.val) { // shrink mid until its objective is < left
-        mid = f_.value(1.0 / params_.multiplier);
-        while (mid.val > left.val) {
-          ++bounding_steps_;
+      if (right.value > left.value) { // shrink mid until its objective is < left
+        mid = f_.value_result(1.0 / params_.multiplier);
+        while (mid.value > left.value) {
+          ++(this->bounding_steps_);
           right = mid;
-          mid = f_.step_value(mid.step / params_.multiplier);
+          mid = f_.value_result(mid.step / params_.multiplier);
           if (right.step < params_.min_step) {
             throw line_search_failed("Step size too small in bounding");
           }
         }
       } else { // increase right until its objective is > mid
-        right = f_.value(params_.multiplier);
-        while (right.val < mid.val) {
-          ++bounding_steps_;
+        right = f_.value_result(params_.multiplier);
+        while (right.value < mid.value) {
+          ++(this->bounding_steps_);
           left = mid;
           mid = right;
-          right = f_.step_value(right.step * params_.multiplier);
+          right = f_.value_result(right.step * params_.multiplier);
           if (right.step > params_.max_step) {
             throw line_search_failed("Step size too large in bounding");
           }
@@ -82,14 +85,15 @@ namespace sill {
       }
 
       // do binary search while maintaining the invariant
-      while (right.step - left.step > params_.convergence || left.step == 0.0) {
-        ++selection_steps_;
-        value_type mid_left = f_.step_value((left.step + mid.step) / 2.0);
-        value_type mid_right = f_.step_value((mid.step + right.step) / 2.0);
-        if (mid_left.val > mid.val && mid_right.val > mid.val) {
+      while (right.step - left.step > params_.convergence ||
+             left.step == 0.0) {
+        ++(this->selection_steps_);
+        result_type mid_left = f_.value_result((left.step + mid.step) / 2);
+        result_type mid_right = f_.value_result((mid.step + right.step) / 2);
+        if (mid_left.value > mid.value && mid_right.value > mid.value) {
           left = mid_left;
           right = mid_right;
-        } else if (mid_left.val < mid_right.val) {
+        } else if (mid_left.value < mid_right.value) {
           right = mid;
           mid = mid_left;
         } else {
@@ -104,12 +108,13 @@ namespace sill {
       return mid;
     }
 
+    void print(std::ostream& out) const {
+      out << "value_binary_search(" << params_ << ")";
+    }
+
   private:
     line_function<Vec> f_;
     param_type params_;
-
-    using line_search<Vec>::bracketing_steps_;
-    using line_search<Vec>::selection_steps_;
 
   }; // class value_binary_search
 

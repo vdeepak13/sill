@@ -3,7 +3,9 @@
 
 #include <sill/global.hpp>
 #include <sill/optimization/concepts.hpp>
-#include <sill/line_search/line_step_value.hpp>
+#include <sill/optimization/line_search/line_search_result.hpp>
+
+#include <iostream>
 
 #include <boost/function.hpp>
 
@@ -28,7 +30,7 @@ namespace sill {
     typedef typename Vec::value_type real_type;
 
     //! A type that represents the step and the corresponding objective value
-    typedef line_step_value<real_type> result_type;
+    typedef line_search_result<real_type> result_type;
 
     //! A type that represents the objective function
     typedef boost::function<real_type(const Vec&)> objective_fn;
@@ -43,17 +45,36 @@ namespace sill {
     //! Destructor
     virtual ~line_search() { }
 
-    //! Sets the objective and the gradient used in the search
+    /**
+     * Sets the objective and the gradient used in the search.
+     */
     virtual void reset(const objective_fn& objective,
                        const gradient_fn& gradient) = 0;
 
-    //! Compute the step in the given direction
+    /**
+     * Computes the step in the given direction.
+     * Returns the step size and the corresponding objective value.
+     */
     virtual result_type step(const Vec& x, const Vec& direction) = 0;
 
-    //! Returns the number of bounding steps performed so far
-    size_t bounding_steps() const { return bracketing_steps_; }
+    /**
+     * Prints the line search algorithm and its parameters to a stream.
+     */
+    virtual void print(std::ostream& out) const = 0;
 
-    //! Returns the number of selection steps performed so far
+    /**
+     * Returns the number of bounding steps performed so far.
+     * These are the steps in algorithms, such as bracketing line
+     * search, where a valid range for the step size must be
+     * initially computed.
+     */
+    size_t bounding_steps() const { return bounding_steps_; }
+
+    /**
+     * Returns the number of selection steps performed so far.
+     * These are the steps to narrow down the initial estimate
+     * into an acceptable value.
+     */
     size_t selection_steps() const { return selection_steps_; }
 
   protected:
@@ -61,6 +82,17 @@ namespace sill {
     size_t selection_steps_;
 
   }; // class line_search
+
+
+  /**
+   * Prints the line_search object to a stream.
+   * \relates line_search
+   */
+  template <typename Vec>
+  std::ostream& operator<<(std::ostream& out, const line_search<Vec>& ls) {
+    ls.print(out);
+    return out;
+  }
 
 } // namespace sill
 

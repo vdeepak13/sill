@@ -1,7 +1,7 @@
 #ifndef SILL_LINE_FUNCTION_HPP
 #define SILL_LINE_FUNCTION_HPP
 
-#include <sill/optimization/line_search/line_step_value.hpp>
+#include <sill/optimization/line_search/line_search_result.hpp>
 
 #include <boost/function.hpp>
 
@@ -19,7 +19,7 @@ namespace sill {
   class line_function {
   public:
     typedef typename Vec::value_type real_type;
-    typedef line_step_value<real_type> value_type;
+    typedef line_search_result<real_type> result_type;
     typedef boost::function<real_type(const Vec&)> objective_fn;
     typedef boost::function<const Vec&(const Vec&)> gradient_fn;
 
@@ -37,34 +37,27 @@ namespace sill {
     /**
      * Sets the underlying objective and gradient.
      */
-    void reset(const objectve_fn& objective,
+    void reset(const objective_fn& objective,
                const gradient_fn& gradient = NULL) {
       objective_ = objective;
       gradient_ = gradient;
       origin_ = NULL;
       direction_ = NULL;
-      new_line = true;
+      new_line_ = true;
     }
     
     /**
      * Selects the line to be restricted to in terms of the origin and
      * direction.
      */
-    void set_line(const Vec* origin, const Vec* direction) {
+    void line(const Vec* origin, const Vec* direction) {
       origin_ = origin;
       direction_ = direction;
       new_line_ = true;
     }
 
     /**
-     * Evaluates the function at the given position.
-     */
-    real_type operator()(real_type step) {
-      return value(step);
-    }
-
-    /**
-     * Evaluates the function at the given position.
+     * Evaluates the function for the given step size.
      */
     real_type value(real_type step) {
       cache_input(step);
@@ -72,29 +65,29 @@ namespace sill {
     }
 
     /**
-     * Returns the position-value pair for the given position.
+     * Returns the step-value pair for the given step size.
      */
-    value_type step_value(real_type step) {
-      return value_type(step, value(step));
+    result_type value_result(real_type step) {
+      return result_type(step, value(step));
     }
 
     /**
-     * Returns the derivative (slope) at the given position.
+     * Returns the derivative (slope) at the given step size.
      */
-    real_type slope()(real_type step) {
+    real_type slope(real_type step) {
       cache_input(step);
-      return dot(*direction, gradient_(input_));
+      return dot(*direction_, gradient_(input_));
     }
 
     /**
-     * Returns the position-slope pair for the given position.
+     * Returns the step-slope pair for the given step size.
      */
-    value_type step_slope(real_type step) {
-      return value_type(step, slope(step));
+    result_type slope_result(real_type step) {
+      return result_type(step, slope(step));
     }
 
     /**
-     * Returns the input corresponding to the last invoked position.
+     * Returns the input for the last invocation to value() or slope().
      */
     const Vec& input() const {
       return input_;
@@ -107,7 +100,7 @@ namespace sill {
     void cache_input(real_type step) {
       if (new_line_ || step_ != step) {
         step_ = step;
-        input_ = *origin;
+        input_ = *origin_;
         if (step != 0.0) {
           input_ += *direction_ * step;
         }
