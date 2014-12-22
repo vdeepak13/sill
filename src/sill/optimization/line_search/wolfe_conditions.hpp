@@ -52,6 +52,13 @@ namespace sill {
       bool valid() const {
         return 0.0 < c1 && c1 <= c2 && c2 <= 1.0;
       }
+
+      //! Prints the parameters to an output stream
+      friend std::ostream& operator<<(std::ostream& out, const param_type& p) {
+        out << p.c1 << " " << p.c2 << " " << (p.strong ? "strong" : "weak");
+        return out;
+      }
+
     }; // struct param_type
 
     /**
@@ -91,12 +98,19 @@ namespace sill {
       if (params_.strong) {
         return
           f_(alpha) <= f0_ + params_.c1 * alpha * g0_ &&
-          g_(alpha) >= params_.c2 * g0_;
+          std::fabs(g_(alpha)) <= params_.c2 * std::fabs(g0_);
       } else {
         return
           f_(alpha) <= f0_ + params_.c1 * alpha * g0_ &&
-          std::fabs(g_(alpha)) <= params_.c2 * std::fabs(g0_);
+          g_(alpha) >= params_.c2 * g0_;
       }
+    }
+
+    /**
+     * Returns the Wolfe condition parameters.
+     */
+    const param_type& params() const {
+      return params_;
     }
 
   private:
@@ -104,6 +118,7 @@ namespace sill {
     real_fn g_;
     real_type f0_;
     real_type g0_;
+    param_type params_;
     
   }; // class wolfe_conditions
 

@@ -1,5 +1,5 @@
-#ifndef SILL_LINE_STEP_VALUE_HPP
-#define SILL_LINE_STEP_VALUE_HPP
+#ifndef SILL_LINE_SEARCH_RESULT_HPP
+#define SILL_LINE_SEARCH_RESULT_HPP
 
 #include <iostream>
 
@@ -10,18 +10,18 @@ namespace sill {
    * objective value.
    */
   template <typename RealType>
-  struct line_step_value {
+  struct line_search_result {
     RealType step;
     RealType value;
-    explicit line_step_value(RealType step, RealType value)
+    explicit line_search_result(RealType step, RealType value)
       : step(step), value(value) { }
-  }; // struct line_step_value
+  }; // struct line_search_result
 
-  //! \relates line_step_value
+  //! \relates line_search_result
   template <typename RealType>
   std::ostream& 
-  operator<<(std::ostream& out, const line_step_value<RealType>& p) {
-    out << p.step << ':' << p.value;
+  operator<<(std::ostream& out, const line_search_result<RealType>& r) {
+    out << r.step << ':' << r.value;
     return out;
   }
   

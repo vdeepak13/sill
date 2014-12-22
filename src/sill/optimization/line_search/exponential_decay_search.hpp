@@ -1,10 +1,10 @@
 #ifndef SILL_EXPONENTIAL_DECAY_SEARCH_HPP
 #define SILL_EXPONENTIAL_DECAY_SEARCH_HPP
 
+#include <sill/optimization/line_search/line_function.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
+#include <sill/optimization/line_search/line_search_result.hpp>
 #include <sill/serialization/serialize.hpp>
-
-#include <cstdlib>
 
 #include <boost/function.hpp>
 
@@ -70,7 +70,7 @@ namespace sill {
      * Prints the parameters to the output stream.
      */
     friend std::ostream&
-    operator<<(std::ostream& out, const exponential_decay_step_parameters& p) {
+    operator<<(std::ostream& out, const exponential_decay_search_parameters& p) {
       out << p.initial << ' ' << p.rate;
       return out;
     }
@@ -88,7 +88,7 @@ namespace sill {
     //==========================================================================
   public:
     typedef typename Vec::value_type real_type;
-    typedef line_step_value<real_type> result_type;
+    typedef line_search_result<real_type> result_type;
     typedef boost::function<real_type(const Vec&)> objective_fn;
     typedef boost::function<const Vec&(const Vec&)> gradient_fn;
     typedef exponential_decay_search_parameters<real_type> param_type;
@@ -97,7 +97,7 @@ namespace sill {
     //==========================================================================
   public:
     explicit exponential_decay_search(const param_type& params = param_type())
-      : step_(params.initial), rate_(params.rate) {
+      : params_(params), step_(params.initial) {
       assert(params.valid());
     }
 
@@ -106,18 +106,22 @@ namespace sill {
     }
 
     result_type step(const Vec& x, const Vec& direction) {
-      f_.set_line(&x, &direction);
-      result_type result = f_.step_value(eta_);
-      eta_ *= rate_;
+      f_.line(&x, &direction);
+      result_type result = f_.value_result(step_);
+      step_ *= params_.rate;
       return result;
+    }
+
+    void print(std::ostream& out) const {
+      out << "exponential_decay_search(" << params_ << ")";
     }
 
     // Private data
     //==========================================================================
   private:
     line_function<Vec> f_;
-    real_type eta_;
-    real_type rate_;
+    param_type params_;
+    real_type step_;
 
   }; // class exponential_decay_search
 

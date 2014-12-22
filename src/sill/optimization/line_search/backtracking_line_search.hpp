@@ -1,7 +1,11 @@
 #ifndef SILL_BACKTRACKING_LINE_SEARCH_HPP
 #define SILL_BACKTRACKING_LINE_SEARCH_HPP
 
+#include <sill/optimization/line_search/line_function.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
+#include <sill/optimization/line_search/line_search_failed.hpp>
+#include <sill/optimization/line_search/line_search_result.hpp>
+#include <sill/parsers/string_functions.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <boost/function.hpp>
@@ -95,7 +99,7 @@ namespace sill {
     //==========================================================================
   public:
     typedef typename Vec::value_type real_type;
-    typedef line_step_value<real_type> result_type;
+    typedef line_search_result<real_type> result_type;
     typedef backtracking_line_search_parameters<real_type> param_type;
     typedef boost::function<real_type(const Vec&)> objective_fn;
     typedef boost::function<const Vec&(const Vec&)> gradient_fn;
@@ -103,7 +107,7 @@ namespace sill {
     // Public functions
     //==========================================================================
   public:
-    backtracking_line_search(const param_type& params = param_type())
+    explicit backtracking_line_search(const param_type& params = param_type())
       : params_(params) {
       assert(params.valid());
     }
@@ -113,13 +117,14 @@ namespace sill {
     }
 
     result_type step(const Vec& x, const Vec& direction) {
-      f_.set_line(&x, &direction);
+      f_.line(&x, &direction);
       real_type threshold = params_.acceptance * f_.slope(0.0);
-      real_type f0 = f_(0.0);
-      result_type r = f_.step_value(1.0);
+      real_type f0 = f_.value(0.0);
+      result_type r = f_.value_result(1.0);
       while (r.step > params_.min_step &&
              r.value > f0 + r.step * threshold) {
-        r = f_.step_value(r.step * params_.discount);
+        ++(this->selection_steps_);
+        r = f_.value_result(r.step * params_.discount);
       }
       if (r.step <= params_.min_step) {
         throw line_search_failed(
@@ -128,6 +133,10 @@ namespace sill {
       } else {
         return r;
       }
+    }
+
+    void print(std::ostream& out) const {
+      out << "backtracking_line_search(" << params_ << ")";
     }
 
     // Private data
