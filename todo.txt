@@ -1,66 +1,63 @@
-0. more unit tests
-   - verify BOOST_CHECK_SMALL vs BOOST_CHECK_CLOSE
-   - improve the tests for core data structures (such as table_factor)
-1. move to Armadillo's sparse matrices 
-2. move to C++11
-   - swap for custom iterators
-3. drop dependence on Boost for the main template library (keep it for Python bindings and tests)
-   - what to do about the range adaptors and iterators?
-4. remove much of the custom code like forward_range, range-based algorithms, operator std::string
-5. move domain, assignment, etc. to separate data structures
-6. variable values, not pointers
-7. general code cleanup
-   - simplify design wherever possible
-   - parallel-friendly
-   - performance (speed + memory) - 
-   - facebook formatting guidelines wrt the newline after ( +
-   - trailing underscore for member vars
-   - allow edge creation outside of the graph
+Planned changes:
+
+Optimization:
+* finish up the gradient methods
+* optimize away function evaluations
+* port the CRF learning to the the new optimzation framework
+
+CRFs:
+* Update the "marginal" factor concepts to work with CRFs as well
+* Update the table_factor class to work with CRFs
+* Implement John Lafferty's original paper
+* Update the CRF factor graph to use bipartite_graph
+* Update the CRF parameter learning
+* Update the CRF structure learning
+* Update other factor classes to CRF: softmax, Gaussian, hybrid
+
+Loopy inference:
+* Use the updated factor_graph in standard methods
+* Eliminate bethe_bp
+* Update the serial splash BP to the new factor_graph
+* Update the parallel splash BP to the new factor_graph
+
+C++11 port:
+* iterator pairs
+* foreach
+* smart pointers
+* bind, function
+* iterators?
+* threads
+
+Cruft removal:
+* forward_range
+* range algorithms
+* operator std::string
+* parallel unfriendly optimizations
+
+Other pre-release cleanups:
+* templatize and cleanup factors (is_marginal, arg_vetor, etc.)
+* convert to Eigen
+* domain template, assignments
+* variables by value
+* trailing underscores for member vars
+* rename hugin and shafer_shenoy
+* models: markov networks, decomposable
+
+Post-release:
+* continued work on Python bindings
+* change many asserts to exceptions
+* drop dependence on Boost to the extent possible
+* optimize performance (speed + memory)
+  - factor operations
    - make sure triangulation does not construct properties
-   - clean up record or merge it with assignment
-   - replace template arguments for optimization objective/gradient
-     with std::function
-   - fix table_factor::operator=(double)
-   - rename shafer_shenoy and hugin to something more memorable
-     and split junction tree inference to two files
-   - possibly merge the pairwise_markov_network class with markov_network
-   - clean up the factor_graph template
-   - decomposable - move the extra normalization out of the impl namespace
-   - test if we can eliminate the marginal with pre-allocated output
-   - clean up the concepts especially factors
-   - remove extra typedefs from table_factor and other factor classes
-   - implement d-separation in Markov network and Bayesian network classes
-   - get rid of member functions in decomposable that create functors
-   - consider deprecating Factor::var_vector_type, var_map_type
-   - convert learn_factor<F> to a functor table_factor_learner<T> etc.
-   - standardize vertex vs node in graphical models
-   - bayesian_network modifiers - check add_factor
-   - flatten, relative entropy for decomposable
-   - ensure the newdatasets work with CRFs
-   - more efficient sampling from BNs and decomposable models
-   - try different initialization once we have better sampling of MGs
-   - clean up the subset_iterator code
-   - marginal() test => is_marginal() 
-   - merged datasets
-   - change the table generator to take actual arguments (not logspace)
-   - unify CRF factor and regular (marginal) factors
-   - clean up and simplify the optimization code
-   - marginal() => is_marginal(), standardize arg_vector, head_vector() etc.
-   - get rid of hacks in the table_factor and dense_table
-   - simplify the storage format of vector datasets
-   - implement pseudolikelihood for factor graphs
-     - possibly clean up factor graphs
-   - clean up the CRF factors, models, and learning
-   - improve the safety of *_network wrt factor mutations
-   - logical_or -> bit_orx
-   - reduce the memory footprint of table factors
-   - strengthen the ordering of combine operations
-   - traits to distinguish marginal and conditional factors
-   - custom variables
-   - clean up factor concepts some more
-
-8. more examples / applications:
-   - viterbi algorithm
-
-Python:
-- change many asserts to exceptions
+* consider expression templates
+* d-separation tests
+* standardize vertex vs node in graphical models
+* bayesian_network modifiers - check add_factor
+* flatten, relative entropy for decomposable
+* cleanups throughout
+* simplify the storage format of vector datasets
+* strengthen the ordering of combine operations
+* is_marginal trait
+* more examples: viterbi algorithm
+* test on all major platforms and compilers

@@ -10,7 +10,8 @@ typedef arma::vec vec_type;
 struct quadratic_objective {
   vec_type ctr;
   mat_type cov;
-  vec_type grad;
+  vec_type g;
+  vec_type p;
 
   quadratic_objective(const vec_type& ctr, const mat_type& cov)
     : ctr(ctr), cov(cov) { }
@@ -21,8 +22,13 @@ struct quadratic_objective {
   }
 
   const vec_type& gradient(const vec_type& x) {
-    grad = cov * (x - ctr);
-    return grad;
+    g = cov * (x - ctr);
+    return g;
+  }
+
+  const vec_type& precondg(const vec_type& x) {
+    p = (cov * (x - ctr)) / diagvec(cov);
+    return p;
   }
   
 }; // struct quadratic_objective
