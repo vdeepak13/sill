@@ -15,6 +15,10 @@ namespace sill {
     RealType value;
     explicit line_search_result(RealType step, RealType value)
       : step(step), value(value) { }
+    void reset(RealType step, RealType value) {
+      this->step = step;
+      this->value = value;
+    }
   }; // struct line_search_result
 
   //! \relates line_search_result

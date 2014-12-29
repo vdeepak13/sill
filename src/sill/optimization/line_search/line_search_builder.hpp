@@ -12,8 +12,6 @@
 
 namespace sill {
 
-  // TODO check defaults
-
   /**
    * Class for parsing command-line options that specify line saerch
    * parameters.
@@ -76,7 +74,7 @@ namespace sill {
     }
 
     /**
-     * Return the line saerch object with parameters set according to the
+     * Return a new line search object with parameters set according to the
      * command-line options.
      */
     line_search<Vec>* get() {
@@ -93,7 +91,7 @@ namespace sill {
       if (algorithm == "slope_binary") {
         return new slope_binary_search<Vec>(bracketing, wolfe);
       }
-      throw std::invalid_argument("Invalid algorithm");
+      throw std::invalid_argument("Invalid line search algorithm");
     }
 
   private:
