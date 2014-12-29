@@ -1,13 +1,17 @@
 #ifndef SILL_TEST_QUADRATIC_OBJECTIVE_HPP
 #define SILL_TEST_QUADRATIC_OBJECTIVE_HPP
 
+#include <sill/optimization/gradient_objective.hpp>
+
 #include <armadillo>
 
 typedef arma::mat mat_type;
 typedef arma::vec vec_type;
 
 // a quadratic objective 0.5 * (x-ctr)^T cov (x-ctr)
-struct quadratic_objective {
+struct quadratic_objective
+  : public sill::gradient_objective<vec_type> {
+
   vec_type ctr;
   mat_type cov;
   vec_type g;

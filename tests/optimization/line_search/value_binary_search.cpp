@@ -15,7 +15,7 @@ template class value_binary_search<vec_type>;
 BOOST_AUTO_TEST_CASE(test_value_binary_search) {
   quadratic_objective objective("5 4", "1 0; 0 1");
   value_binary_search<vec_type> search;
-  search.reset(boost::bind(&quadratic_objective::value, &objective, _1), NULL);
+  search.objective(&objective);
   result_type horiz = search.step("3.987 3", "1 0");
   BOOST_CHECK_CLOSE(horiz.step, 1.013, 1e-3);
   BOOST_CHECK_CLOSE(horiz.value, 0.5, 1e-3);

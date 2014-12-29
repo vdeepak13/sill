@@ -13,7 +13,7 @@ namespace sill {
   struct line_search_result {
     RealType step;
     RealType value;
-    explicit line_search_result(RealType step, RealType value)
+    line_search_result(RealType step, RealType value)
       : step(step), value(value) { }
     void reset(RealType step, RealType value) {
       this->step = step;

@@ -2,17 +2,18 @@
 #define SILL_GRADIENT_METHOD_HPP
 
 #include <sill/optimization/concepts.hpp>
+#include <sill/optimization/gradient_objective.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
 
 #include <iostream>
-
-#include <boost/function.hpp>
 
 namespace sill {
   
   /**
    * An interface for gradient-based optimization algorithms that
    * minimize the given objective.
+   *
+   * \ingroup optimization_gradient
    *
    * \tparam Vec the type of the optimization vector
    */
@@ -25,12 +26,6 @@ namespace sill {
     //! A type that represents the step and the corresponding objective value
     typedef line_search_result<real_type> result_type;
 
-    //! A type that represents the objective function value
-    typedef boost::function<real_type(const Vec&)> objective_fn;
-
-    //! A type that represents the gradient of the objective
-    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
-
     /**
      * Default constructor.
      */
@@ -42,17 +37,20 @@ namespace sill {
     virtual ~gradient_method() { }
 
     /**
-     * Resets the objective, gradient, and the initial estimate.
+     * Sets the objective used for optimization. The objective object is
+     * not owned by this class.
      */
-    virtual void reset(const objective_fn& objective,
-                       const gradient_fn& gradient,
-                       const Vec& init) = 0;
+    virtual void objective(gradient_objective<Vec>* obj) = 0;
 
     /**
-     * Performs one iteration.
-     * \return the latest line search result (step and objective value)
+     * Sets the initial solution.
      */
-    virtual result_type iterate() = 0;
+    virtual void solution(const Vec& init) = 0;
+
+    /**
+     * Returns the current solution.
+     */
+    virtual const Vec& solution() const = 0;
 
     /**
      * Returns true if the iteration has converged.
@@ -60,9 +58,10 @@ namespace sill {
     virtual bool converged() const = 0;
 
     /**
-     * Returns the solution.
+     * Performs one iteration.
+     * \return the latest line search result (step and objective value)
      */
-    virtual const Vec& solution() const = 0;
+    virtual result_type iterate() = 0;
 
     /**
      * Prints the name of the gradient method and its parameters to an

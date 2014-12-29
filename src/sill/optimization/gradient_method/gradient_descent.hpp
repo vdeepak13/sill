@@ -24,8 +24,6 @@ namespace sill {
   public:
     typedef typename Vec::value_type real_type;
     typedef line_search_result<real_type> result_type;
-    typedef boost::function<real_type(const Vec&)> objective_fn;
-    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
 
     struct param_type {
       /**
@@ -52,34 +50,36 @@ namespace sill {
                               const param_type& params = param_type())
       : search_(search),
         params_(params),
+        objective_(NULL),
         value_(nan()),
         converged_(false) { }
 
-    void reset(const objective_fn& objective,
-               const gradient_fn& gradient,
-               const Vec& init) {
-      search_->reset(objective, gradient);
-      gradient_ = gradient;
-      x_ = init;
+    void objective(gradient_objective<Vec>* obj) {
+      objective_ = obj;
+      search_->objective(obj);
       value_ = nan();
       converged_ = false;
     }
 
-    result_type iterate() {
-      dir_ = -gradient_(x_);
-      result_type result = search_->step(x_, dir_);
-      x_ += result.step * dir_;
-      converged_ = (value_ - result.value) < params_.convergence;
-      value_ = result.value;
-      return result;
+    void solution(const Vec& init) {
+      x_ = init;
+    }
+
+    const Vec& solution() const {
+      return x_;
     }
 
     bool converged() const {
       return converged_;
     }
 
-    const Vec& solution() const {
-      return x_;
+    result_type iterate() {
+      dir_ = -objective_->gradient(x_);
+      result_type result = search_->step(x_, dir_);
+      x_ += result.step * dir_;
+      converged_ = (value_ - result.value) < params_.convergence;
+      value_ = result.value;
+      return result;
     }
 
     void print(std::ostream& out) const {
@@ -93,8 +93,8 @@ namespace sill {
     //! The convergence parameters
     param_type params_;
 
-    //! The gradient function
-    gradient_fn gradient_;
+    //! The objective
+    gradient_objective<Vec>* objective_;
 
     //! Current solution
     Vec x_;
