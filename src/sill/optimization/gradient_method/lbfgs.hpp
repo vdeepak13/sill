@@ -29,8 +29,6 @@ namespace sill {
   public:
     typedef typename Vec::value_type real_type;
     typedef line_search_result<real_type> result_type;
-    typedef boost::function<real_type(const Vec&)> objective_fn;
-    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
     
     struct param_type {
       /**
@@ -63,6 +61,7 @@ namespace sill {
                    const param_type& params = param_type())
       : search_(search),
         params_(params),
+        objective_(NULL),
         shist_(params.history),
         yhist_(params.history),
         rhist_(params.history),
@@ -70,19 +69,28 @@ namespace sill {
         value_(nan()),
         converged_(false) { }
 
-    void reset(const objective_fn& objective,
-               const gradient_fn& gradient,
-               const Vec& init) {
-      search_->reset(objective, gradient);
-      gradient_ = gradient;
+    void objective(gradient_objective<Vec>* obj) {
+      objective_ = obj;
+      search_->objective(obj);
       iteration_ = 0;
-      x_ = init;
       value_ = nan();
       converged_ = false;
     }
 
+    void solution(const Vec& init) {
+      x_ = init;
+    }
+
+    const Vec& solution() const {
+      return x_;
+    }
+
+    bool converged() const {
+      return converged_;
+    }
+
     result_type iterate() {
-      const Vec& g = gradient_(x_);
+      const Vec& g = objective_->gradient(x_);
       
       // compute the direction
       if (iteration_ > 0) {
@@ -118,14 +126,6 @@ namespace sill {
       return result;
     }
 
-    bool converged() const {
-      return converged_;
-    }
-
-    const Vec& solution() const {
-      return x_;
-    }
-
     void print(std::ostream& out) const {
       out << "lbfgs(" << params_ << ")";
     }
@@ -146,14 +146,14 @@ namespace sill {
       return rhist_[(iteration_ - i) % params_.history];
     }
     
-    //! The gradient of the objective function
-    gradient_fn gradient_;
-
     //! The line search algorithm
     boost::shared_ptr<line_search<Vec> > search_;
 
     //! Convergence and history parameters
     param_type params_;
+
+    //! The objective function
+    gradient_objective<Vec>* objective_;
 
     //! The history of solution differences x_{k+1} - x_k
     std::vector<Vec> shist_;

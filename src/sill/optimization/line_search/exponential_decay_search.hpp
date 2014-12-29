@@ -89,8 +89,6 @@ namespace sill {
   public:
     typedef typename Vec::value_type real_type;
     typedef line_search_result<real_type> result_type;
-    typedef boost::function<real_type(const Vec&)> objective_fn;
-    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
     typedef exponential_decay_search_parameters<real_type> param_type;
 
     // Public functions
@@ -101,8 +99,8 @@ namespace sill {
       assert(params.valid());
     }
 
-    void reset(const objective_fn& objective, const gradient_fn& gradient) {
-      f_.reset(objective, gradient);
+    void objective(gradient_objective<Vec>* obj) {
+      f_.objective(obj);
     }
 
     result_type step(const Vec& x, const Vec& direction) {

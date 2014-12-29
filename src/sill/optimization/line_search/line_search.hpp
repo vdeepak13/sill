@@ -3,11 +3,10 @@
 
 #include <sill/global.hpp>
 #include <sill/optimization/concepts.hpp>
+#include <sill/optimization/gradient_objective.hpp>
 #include <sill/optimization/line_search/line_search_result.hpp>
 
 #include <iostream>
-
-#include <boost/function.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -32,12 +31,6 @@ namespace sill {
     //! A type that represents the step and the corresponding objective value
     typedef line_search_result<real_type> result_type;
 
-    //! A type that represents the objective function
-    typedef boost::function<real_type(const Vec&)> objective_fn;
-    
-    //! A type that represents the gradient of the objective
-    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
-
     //! Default constructor
     line_search()
       : bounding_steps_(0), selection_steps_(0) { }
@@ -46,10 +39,10 @@ namespace sill {
     virtual ~line_search() { }
 
     /**
-     * Sets the objective and the gradient used in the search.
+     * Sets the objective used in the search.
+     * The pointer is not owned by this object.
      */
-    virtual void reset(const objective_fn& objective,
-                       const gradient_fn& gradient) = 0;
+    virtual void objective(gradient_objective<Vec>* objective) = 0;
 
     /**
      * Computes the step in the given direction.

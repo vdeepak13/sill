@@ -1,9 +1,8 @@
 #ifndef SILL_LINE_FUNCTION_HPP
 #define SILL_LINE_FUNCTION_HPP
 
+#include <sill/optimization/gradient_objective.hpp>
 #include <sill/optimization/line_search/line_search_result.hpp>
-
-#include <boost/function.hpp>
 
 namespace sill {
 
@@ -20,34 +19,26 @@ namespace sill {
   public:
     typedef typename Vec::value_type real_type;
     typedef line_search_result<real_type> result_type;
-    typedef boost::function<real_type(const Vec&)> objective_fn;
-    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
 
     /**
      * Creates a line function with the given base function and gradient.
      */
-    explicit line_function(const objective_fn& objective = NULL,
-                           const gradient_fn& gradient = NULL)
+    explicit line_function(gradient_objective<Vec>* objective = NULL)
       : objective_(objective),
-        gradient_(gradient),
         origin_(NULL),
         direction_(NULL),
         new_line_(true) { }
 
     /**
-     * Sets the underlying objective and gradient.
+     * Sets the objective that defines the value and gradient of
+     * this function. The pointer is not owned by this object.
      */
-    void reset(const objective_fn& objective,
-               const gradient_fn& gradient = NULL) {
+    void objective(gradient_objective<Vec>* objective) {
       objective_ = objective;
-      gradient_ = gradient;
-      origin_ = NULL;
-      direction_ = NULL;
-      new_line_ = true;
     }
     
     /**
-     * Selects the line to be restricted to in terms of the origin and
+     * Sets the line to be restricted to in terms of the origin and
      * direction.
      */
     void line(const Vec* origin, const Vec* direction) {
@@ -61,7 +52,7 @@ namespace sill {
      */
     real_type value(real_type step) {
       cache_input(step);
-      return objective_(input_);
+      return objective_->value(input_);
     }
 
     /**
@@ -76,7 +67,7 @@ namespace sill {
      */
     real_type slope(real_type step) {
       cache_input(step);
-      return dot(*direction_, gradient_(input_));
+      return dot(*direction_, objective_->gradient(input_));
     }
 
     /**
@@ -108,8 +99,7 @@ namespace sill {
       }
     }
 
-    objective_fn objective_;
-    gradient_fn gradient_;
+    gradient_objective<Vec>* objective_;
     const Vec* origin_;
     const Vec* direction_;
     bool new_line_;

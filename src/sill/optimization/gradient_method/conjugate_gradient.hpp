@@ -25,8 +25,6 @@ namespace sill {
   public:
     typedef typename Vec::value_type real_type;
     typedef line_search_result<real_type> result_type;
-    typedef boost::function<real_type(const Vec&)> objective_fn;
-    typedef boost::function<const Vec&(const Vec&)> gradient_fn;
 
     struct param_type {
       /**
@@ -34,6 +32,11 @@ namespace sill {
        * and the new objective value is less than this threshold.
        */
       real_type convergence;
+
+      /**
+       * If true, we use the preconditioner in the objective.
+       */
+      bool precondition;
       
       /**
        * The method for computing the update (beta). These methods
@@ -42,14 +45,16 @@ namespace sill {
       enum update_method { FLETCHER_REEVES, POLAK_RIBIERE } update;
       
       /**
-       * Ensures that beta is always >= 0.
+       * If true, ensures that beta is always >= 0.
        */
       bool auto_reset;
       
       param_type(real_type convergence = 1e-6,
+                 bool precondition = false,
                  update_method update = POLAK_RIBIERE,
                  bool auto_reset = true)
         : convergence(convergence),
+          precondition(precondition),
           update(update),
           auto_reset(auto_reset) { }
 
@@ -67,7 +72,8 @@ namespace sill {
       }
 
       friend std::ostream& operator<<(std::ostream& out, const param_type& p) {
-        out << p.convergence << " ";
+        out << p.convergence << " "
+            << p.precondition << " ";
         switch (p.update) {
         case FLETCHER_REEVES:
           out << "fletcher_reeves";
@@ -95,33 +101,31 @@ namespace sill {
                                 const param_type& params = param_type())
       : search_(search),
         params_(params),
-        converged_(false),
-        value_(nan()) { }
-
-    void reset(const objective_fn& objective,
-               const gradient_fn& gradient,
-               const Vec& init) {
-      search_->reset(objective, gradient);
-      gradient_ = gradient;
-      x_ = init;
+        objective_(NULL),
+        value_(nan()),
+        converged_(false) { }
+    
+    void objective(gradient_objective<Vec>* obj) {
+      objective_ = obj;
+      search_->objective(obj);
       value_ = nan();
       converged_ = false;
     }
 
-    void reset(const objective_fn& objective,
-               const gradient_fn& gradient,
-               const gradient_fn& precondg,
-               const Vec& init) {
-      search_->reset(objective, gradient);
-      gradient_ = gradient;
-      precondg_ = precondg;
+    void solution(const Vec& init) {
       x_ = init;
-      value_ = nan();
-      converged_ = false;
+    }
+
+    const Vec& solution() const {
+      return x_;
+    }
+
+    bool converged() const {
+      return converged_;
     }
 
     result_type iterate() {
-      if (precondg_) {
+      if (params_.precondition) {
         direction_preconditioned();
       } else {
         direction_standard();
@@ -131,14 +135,6 @@ namespace sill {
       converged_ = (value_ - result.value) < params_.convergence;
       value_ = result.value;
       return result;
-    }
-
-    bool converged() const {
-      return converged_;
-    }
-
-    const Vec& solution() const {
-      return x_;
     }
 
     void print(std::ostream& out) const {
@@ -152,10 +148,10 @@ namespace sill {
      */
     void direction_standard() {
       if (boost::math::isnan(value_)) {
-        g_ = gradient_(x_);
+        g_ = objective_->gradient(x_);
         dir_ = -g_;
       } else {
-        const Vec& g2 = gradient_(x_);
+        const Vec& g2 = objective_->gradient(x_);
         dir_ *= beta(g_, g_, g2, g2);
         dir_ -= g2;
         g_ = g2;
@@ -168,12 +164,12 @@ namespace sill {
      */
     void direction_preconditioned() {
       if (boost::math::isnan(value_)) {
-        g_ = gradient_(x_);
-        p_ = precondg_(x_);
+        g_ = objective_->gradient(x_);
+        p_ = objective_->precondg(x_);
         dir_ = -p_;
       } else {
-        const Vec& g2 = gradient_(x_);
-        const Vec& p2 = precondg_(x_);
+        const Vec& g2 = objective_->gradient(x_);
+        const Vec& p2 = objective_->precondg(x_);
         dir_ *= beta(g_, p_, g2, p2);
         dir_ -= p2;
         g_ = g2;
@@ -206,11 +202,8 @@ namespace sill {
     //! The update and convergence parameters
     param_type params_;
 
-    //! The gradient function
-    gradient_fn gradient_;
-
-    //! The preconditioned gradient function
-    gradient_fn precondg_;
+    //! The objective
+    gradient_objective<Vec>* objective_;
 
     //! Current solution
     Vec x_;

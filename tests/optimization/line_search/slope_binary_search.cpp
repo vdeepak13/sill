@@ -18,8 +18,7 @@ template class slope_binary_search<vec_type>;
 BOOST_AUTO_TEST_CASE(test_slope_binary_search) {
   quadratic_objective objective("5 4", "1 0; 0 1");
   slope_binary_search<vec_type> search;
-  search.reset(boost::bind(&quadratic_objective::value, &objective, _1),
-               boost::bind(&quadratic_objective::gradient, &objective, _1));
+  search.objective(&objective);
   result_type horiz = search.step("3.987 3", "1 0");
   BOOST_CHECK_CLOSE(horiz.step, 1.013, 1e-3);
   BOOST_CHECK_CLOSE(horiz.value, 0.5, 1e-3);
@@ -32,11 +31,11 @@ BOOST_AUTO_TEST_CASE(test_slope_binary_search) {
 // by shooting from random points and verifying the conditions manually
 BOOST_AUTO_TEST_CASE(test_wolfe) {
   quadratic_objective objective("-1 1", "2 1; 1 2");
+  bracketing_line_search_parameters<double> params;
   typedef wolfe_conditions<double>::param_type wolfe_param_type;
   wolfe_param_type wolfe = wolfe_param_type::conjugate_gradient();
-  slope_binary_search<vec_type> search(wolfe);
-  search.reset(boost::bind(&quadratic_objective::value, &objective, _1),
-               boost::bind(&quadratic_objective::gradient, &objective, _1));
+  slope_binary_search<vec_type> search(params, wolfe);
+  search.objective(&objective);
   
   size_t nlines = 20;
   boost::random::mt19937 rng;
