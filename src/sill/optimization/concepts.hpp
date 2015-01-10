@@ -19,73 +19,44 @@ namespace sill {
    *
    * \ingroup optimization_concepts
    */
-  template <typename V>
+  template <typename Vec>
   struct OptimizationVector
-    : DefaultConstructible<V>, CopyConstructible<V>, Assignable<V> {
+    : DefaultConstructible<Vec>, CopyConstructible<Vec>, Assignable<Vec> {
 
-    // Types and data
-    //--------------------------------------------------------------------------
+    //! The type of values stored in this vector.
+    typedef typename Vec::value_type value_type;
 
-    typedef typename V::value_type value_type;
+    //! Adds another vector to this one
+    V& operator+=(const Vec& other);
 
-    // Vector operations
-    //--------------------------------------------------------------------------
-
-    //! Sets all elements to this value.
-    //V& operator=(value_type d);
-
-    //! Addition.
-    V operator+(const V& other) const;
-
-    //! Addition.
-    V& operator+=(const V& other);
-
-    //! Subtraction.
-    V operator-(const V& other) const;
-
-    //! Subtraction.
-    V& operator-=(const V& other);
-
-    //! Multiplication by a scalar value.
-    V operator*(value_type d) const;
+    //! Subtracts another vector from this one
+    V& operator-=(const Vec& other);
 
     //! Multiplication by a scalar value.
     V& operator*=(value_type d);
 
     //! Division by a scalar value.
-    V operator/(value_type d) const;
-
-    //! Division by a scalar value.
     V& operator/=(value_type d);
 
-    //! Inner product with a value of the same size.
-    friend value_type dot(const V& a, const V& b);
+    //! Adds a scalar multiple of a vector to another vector
+    friend void axpy(vaue_type a, const Vec& x, Vec& y);
 
-    //! L1 norm of the vector.
-    friend value_type norm_1(const V& x);
+    //! Returns a vector whose each element is equal to the sign of the corresponding 
+    //! element in the input vector (-1 for negative, 0 for 0, 1 for positive).
+    friend V sign(const Vec& x);
 
-    //! L2 norm of the vector. Must be eqivalent to sqrt(dot(x, x))
-    friend value_type norm_2(const V& x);
-
-    //! Returns a struct of the same size but with values replaced by their
-    //! signs (-1 for negative, 0 for 0, 1 for positive).
-    friend V sign(const V& x);
+    //! Returns the inner product of two vectors
+    friend value_type dot(const Vec& a, const Vec& b);
 
     //! Prints out the vector to an output stream
-    friend std::ostream& operator<<(std::ostream& out, const V& x);
+    friend std::ostream& operator<<(std::ostream& out, const Vec& x);
 
     concept_usage(OptimizationVector) {
-      sill::same_type(vcref + vcref, v);
       sill::same_type(v += vcref, vref);
-      sill::same_type(vcref - vcref, v);
       sill::same_type(v -= vcref, vref);
-      sill::same_type(vcref * val, v);
       sill::same_type(v *= val, vref);
-      sill::same_type(vcref / val, v);
       sill::same_type(v /= val, vref);
       sill::same_type(dot(vcref, vcref), val);
-      sill::same_type(norm_1(vcref), val);
-      sill::same_type(norm_2(vcref), val);
       sill::same_type(sign(vcref), v);
       sill::same_type(out, out << vcref);
     }
