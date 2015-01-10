@@ -1,9 +1,7 @@
 #ifndef SILL_LOGREG_OPT_VECTOR_HPP
 #define SILL_LOGREG_OPT_VECTOR_HPP
 
-#include <sill/math/linear_algebra/armadillo.hpp>
-#include <sill/math/statistics.hpp>
-#include <sill/optimization/optimization_vector.hpp>
+#include <armadillo>
 
 #include <sill/macros_def.hpp>
 
@@ -13,106 +11,79 @@ namespace sill {
    * Optimization variables (which fit the OptimizationVector concept)
    * for multiclass logistic regression.
    *
-   * @tparam T   Type of floating point number.
+   * \tparam T   Type of floating point number.
    */
   template <typename T>
   struct logreg_opt_vector {
 
-    // Types and data
-    //------------------------------------------------------------------------
-
+    //! The type of values stored in this vector
     typedef T value_type;
 
-    struct size_type {
-      size_t f_rows;
-      size_t f_cols;
-      size_t v_rows;
-      size_t v_cols;
-      size_t b_size;
+    //! The type that represents a matrix of parameters
+    typedef arma::Mat<T> mat_type;
 
-      size_type() { }
-
-      size_type(size_t f_rows, size_t f_cols, size_t v_rows, size_t v_cols,
-                size_t b_size)
-        : f_rows(f_rows), f_cols(f_cols), v_rows(v_rows), v_cols(v_cols),
-          b_size(b_size) { }
-
-      bool operator==(const size_type& other) const {
-        return ((f_rows == other.f_rows) && (f_cols == other.f_cols) &&
-                (v_rows == other.v_rows) && (v_cols == other.v_cols) &&
-                (b_size == other.b_size));
-      }
-
-      bool operator!=(const size_type& other) const {
-        return (!operator==(other));
-      }
-    };
+    //! The type that represents a vector of parameters
+    typedef arma::Col<T> vec_type;
 
     //! f(k,j) = weight for label k, finite index j
-    mat f;
+    mat_type f;
 
     //! v(k,j) = weight for label k, vector index j
-    mat v;
+    mat_type v;
 
     //! Offsets b; b(k) = offset for label k
-    vec b;
+    vec_type b;
 
     // Constructors
-    //------------------------------------------------------------------------
-
+    //========================================================================
     logreg_opt_vector() { }
 
-    logreg_opt_vector(size_type s, value_type default_val = 0)
-      : f(s.f_rows, s.f_cols), v(s.v_rows, s.v_cols), b(s.b_size) {
-      f.fill(default_val);
-      v.fill(default_val);
-      b.fill(default_val);
+    logreg_opt_vector(size_t num_labels,
+                      size_t num_finite,
+                      size_t num_vector,
+                      T init = 0)
+      : f(num_labels, num_finite), v(num_labels, num_vector), b(num_finite) {
+      f.fill(init);
+      v.fill(init);
+      b.fill(init);
     }
 
-    logreg_opt_vector(const mat& f, const mat& v, const vec& b)
-      : f(f), v(v), b(b) { }
-
-    // Getters and non-math setters
-    //------------------------------------------------------------------------
-
-    //! Returns true iff this instance equals the other.
-    bool operator==(const logreg_opt_vector& other) const {
-      return (equal(f, other.f) && equal(v, other.v) && equal(b, other.b));
+    logreg_opt_vector(const mat_type& f,
+                      const mat_type& v,
+                      const vec_type& b)
+      : f(f), v(v), b(b) {
+      assert(f.n_rows == v.n_rows && v.n_rows == b.n_rows);
     }
 
-    //! Returns false iff this instance equals the other.
-    bool operator!=(const logreg_opt_vector& other) const {
-      return !operator==(other);
+    // Size operations
+    //========================================================================
+    //! Returns the number of labels
+    size_t nlabels() const {
+      return b.n_rows;
     }
 
-    size_type size() const {
-      return size_type(f.n_rows, f.n_cols, v.n_rows, v.n_cols, b.size());
+    //! Returns the number of finite tail indices
+    size_t nfinite() const {
+      return f.n_cols;
+    }
+
+    //! Returns the number of vector tail indices
+    size_t nvector() const {
+      return v.n_cols;
     }
 
     //! Resize the data.
-    void resize(const size_type& newsize) {
-      f.set_size(newsize.f_rows, newsize.f_cols);
-      v.set_size(newsize.v_rows, newsize.v_cols);
-      b.set_size(newsize.b_size);
+    void resize(size_t num_labels,
+                size_t num_finite,
+                size_t num_vector) {
+      f.set_size(num_labels, num_finite);
+      v.set_size(num_labels, num_vector);
+      b.set_size(num_labels);
     }
 
-    // Math operations
-    //------------------------------------------------------------------------
-
-    //! Sets all elements to this value.
-    logreg_opt_vector& operator=(value_type d) {
-      f.fill(d);
-      v.fill(d);
-      b.fill(d);
-      return *this;        
-    }
-
-    //! Addition.
-    logreg_opt_vector operator+(const logreg_opt_vector& other) const {
-      return logreg_opt_vector(f + other.f, v + other.v, b + other.b);
-    }
-
-    //! Addition.
+    // Vector operations
+    //========================================================================
+    //! Adds another vector to this one.
     logreg_opt_vector& operator+=(const logreg_opt_vector& other) {
       f += other.f;
       v += other.v;
@@ -120,12 +91,15 @@ namespace sill {
       return *this;
     }
 
-    //! Subtraction.
-    logreg_opt_vector operator-(const logreg_opt_vector& other) const {
-      return logreg_opt_vector(f - other.f, v - other.v, b - other.b);
+    //! Adds a scalar value to this vector
+    logreg_opt_vector& operator+=(T x) {
+      f += x;
+      v += x;
+      b += x;
+      return *this;
     }
 
-    //! Subtraction.
+    //! Subtracts another vector from this one.
     logreg_opt_vector& operator-=(const logreg_opt_vector& other) {
       f -= other.f;
       v -= other.v;
@@ -133,114 +107,44 @@ namespace sill {
       return *this;
     }
 
-    //! Scalar subtraction.
-    logreg_opt_vector operator-(value_type d) const {
-      return logreg_opt_vector(f - d, v - d, b - d);
-    }
-
-    //! Subtraction.
-    logreg_opt_vector& operator-=(value_type d) {
-      f -= d;
-      v -= d;
-      b -= d;
+    //! Subtracts a scalar value from this vector
+    logreg_opt_vector& operator-=(T x) {
+      f -= x;
+      v -= x;
+      b -= x;
       return *this;
     }
 
-    //! Multiplication by a scalar value.
-    logreg_opt_vector operator*(value_type d) const {
-      return logreg_opt_vector(f * d, v * d, b * d);
-    }
-
-    //! Multiplication by a scalar value.
-    logreg_opt_vector& operator*=(value_type d) {
-      f *= d;
-      v *= d;
-      b *= d;
-      return *this;
-    }
-
-    //! Division by a scalar value.
-    logreg_opt_vector operator/(value_type d) const {
-      assert(d != 0);
-      return logreg_opt_vector(f / d, v / d, b / d);
-    }
-
-    //! Division by a scalar value.
-    logreg_opt_vector& operator/=(value_type d) {
-      assert(d != 0);
-      f /= d;
-      v /= d;
-      b /= d;
-      return *this;
-    }
-
-    //! Inner product with a value of the same size.
-    value_type dot(const logreg_opt_vector& other) const {
-      return (sill::dot(f, other.f)
-              + sill::dot(v, other.v)
-              + sill::dot(b, other.b));
-    }
-
-    //! Element-wise multiplication with another value of the same size.
-    logreg_opt_vector& elem_mult(const logreg_opt_vector& other) {
+    //! Element-wise multiplication by another parameter vector
+    logreg_opt_vector& operator%=(const logreg_opt_vector& other) {
       f %= other.f;
       v %= other.v;
       b %= other.b;
       return *this;
     }
 
-    //! Element-wise reciprocal (i.e., change v to 1/v).
-    logreg_opt_vector& reciprocal() {
-      for (size_t i = 0; i < f.n_rows; ++i) {
-        for (size_t j = 0; j < f.n_cols; ++j) {
-          value_type& val = f(i,j);
-          assert(val != 0);
-          val = 1. / val;
-        }
-      }
-      for (size_t i = 0; i < v.n_rows; ++i) {
-        for (size_t j = 0; j < v.n_cols; ++j) {
-          value_type& val = v(i,j);
-          assert(val != 0);
-          val = 1. / val;
-        }
-      }
-      for (size_t i = 0; i < b.size(); ++i) {
-        value_type& val = b[i];
-        assert(val != 0);
-        val = 1. / val;
-      }
+    //! Multiplication by a scalar value.
+    logreg_opt_vector& operator*=(T x) {
+      f *= x;
+      v *= x;
+      b *= x;
       return *this;
     }
 
-    //! Returns the L1 norm.
-    value_type L1norm() const {
-      value_type l1val = 0;
-      for (size_t i = 0; i < f.size(); ++i)
-        l1val += fabs(f[i]);
-      for (size_t i = 0; i < v.size(); ++i)
-        l1val += fabs(v[i]);
-      foreach(value_type val, b)
-        l1val += fabs(val);
-      return l1val;
+    //! Element-wise division by another parameter vector
+    logreg_opt_vector& operator/=(const log_reg_opt_vector& other) {
+      f /= other.f;
+      v /= other.v;
+      b /= other.b;
+      return *this;
     }
 
-    //! Returns the L2 norm.
-    value_type L2norm() const {
-      return sqrt(dot(*this));
-    }
-
-    //! Returns a struct of the same size but with values replaced by their
-    //! signs (-1 for negative, 0 for 0, 1 for positive).
-    logreg_opt_vector sign() const {
-      logreg_opt_vector ov(*this);
-      for (size_t i = 0; i < f.size(); ++i)
-        ov.f[i] = (f[i] > 0 ? 1 : (f[i] == 0 ? 0 : -1) );
-      for (size_t i = 0; i < v.size(); ++i)
-        ov.v[i] = (v[i] > 0 ? 1 : (v[i] == 0 ? 0 : -1) );
-      foreach(value_type& val, ov.b)
-        val = (val > 0 ? 1 : (val == 0 ? 0 : -1) );
-      return ov;
+    //! Division by a scalar value.
+    logreg_opt_vector& operator/=(T x) {
+      f /= x;
+      v /= x;
+      b /= x;
+      return *this;
     }
 
     //! Sets all values to 0.
@@ -252,14 +156,15 @@ namespace sill {
 
     //! Print info about this vector (for debugging).
     void print_info(std::ostream& out) const {
-      out << "f.size: [" << f.n_rows << ", " << f.n_cols << "], "
-          << "v.size: [" << v.n_rows << ", " << v.n_cols << "], "
-          << "b.size: " << b.size() << "\n";
+      out << "logreg_opt_vector("
+          << nlabels() << ", "
+          << nfinite() << ", "
+          << nvector() << ")";
     }
 
     //! Print info about extrema in this vector (for debugging).
     void print_extrema_info(std::ostream& out) const {
-      for (size_t i = 0; i < f.n_rows; ++i) {
+      for (size_t i = 0; i < nlabels(); ++i) {
         if (f.size() > 0)
           out << "f(" << i << ",min) = " << min(f.row(i))
               << "\t"
@@ -278,20 +183,65 @@ namespace sill {
 
   }; // struct logreg_opt_vector
 
-  //! y += a * x
-  template <>
-  void ov_axpy<logreg_opt_vector<double> >(double a,
-                                           const logreg_opt_vector<double>& x,
-                                           logreg_opt_vector<double>& y);
+  // Free functions
+  //========================================================================
 
-  //! y += a * x
-  template <>
-  void ov_axpy<logreg_opt_vector<float> >(double a,
-                                          const logreg_opt_vector<float>& x,
-                                          logreg_opt_vector<float>& y);
+  //! Outputs the parameters to a stream
+  template <typename T>
+  std::ostream& operator<<(std::ostream& out, const logreg_opt_vector<T>& x) {
+    out << "f:\n" << x.f
+        << "v:\n" << x.v
+        << "b:\n" << x.b;
+    return out;
+  }
 
-}  // namespace sill
+  //! Returns true iff two vector are equal
+  template <typename T>
+  bool operator==(const logreg_opt_vector<T>& x, const logreg_opt_vector<T>& y) {
+    return equal(x.f, y.f) && equal(x.v, y.v) && equal(x.b, y.b);
+  }
+
+  //! Returns false iff this instance equals the other.
+  template <typename T>
+  bool operator!=(const logreg_opt_vector<T>& x, cosnt logreg_opt_vector<T>& y) {
+    return !(x == y);
+  }
+
+  //! Adds a scalar multiple of a vector to another vector
+  template <typename T>
+  void axpy(T a, const logreg_opt_vector<T>& x, logreg_opt_vector<T>& y) {
+    y.f += a * x.f;
+    y.v += a * x.v;
+    y.b += a * x.b;
+  }
+
+  //! Returns a vector whose each element is equal to the sign of the corresponding 
+  //! element in the input vector (-1 for negative, 0 for 0, 1 for positive).
+  template <typename T>
+  logreg_opt_vector<T> sign(const logreg_opt_vector<T>& x) {
+    return logreg_opt_vector(sign(x.f), sign(x.v), sign(x.b));
+  }
+
+  //! Inner product of two vectors
+  template <typename T>
+  T dot(const logreg_opt_vector<T>& x, const logreg_opt_vector<T>& y) {
+    return dot(x.f, y.f) + dot(x.v, y.v) + dot(x.b, y.b);
+  }
+
+  //! Returns the L1 norm of a vector
+  template <typename T>
+  T norm_1(const logreg_opt_vector<T>& x) {
+    return accu(abs(x.f)) + accu(abs(x.v)) + accu(abs(x.b));
+  }
+
+  //! Returns the L2 norm of a vector
+  template <typename T>
+  T norm_2(const logreg_opt_vector<T>& x) {
+    return std::sqrt(dot(x, x));
+  }
+
+} // namespace sill
 
 #include <sill/macros_undef.hpp>
 
-#endif // SILL_LOGREG_OPT_VECTOR_HPP
+#endif

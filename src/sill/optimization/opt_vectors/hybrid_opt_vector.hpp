@@ -8,292 +8,201 @@ namespace sill {
   /**
    * Optimization vector defined as a list of other optimization vectors.
    *
-   * @tparam SubOptVector  Type of optimization vector in the list.
-   *
-   * @see hybrid_crf_factor
+   * \tparam Vec Type of optimization vector in the list.
+   * \see hybrid_crf_factor
    */
-  template <typename SubOptVector>
+  template <typename Vec>
   class hybrid_opt_vector {
-
-    // Public types
-    //==========================================================================
   public:
+    //! The type of values stored in this vector
+    typedef typename Vec::value_type value_type;
 
-    typedef std::vector<typename SubOptVector::size_type> size_type;
-
-    // Constructors and destructor
+    // Constructors
     //==========================================================================
 
-    //! Default constructor.
-    hybrid_opt_vector() : own_data_(true) { }
+    //! Default constructor; creates an optimization vector with 0 components.
+    hybrid_opt_vector() { }
 
-    //! Constructor from sub-optimization vectors.
-    //! This does NOT own its data.
-    hybrid_opt_vector
-    (const std::vector<SubOptVector*>& sub_ov_ptrs)
-      : sub_ov_ptrs(sub_ov_ptrs), own_data_(false) { }
+    //! Creates a vector initialized to n copies of the given component vector
+    explicit hybrid_opt_vector(size_t n, const Vec& vec = Vec())
+      : data(n, vec) { }
 
-    //! Constructor from size_type.
-    //! This owns its data.
-    hybrid_opt_vector(size_type s, double default_val)
-      : sub_ov_ptrs(s.size(), NULL), own_data_(true) {
-      for (size_t i(0); i < s.size(); ++i)
-        sub_ov_ptrs[i] = new SubOptVector(s[i], default_val);
-    }
-
-    //! Copy constructor.  The copy owns its data.
-    hybrid_opt_vector(const hybrid_opt_vector& other)
-      : sub_ov_ptrs(other.sub_ov_ptrs.size(), NULL), own_data_(true) {
-      for (size_t i(0); i < other.sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i] = new SubOptVector(*(other.sub_ov_ptrs[i]));
-    }
-
-    //! Assignment operator.  The copy owns its data.
-    hybrid_opt_vector& operator=(const hybrid_opt_vector& other) {
-      if (own_data_) {
-        foreach(SubOptVector* subptr, sub_ov_ptrs)
-          delete subptr;
-      }
-      sub_ov_ptrs.resize(other.sub_ov_ptrs.size());
-      own_data_ = true;
-      for (size_t i(0); i < other.sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i] = new SubOptVector(*(other.sub_ov_ptrs[i]));
-      return *this;
-    }
-
-    ~hybrid_opt_vector() {
-      if (own_data_) {
-        foreach(SubOptVector* subptr, sub_ov_ptrs)
-          delete subptr;
-      }
-    }
-
-    // Getters and non-math setters
+    // Accessors
     //==========================================================================
 
-    //! Returns true iff this instance equals the other.
-    bool operator==(const hybrid_opt_vector& other) const {
-      if (sub_ov_ptrs.size() != other.sub_ov_ptrs.size())
-        return false;
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i) {
-        if (*(sub_ov_ptrs[i]) != *(other.sub_ov_ptrs[i]))
-          return false;
+    //! Returns the number of components of this vector
+    size_t size() const {
+      return data.size();
+    }
+
+    //! Returns true if the vector has 0 components
+    bool empty() const {
+      return data.empty();
+    }
+
+    //! Returns i-th component of this vector
+    const Vec& operator[](size_t i) const {
+      return data[i];
+    }
+
+    //! Returns the i-th component of this vector
+    Vec& operator[](size_t i) {
+      return data[i];
+    }
+
+    //! Assigns n copies of the given component vector to this vector
+    void assign(size_t n, const Vec& vec) {
+      data.assign(n, vec);
+    }
+
+    // Vector operations
+    //========================================================================
+
+    //! Adds another vector to this one
+    hybrid_opt_vector& operator+=(const hybrid_opt_vector& other) {
+      check_compatible(other);
+      for (size_t i = 0; i < data.size(); ++i) {
+        data[i] += other.data[i];
       }
-      return true;
+      return *this;
     }
 
-    //! Returns false iff this instance equals the other.
-    bool operator!=(const hybrid_opt_vector& other) const {
-      return !operator==(other);
-    }
-
-    //! Returns the dimensions of this data structure.
-    size_type size() const {
-      size_type s(sub_ov_ptrs.size());
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        s[i] = sub_ov_ptrs[i].size();
-      return s;
-    }
-
-    //! Resize the data.
-    //! This owns its data after this operation.
-    void resize(const size_type& newsize) {
-      if (own_data_) {
-        foreach(SubOptVector* subptr, sub_ov_ptrs)
-          delete subptr;
+    //! Subtracts another vector from this one
+    hybrid_opt_vector& operator-=(const hybrid_opt_vector& other) {
+      check_compatible(other);
+      for (size_t i = 0; i < data.size(); ++i) {
+        data[i] -= other.data[i];
       }
-      sub_ov_ptrs.resize(newsize);
-      own_data_ = true;
-      for (size_t i(0); i < newsize.size(); ++i)
-        sub_ov_ptrs[i] = new SubOptVector(newsize[i]);
-    }
-
-    // Math operations
-    //==========================================================================
-
-    //! Sets all elements to this value.
-    hybrid_opt_vector& operator=(double d) {
-      foreach(SubOptVector* ovptr, sub_ov_ptrs)
-        ovptr->operator=(d);
       return *this;
     }
 
-    //! Addition.
-    hybrid_opt_vector
-    operator+(const hybrid_opt_vector& other) const {
-      assert(sub_ov_ptrs.size() == other.sub_ov_ptrs.size());
-      hybrid_opt_vector tmp(*this);
-      for (size_t i(0); i < tmp.sub_ov_ptrs.size(); ++i)
-        tmp.sub_ov_ptrs[i]->operator+=(other.sub_ov_ptrs[i]);
-      return tmp;
-    }
-
-    //! Addition.
-    hybrid_opt_vector&
-    operator+=(const hybrid_opt_vector& other) {
-      assert(sub_ov_ptrs.size() == other.sub_ov_ptrs.size());
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i]->operator+=(other.sub_ov_ptrs[i]);
-      return *this;
-    }
-
-    //! Addition.
-    hybrid_opt_vector&
-    operator+=(double d) {
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i]->operator+=(d);
-      return *this;
-    }
-
-    //! Subtraction.
-    hybrid_opt_vector
-    operator-(const hybrid_opt_vector& other) const {
-      assert(sub_ov_ptrs.size() == other.sub_ov_ptrs.size());
-      hybrid_opt_vector tmp(*this);
-      for (size_t i(0); i < tmp.sub_ov_ptrs.size(); ++i)
-        tmp.sub_ov_ptrs[i]->operator-=(other.sub_ov_ptrs[i]);
-      return tmp;
-    }
-
-    //! Subtraction.
-    hybrid_opt_vector&
-    operator-=(const hybrid_opt_vector& other) {
-      assert(sub_ov_ptrs.size() == other.sub_ov_ptrs.size());
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i]->operator-=(other.sub_ov_ptrs[i]);
-      return *this;
-    }
-
-    //! Subtraction.
-    hybrid_opt_vector&
-    operator-=(double d) {
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i]->operator-=(d);
+    //! Element-wise multiplication by another vector
+    hybrid_opt_vector& operator%=(const hybrid_opt_vector& other) {
+      check_compatible(other);
+      for (size_t i = 0; i < data.size(); ++i) {
+        data[i] %= other.data[i];
+      }
       return *this;
     }
 
     //! Multiplication by a scalar value.
-    hybrid_opt_vector operator*(double d) const {
-      hybrid_opt_vector tmp(*this);
-      for (size_t i(0); i < tmp.sub_ov_ptrs.size(); ++i)
-        tmp.sub_ov_ptrs[i]->operator*=(d);
-      return tmp;
+    hybrid_opt_vector& operator*=(value_type x) {
+      for (size_t i = 0; i < data.size(); ++i) {
+        data[i] *= x;
+      }
+      return *this;
     }
 
-    //! Multiplication by a scalar value.
-    hybrid_opt_vector& operator*=(double d) {
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i]->operator*=(d);
+    //! Element-wise division by another vector
+    hybrid_opt_vector& operator/=(const hybrid_opt_vector& other) {
+      check_compatible(other);
+      for (size_t i = 0; i < data.size(); ++i) {
+        data[i] /= other.data[i];
+      }
       return *this;
     }
 
     //! Division by a scalar value.
-    hybrid_opt_vector operator/(double d) const {
-      assert(d != 0);
-      hybrid_opt_vector tmp(*this);
-      tmp *= (1. / d);
-      return tmp;
-    }
-
-    //! Division by a scalar value.
-    hybrid_opt_vector& operator/=(double d) {
-      assert(d != 0);
-      this->operator*=(1. / d);
+    hybrid_opt_vector& operator/=(value_type x) {
+      for (size_t i = 0; i < data.size(); ++i) {
+        data[i] /= x;
+      }
       return *this;
-    }
-
-    //! Inner product with a value of the same size.
-    double dot(const hybrid_opt_vector& other) const {
-      assert(sub_ov_ptrs.size() == other.sub_ov_ptrs.size());
-      double sum(0);
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        sum += sub_ov_ptrs[i]->dot(*(other.sub_ov_ptrs[i]));
-      return sum;
-    }
-
-    //! Element-wise multiplication with another value of the same size.
-    hybrid_opt_vector& elem_mult(const hybrid_opt_vector& other) {
-      assert(sub_ov_ptrs.size() == other.sub_ov_ptrs.size());
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        sub_ov_ptrs[i]->elem_mult(*(other.sub_ov_ptrs[i]));
-      return *this;
-    }
-
-    //! Element-wise reciprocal (i.e., change v to 1/v).
-    hybrid_opt_vector& reciprocal() {
-      foreach(SubOptVector* ovptr, sub_ov_ptrs)
-        ovptr->reciprocal();
-      return *this;
-    }
-
-    //! Returns the L1 norm.
-    double L1norm() const {
-      double val(0);
-      foreach(SubOptVector* ovptr, sub_ov_ptrs)
-        val += ovptr->L1norm();
-      return val;
-    }
-
-    //! Returns the L2 norm.
-    double L2norm() const {
-      return sqrt(dot(*this));
     }
 
     //! Returns a struct of the same size but with values replaced by their
     //! signs (-1 for negative, 0 for 0, 1 for positive).
     hybrid_opt_vector sign() const {
-      hybrid_opt_vector s(this->size(), 0);
-      for (size_t i(0); i < sub_ov_ptrs.size(); ++i)
-        s.sub_ov_ptrs->operator=(sub_ov_ptrs[i]->sign());
-      return s;
+      hybrid_opt_vector result(size());
+      for (size_t i = 0; i < result.size(); ++i) {
+        result.data[i] = data[i].sign();
+      }
+      return result;
     }
 
-    /**
-     * Sets all values to 0.
-     */
+    //! Sets all values to 0.
     void zeros() {
-      foreach(SubOptVector* ovptr, sub_ov_ptrs)
-        ovptr->operator=(0.);
-    }
-
-    // Utilities
-    //==========================================================================
-
-    //! Const reference to sub-vector i.
-    const SubOptVector& subvector(size_t i) const {
-      assert(i < sub_ov_ptrs.size());
-      return *(sub_ov_ptrs[i]);
-    }
-
-    //! Mutable reference to sub-vector i.
-    SubOptVector& subvector(size_t i) {
-      assert(i < sub_ov_ptrs.size());
-      return *(sub_ov_ptrs[i]);
+      for (size_t i = 0; i < data.size(); ++i) {
+        data[i].zeros();
+      }
     }
 
     //! Print info about this vector (for debugging).
     void print_info(std::ostream& out) const {
-      out << "PRINT_INFO TO BE IMPLEMENTED\n";
+      if (empty()) {
+        out << "hybrid_opt_vector(0)";
+      } else {
+        out << "hybrid_opt_vector(" << size() << ", ";
+        print_info(out);
+        out << ")";
+      }
     }
 
     // Private data
     //==========================================================================
   private:
-
-    std::vector<SubOptVector*> sub_ov_ptrs;
-
-    bool own_data_;
+    std::vector<Vec> data;
 
   }; // class hybrid_opt_vector
 
-  template <typename F>
-  std::ostream& operator<<(std::ostream& out,
-                           const hybrid_opt_vector<F>& f) {
-    assert(false); // TO DO
+  //! Outputs a vector to a stream
+  template <typename Vec>
+  std::ostream& operator<<(std::ostream& out, const hybrid_opt_vector<Vec>& x) {
+    for (size_t i = 0; i < x.size(); ++i) {
+      out << i << ": " << x[i];
+    }
     return out;
   }
 
-};  // namespace sill
+  //! Returns true if the two vectors are equal
+  template <typename Vec>
+  bool operator==(const hybrid_opt_vector<Vec>& x,
+                  const hybrid_opt_vector<Vec>& y) {
+    if (x.size() != y.size()) { return false; }
+    for (size_t i = 0; i < x.size(); ++i) {
+      if (x[i] != y[i]) { return false; }
+    }
+    return true;
+  }
+
+  //! Returns false if the two vectors are not equal
+  template <typename Vec>
+  bool operator!=(const hybrid_opt_vector<Vec>& x,
+                  const hybrid_opt_vector<Vec>& y) {
+    return !(x == y);
+  }
+
+  //! Inner product of two vectors
+  template <typename Vec>
+  typename Vec::value_type
+  dot(const hybrid_opt_vector<Vec>& x, const hybrid_opt_vector<Vec>& y) {
+    x.check_compatible(y);
+    typename Vec::value_type sum = 0.0;
+    for (size_t i = 0; i < x.size(); ++i) {
+      sum += dot(x[i], y[i]);
+    }
+    return sum;
+  }
+
+  // todo: axpy
+
+  //! Returns the L1 norm of a vector
+  template <typename Vec>
+  typename Vec::value_type norm_1(const hybrid_opt_vector<Vec>& x) {
+    typename Vec::value_type sum = 0.0;
+    for (size_t i = 0; i < x.size(); ++i) {
+      sum += norm_1(x[i]);
+    }
+    return sum;
+  }
+
+  //! Returns the L2 norm of a vector
+  template <typename Vec>
+  typename Vec::value_type norm_2(const hybrid_opt_vector<Vec>& x) {
+    return std::sqrt(dot(x, x));
+  }
+
+}; // namespace sill
 
 #include <sill/macros_undef.hpp>
 

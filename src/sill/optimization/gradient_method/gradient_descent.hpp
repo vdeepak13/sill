@@ -76,7 +76,7 @@ namespace sill {
     result_type iterate() {
       dir_ = -objective_->gradient(x_);
       result_type result = search_->step(x_, dir_);
-      x_ += result.step * dir_;
+      axpy(result.step, dir_, x_);
       converged_ = (value_ - result.value) < params_.convergence;
       value_ = result.value;
       return result;
