@@ -42,7 +42,7 @@ namespace sill {
       : variable(name, process, index), size_(size) { }
 
     //! Conversion to human-readable format
-    operator std::string() const;
+    std::string str() const;
 
     //! Returns the number of values this variable can take on.
     size_t size() const {

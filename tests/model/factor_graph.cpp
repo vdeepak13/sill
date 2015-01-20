@@ -17,10 +17,12 @@
 
 #include <sill/macros_def.hpp>
 
-using namespace sill;
+namespace sill {
+  template class factor_graph<table_factor>;
+  template class factor_graph<canonical_gaussian>;
+}
 
-template class factor_graph<table_factor>;
-template class factor_graph<canonical_gaussian>;
+using namespace sill;
 
 struct fixture {
   typedef factor_graph<table_factor> model_type;

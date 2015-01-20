@@ -16,7 +16,7 @@
 namespace sill {
 
   std::ostream& operator<<(std::ostream& out, variable* v) {
-    out << std::string(*v) << (void*)(v);
+    out << v->str() << (void*)(v);
     return out;
   }
 

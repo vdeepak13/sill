@@ -12,17 +12,19 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
+namespace sill {
+  template class sequence_dataset<finite_dataset>;
+  template class sequence_dataset<vector_dataset<> >;
+  template class sequence_dataset<hybrid_dataset<> >;
+  
+  template class sequence_memory_dataset<finite_dataset>;
+  template class sequence_memory_dataset<vector_dataset<> >;
+  template class sequence_memory_dataset<hybrid_dataset<> >;
+
+  template class slice_view<sequence_dataset<finite_dataset> >;
+}
+
 using namespace sill;
-
-template class sequence_dataset<finite_dataset>;
-template class sequence_dataset<vector_dataset<> >;
-template class sequence_dataset<hybrid_dataset<> >;
-
-template class sequence_memory_dataset<finite_dataset>;
-template class sequence_memory_dataset<vector_dataset<> >;
-template class sequence_memory_dataset<hybrid_dataset<> >;
-
-template class slice_view<sequence_dataset<finite_dataset> >;
 
 BOOST_AUTO_TEST_CASE(test_insert) {
   std::vector<finite_discrete_process*> procs(3);

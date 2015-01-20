@@ -12,16 +12,18 @@
 
 #include <sill/factor/random/uniform_factor_generator.hpp>
 
+namespace sill {
+  template class sum_product<table_factor>;
+  template class max_product<table_factor>;
+  template class min_sum<table_factor>;
+  template class max_sum<table_factor>;
+  template class boolean<table_factor>;
+  
+  template class sum_product<canonical_gaussian>;
+  template class max_product<canonical_gaussian>;
+}
+
 using namespace sill;
-
-template class sum_product<table_factor>;
-template class max_product<table_factor>;
-template class min_sum<table_factor>;
-template class max_sum<table_factor>;
-template class boolean<table_factor>;
-
-template class sum_product<canonical_gaussian>;
-template class max_product<canonical_gaussian>;
 
 BOOST_AUTO_TEST_CASE(test_ops) {
   size_t nvars = 3;

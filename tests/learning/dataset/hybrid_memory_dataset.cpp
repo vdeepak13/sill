@@ -11,12 +11,14 @@
 
 #include <sill/macros_def.hpp>
 
-using namespace sill;
+namespace sill {
+  template class hybrid_dataset<double>;
+  template class hybrid_memory_dataset<double>;
+  template class hybrid_record<double>;
+  template class slice_view<hybrid_dataset<double> >;
+}
 
-template class hybrid_dataset<double>;
-template class hybrid_memory_dataset<double>;
-template class hybrid_record<double>;
-template class slice_view<hybrid_dataset<double> >;
+using namespace sill;
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(std::vector<size_t>);
 
@@ -67,8 +69,8 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   boost::tie(vit, vend) = ds.records(vv);
 
   // check if the first record is correct
-  size_t first[] = {2, 0, 1};
-  BOOST_CHECK_EQUAL(it->values.finite, std::vector<size_t>(first, first+3));
+  std::vector<size_t> first = {2, 0, 1};
+  BOOST_CHECK_EQUAL(it->values.finite, first);
   BOOST_CHECK_EQUAL(it->values.finite, fit->values);
   BOOST_CHECK(equal(it->values.vector, vec("2.0 0.0")));
   BOOST_CHECK(equal(it->values.vector, vit->values));
@@ -81,8 +83,8 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ++vit;
 
   // check if the second record is correct
-  size_t second[] = {1, 2, 0};
-  BOOST_CHECK_EQUAL(it->values.finite, std::vector<size_t>(second, second+3));
+  std::vector<size_t> second = {1, 2, 0};
+  BOOST_CHECK_EQUAL(it->values.finite, second);
   BOOST_CHECK_EQUAL(it->values.finite, fit->values);
   BOOST_CHECK(equal(it->values.vector, vec("0.0 0.5")));
   BOOST_CHECK(equal(it->values.vector, vit->values));
@@ -95,9 +97,9 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ++vit;
 
   // check the remaining records
-  size_t rest[] = {-1, -1, -1};
+  std::vector<size_t> rest(3, -1);
   for (size_t i = 0; i < 10; ++i) {
-    BOOST_CHECK_EQUAL(it->values.finite, std::vector<size_t>(rest, rest+3));
+    BOOST_CHECK_EQUAL(it->values.finite, rest);
     BOOST_CHECK_EQUAL(it->weight, 1.0);
     BOOST_CHECK_EQUAL(fit->weight, 1.0);
     BOOST_CHECK_EQUAL(vit->weight, 1.0);
@@ -202,7 +204,7 @@ BOOST_AUTO_TEST_CASE(test_load) {
   load(dir + "/hybrid_data.txt", format, ds);
 
   double nan = std::numeric_limits<double>::quiet_NaN();
-  size_t fvalues[][2] = { {-1, 2}, {1, 3}, {0, 0} };
+  size_t fvalues[][2] = { {size_t(-1), 2}, {1, 3}, {0, 0} };
   double vvalues[][2] = { {33.0, nan}, {22.0, 178.0}, {11.0, 150.0} };
   double weights[] = {1.0, 2.0, 0.5};
   BOOST_CHECK_EQUAL(ds.size(), 3);

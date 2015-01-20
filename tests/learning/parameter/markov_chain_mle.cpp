@@ -11,11 +11,11 @@
 
 using namespace sill;
 
-template class markov_chain<moment_gaussian>;
-template class markov_chain<table_factor>;
+template class sill::markov_chain<moment_gaussian>;
+template class sill::markov_chain<table_factor>;
 
-template class markov_chain_mle<moment_gaussian>;
-template class markov_chain_mle<table_factor>;
+template class sill::markov_chain_mle<moment_gaussian>;
+template class sill::markov_chain_mle<table_factor>;
 
 BOOST_AUTO_TEST_CASE(test_reconstruct) {
   size_t nchains = 1000;

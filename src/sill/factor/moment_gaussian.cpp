@@ -193,7 +193,7 @@ namespace sill {
     yc -= cmean;
     size_t n = cmean.size();
     double result =
-      as_scalar(-0.5*(trans(yc)*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));
+      as_scalar(-0.5*(trans(yc)*(inv(cov)*yc) + n*log(2*pi<double>())+log_det(cov)));
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
 
@@ -207,7 +207,7 @@ namespace sill {
     yc -= coeff * x;
     size_t n = cmean.size();
     double result =
-      as_scalar(-0.5*(trans(yc)*(inv(cov)*yc) + n*log(2*pi())+log_det(cov)));
+      as_scalar(-0.5*(trans(yc)*(inv(cov)*yc) + n*log(2*pi<double>())+log_det(cov)));
     return logarithmic<double>(result, log_tag()) * likelihood;
   }
 
@@ -320,7 +320,7 @@ namespace sill {
     }
     double logl = 0;
     logl -= 0.5 * dot(dh, solve(cov(ih,ih), dh));
-    logl -= 0.5 * (dh.size() * std::log(2*pi()) + log_det(cov(ih,ih)));
+    logl -= 0.5 * (dh.size() * std::log(2*pi<double>()) + log_det(cov(ih,ih)));
     if (H.size() == 0) {
       return moment_gaussian
         (likelihood * logarithmic<double>(logl, log_tag()));
@@ -436,7 +436,7 @@ namespace sill {
       throw std::runtime_error
         ("moment_gaussian::entropy() called for a conditional Gaussian.");
     size_t N(cmean.size());
-    return (N + ((N*std::log(2. * pi()) + log_det(cov)) / std::log(base)))/2.;
+    return (N + ((N*std::log(2. * pi<double>()) + log_det(cov)) / std::log(base)))/2.;
   }
 
   double moment_gaussian::entropy() const {

@@ -4,15 +4,15 @@
 #include <sill/global.hpp>
 
 #include <sill/range/concepts.hpp>
-#include <sill/factor/crf/gaussian_crf_factor.hpp>
+//#include <sill/factor/crf/gaussian_crf_factor.hpp>
 #include <sill/factor/random/associative_factor_generator.hpp>
 #include <sill/factor/random/discrete_factor_generator.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/factor/crf/table_crf_factor.hpp>
+//#include <sill/factor/crf/table_crf_factor.hpp>
 #include <sill/math/permutations.hpp>
 #include <sill/model/bayesian_network.hpp>
-#include <sill/model/crf_model.hpp>
+//#include <sill/model/crf_model.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/markov_network.hpp>
 #include <sill/base/stl_util.hpp>
@@ -41,6 +41,7 @@
 
 namespace sill {
 
+#if 0
   /**
    * Helper method for create_random_crf().
    * This creates an edge factor whose type is determined by 'factor_choice':
@@ -68,7 +69,7 @@ namespace sill {
     }
   }
 
-
+#endif
   //! \addtogroup model
   //! @{
 
@@ -185,6 +186,7 @@ namespace sill {
 
   } // namespace impl
 
+#if 0
   /**
    * Creates models useful for doing tests with CRFs P(Y|X).
    * This generates a decomposable model for P(X) and a CRF for P(Y|X),
@@ -350,7 +352,7 @@ namespace sill {
     return Y2X_map;
 
   } // create_random_crf
-
+#endif
   /**
    * This method is designed to parallel create_random_crf;
    * it creates a Bayesian network which is representable as a CRF of the same
@@ -473,7 +475,6 @@ namespace sill {
 
   } // create_random_bayesian_network_crf
 
-#endif
 
   // Methods for conditional models over discrete variables
   //============================================================================
@@ -737,6 +738,8 @@ namespace sill {
     generative_structure.initialize(tmp_structure, min_degree_strategy());
 
   } // create_analogous_generative_model
+
+#endif
 
   //! @}
 

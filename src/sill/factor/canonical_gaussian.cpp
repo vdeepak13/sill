@@ -68,7 +68,7 @@ namespace sill {
     }
 
     log_mult = mg.likelihood.log_value()
-      - .5 * (mg.cmean.size() * std::log(2*pi()) + log_det(mg.cov)
+      - .5 * (mg.cmean.size() * std::log(2*pi<double>()) + log_det(mg.cov)
               + as_scalar(trans(mg.cmean) * invcov * mg.cmean));
   }
 
@@ -418,7 +418,7 @@ namespace sill {
         std::cerr << "Lambda:\n" << lambda << std::endl;
       throw invalid_operation("Inversion of lambda matrix failed in canonical_gaussian::log_norm_constant.");
     }
-    return log_mult + (0.5 * (eta.size() * std::log(2*pi())
+    return log_mult + (0.5 * (eta.size() * std::log(2*pi<double>())
                               - log_det(lambda)
                               + as_scalar(trans(eta) * lambda_inv * eta)));
   }
@@ -430,11 +430,11 @@ namespace sill {
 
   double canonical_gaussian::entropy(double base) const {
     size_t N = eta.size();
-    return (N + ((N*std::log(2.0 * pi()) - log_det(lambda)) / std::log(base)))/2.0;
+    return (N + ((N*std::log(2.0 * pi<double>()) - log_det(lambda)) / std::log(base)))/2.0;
   }
 
   double canonical_gaussian::entropy() const {
-    return entropy(e());
+    return entropy(e<double>());
   }
 
   double canonical_gaussian::relative_entropy(const canonical_gaussian& q) const

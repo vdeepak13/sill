@@ -24,7 +24,7 @@ subdirs(
   optimization
   parsers
   range
-  synthetic_data
+#  synthetic_data
   threading
   serialization
   )

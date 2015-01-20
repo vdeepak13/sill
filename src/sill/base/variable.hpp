@@ -40,7 +40,7 @@ namespace sill {
     virtual ~variable() { }
 
     //! Conversion to human-readable representation
-    virtual operator std::string() const = 0;
+    virtual std::string str() const = 0;
 
     //! Returns true if the two variables are type-compatible
     virtual bool type_compatible(variable* v) const = 0;

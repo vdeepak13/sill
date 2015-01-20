@@ -7,8 +7,10 @@
 
 #include "basic_fixture.hpp"
 
-template class learnt_decomposable<canonical_gaussian>;
-template class learnt_decomposable<table_factor>;
+namespace sill {
+  template class learnt_decomposable<canonical_gaussian>;
+  template class learnt_decomposable<table_factor>;
+}
 
 BOOST_FIXTURE_TEST_CASE(test_mutation, basic_fixture) {
   typedef learnt_decomposable<table_factor>::vertex vertex;

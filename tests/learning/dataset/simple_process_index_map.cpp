@@ -3,9 +3,11 @@
 
 #include <sill/learning/dataset/simple_process_index_map.hpp>
 
-using namespace sill;
+namespace sill {
+  template class simple_process_index_map<finite_variable>;
+}
 
-template class simple_process_index_map<finite_variable>;
+using namespace sill;
 
 typedef std::pair<size_t,size_t> index_pair;
 BOOST_TEST_DONT_PRINT_LOG_VALUE(index_pair);

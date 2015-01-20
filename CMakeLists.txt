@@ -10,7 +10,6 @@ if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-
 enable_testing()
 
 # add a prefix to each element of a list
@@ -138,6 +137,8 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   set(CMAKE_CXX_FLAGS_DEBUG "-g -ggdb -O0 -Wall -Winit-self") #-fno-implicit-templates")
   # set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g -ggdb")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
+else()
+  set(CMAKE_CXX_FLAGS "-std=c++11")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
 # uncomment the following line to get CMake variables to print to screen

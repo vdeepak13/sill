@@ -1,8 +1,8 @@
 set(SILL_MODEL_SOURCES
 #  decomposable
-  model_products
+#  model_products
   pairwise_mn_conversion
-  random
-  random_crf_builder
+#  random
+#  random_crf_builder
   PARENT_SCOPE
 )

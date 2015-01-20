@@ -1,13 +1,6 @@
 #ifndef SILL_DENSE_TABLE_HPP
 #define SILL_DENSE_TABLE_HPP
 
-#include <algorithm>
-#include <numeric>
-#include <iterator>
-#include <iosfwd>
-
-#include <boost/optional.hpp>
-
 #include <sill/global.hpp>
 #include <sill/functional.hpp>
 #include <sill/range/algorithm.hpp>
@@ -16,9 +9,18 @@
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/vector.hpp>
 
+#include <algorithm>
+#include <iterator>
+#include <iostream>
+#include <numeric>
+
+#include <boost/optional.hpp>
+
 #include <sill/macros_def.hpp>
 
+#ifndef EXPERIMENTAL
 #define EXPERIMENTAL
+#endif
 
 namespace sill {
 
@@ -197,8 +199,8 @@ namespace sill {
      *        is permitted (but not required) to skip all instances of
      *        this element
      */
-     std::pair<const_iterator, const_iterator>
-     elements() const {
+    std::pair<const_iterator, const_iterator>
+    elements() const {
       return std::make_pair(elts.begin(), elts.end());
     }
 
@@ -423,7 +425,7 @@ namespace sill {
 
     //! implements Table::join_aggregate
     template <typename JoinOp, typename AggOp>
-    static typename AggOp::result_type
+    static T
     join_aggregate(const dense_table& x,
                    const dense_table& y,
                    const index_type& x_dim_map,
@@ -433,7 +435,7 @@ namespace sill {
       concept_assert((BinaryFunction<AggOp,T,T,T>));
 
       // Initialize the aggregate with the identity of the aggregation op.
-      typename AggOp::result_type aggregate = initialvalue;
+      T aggregate = initialvalue;
 
       // Compute the shape of the joined table.
       size_t z_arity =

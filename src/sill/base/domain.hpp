@@ -14,22 +14,35 @@
 
 namespace sill {
 
-  template <typename V>
-  class domain : public std::set<V> {
+  template <typename Var>
+  class domain : public std::vector<Var> {
   public:
     domain() { }
 
-    explicit domain(const V& var) {
-      this->insert(var);
+    explicit domain(Var var0)
+      : std::vector<Var>(1, v0) { }
+
+    domain(Var var0, Var var1)
+      : std::vector<Var>(2) {
+      (*this)[0] = var0;
+      (*this)[1] = var1;
     }
-    
-    // can also take variable_vector (which is a child of std::vector)
-    explicit domain(const std::vector<V>& vars) {
-      this->insert(vars.begin(), vars.end());
+
+    bool count(Var var) {
+      // 
     }
-    
-    bool includes(const domain& other) const {
-      return boost::includes(*this, other);
+
+    bool subset(const domain& other) const {
+      foreach(V v, *this) {
+        if (!other.count(v)) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    bool superset(const domain& other) const {
+      return other.subset(*this);
     }
 
     void partition(const domain& other, domain& a, domain& b) const {
@@ -71,13 +84,25 @@ namespace sill {
     }
   };
 
-  std::ostream& operator<<(std::ostream& out, const domain<V>& dom) {
-    print_range(out, dom, '{', ',', '}');
+  template <typename Var>
+  std::ostream& operator<<(std::ostream& out, const domain<Var>& dom) {
+    print_range(out, dom, '[', ',', ']');
     return out;
   }
 
-  template <typename V>
-  domain<V> set_union(const domain<V>& a, const domain<V>& b) {
+  template <typename Var>
+  void 
+
+
+  template <typename Var>
+  domain<Var> union1(const domain<Var>& a, const domain<Var>& b) {
+    
+    foreach (Var var, b) {
+      if (!a.count(var)) {
+        
+      }
+    }
+    domain<Var> result(a);
     domain<V> result;
     boost::set_union(a, b, std::inserter(result, result.begin()));
     return result;

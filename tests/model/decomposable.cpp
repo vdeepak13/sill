@@ -11,8 +11,10 @@
 #include "basic_fixture.hpp"
 #include "predicates.hpp"
 
-template class decomposable<table_factor>;
-template class decomposable<canonical_gaussian>;
+namespace sill {
+  template class decomposable<table_factor>;
+  template class decomposable<canonical_gaussian>;
+}
 
 BOOST_FIXTURE_TEST_CASE(test_marginal, basic_fixture) {
   decomposable<table_factor> model;

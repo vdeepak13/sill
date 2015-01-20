@@ -21,8 +21,12 @@ struct elim_priority_functor {
   }
 };
 
-template class constrained_elim_strategy<elim_priority_functor, min_degree_strategy>;
-template class constrained_elim_strategy<elim_priority_functor, min_fill_strategy>;
+namespace sill {
+  template class constrained_elim_strategy<
+    ::elim_priority_functor, min_degree_strategy>;
+  template class constrained_elim_strategy<
+    ::elim_priority_functor, min_fill_strategy>;
+}
 
 BOOST_AUTO_TEST_CASE(test_triangulation) {
   // The graph type.  Each vertex is annotated with the elimination priority

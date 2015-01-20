@@ -8,11 +8,11 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
+namespace sill{
+  template class alternating_generator<uniform_factor_generator>;
+  template class alternating_generator<moment_gaussian_generator>;
+}
 using namespace sill;
-
-template class alternating_generator<uniform_factor_generator>;
-template class alternating_generator<moment_gaussian_generator>;
-
 
 BOOST_AUTO_TEST_CASE(test_constructors) {
   uniform_factor_generator def_gen(1.0, 2.0);

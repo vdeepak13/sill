@@ -44,7 +44,7 @@ namespace sill {
     }
 
     //! Conversion to human-readable format
-    operator std::string() const;
+    std::string str() const;
 
     //! Returns the number of dimensions of this vector variable.
     size_t size() const {

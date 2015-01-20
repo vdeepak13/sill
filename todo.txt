@@ -33,6 +33,7 @@ Cruft removal:
 * range algorithms
 * operator std::string
 * parallel unfriendly optimizations
+* clean up logarithmic - change constructor to explicit
 
 Other pre-release cleanups:
 * templatize and cleanup factors (is_marginal, arg_vetor, etc.)

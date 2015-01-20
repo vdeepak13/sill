@@ -9,15 +9,17 @@
 #include <sill/learning/dataset/hybrid_sequence_record.hpp>
 #include <sill/learning/dataset/sequence_memory_dataset.hpp>
 
+namespace sill {
+  template class sliding_view<finite_dataset>;
+  template class sliding_view<vector_dataset<> >;
+  template class sliding_view<hybrid_dataset<> >;
+  
+  template class fixed_view<finite_dataset>;
+  template class fixed_view<vector_dataset<> >;
+  template class fixed_view<hybrid_dataset<> >;
+}
+
 using namespace sill;
-
-template class sliding_view<finite_dataset>;
-template class sliding_view<vector_dataset<> >;
-template class sliding_view<hybrid_dataset<> >;
-
-template class fixed_view<finite_dataset>;
-template class fixed_view<vector_dataset<> >;
-template class fixed_view<hybrid_dataset<> >;
 
 struct fixture {
   fixture() {

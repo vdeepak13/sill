@@ -74,7 +74,7 @@ namespace sill {
     }
 
     //! Validity test.
-    operator bool() const { return rc_ptr; }
+    operator bool() const { return bool(rc_ptr); }
 
     //! Reset to the null pointer.
     void reset() { rc_ptr.reset(); }

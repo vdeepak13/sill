@@ -15,6 +15,11 @@
 
 #include <sill/macros_def.hpp>
 
+namespace sill {
+  template class directed_graph<size_t>;
+  template class directed_graph<size_t, double, double>;
+}
+
 using namespace sill;
 using std::make_pair;
 
@@ -23,9 +28,6 @@ typedef size_t vertex_property;
 typedef size_t edge_property;
 typedef directed_graph<V, vertex_property, edge_property> graph;
 typedef std::pair<V,V> E;
-
-template class directed_graph<size_t>;
-template class directed_graph<size_t, double, double>;
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::edge_iterator);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::vertex_iterator);

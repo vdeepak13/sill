@@ -16,11 +16,13 @@
 
 #include "predicates.hpp"
 
+namespace sill {
+  template class fragment<table_factor>;
+  template class fragment<canonical_gaussian>;
+}
+
 using namespace boost::unit_test;
 using namespace sill;
-
-template class fragment<table_factor>;
-template class fragment<canonical_gaussian>;
 
 void test_marginal(size_t m, size_t n) {
   assert(m * m >= 4); // we need at least 4 variables
