@@ -8,10 +8,12 @@
 
 #include "predicates.hpp"
 
-using namespace sill;
+namespace sill {
+  template class cluster_graph<finite_variable*>;
+  template class cluster_graph<vector_variable*>;
+}
 
-template class cluster_graph<finite_variable*>;
-template class cluster_graph<vector_variable*>;
+using namespace sill;
 
 struct fixture {
   fixture()

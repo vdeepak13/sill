@@ -56,7 +56,7 @@ namespace sill {
         a[split_var] = vec_1(p[i]);
         // compute the prior restricted to the integration point p[i]
         moment_gaussian restricted = prior.restrict(a);
-        if (max_range != inf()) {
+        if (max_range != inf<double>()) {
           restricted.norm_constant() += pdf(normal, p[i] + max_range);
           restricted.norm_constant() += pdf(normal, p[i] - max_range);
         }

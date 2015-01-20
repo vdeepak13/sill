@@ -55,7 +55,7 @@ namespace sill {
                                     size_t npoints,
                                     double minstdev = 0,
                                     double nstdevs = 2,
-                                    double max_range = inf());
+                                    double max_range = inf<double>());
     
     hybrid_conditional_approximator* clone() const {
       return new hybrid_conditional_approximator(*this);

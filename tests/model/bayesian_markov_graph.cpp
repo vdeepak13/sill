@@ -7,13 +7,15 @@
 
 #include "predicates.hpp"
 
+namespace sill {
+  template class bayesian_graph<finite_variable*>;
+  template class markov_graph<finite_variable*>;
+  
+  template class bayesian_graph<vector_variable*>;
+  template class markov_graph<vector_variable*>;
+}
+
 using namespace sill;
-
-template class bayesian_graph<finite_variable*>;
-template class markov_graph<finite_variable*>;
-
-template class bayesian_graph<vector_variable*>;
-template class markov_graph<vector_variable*>;
 
 struct fixture {
 

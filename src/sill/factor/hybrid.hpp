@@ -10,6 +10,7 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional.hpp>
+#include <sill/functional/assign.hpp>
 #include <sill/learning/dataset/hybrid_dataset.hpp>
 
 #include <boost/function.hpp>

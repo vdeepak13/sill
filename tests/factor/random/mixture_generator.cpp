@@ -9,9 +9,11 @@
 
 #include <sill/macros_def.hpp>
 
-using namespace sill;
+namespace sill {
+  template class mixture_generator<moment_gaussian_generator>;
+}
 
-template class mixture_generator<moment_gaussian_generator>;
+using namespace sill;
 
 BOOST_AUTO_TEST_CASE(test_all) {
   universe u;

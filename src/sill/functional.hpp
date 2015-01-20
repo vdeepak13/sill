@@ -1,6 +1,10 @@
 #ifndef SILL_FUNCTIONAL_HPP
 #define SILL_FUNCTIONAL_HPP
 
+/////////////////////////////////
+// This header file is deprecated
+/////////////////////////////////
+
 #include <functional>
 
 #include <algorithm>
@@ -12,10 +16,26 @@
 #include <boost/numeric/conversion/bounds.hpp>
 
 #include <sill/math/operations.hpp>
+#include <sill/functional/operators.hpp>
 
 #include <sill/macros_def.hpp>
 
 namespace sill {
+
+  //! A functor which returns the reciprocal of the given number.
+  template <typename T>
+  struct reciprocal_functor {
+
+    BOOST_STATIC_ASSERT(std::numeric_limits<T>::has_infinity);
+
+    T operator()(const T& val) const {
+      if (val != 0)
+        return 1. / val;
+      else
+        return std::numeric_limits<T>::infinity();
+    }
+
+  };
 
   //! A simple functor that returns a constant value, regardless of the input.
   template <typename T>
@@ -49,39 +69,6 @@ namespace sill {
   // Unary functors
   //============================================================================
 
-  //! A functor that computes the square of a value
-  template <typename T>
-  struct squared : std::unary_function<T,T> {
-    T operator()(const T& value) { return value * value; }
-  };
-
-  //! A functor that computes the square root of a value
-  template <typename T>
-  struct square_root : std::unary_function<T,T> {
-    T operator()(const T& value) { return sqrt(value); }
-  };
-
-  //! A functor that computes the value raised to the given exponent
-  //! (i.e., raises the value to the power of 1/k)
-  template <typename T>
-  struct exponentiated : std::unary_function<T,T> {
-    double exponent;
-    explicit exponentiated(double exponent) : exponent(exponent) { }
-    T operator()(const T& value) { return std::pow(value, exponent); }
-  };
-
-  //! A functor which computes the sign of a value (-1, 0, 1).
-  template <typename T>
-  struct sign_functor : std::unary_function<T,T> {
-    T operator()(const T& value) const {
-      if (value > 0)
-        return 1;
-      else if (value == 0)
-        return 0;
-      else
-        return -1;
-    }
-  };
 
   //! A simple functor that updates a value using another functor.
   template <typename T, typename Functor>
@@ -102,18 +89,6 @@ namespace sill {
   template <typename T>
   struct identity_t : std::unary_function<T, T> {
     T operator()(const T& value) const { return value; }
-  };
-
-  //! A simple functor that returns the first value of a pair
-  template <typename T, typename U>
-  struct pair_first : std::unary_function<std::pair<T,U>, T> {
-    T operator()(const std::pair<T,U>& value) const { return value.first; }
-  };
-
-  //! A simple functor that returns the second value of a pair
-  template <typename T, typename U>
-  struct pair_second : std::unary_function<std::pair<T,U>, U> {
-    U operator()(const std::pair<T,U>& value) const { return value.second; }
   };
 
   //! A simple functor that returns a pair with second value default_initialized
@@ -164,35 +139,6 @@ namespace sill {
     }
   };
 
-  template <typename T, typename U = T>
-  struct multiplies {
-    T operator()(const T& a, const U& b) { return a * b; }
-  };
-
-  template <typename T, typename U = T>
-  struct divides {
-    T operator()(const T& a, const U& b) { return a / b; }
-  };
-  
-  /**
-   * The maximization operator, which models the symmetric binary
-   * operator concept.  
-   */
-  template <typename T>
-  struct maximum : public std::binary_function<T, T, T> {
-    T operator()(const T& a, const T& b) const { return std::max<T>(a, b); }
-  };
-
-  /**
-   * The minimization operator, which models the symmetric binary
-   * operator concept. 
-   */
-  template <typename T>
-  struct minimum : public std::binary_function<T, T, T>
-  {
-    T operator()(const T& a, const T& b) const { return std::min<T>(a, b); }
-  };
-
   /**
    * The conjunction operator, which models the symmetric binary
    * operator concept. 
@@ -209,84 +155,6 @@ namespace sill {
   template <typename T>
   struct logical_or : public std::binary_function<T, T, T> {
     T operator()(const T& a, const T& b) const { return a && b; }
-  };
-
-  /**
-   * Adds two objects in place.
-   */
-  template <typename T, typename U = T>
-  struct plus_assign {
-    T& operator()(T& a, const U& b) const { return a += b; }
-  };
-
-  /**
-   * Subtracts one object from another one in place.
-   */
-  template <typename T, typename U = T>
-  struct minus_assign {
-    T& operator()(T& a, const U& b) const { return a -= b; }
-  };
-
-  /**
-   * Multiplies two objects in place.
-   */
-  template <typename T, typename U = T>
-  struct multiplies_assign {
-    T& operator()(T& a, const U& b) const { return a *= b; }
-  };
-
-  /**
-   * Divides one object by another in place.
-   */
-  template <typename T, typename U = T>
-  struct divides_assign {
-    T& operator()(T& a, const U& b) const { return a /= b; }
-  };
-
-  /**
-   * The division operator. Performs a / b. With the convention that 0 / 0 = 0
-   */
-  template <typename T>
-  struct safe_divides : public std::binary_function<T, T, T>
-  {
-    T operator()(const T& a, const T& b) const { 
-      if (b == T(0)) {
-        if (a == T(0)) {
-          return 0;
-        }
-        else {
-          throw std::invalid_argument("cannot divide non-zero by zero");
-        }
-      }
-      else {
-        return a / b;
-      }
-    }
-  };
-
-  /**
-   * The log operation wrapped in a functor. 
-   */
-  template <typename T>
-  struct logarithm : public std::unary_function<T, T>
-  {
-    T operator()(const T& a) const {
-      if (a < 0) {
-        throw std::invalid_argument("log of negative number");
-      }
-      else return std::log(a); 
-    }
-  };
-
-  /**
-   * The exponentiation operation wrapped in a functor. 
-   */
-  template <typename T>
-  struct exponent : public std::unary_function<T, T>
-  {
-    T operator()(const T& a) const {
-      return std::exp(a); 
-    }
   };
 
   /**
@@ -308,6 +176,14 @@ namespace sill {
       if (std::isinf(loga)) loga=-700;
 			double res = a * (loga - logb);
 			return res;
+    }
+  };
+
+  template <typename T>
+  struct jsd_operator : public std::binary_function<T, T, T> {
+    T operator()(T p, T q) const {
+      T m = (p + q) / 2;
+      return (kld(p, m) + kld(q, m)) / 2;
     }
   };
 
@@ -340,17 +216,6 @@ namespace sill {
         return T(std::numeric_limits<double>::infinity());
       else
         return fabs(a * log(b) / logbase);
-    }
-  };
-
-  /**
-   * An operator that computes the absolute difference between two numbers.
-   */
-  template <typename T>
-  struct abs_difference : public std::binary_function<T, T, T>
-  {
-    T operator()(const T& a, const T& b) const {
-      return std::abs(a - b);
     }
   };
 
@@ -394,14 +259,6 @@ namespace sill {
     T operator()(const T& x, const T& y) const { return orig_op(y, x); }
   private:
     Op orig_op;
-  };
-
-  //! A functor that computes weighted sum of two values
-  template <typename T>
-  struct weighted_plus : std::binary_function<T, T, T> {
-    T wa, wb;
-    weighted_plus(T wa, T wb) : wa(wa), wb(wb) { }
-    T operator()(const T& a, const T& b) { return wa*a + wb*b; }
   };
 
 } // namespace sill

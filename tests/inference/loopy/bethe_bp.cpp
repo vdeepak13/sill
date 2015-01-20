@@ -15,12 +15,15 @@
 
 // TODO: deal with cliques larger than 2
 
-using namespace sill;
-template class asynchronous_bethe_bp<canonical_gaussian>;
-template class residual_bethe_bp<canonical_gaussian>;
+namespace sill {
+  template class asynchronous_bethe_bp<canonical_gaussian>;
+  template class residual_bethe_bp<canonical_gaussian>;
+  
+  template class asynchronous_bethe_bp<table_factor>;
+  template class residual_bethe_bp<table_factor>;
+}
 
-template class asynchronous_bethe_bp<table_factor>;
-template class residual_bethe_bp<table_factor>;
+using namespace sill;
 
 void test(bethe_bp<canonical_gaussian>* engine,
           size_t niters,

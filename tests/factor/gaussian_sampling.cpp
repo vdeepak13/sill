@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include <sill/base/universe.hpp>
+#include <sill/factor/canonical_gaussian.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>

@@ -16,13 +16,15 @@
 
 #include <sill/macros_def.hpp>
 
+namespace sill {
+  template class shafer_shenoy<table_factor>;
+  template class hugin<table_factor>;
+  
+  template class shafer_shenoy<canonical_gaussian>;
+  template class hugin<canonical_gaussian>;
+}
+
 using namespace sill;
-
-template class shafer_shenoy<table_factor>;
-template class hugin<table_factor>;
-
-template class shafer_shenoy<canonical_gaussian>;
-template class hugin<canonical_gaussian>;
 
 struct fixture {
   fixture() {

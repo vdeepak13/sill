@@ -12,16 +12,18 @@
 
 #include "predicates.hpp"
 
+namespace sill {
+  template class bayesian_network<table_factor>;
+  template class markov_network<table_factor>;
+  
+  template class bayesian_network<canonical_gaussian>;
+  template class markov_network<canonical_gaussian>;
+
+  template class bayesian_network<moment_gaussian>;
+}
+
 using namespace sill;
 using boost::array;
-
-template class bayesian_network<table_factor>;
-template class markov_network<table_factor>;
-
-template class bayesian_network<canonical_gaussian>;
-template class markov_network<canonical_gaussian>;
-
-template class bayesian_network<moment_gaussian>;
 
 // TODO: check bayesian network conditioning
 

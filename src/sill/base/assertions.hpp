@@ -130,8 +130,8 @@ extern void __print_back_trace();
 // type of the desired pointer.
 #define CHECK_OP(op, val1, val2)                                        \
   do {                                                                  \
-    const typeof(val1) _CHECK_OP_v1_ = val1;                            \
-    const typeof(val2) _CHECK_OP_v2_ = (typeof(val2))val2;              \
+    auto _CHECK_OP_v1_ = val1;                            \
+    auto _CHECK_OP_v2_ = val2;              \
     if (__builtin_expect(!((_CHECK_OP_v1_) op                           \
                            (typeof(val1))(_CHECK_OP_v2_)), 0)) {        \
       std::cerr                                                         \

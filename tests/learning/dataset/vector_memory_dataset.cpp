@@ -11,14 +11,17 @@
 
 #include <sill/macros_def.hpp>
 
-using namespace sill;
+namespace sill {
+  template class vector_dataset<double>;
+  // template class vector_dataset<float>;
+  // unsupported until we parameterize the vector_assignment
 
-template class vector_dataset<double>;
-// template class vector_dataset<float>;
-// unsupported until we parameterize the vector_assignment
-template class raw_record_iterator<vector_dataset<> >;
-template class raw_const_record_iterator<vector_dataset<> >;
-template class slice_view<vector_dataset<> >;
+  template class raw_record_iterator<vector_dataset<> >;
+  template class raw_const_record_iterator<vector_dataset<> >;
+  template class slice_view<vector_dataset<> >;
+}
+
+using namespace sill;
 
 BOOST_AUTO_TEST_CASE(test_insert) {
   universe u;

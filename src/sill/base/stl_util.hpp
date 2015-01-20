@@ -406,6 +406,29 @@ namespace sill {
   }
 
   /**
+   * Returns true if vector x is a prefix of vector y.
+   */
+  template <typename T>
+  bool prefix(const std::vector<T>& x, const std::vector<T>& y) {
+    return x.size() <= y.size() && std::equal(x.begin(), x.end(), y.begin());
+  }
+
+  /**
+   * Returns the union of two vectors.
+   */
+  template <typename T>
+  std::vector<T> set_union(const std::vector<T>& x,
+                           const std::vector<T>& y) {
+    std::vector<T> result = x;
+    foreach (T v, y) {
+      if (!std::count(x.begin(), x.end(), v)) {
+        result.push_back(v);
+      }
+    }
+    return result;
+  }
+
+  /**
    * Lexigraphical comparison of two ranges.
    * Reading left to right, upon the first element j for which a,b differ,
    * this function returns -1 if a[j] < b[j] and +1 if a[j] > b[j].

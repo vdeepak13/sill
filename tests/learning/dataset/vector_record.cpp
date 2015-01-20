@@ -4,10 +4,12 @@
 #include <sill/base/universe.hpp>
 #include <sill/learning/dataset/vector_record.hpp>
 
-using namespace sill;
+namespace sill {
+  // TODO: once we templatize assignments, add specialization for float
+  template class vector_record<double>;
+}
 
-// TODO: once we templatize assignments, add specialization for float
-template class vector_record<double>;
+using namespace sill;
 
 BOOST_AUTO_TEST_CASE(test_extract) {
   universe u;

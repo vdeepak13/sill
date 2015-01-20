@@ -10,7 +10,7 @@
 
 namespace sill {
 
-  finite_variable::operator std::string() const {
+  std::string finite_variable::str() const {
     return "#V(" + name() + "|F|" 
       + boost::lexical_cast<std::string>(size()) + ")";
   }

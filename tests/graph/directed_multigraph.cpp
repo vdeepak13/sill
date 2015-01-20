@@ -17,6 +17,11 @@
 
 #include <sill/macros_def.hpp>
 
+namespace sill {
+  template class directed_multigraph<size_t>;
+  template class directed_multigraph<size_t, double, double>;
+}
+
 using namespace sill;
 using namespace std;
 
@@ -25,9 +30,6 @@ typedef size_t vertex_property;
 typedef size_t edge_property;
 typedef directed_multigraph<V, vertex_property, edge_property> graph;
 typedef pair<V,V> E;
-
-template class directed_multigraph<size_t>;
-template class directed_multigraph<size_t, double, double>;
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::edge_iterator);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::vertex_iterator);

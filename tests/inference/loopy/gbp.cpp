@@ -22,13 +22,15 @@
 
 #include <sill/macros_def.hpp>
 
+namespace sill {
+  template class asynchronous_gbp<table_factor>;
+  template class asynchronous_gbp_pc<table_factor>;
+  
+  template class asynchronous_gbp<canonical_gaussian>;
+  template class asynchronous_gbp_pc<canonical_gaussian>;
+}
+
 using namespace sill;
-
-template class asynchronous_gbp<table_factor>;
-template class asynchronous_gbp_pc<table_factor>;
-
-template class asynchronous_gbp<canonical_gaussian>;
-template class asynchronous_gbp_pc<canonical_gaussian>;
 
 template <typename Engine>
 void test(const pairwise_markov_network<table_factor>& model,

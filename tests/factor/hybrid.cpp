@@ -9,18 +9,20 @@
 
 #include "predicates.hpp"
 
+namespace sill {
+  template class hybrid<canonical_gaussian>;
+  template class hybrid<moment_gaussian>;
+
+  typedef hybrid<moment_gaussian> hybrid_moment;
+  typedef hybrid<canonical_gaussian> hybrid_canonical;
+
+  template std::ostream& operator<<(std::ostream&, const hybrid_moment&);
+  template std::ostream& operator<<(std::ostream&, const hybrid_canonical&);
+}
+
 using namespace sill;
 
-template class hybrid<canonical_gaussian>;
-template class hybrid<moment_gaussian>;
-
-typedef hybrid<moment_gaussian> hybrid_moment;
-typedef hybrid<canonical_gaussian> hybrid_canonical;
 typedef hybrid_values<double> hybrid_index;
-
-template std::ostream& operator<<(std::ostream&, const hybrid_moment&);
-template std::ostream& operator<<(std::ostream&, const hybrid_canonical&);
-
 
 BOOST_AUTO_TEST_CASE(test_construct) {
   universe u;

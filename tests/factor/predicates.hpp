@@ -8,7 +8,46 @@
 
 #include "../predicates.hpp"
 
-//! Verifies that two factors are close enough
+// Checks the basic properties of finite table factors
+template <typename F>
+boost::test_tools::predicate_result
+table_properties(const F& f, const sill::finite_var_vector& vars) {
+  size_t n = 1;
+  for (sill::finite_variable* v : vars) { n *= v->size(); }
+
+  if (f.empty()) {
+    boost::test_tools::predicate_result result(false);
+    result.message() << "The factor is empty [" << f << "]";
+    return result;
+  }
+  if (f.arity() != vars.size()) {
+    boost::test_tools::predicate_result result(false);
+    result.message() << "Invalid factor arity ["
+                     << f.arity() << " != " << vars.size() << "]";
+    return result;
+  }
+  if (f.size() != n) {
+    boost::test_tools::predicate_result result(false);
+    result.message() << "Invalid factor size ["
+                     << f.size() << " != " << n << "]";
+    return result;
+  }
+  if (f.arguments() != make_domain(vars)) {
+    boost::test_tools::predicate_result result(false);
+    result.message() << "Invalid factor domain ["
+                     << f.arguments() << " != " << make_domain(vars) << "]";
+    return result;
+  }
+  if (f.arg_vector() != vars) {
+    boost::test_tools::predicate_result result(false);
+    result.message() << "Invalid factor argument vector ["
+                     << f.arg_vector() << " != " << vars << "]";
+    return result;
+  }
+  return true;
+}
+
+// Verifies that two factors are close enough
 template <typename F>
 boost::test_tools::predicate_result
 are_close(const F& a, const F& b, typename F::result_type eps) {

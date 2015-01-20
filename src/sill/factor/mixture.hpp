@@ -6,13 +6,13 @@
 #include <set>
 #include <map>
 
+#include <sill/global.hpp>
 #include <sill/factor/concepts.hpp>
 #include <sill/factor/factor.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/util/operations.hpp>
 #include <sill/factor/traits.hpp>
-#include <sill/functional/inplace.hpp>
-#include <sill/global.hpp>
+#include <sill/functional/assign.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>
@@ -181,28 +181,28 @@ namespace sill {
 //     template <typename G=F,
 //               typename boost::enable_if<has_multiplies_assign<F> >::type* = NULL>
     mixture& operator*=(const F& factor) {
-      return componentwise_op<inplace_multiplies<F> >(factor);
+      return componentwise_op(factor, multiplies_assign<F>());
     }
 
     //! divides each component by a factor (defined if F supports division)
 //     template <typename G=F,
 //               typename boost::enable_if<has_divides_assign<F> >::type* = NULL>
     mixture& operator/=(const F& factor) {
-      return componentwise_op<inplace_divides<F> >(factor);
+      return componentwise_op(factor, divides_assign<F>());
     }
 
     //! component-wise multiplication (defined if F supports multiplication)
 //     template <typename G=F,
 //               typename boost::enable_if<has_multiplies_assign<F> >::type* = NULL>
     mixture& operator*=(const mixture& other) {
-      return componentwise_op<inplace_multiplies<F> >(other);
+      return componentwise_op(other, multiplies_assign<F>());
     }
 
     //! component-wise division (defined if F supports division)
 //     template <typename G=F,
 //               typename boost::enable_if<has_divides_assign<F> >::type* = NULL>
     mixture& operator/=(const mixture& other) {
-      return componentwise_op<inplace_divides<F> >(other);
+      return componentwise_op(other, divides_assign<F>());
     }
 
     //! Computes a marginal of the mixture over a subset of variables
@@ -310,8 +310,7 @@ namespace sill {
     std::vector<F> comps;
 
     template <typename Op>
-    mixture& componentwise_op(const F& factor) {
-      Op op;
+    mixture& componentwise_op(const F& factor, Op op) {
       foreach(F& comp, comps) {
         op(comp, factor);
       }
@@ -319,12 +318,11 @@ namespace sill {
     }
 
     template <typename Op>
-    mixture& componentwise_op(const mixture& other) {
+    mixture& componentwise_op(const mixture& other, Op op) {
       if (size() != other.size()) {
         throw std::runtime_error
           ("mixture::combine_in(other,op) given other with mismatched size.");
       }
-      Op op;
       for(size_t i = 0; i < other.size(); i++) {
         op(comps[i], other[i]);
       }

@@ -4,6 +4,7 @@
 #include <sill/learning/dataset_old/assignment_dataset.hpp>
 #include <sill/learning/dataset_old/generate_datasets.hpp>
 #include <sill/learning/dataset_old/syn_oracle_bayes_net.hpp>
+#include <sill/learning/dataset_old/vector_dataset.hpp>
 #include <sill/model/random.hpp>
 
 #include <sill/macros_def.hpp>

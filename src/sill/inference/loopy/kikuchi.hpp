@@ -8,7 +8,6 @@
 #include <map>
 #include <sill/model/region_graph.hpp>
 #include <sill/range/algorithm.hpp>
-#include <sill/functional/size_greater.hpp>
 
 #include <sill/macros_def.hpp>
 

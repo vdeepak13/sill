@@ -153,7 +153,7 @@ namespace sill {
   bool parse_string(const std::string& s, T& val) {
     std::istringstream in(s);
     in >> val;
-    return in;
+    return bool(in);
   }
 
   /**
@@ -164,7 +164,7 @@ namespace sill {
   bool parse_string(const char* s, T& val) {
     std::istringstream in(s);
     in >> val;
-    return in;
+    return bool(in);
   }
 
   /**

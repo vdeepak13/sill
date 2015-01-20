@@ -13,15 +13,17 @@
 
 #include <sill/macros_def.hpp>
 
+namespace sill {
+  template class undirected_graph<size_t>;
+  template class undirected_graph<size_t, double, double>;
+}
+
 using namespace sill;
 using std::make_pair;
 
 typedef size_t V;
 typedef undirected_graph<V, size_t, size_t> graph;
 typedef std::pair<V, V> E;
-
-template class undirected_graph<size_t>;
-template class undirected_graph<size_t, double, double>;
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::edge_iterator);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::vertex_iterator);

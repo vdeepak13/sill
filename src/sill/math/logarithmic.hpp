@@ -44,12 +44,12 @@ namespace sill {
     //! The underlying representation
     typedef T value_type;
 
-  private:
+  public:
     /**
      * The log space representation of \f$x\f$, i.e., the value
      * \f$\log x\f$.
      */
-    value_type lv;
+    T lv;
 
   public:
     //! Serialize members

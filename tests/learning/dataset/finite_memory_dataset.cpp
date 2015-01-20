@@ -8,11 +8,13 @@
 
 #include <sill/macros_def.hpp>
 
-using namespace sill;
+namespace sill {
+  template class raw_record_iterator<finite_dataset>;
+  template class raw_const_record_iterator<finite_dataset>;
+  template class slice_view<finite_dataset>;
+}
 
-template class raw_record_iterator<finite_dataset>;
-template class raw_const_record_iterator<finite_dataset>;
-template class slice_view<finite_dataset>;
+using namespace sill;
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(std::vector<size_t>);
 
@@ -55,23 +57,23 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   boost::tie(it, end) = ds.records(v);
 
   // check if the first record is correct
-  size_t first[] = {2, 0, 1};
-  BOOST_CHECK_EQUAL(it->values, std::vector<size_t>(first, first+3));
+  std::vector<size_t> first = {2, 0, 1};
+  BOOST_CHECK_EQUAL(it->values, first);
   BOOST_CHECK_EQUAL(it->weight, 0.5);
   BOOST_CHECK_EQUAL(*it, ds.record(0));
   ++it;
 
   // check if the second record is correct
-  size_t second[] = {1, 2, 0};
-  BOOST_CHECK_EQUAL(it->values, std::vector<size_t>(second, second+3));
+  std::vector<size_t> second = {1, 2, 0};
+  BOOST_CHECK_EQUAL(it->values, second);
   BOOST_CHECK_EQUAL(it->weight, 0.7);
   BOOST_CHECK_EQUAL(*it, ds.record(1));
   ++it;
 
   // check the remaining records
-  size_t rest[] = {-1, -1, -1};
+  std::vector<size_t> rest(3, -1);
   for (size_t i = 0; i < 10; ++i) {
-    BOOST_CHECK_EQUAL(it->values, std::vector<size_t>(rest, rest+3));
+    BOOST_CHECK_EQUAL(it->values, rest);
     BOOST_CHECK_EQUAL(it->weight, 1.0);
     BOOST_CHECK_EQUAL(*it, ds.record(i + 2));
     ++it;
@@ -237,7 +239,7 @@ BOOST_AUTO_TEST_CASE(test_load) {
   format.load_config(dir + "/finite_format.cfg", u);
   load(dir + "/finite_data.txt", format, ds);
 
-  size_t values[][3] = { {0, -1, 2}, {2, 1, 3}, {1, 0, 0} };
+  size_t values[][3] = { {0, size_t(-1), 2}, {2, 1, 3}, {1, 0, 0} };
   double weights[] = {1.0, 2.0, 0.5};
   BOOST_CHECK_EQUAL(ds.size(), 3);
   size_t i = 0;

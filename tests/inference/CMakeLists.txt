@@ -7,7 +7,7 @@ subdirs(
   variational
 )
 
-add_executable(markov_logic markov_logic.cpp)
+#add_executable(markov_logic markov_logic.cpp)
 
 find_package(TCMALLOC)
 if(TCMALLOC_FOUND) 

@@ -10,7 +10,7 @@ namespace sill{
 
   // Vector variable
   //============================================================================
-  vector_variable::operator std::string() const {
+  std::string vector_variable::str() const {
     return "#V(" + name() + "|V|"
       + boost::lexical_cast<std::string>(size()) + ")";
   }

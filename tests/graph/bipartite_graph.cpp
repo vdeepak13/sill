@@ -14,6 +14,11 @@
 
 #include <sill/macros_def.hpp>
 
+namespace sill {
+  template class bipartite_graph<std::string, size_t>;
+  template class bipartite_graph<std::string, size_t, double, double>;
+}
+
 using namespace sill;
 using std::string;
 
@@ -26,9 +31,6 @@ typedef bipartite_graph<string, size_t, size_t, size_t> graph_type;
 typedef graph_type::vertex vertex;
 typedef graph_type::edge edge;
 typedef std::pair<string, size_t> vpair;
-
-template class bipartite_graph<string, size_t>;
-template class bipartite_graph<string, size_t, double, double>;
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(graph_type::vertex1_iterator);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(graph_type::vertex2_iterator);

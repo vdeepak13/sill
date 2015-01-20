@@ -12,17 +12,20 @@
 
 #include <sill/macros_def.hpp>
 
+namespace sill {
+  typedef pairwise_markov_network<canonical_gaussian> cg_model_type;
+  typedef pairwise_markov_network<table_factor> tf_model_type;
+  
+  template class synchronous_loopy_bp<cg_model_type>;
+  template class asynchronous_loopy_bp<cg_model_type>;
+  template class residual_loopy_bp<cg_model_type>;
+  
+  template class synchronous_loopy_bp<tf_model_type>;
+  template class asynchronous_loopy_bp<tf_model_type>;
+  template class residual_loopy_bp<tf_model_type>;
+}
+
 using namespace sill;
-typedef pairwise_markov_network<canonical_gaussian> cg_model_type;
-typedef pairwise_markov_network<table_factor> tf_model_type;
-
-template class synchronous_loopy_bp<cg_model_type>;
-template class asynchronous_loopy_bp<cg_model_type>;
-template class residual_loopy_bp<cg_model_type>;
-
-template class synchronous_loopy_bp<tf_model_type>;
-template class asynchronous_loopy_bp<tf_model_type>;
-template class residual_loopy_bp<tf_model_type>;
 
 void test(loopy_bp_engine<cg_model_type>* engine,
           size_t niters,
