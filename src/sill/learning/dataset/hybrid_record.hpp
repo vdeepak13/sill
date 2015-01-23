@@ -2,7 +2,7 @@
 #define SILL_HYBRID_RECORD_HPP
 
 #include <sill/base/assignment.hpp>
-#include <sill/base/hybrid_values.hpp>
+#include <sill/datastructure/hybrid_index.hpp>
 #include <sill/base/variable_utils.hpp>
 
 #include <iostream>
@@ -29,7 +29,7 @@ namespace sill {
     vector_var_vector vector_vars;
 
     //! The values (finite and vector) stored in this record
-    hybrid_values<T> values;
+    hybrid_index<T> values;
 
     //! The weight of the data point
     T weight;
@@ -37,7 +37,7 @@ namespace sill {
     // Record concept types
     typedef var_vector       var_vector_type;
     typedef assignment       assignment_type;
-    typedef hybrid_values<T> values_type;
+    typedef hybrid_index<T> values_type;
     typedef T                weight_type;
 
     /**

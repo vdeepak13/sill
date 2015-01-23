@@ -49,7 +49,7 @@ namespace sill {
     typedef assignment              assignment_type;
     
     // IndexableFactor concept types
-    typedef hybrid_values<real_type> index_type;
+    typedef hybrid_index<real_type> index_type;
 
     // DistributionFactor concept types
     typedef boost::function<hybrid(const domain&)> marginal_fn_type;
@@ -744,7 +744,7 @@ namespace sill {
   public:
     typedef typename F::result_type  result_type;
     typedef typename F::real_type    real_type;
-    typedef hybrid_values<real_type> index_type;
+    typedef hybrid_index<real_type> index_type;
     typedef var_vector               var_vector_type;
 
     factor_evaluator(const hybrid<F>& factor)
@@ -876,7 +876,7 @@ namespace sill {
   public:
     typedef typename F::real_type    real_type;
     typedef var_vector               var_vector_type;
-    typedef hybrid_values<real_type> index_type;
+    typedef hybrid_index<real_type> index_type;
 
     struct param_type {
       typedef typename factor_mle_incremental<F>::param_type comp_param_type;

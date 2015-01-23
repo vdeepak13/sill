@@ -209,7 +209,7 @@ namespace sill {
     /**
      * Extracts the values for the variables with given indices.
      */
-    void extract(const var_indices_type& indices, hybrid_values<T>& values) const {
+    void extract(const var_indices_type& indices, hybrid_index<T>& values) const {
       finite_.extract(indices.finite, values.finite);
       vector_.extract(indices.vector, values.vector);
     }

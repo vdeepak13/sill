@@ -22,7 +22,7 @@ namespace sill {
 
 using namespace sill;
 
-typedef hybrid_values<double> hybrid_index;
+typedef hybrid_index<double> hybrid_index;
 
 BOOST_AUTO_TEST_CASE(test_construct) {
   universe u;
@@ -592,7 +592,7 @@ BOOST_AUTO_TEST_CASE(test_evaluator) {
   boost::copy(vals, h.begin());
   factor_evaluator<hybrid_moment> evaluator(h);
   
-  hybrid_values<double> index(2, 0);
+  hybrid_index<double> index(2, 0);
   for (size_t i = 0; i < 2; ++i) {
     index.finite[0] = i;
     for (size_t j = 0; j < 3; ++j) {
@@ -625,7 +625,7 @@ BOOST_AUTO_TEST_CASE(test_marginal_sampler_mle) {
   // draw samples and simultaneously train a model
   factor_sampler<hybrid_moment> sampler(h);
   factor_mle_incremental<hybrid_moment> mle(concat(finite_vars, vector_vars));
-  hybrid_values<double> sample;
+  hybrid_index<double> sample;
   boost::lagged_fibonacci607 rng;
   for (size_t i = 0; i < nsamples; ++i) {
     sampler(sample, rng);
@@ -675,11 +675,11 @@ BOOST_AUTO_TEST_CASE(test_conditional_sampler_mle) {
   // draw samples and simultaneously train a model
   factor_sampler<hybrid_moment> sampler(h, head_vars);
   factor_mle_incremental<hybrid_moment> mle(head_vars, tail_vars);
-  hybrid_values<double> sample(2,1);
+  hybrid_index<double> sample(2,1);
   boost::lagged_fibonacci607 rng;
   for (size_t k = 0; k < 2; ++k) {
-    hybrid_values<double> tail(1, 0);
-    hybrid_values<double> head(1, 1);
+    hybrid_index<double> tail(1, 0);
+    hybrid_index<double> head(1, 1);
     tail.finite[0] = k;
     sample.finite[1] = k;
     for (size_t i = 0; i < nsamples; ++i) {
