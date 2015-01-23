@@ -62,7 +62,7 @@ BOOST_FIXTURE_TEST_CASE(test_operations, fixture) {
   hybrid_sequence_record<>::var_indices_type indices;
   indices.finite.push_back(std::make_pair(0, 0));
   indices.vector.push_back(std::make_pair(0, 1));
-  hybrid_values<double> vals;
+  hybrid_index<double> vals;
   r.extract(indices, vals);
   BOOST_CHECK_EQUAL(vals.finite.size(), 1);
   BOOST_CHECK_EQUAL(vals.vector.size(), 2);

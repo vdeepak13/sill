@@ -36,10 +36,10 @@ namespace sill {
    */
   template <typename T = double>
   class canonical_table : public factor {
- 
+  public: 
     // Public types
     //==========================================================================
-  public:
+
     // Factor member types
     typedef T                 real_type;
     typedef logarithmic<T>    result_type;
@@ -71,7 +71,7 @@ namespace sill {
 
     // Constructors and conversion operators
     //==========================================================================
-  public:
+
     //! Default constructor. Creates an empty factor.
     canonical_table() { }
 
@@ -106,7 +106,7 @@ namespace sill {
       check_param();
     }
 
-    //! Creates a factor with the specified arguments and parameters (copied).
+    //! Creates a factor with the specified arguments and parameters.
     canonical_table(const finite_var_vector& args, std::initializer_list<T> values) {
       reset(args);
       assert(values.size() == size());
@@ -369,7 +369,7 @@ namespace sill {
 
     /**
      * Checks if the shape of the table matches this factor's argument vector.
-     * \throw std::runtime_error if some of the dimensions to not match
+     * \throw std::runtime_error if some of the dimensions do not match
      */
     void check_param() const {
       if (param_.arity() != arg_vec_.size()) {
