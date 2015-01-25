@@ -30,6 +30,10 @@ namespace sill {
   public:
     // Public types
     //======================================================================
+    // OptimizationVector types
+    typedef T value_type;
+
+    // Other types
     typedef arma::Mat<T> mat_type;
     typedef arma::Col<T> vec_type;
     typedef hybrid_index<T> index_type;
@@ -49,6 +53,16 @@ namespace sill {
      */
     softmax(size_t num_labels, size_t num_features)
       : bias_(num_labels), weight_(num_labels, num_features) { }
+
+    /**
+     * Creates a softmax function with the given number of labels and
+     * featuers, and initializes the parameters to the given value.
+     */
+    softmax(size_t num_labels, size_t num_features, T init)
+      : bias_(num_labels), weight_(num_labels, num_features) {
+      bias_.fill(init);
+      weight_.fill(init);
+    }
 
     /**
      * Creates a softmax function with the given number weight matrix
@@ -96,12 +110,12 @@ namespace sill {
 
     //! Returns the weight matrix.
     const mat_type& weight() const {
-      weight_;
+      return weight_;
     }
 
     //! Returns the bias vector.
     const vec_type& bias() const {
-      bias_;
+      return bias_;
     }
 
     //! Evaluates the function for a dense feature vector.
@@ -122,15 +136,36 @@ namespace sill {
 
     // OptimizationVector functions
     //=========================================================================
+    void zero() {
+      weight_.fill(0);
+      bias_.fill(0);
+    }
+
+    softmax operator-() const {
+      return softmax(-weight_, -bias_);
+    }
+
     softmax& operator+=(const softmax& f) {
       weight_ += f.weight_;
       bias_ += f.bias_;
       return *this;
     }
 
-    softmax& operator-=(const softma& f) {
+    softmax& operator-=(const softmax& f) {
       weight_ -= f.weight_;
       bias_ -= f.bias_;
+      return *this;
+    }
+
+    softmax& operator/=(const softmax& f) {
+      weight_ /= f.weight_;
+      bias_ /= f.bias_;
+      return *this;
+    }
+
+    softmax& operator+=(T a) {
+      weight_ += a;
+      bias_ += a;
       return *this;
     }
 
@@ -179,7 +214,7 @@ namespace sill {
       vec_type v = f(x);
       v -= v % v;
       v *= w;
-      weight_ += p * trans(x % x);
+      weight_ += v * trans(x % x);
       bias_ += v;
     }
 
@@ -228,7 +263,7 @@ namespace sill {
    * \relates softmax
    */
   template <typename T>
-  std::ostream& operator<<(std::ostream& out, const softmax<F>& f) {
+  std::ostream& operator<<(std::ostream& out, const softmax<T>& f) {
     out << join_horiz(f.weight(), f.bias());
     return out;
   }

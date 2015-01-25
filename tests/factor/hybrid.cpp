@@ -22,8 +22,6 @@ namespace sill {
 
 using namespace sill;
 
-typedef hybrid_index<double> hybrid_index;
-
 BOOST_AUTO_TEST_CASE(test_construct) {
   universe u;
   finite_var_vector finite_vars = u.new_finite_variables(2, 2);
@@ -45,7 +43,7 @@ BOOST_AUTO_TEST_CASE(test_construct) {
   BOOST_CHECK_EQUAL(h1.size(), 1);
   BOOST_CHECK_CLOSE(double(h1[0].norm_constant()), 2.0, 1e-2 /* percent */);
   BOOST_CHECK_CLOSE(double(h1(assignment())), 2.0, 1.0 /* percent */);
-  BOOST_CHECK_CLOSE(double(h1(hybrid_index())), 2.0, 1.0 /* percent */);
+  BOOST_CHECK_CLOSE(double(h1(hybrid_index<double>())), 2.0, 1.0 /* percent */);
   
   // test constructor with finite and vector argument sequences
   hybrid_moment h2(finite_vars, vector_vars, 0.5);
@@ -201,7 +199,7 @@ BOOST_AUTO_TEST_CASE(test_value) {
   BOOST_CHECK_CLOSE(log(h(a)), -1.0 * (0.5 * 0.5) + 1 * 0.5, 1e-2 /* percent */);
   
   // test operator()(index)
-  hybrid_index index(2, 1);
+  hybrid_index<double> index(2, 1);
   index.finite[0] = 0;
   index.finite[1] = 1;
   index.vector[0] = 0.5;

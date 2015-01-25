@@ -102,13 +102,13 @@ namespace sill {
       : search_(search),
         params_(params),
         objective_(NULL),
-        value_(nan()),
+        value_(nan<real_type>()),
         converged_(false) { }
     
     void objective(gradient_objective<Vec>* obj) {
       objective_ = obj;
       search_->objective(obj);
-      value_ = nan();
+      value_ = nan<real_type>();
       converged_ = false;
     }
 
@@ -131,7 +131,7 @@ namespace sill {
         direction_standard();
       }
       result_type result = search_->step(x_, dir_);
-      x_ += result.step * dir_;
+      axpy(result.step, dir_, x_);
       converged_ = (value_ - result.value) < params_.convergence;
       value_ = result.value;
       return result;
@@ -165,11 +165,13 @@ namespace sill {
     void direction_preconditioned() {
       if (boost::math::isnan(value_)) {
         g_ = objective_->gradient(x_);
-        p_ = objective_->precondg(x_);
+        p_ = g_;
+        p_ /= objective_->hessian_diag(x_);
         dir_ = -p_;
       } else {
         const Vec& g2 = objective_->gradient(x_);
-        const Vec& p2 = objective_->precondg(x_);
+        Vec p2 = g2;
+        p2 /= objective_->hessian_diag(x_);
         dir_ *= beta(g_, p_, g2, p2);
         dir_ -= p2;
         g_ = g2;

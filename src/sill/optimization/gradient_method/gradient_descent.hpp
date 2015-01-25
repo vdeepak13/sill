@@ -32,11 +32,18 @@ namespace sill {
        */
       real_type convergence;
 
-      explicit param_type(real_type convergence = 1e-6)
-        : convergence(convergence) { }
+      /**
+       * If true, we use preconditioning using the Jacobi preconditioner.
+       */
+      bool precondition;
+
+      explicit param_type(real_type convergence = 1e-6,
+                          bool precondition = false)
+        : convergence(convergence),
+          precondition(precondition) { }
 
       friend std::ostream& operator<<(std::ostream& out, const param_type& p) {
-        out << p.convergence;
+        out << p.convergence << " " << p.precondition;
         return out;
       }
     };
@@ -51,13 +58,13 @@ namespace sill {
       : search_(search),
         params_(params),
         objective_(NULL),
-        value_(nan()),
+        value_(nan<real_type>()),
         converged_(false) { }
 
     void objective(gradient_objective<Vec>* obj) {
       objective_ = obj;
       search_->objective(obj);
-      value_ = nan();
+      value_ = nan<real_type>();
       converged_ = false;
     }
 
@@ -75,6 +82,9 @@ namespace sill {
 
     result_type iterate() {
       dir_ = -objective_->gradient(x_);
+      if (params_.precondition) {
+        dir_ /= objective_->hessian_diag(x_);
+      }
       result_type result = search_->step(x_, dir_);
       axpy(result.step, dir_, x_);
       converged_ = (value_ - result.value) < params_.convergence;

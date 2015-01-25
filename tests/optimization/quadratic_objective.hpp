@@ -15,7 +15,7 @@ struct quadratic_objective
   vec_type ctr;
   mat_type cov;
   vec_type g;
-  vec_type p;
+  vec_type h;
 
   quadratic_objective(const vec_type& ctr, const mat_type& cov)
     : ctr(ctr), cov(cov) { }
@@ -30,8 +30,8 @@ struct quadratic_objective
     return g;
   }
 
-  const vec_type& precondg(const vec_type& x) {
-    p = (cov * (x - ctr)) / diagvec(cov);
+  const vec_type& hessian_diag(const vec_type& x) {
+    h = diagvec(cov);
     return p;
   }
   

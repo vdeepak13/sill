@@ -93,7 +93,7 @@ namespace sill {
         step_ = step;
         input_ = *origin_;
         if (step != 0.0) {
-          input_ += *direction_ * step;
+          axpy(step, *direction_, input_);
         }
         new_line_ = false;
       }

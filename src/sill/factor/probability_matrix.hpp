@@ -99,6 +99,18 @@ namespace sill {
     }
 
     /**
+     * Constructs a probability_matrix factor with a single argument
+     * and sets the parameters to the given value.
+     */
+    probability_matrix(finite_variable* x, const mat_type& values)
+      : x_(x), y_(NULL), values_(values) {
+      assert(values_.n_row == x->size());
+      assert(values_.n_col == 1);
+      args_.insert(x);
+    }
+
+
+    /**
      * Constructs a probability_matrix factor with two arguments.
      * Allocates teh memory, but does not initialize the values.
      */
