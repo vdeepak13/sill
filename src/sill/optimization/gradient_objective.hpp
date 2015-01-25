@@ -35,7 +35,7 @@ namespace sill {
     /**
      * Computes the preconditioned gradient of the objective.
      */
-    virtual const Vec& precondg(const Vec& x) = 0;
+    virtual const Vec& hessian_diag(const Vec& x) = 0;
 
   }; // class gradient_objective
 

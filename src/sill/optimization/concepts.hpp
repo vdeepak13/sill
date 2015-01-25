@@ -27,23 +27,23 @@ namespace sill {
     typedef typename Vec::value_type value_type;
 
     //! Adds another vector to this one
-    V& operator+=(const Vec& other);
+    Vec& operator+=(const Vec& other);
 
     //! Subtracts another vector from this one
-    V& operator-=(const Vec& other);
+    Vec& operator-=(const Vec& other);
 
     //! Multiplication by a scalar value.
-    V& operator*=(value_type d);
+    Vec& operator*=(value_type d);
 
     //! Division by a scalar value.
-    V& operator/=(value_type d);
+    Vec& operator/=(value_type d);
 
     //! Adds a scalar multiple of a vector to another vector
-    friend void axpy(vaue_type a, const Vec& x, Vec& y);
+    friend void axpy(value_type a, const Vec& x, Vec& y);
 
     //! Returns a vector whose each element is equal to the sign of the corresponding 
     //! element in the input vector (-1 for negative, 0 for 0, 1 for positive).
-    friend V sign(const Vec& x);
+    friend Vec sign(const Vec& x);
 
     //! Returns the inner product of two vectors
     friend value_type dot(const Vec& a, const Vec& b);
@@ -62,9 +62,9 @@ namespace sill {
     }
 
   private:
-    V v;
-    static V& vref;
-    static const V& vcref;
+    Vec v;
+    static Vec& vref;
+    static const Vec& vcref;
     value_type val;
     static std::ostream& out;
 

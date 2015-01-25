@@ -246,7 +246,7 @@ namespace sill {
    * A unary operator that computes the sign of a value (-1, 0, 1).
    */
   template <typename T>
-  struct sign {
+  struct real_sign {
     T operator()(const T& value) const {
       return (value == T(0)) ? T(0) : std::copysign(1.0, value);
     }

@@ -120,7 +120,7 @@ namespace sill {
       real_type f0 = f_.value(0.0);
       result_type r = f_.value_result(1.0);
       while (r.step > params_.min_step &&
-             r.value > f0 + r.step * threshold) {
+             (std::isnan(r.value) || r.value > f0 + r.step * threshold)) {
         ++(this->selection_steps_);
         r = f_.value_result(r.step * params_.discount);
       }
