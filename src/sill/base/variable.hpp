@@ -8,10 +8,10 @@
 #include <map>
 
 #include <boost/any.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include <sill/base/concepts.hpp>
 #include <sill/base/stl_util.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/range/forward_range.hpp>
 
@@ -168,7 +168,7 @@ namespace sill {
   std::set<V*> intersect(const std::set<V*>& s, const domain& t) {
     concept_assert((Variable<V>));
     std::set<V*> u;
-    sill::set_intersection(s, t, std::inserter(u, u.begin()));
+    boost::set_intersection(s, t, std::inserter(u, u.begin()));
     return u;
   }
 

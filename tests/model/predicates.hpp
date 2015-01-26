@@ -4,10 +4,11 @@
 #include <sill/base/finite_assignment_iterator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/interfaces.hpp>
-#include <sill/range/algorithm.hpp>
 
 #include <algorithm>
 #include <vector>
+
+#include <boost/range/algorithm.hpp>
 
 #include "../predicates.hpp"
 
@@ -17,7 +18,7 @@ using sill::table_factor;
 struct factor_arg_less {
   template <typename F>
   bool operator()(const F& a, const F& b) {
-    return sill::lexicographical_compare(a.arguments(), b.arguments());
+    return boost::lexicographical_compare(a.arguments(), b.arguments());
   }
 };
 

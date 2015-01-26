@@ -5,7 +5,6 @@
 #include <boost/random/uniform_int.hpp>
 
 #include <sill/learning/dataset_old/dataset.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/range/concepts.hpp>
 
 #include <sill/macros_def.hpp>

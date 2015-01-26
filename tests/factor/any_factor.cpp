@@ -3,13 +3,12 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include <sill/factor/any_factor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/inference/exact/junction_tree_inference.hpp>
 #include <sill/stl_io.hpp>
-
-#include <sill/range/algorithm.hpp>
 
 int main(int argc, char** argv)
 {
@@ -79,5 +78,5 @@ int main(int argc, char** argv)
 
   // Compare the computed beliefs
   assert(poly_beliefs.size() == table_beliefs.size());
-  assert(sill::equal(poly_beliefs, table_beliefs));
+  assert(boost::equal(poly_beliefs, table_beliefs));
 }

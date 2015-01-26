@@ -6,9 +6,10 @@
 #include <stdexcept>
 #include <set>
 //#include <boost/pending/disjoint_sets.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/range/numeric.hpp>
 
 #include <sill/global.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/datastructure/set_index.hpp>
 #include <sill/graph/algorithm/mst.hpp>
 #include <sill/graph/algorithm/subgraph.hpp>
@@ -25,7 +26,6 @@
 
 #include <sill/range/concepts.hpp>
 #include <sill/range/transformed.hpp>
-#include <sill/range/numeric.hpp>
 #include <sill/range/io.hpp>
 #include <sill/base/stl_util.hpp>
 #include <sill/macros_def.hpp>
@@ -326,7 +326,7 @@ namespace sill {
         add_clique(v, cg.cluster(v), cg[v]);
       foreach(edge e, cg.edges())
         add_edge(e.source(), e.target(), cg[e]);
-      next_vertex = sill::accumulate(vertices(), 0, maximum<size_t>()) + 1;
+      next_vertex = boost::accumulate(vertices(), 0, maximum<size_t>()) + 1;
 
       if(force) triangulate();
     }

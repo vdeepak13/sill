@@ -630,12 +630,12 @@ namespace sill {
   }
 
   finite_assignment arg_max(const table_factor& f) {
-    table_factor::table_type::const_iterator it = max_element(f.values());
+    table_factor::table_type::const_iterator it = boost::max_element(f.values());
     return f.assignment(f.table().index(it));
   }
 
   finite_assignment arg_min(const table_factor& f) {
-    table_factor::table_type::const_iterator it = min_element(f.values());
+    table_factor::table_type::const_iterator it = boost::min_element(f.values());
     return f.assignment(f.table().index(it));
   }
 

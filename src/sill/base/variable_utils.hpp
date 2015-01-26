@@ -4,8 +4,9 @@
 #include <sill/base/variable.hpp>
 #include <sill/base/finite_variable.hpp>
 #include <sill/base/vector_variable.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/range/converted.hpp>
+
+#include <boost/range/algorithm.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -18,9 +19,9 @@ namespace sill {
   inline domain set_union(const finite_domain& s,
                           const vector_domain& t) {
     domain result;
-    sill::set_union(make_converted<variable*>(s),
-                    make_converted<variable*>(t),
-                    std::inserter(result, result.begin()));
+    boost::set_union(make_converted<variable*>(s),
+                     make_converted<variable*>(t),
+                     std::inserter(result, result.begin()));
     return result;
   }
 
@@ -31,23 +32,23 @@ namespace sill {
   inline domain set_union(const vector_domain& s,
                           const finite_domain& t) {
     domain result;
-    sill::set_union(make_converted<variable*>(s),
-                    make_converted<variable*>(t),
-                    std::inserter(result, result.begin()));
+    boost::set_union(make_converted<variable*>(s),
+                     make_converted<variable*>(t),
+                     std::inserter(result, result.begin()));
     return result;
   }
 
   inline domain set_union(const domain& s, const finite_domain& t) {
     domain result;
-    sill::set_union(s, make_converted<variable*>(t),
-                    std::inserter(result, result.begin()));
+    boost::set_union(s, make_converted<variable*>(t),
+                     std::inserter(result, result.begin()));
     return result;
   }
 
   inline domain set_union(const domain& s, const vector_domain& t) {
     domain result;
-    sill::set_union(s, make_converted<variable*>(t),
-                    std::inserter(result, result.begin()));
+    boost::set_union(s, make_converted<variable*>(t),
+                     std::inserter(result, result.begin()));
     return result;
   }
 

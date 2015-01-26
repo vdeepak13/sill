@@ -13,7 +13,6 @@
 #include <sill/copy_ptr.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/factor/table_factor.hpp>
-#include <sill/range/algorithm.hpp>
 
 using namespace sill;
 

@@ -8,7 +8,6 @@
 #include <sill/math/constants.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/vector.hpp>
-#include <sill/range/algorithm.hpp>
 
 #include <sill/macros_def.hpp>
 namespace arma {

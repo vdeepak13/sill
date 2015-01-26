@@ -1,5 +1,6 @@
 #include <sill/learning/validation/parameter_grid.hpp>
-#include <sill/range/algorithm.hpp>
+
+#include <boost/range/algorithm.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -168,7 +169,7 @@ namespace sill {
     size_t total_vals = 1;
     for (size_t j(0); j < k; ++j) {
       altvals[j].set_size(unique_value_sets[j].size());
-      sill::copy(forward_range<double>(unique_value_sets[j].begin(),
+      boost::copy(forward_range<double>(unique_value_sets[j].begin(),
                                  unique_value_sets[j].end()),
            altvals[j].begin());
       std::sort(altvals[j].begin(), altvals[j].end());

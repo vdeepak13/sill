@@ -5,7 +5,7 @@
 
 #include <sill/base/stl_util.hpp>
 #include <sill/base/vector_assignment.hpp>
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/dataset_old/vector_record.hpp>
 #include <sill/math/linear_algebra/armadillo.hpp>

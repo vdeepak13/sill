@@ -8,7 +8,7 @@
 #include <sill/set.hpp>
 #include <sill/subset_iterator.hpp>
 #include <sill/map.hpp>
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/junction_tree.hpp>
 #include <sill/model/decomposable.hpp>

@@ -3,10 +3,10 @@
 
 #include <set>
 
+#include <boost/range/algorithm.hpp>
 #include <boost/range/metafunctions.hpp>
 
 #include <sill/global.hpp>
-#include <sill/range/algorithm.hpp>
 
 namespace sill {
 
@@ -66,7 +66,7 @@ namespace sill {
           update_set.insert(*n_begin);
         }
       }
-      sill::copy(update_set, updated);
+      boost::copy(update_set, updated);
     }
 
   }; // struct min_fill_strategy

@@ -1,6 +1,5 @@
 #include <sill/factor/table_factor.hpp>
 #include <sill/base/universe.hpp>
-#include <sill/range/numeric.hpp>
 #include <boost/lexical_cast.hpp>
 
 using sill::universe;

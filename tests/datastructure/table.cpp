@@ -88,6 +88,47 @@ BOOST_AUTO_TEST_CASE(test_sequential) {
 }
 
 
+bool is_close(const table<double>& p, double v0, double v1) {
+  return std::abs(p[0] - v0) < 1e-8 && std::abs(p[1] - v1) < 1e-8;
+}
+
+BOOST_AUTO_TEST_CASE(test_opt_vector) {
+  const table<double> p({1, 2}, {1, 2});
+  const table<double> q({1, 2}, {1.5, -0.5});
+  table<double> r;
+  
+  r = p; r += q;
+  BOOST_CHECK(is_close(r, 2.5, 1.5));
+  
+  r = p; r -= q;
+  BOOST_CHECK(is_close(r, -0.5, 2.5));
+
+  r = p; r += 1.0;
+  BOOST_CHECK(is_close(r, 2, 3));
+
+  r = p; r -= 1.0;
+  BOOST_CHECK(is_close(r, 0, 1));
+
+  r = p; r *= 2.0;
+  BOOST_CHECK(is_close(r, 2, 4));
+  
+  r = p; r /= 2.0;
+  BOOST_CHECK(is_close(r, 0.5, 1));
+
+  r = p; axpy(2.0, q, r);
+  BOOST_CHECK(is_close(r, 4, 1));
+  
+  BOOST_CHECK_CLOSE(dot(p, q), 0.5, 1e-8);
+
+  /*
+  param_type cond = p.condition({1});
+  BOOST_CHECK_EQUAL(cond.arity(), 1);
+  BOOST_CHECK_EQUAL(cond.size(), 1);
+  BOOST_CHECK_EQUAL(cond[0], 2);
+  */
+}
+
+
 BOOST_AUTO_TEST_CASE(test_join) {
   const size_t m = 10;
   const size_t n = 8;

@@ -1,13 +1,14 @@
 #ifndef SILL_KIKUCHI_REGION_GRAPH_HPP
 #define SILL_KIKUCHI_REGION_GRAPH_HPP
 
-#include <vector>
-#include <iterator> // for back_inserter
-
-#include <set>
-#include <map>
 #include <sill/model/region_graph.hpp>
-#include <sill/range/algorithm.hpp>
+
+#include <iterator>
+#include <map>
+#include <set>
+#include <vector>
+
+#include <boost/range/algorithm.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -58,8 +59,8 @@ namespace sill {
 
     // add the edges
     std::vector<size_t> regions(rg.num_vertices());
-    sill::copy(rg.vertices(), regions.begin());
-    sill::sort(regions,
+    boost::copy(rg.vertices(), regions.begin());
+    boost::sort(regions,
               typename region_graph<Node,VP,EP>::cluster_size_less(&rg));
 
     for(int i = regions.size() - 1; i >= 0; i--) {

@@ -5,7 +5,7 @@
 
 #include <boost/type_traits/is_base_of.hpp>
 
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/archive/xml_oarchive.hpp>
 
 #include <sill/macros_def.hpp>

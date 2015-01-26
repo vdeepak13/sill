@@ -14,7 +14,6 @@
 #include <sill/learning/dataset_old/datasource.hpp>
 #include <sill/learning/dataset_old/record.hpp>
 #include <sill/learning/dataset_old/record_iterator.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/range/forward_range.hpp>
 
