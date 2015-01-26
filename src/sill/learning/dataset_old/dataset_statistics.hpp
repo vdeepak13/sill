@@ -13,8 +13,6 @@
 #include <sill/learning/dataset_old/dataset.hpp>
 #include <sill/learning/parameter_old/learn_factor.hpp>
 
-#include <sill/range/algorithm.hpp>
-
 #include <sill/macros_def.hpp>
 
 /**

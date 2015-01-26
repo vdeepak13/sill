@@ -7,10 +7,8 @@
 #include <boost/range/iterator_range.hpp> // this will be removed
 
 #include <sill/range/concepts.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/factor/util/arguments_functor.hpp>
 #include <sill/factor/concepts.hpp>
-#include <sill/factor/factor.hpp>
 #include <sill/factor/util/operations.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/graph/algorithm/min_degree_strategy.hpp>

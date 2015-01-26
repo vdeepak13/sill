@@ -4,7 +4,7 @@
 #include <iosfwd>
 #include <typeinfo>
 
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/factor/constant_factor.hpp>
 #include <sill/factor/any_factor_placeholder.hpp>
 #include <sill/factor/any_factor_binary.hpp>

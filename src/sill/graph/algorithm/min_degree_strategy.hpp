@@ -2,7 +2,8 @@
 #define SILL_MIN_DEGREE_STRATEGY_HPP
 
 #include <sill/graph/concepts.hpp>
-#include <sill/range/algorithm.hpp>
+
+#include <boost/range/algorithm.hpp>
 
 namespace sill {
 
@@ -41,7 +42,7 @@ namespace sill {
     void updated(typename Graph::vertex v, const Graph& g, OutIt updated) {
       //concept_assert((IncidenceGraph<Graph>));
       //concept_assert((OutputIterator<OutIt, typename Graph::vertex>));
-      sill::copy(g.neighbors(v), updated);
+      boost::copy(g.neighbors(v), updated);
     }
 
   }; // struct min_degree_strategy

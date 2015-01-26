@@ -174,7 +174,7 @@ namespace sill {
 
     if (this->arguments() == other.arguments()) {
       vec other_vector = other.inf_vector(arg_list);
-      if (sill::lexicographical_compare(inf_vector(), other_vector))
+      if (boost::lexicographical_compare(inf_vector(), other_vector))
         return true; // inf_vector() < other_vector
 
       if (equal(inf_vector(), other_vector)) {

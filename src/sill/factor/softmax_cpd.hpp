@@ -8,7 +8,7 @@
 #include <sill/base/variable_utils.hpp>
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/datastructure/hybrid_index.hpp>
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/factor/probability_matrix.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/factor/util/factor_mle.hpp>

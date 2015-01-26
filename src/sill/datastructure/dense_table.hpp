@@ -3,8 +3,6 @@
 
 #include <sill/global.hpp>
 #include <sill/functional.hpp>
-#include <sill/range/algorithm.hpp>
-#include <sill/range/numeric.hpp>
 #include <sill/stl_concepts.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/vector.hpp>
@@ -15,6 +13,8 @@
 #include <numeric>
 
 #include <boost/optional.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/range/numeric.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -89,7 +89,7 @@ namespace sill {
 
     void load(iarchive & ar) {
       ar >> shape_;
-      size_ = sill::accumulate(shape_, 1, std::multiplies<size_t>());
+      size_ = boost::accumulate(shape_, 1, std::multiplies<size_t>());
       ar >> elts;
       offset = offset_functor(shape_);
     }
@@ -100,7 +100,7 @@ namespace sill {
     //! Constructs a table with the given dimensions and default element
     dense_table(const index_type& extents, T init_elt = T())
       : shape_(extents), 
-        size_(sill::accumulate(shape_, 1, std::multiplies<size_t>())),
+        size_(boost::accumulate(shape_, 1, std::multiplies<size_t>())),
         elts(size_, init_elt),
         offset(extents) {
       // Check to make sure the size value did not overflow.
@@ -271,7 +271,7 @@ namespace sill {
     //! implements Table::apply
     template <typename Function>
     void apply(Function f) {
-      sill::for_each(elts, f);
+      boost::for_each(elts, f);
     }
 
     //! implements Table::update
@@ -439,8 +439,8 @@ namespace sill {
 
       // Compute the shape of the joined table.
       size_t z_arity =
-        1 + std::max(sill::accumulate(x_dim_map, 0, maximum<size_t>()),
-                     sill::accumulate(y_dim_map, 0, maximum<size_t>()));
+        1 + std::max(boost::accumulate(x_dim_map, 0, maximum<size_t>()),
+                     boost::accumulate(y_dim_map, 0, maximum<size_t>()));
       index_type z_shape(z_arity);
 
       // could simplify the following as:
@@ -475,8 +475,8 @@ namespace sill {
 
       // Compute the shape of the joined table.
       size_t z_arity =
-        1 + std::max(sill::accumulate(x_dim_map, 0, maximum<size_t>()),
-                     sill::accumulate(x_dim_map, 0, maximum<size_t>()));
+        1 + std::max(boost::accumulate(x_dim_map, 0, maximum<size_t>()),
+                     boost::accumulate(x_dim_map, 0, maximum<size_t>()));
       index_type z_shape(z_arity);
 
       // could simplify the following as:
@@ -1103,7 +1103,7 @@ namespace sill {
   std::ostream& operator<<(std::ostream& out, const dense_table<T>& table) {
     typedef typename dense_table<T>::index_type index_type;
     foreach(const index_type& index, table.indices()) {
-      sill::copy(index, std::ostream_iterator<size_t, char>(out, " "));
+      boost::copy(index, std::ostream_iterator<size_t, char>(out, " "));
       out << table(index) << std::endl;
     }
     return out;

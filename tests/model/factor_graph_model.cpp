@@ -3,6 +3,7 @@
 
 #include <boost/array.hpp>
 #include <boost/random/mersenne_twister.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include <sill/stl_io.hpp>
 #include <sill/base/universe.hpp>
@@ -10,7 +11,6 @@
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include "predicates.hpp"
@@ -60,7 +60,7 @@ struct fixture {
 struct domain_less {
   template <typename Set>
   bool operator()(const Set& a, const Set& b) {
-    return sill::lexicographical_compare(a, b);
+    return boost::lexicographical_compare(a, b);
   }
 };
 
@@ -81,8 +81,8 @@ BOOST_FIXTURE_TEST_CASE(test_structure, fixture) {
       args2.push_back(v.factor().arguments());
     }
     
-    sill::sort(args1, domain_less());
-    sill::sort(args2, domain_less());
+    boost::sort(args1, domain_less());
+    boost::sort(args2, domain_less());
     BOOST_CHECK_EQUAL(args1, args2);
   }
 }
@@ -104,8 +104,8 @@ BOOST_FIXTURE_TEST_CASE(test_simplify, fixture) {
       args2.push_back(v.factor().arguments());
     }
     
-    sill::sort(args1, domain_less());
-    sill::sort(args2, domain_less());
+    boost::sort(args1, domain_less());
+    boost::sort(args2, domain_less());
     BOOST_CHECK_EQUAL(args1, args2);
   }
 }

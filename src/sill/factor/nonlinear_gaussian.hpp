@@ -3,7 +3,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/approx/interfaces.hpp>

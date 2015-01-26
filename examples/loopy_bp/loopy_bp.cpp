@@ -15,8 +15,6 @@
 #include <sill/model/io.hpp>
 #include <sill/inference/loopy/belief_propagation.hpp>
 
-#include <sill/range/algorithm.hpp>
-
 #include <sill/macros_def.hpp>
 
 namespace po = boost::program_options;

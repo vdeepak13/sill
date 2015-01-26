@@ -14,7 +14,6 @@
 #include <sill/graph/algorithm/test_tree.hpp>
 #include <sill/graph/property_functors.hpp>
 #include <sill/graph/undirected_graph.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/range/forward_range.hpp>
 #include <sill/range/io.hpp>

@@ -3,7 +3,7 @@
 
 #include <sill/base/variable_utils.hpp>
 #include <sill/datastructure/dense_table.hpp>
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/factor/util/factor_evaluator.hpp>
 #include <sill/factor/util/factor_mle_incremental.hpp>
 #include <sill/factor/util/factor_sampler.hpp>

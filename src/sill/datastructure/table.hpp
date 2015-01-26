@@ -3,15 +3,14 @@
 
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/datastructure/finite_index_iterator.hpp>
-#include <sill/functional.hpp>
+#include <sill/functional/operators.hpp>
 #include <sill/global.hpp>
-#include <sill/range/algorithm.hpp>
-#include <sill/range/numeric.hpp>
 #include <sill/stl_concepts.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/range.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <initializer_list>
 #include <iterator>
 #include <iostream>
@@ -480,10 +479,11 @@ namespace sill {
      * to each element.
      */
     template <typename Op>
-    void transform(Op op) {
+    table<T>& transform(Op op) {
       for (size_t i = 0; i < size_; ++i) {
         data_[i] = op(data_[i]);
       }
+      return *this;
     }
 
     /**
@@ -492,11 +492,12 @@ namespace sill {
      * must have the same shapes.
      */
     template <typename Op>
-    void transform(const table& x, Op op) {
+    table<T>& transform(const table& x, Op op) {
       assert(shape() == x.shape());
       for (size_t i = 0; i < size_; ++i) {
         data_[i] = op(data_[i], x.data_[i]);
       }
+      return *this;
     }
 
     /**
@@ -580,11 +581,99 @@ namespace sill {
     return out;
   }
 
+  // OptimizationVector functions
+  //==========================================================================
+
+  /**
+   * Adds the elements of table x to the elements of table y in place.
+   * \relates table
+   */
+  template <typename T>
+  table<T>& operator+=(table<T>& y, const table<T>& x) {
+    return y.transform(x, std::plus<T>());
+  }
+
+  /**
+   * Subtracts the elements of table x from the elements of table y in place.
+   * \relates table
+   */
+  template <typename T>
+  table<T>& operator-=(table<T>& y, const table<T>& x) {
+    return y.transform(x, std::minus<T>());
+  }
+
+  /**
+   * Adds a constant to all elements of table x in place.
+   * \relates table
+   */
+  template <typename T>
+  table<T>& operator+=(table<T>& x, const T& a) {
+    return x.transform(incremented_by<T>(a));
+  }
+
+  /**
+   * Subtracts a constant from all elements of table x in place.
+   * \relates table
+   */
+  template <typename T>
+  table<T>& operator-=(table<T>& x, const T& a) {
+    return x.transform(decremented_by<T>(a));
+  }
+
+  /**
+   * Multiplies all elements of table x by a constant in place.
+   * \relates table
+   */
+  template <typename T>
+  table<T>& operator*=(table<T>& x, const T& a) {
+    return x.transform(multiplied_by<T>(a));
+  }
+  
+  /**
+   * Divides all elements table x by a constant in place.
+   * \relates table
+   */
+  template <typename T>
+  table<T>& operator/=(table<T>& x, const T& a) {
+    return x.transform(divided_by<T>(a));
+  }
+
+  /**
+   * Performs the operation y += a * x.
+   * \relates table
+   */
+  template <typename T>
+  void axpy(const T& a, const table<T>& x, table<T>& y) {
+    y.transform(x, plus_multiple<T>(a));
+  }
+
+  /**
+   * Computes the dot product of two matrices for elementary type T.
+   * \relates table
+   */
+  template <typename T>
+  T dot(const table<T>& x, const table<T>& y) {
+    assert(x.shape() == y.shape());
+    return std::inner_product(x.begin(), x.end(), y.begin(), T(0));
+  }
+
+  /*
+      // ConditionalParameter functions
+      //====================================================================
+      param_type condition(const finite_index& index) const {
+        assert(index.size() <= this->arity());
+        size_t n = this->arity() - index.size();
+        finite_index shape(this->shape().begin(), this->shape().begin() + n);
+        param_type result(shape);
+        result.restrict(*this, this->offset().linear(index, n));
+        return result;
+      }
+  */
 
   // Table operations
   //==========================================================================
 
-  template<int N>
+  template <int N>
   using int_ = std::integral_constant<int, N>;
 
   /**

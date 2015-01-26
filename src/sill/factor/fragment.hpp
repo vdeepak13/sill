@@ -5,7 +5,7 @@
 #include <map>
 
 #include <sill/global.hpp>
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/factor/prior_likelihood.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/model/decomposable.hpp>

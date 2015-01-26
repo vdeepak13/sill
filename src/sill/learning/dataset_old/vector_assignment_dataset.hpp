@@ -9,6 +9,7 @@
 #include <boost/iterator.hpp>
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include <sill/base/assignment.hpp>
 #include <sill/factor/table_factor.hpp>
@@ -367,8 +368,8 @@ namespace sill {
   void vector_assignment_dataset<LA>::set_record(size_t i, const std::vector<size_t>& fvals,
                                              const vec& vvals, double w) {
     assert(i < nrecords);
-    sill::copy(fvals, finite_data[i].begin());
-    sill::copy(vvals, vector_data[i].begin());
+    boost::copy(fvals, finite_data[i].begin());
+    boost::copy(vvals, vector_data[i].begin());
     convert_finite_record_old2assignment(fvals, data_vector[i].finite());
     convert_vector_record_old2assignment(vvals, data_vector[i].vector());
     if (weighted) {
@@ -472,12 +473,12 @@ namespace sill {
     double weight_tmp;
     for (size_t i = 0; i < nrecords-1; ++i) {
       size_t j = (size_t)(boost::uniform_int<int>(i,nrecords-1)(rng));
-      sill::copy(finite_data[i], fin_tmp.begin());
-      sill::copy(finite_data[j], finite_data[i].begin());
-      sill::copy(fin_tmp, finite_data[j].begin());
-      sill::copy(vector_data[i], vec_tmp.begin());
-      sill::copy(vector_data[j], vector_data[i].begin());
-      sill::copy(vec_tmp, vector_data[j].begin());
+      boost::copy(finite_data[i], fin_tmp.begin());
+      boost::copy(finite_data[j], finite_data[i].begin());
+      boost::copy(fin_tmp, finite_data[j].begin());
+      boost::copy(vector_data[i], vec_tmp.begin());
+      boost::copy(vector_data[j], vector_data[i].begin());
+      boost::copy(vec_tmp, vector_data[j].begin());
       tmpa = data_vector[i];
       data_vector[i] = data_vector[j];
       data_vector[j] = tmpa;

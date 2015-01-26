@@ -8,12 +8,14 @@
 
 #include <boost/function.hpp>
 #include <boost/random/uniform_real.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/range/numeric.hpp>
 
 #include <sill/base/finite_assignment.hpp>
 #include <sill/base/finite_assignment_iterator.hpp>
 #include <sill/datastructure/dense_table.hpp>
 #include <sill/global.hpp>
-#include <sill/factor/factor.hpp>
+#include <sill/factor/base/factor.hpp>
 #include <sill/factor/util/factor_evaluator.hpp>
 #include <sill/factor/util/factor_mle_incremental.hpp>
 #include <sill/factor/util/factor_sampler.hpp>
@@ -22,7 +24,6 @@
 #include <sill/learning/dataset/finite_dataset.hpp>
 #include <sill/learning/dataset_old/finite_record.hpp>
 #include <sill/math/is_finite.hpp>
-#include <sill/range/algorithm.hpp>
 #include <sill/range/forward_range.hpp>
 #include <sill/base/finite_variable.hpp>
 #include <sill/serialization/serialize.hpp>
@@ -98,7 +99,7 @@ namespace sill {
       : args(args.begin(), args.end()) {
       initialize(args, 0.0);
       assert(table().size() == values.size());
-      sill::copy(values, table_data.begin());
+      boost::copy(values, table_data.begin());
     }
 
     table_factor& operator=(const table_factor& other) {
@@ -1172,7 +1173,7 @@ namespace sill {
                                        const Range& values) {
     table_factor factor(arguments, 0);
     assert(values.size() == factor.size());
-    sill::copy(values, boost::begin(factor.values()));
+    boost::copy(values, boost::begin(factor.values()));
     return factor;
   }
 
