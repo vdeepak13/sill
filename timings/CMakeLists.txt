@@ -1,5 +1,6 @@
 link_libraries(sill ${Boost_LIBRARIES})
 
+add_executable(array_vs_table array_vs_table.cpp)
 add_executable(boost_function boost_function.cpp)
 add_executable(boost_unordered_utils boost_unordered_utils.cpp)
 add_executable(chow_liu_timing chow_liu.cpp)

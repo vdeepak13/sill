@@ -288,6 +288,12 @@ namespace sill {
       std::copy(x.begin(), x.end(), data_);
     }
 
+    //! Move constructor
+    table(table&& x) : data_(NULL) {
+      using std::swap;
+      swap(*this, x);
+    }
+
     //! Destructs a table, freeing up the memory.
     ~table() {
       if (data_) {
@@ -306,7 +312,13 @@ namespace sill {
       return *this;
     }
 
-    //! Swaps the content of this table and x.
+    table& operator=(table&& x) {
+      using std::swap;
+      swap(*this, x);
+      return *this;
+    }
+
+    //! Swaps the contents of two tables.
     friend void swap(table& x, table& y) {
       if (&x != &y) {
         using std::swap;
@@ -318,13 +330,13 @@ namespace sill {
     }
 
     //! Saves the table to an archive.
-    void save(oarchive & ar) const {
+    void save(oarchive& ar) const {
       ar << shape_;
       serialize_range(ar, begin(), end());
     }
 
     //! Loads the table from an archive.
-    void load(iarchive & ar) {
+    void load(iarchive& ar) {
       finite_index shape;
       ar >> shape;
       reset(shape);

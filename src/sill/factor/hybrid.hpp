@@ -458,7 +458,7 @@ namespace sill {
      * Normalizes the factor, so that the likelihoods of all components sum to 0.
      */
     hybrid& normalize() {
-      combine_in(norm_constant(), divides_assign<F, result_type>());
+      combine_in(norm_constant(), divides_assign<>());
       return *this;
     }
 
@@ -634,9 +634,9 @@ namespace sill {
   template <typename F>
   hybrid<F>& operator*=(hybrid<F>& f, const table_factor& g) {
     if (f.contains(g.arg_vector())) {
-      f.combine_in(g, multiplies_assign<F, double>());
+      f.combine_in(g, multiplies_assign<>());
     } else {
-      hybrid<F>::combine(f, g, sill::multiplies<F, double>()).swap(f);
+      hybrid<F>::combine(f, g, sill::multiplies<>()).swap(f);
     }
     return f;
   }
@@ -644,9 +644,9 @@ namespace sill {
   template <typename F>
   hybrid<F>& operator/=(hybrid<F>& f, const table_factor& g) {
     if (f.contains(g.arg_vector())) {
-      f.combine_in(g, divides_assign<F, double>());
+      f.combine_in(g, divides_assign<>());
     } else {
-      hybrid<F>::combine(f, g, sill::divides<F, double>()).swap(f);
+      hybrid<F>::combine(f, g, sill::divides<>()).swap(f);
     }
     return f;
   }
@@ -665,13 +665,13 @@ namespace sill {
 
   template <typename F>
   hybrid<F>& operator*=(hybrid<F>& f, typename F::result_type v) {
-    f.combine_in(v, multiplies_assign<F, typename F::result_type>());
+    f.combine_in(v, multiplies_assign<>());
     return f;
   }
 
   template <typename F>
   hybrid<F>& operator/=(hybrid<F>& f, typename F::result_type v) {
-    f.combine_in(v, divides_assign<F, typename F::result_type>());
+    f.combine_in(v, divides_assign<>());
     return f;
   }
   
@@ -687,17 +687,17 @@ namespace sill {
 
   template <typename F>
   hybrid<F> operator*(const hybrid<F>& h, const table_factor& f) {
-    return hybrid<F>::combine(h, f, sill::multiplies<F, double>());
+    return hybrid<F>::combine(h, f, sill::multiplies<>());
   }
 
   template <typename F>
   hybrid<F> operator*(const table_factor& f, hybrid<F> h) {
-    return hybrid<F>::combine(h, f, sill::multiplies<F, double>());
+    return hybrid<F>::combine(h, f, sill::multiplies<>());
   }
 
   template <typename F>
   hybrid<F> operator/(hybrid<F> h, const table_factor& f) {
-    return hybrid<F>::combine(h, f, sill::divides<F, double>());
+    return hybrid<F>::combine(h, f, sill::divides<>());
   }
 
   template <typename F>

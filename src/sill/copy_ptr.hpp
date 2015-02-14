@@ -1,8 +1,9 @@
 #ifndef SILL_COPY_PTR_HPP
 #define SILL_COPY_PTR_HPP
 
-#include <boost/serialization/shared_ptr.hpp>
+//#include <boost/serialization/shared_ptr.hpp>
 #include <boost/pointee.hpp>
+#include <boost/shared_ptr.hpp>
 
 #include <sill/stl_concepts.hpp>
 #include <sill/serialization/serialize.hpp>
@@ -33,7 +34,7 @@ namespace sill {
     //! The underlying pointer, which performs reference counting.
     mutable typename boost::shared_ptr<T> rc_ptr;
 
-    friend class boost::serialization::access;
+    //friend class boost::serialization::access;
 
 
     /**
@@ -137,6 +138,7 @@ namespace sill {
 
 } // namespace sill
 
+#if 0
 namespace boost {                            
 namespace serialization {                    
 template<typename T>                                   
@@ -158,6 +160,7 @@ struct tracking_level< sill::copy_ptr<T> >
     ));                                      
 };                                           
 }}
+#endif
 
 namespace boost {
 

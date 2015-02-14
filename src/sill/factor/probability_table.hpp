@@ -59,9 +59,8 @@ namespace sill {
     
     // LearnableFactor member types
     typedef finite_dataset dataset_type;
-    typedef finite_record_old record_type;
+    typedef finite_record  record_type;
 
-    
     // Constructors and conversion operators
     //==========================================================================
 
@@ -79,13 +78,13 @@ namespace sill {
       this->param_[0] = value;
     }
 
-    //! Constructs a factor with the given arguments and constant likelihood.
+    //! Constructs a factor with the given arguments and constant value.
     probability_table(const finite_var_vector& args, T value) {
       this->reset(args);
       this->param_.fill(value);
     }
 
-    //! Constructs a factor with the given argument set and constant likelihood.
+    //! Constructs a factor with the given argument set and constant value.
     probability_table(const finite_domain& args, T value) {
       this->reset(make_vector(args));
       this->param_.fill(value);

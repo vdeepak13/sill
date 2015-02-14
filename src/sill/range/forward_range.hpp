@@ -54,49 +54,49 @@ namespace sill {
     template <typename It>
     forward_range(const boost::iterator_range<It>& range,
                   typename enable_if< is_compatible_iterator<It> >::type* = 0) 
-      : base(range) { }
+      : base(range.begin(), range.end()) { }
     
     //! Constructs a forward_range from a pair of iterators
     template <typename It>
     forward_range(const std::pair<It,It>& range,
                   typename enable_if< is_compatible_iterator<It> >::type* = 0)
-      : base(range) { } 
+      : base(range.first, range.second) { } 
 
     //! Construct a forward_range from a source iterator and a dest iterator
     template <typename It>
     forward_range(const It& begin, const It& end,
                   typename enable_if< is_compatible_iterator<It> >::type* = 0)
-      : base( std::pair<It,It>(begin, end) ) { } 
+      : base(begin, end) { } 
 
     //! Constructs a forward_range from std::vector
     template <typename T>
     forward_range(const std::vector<T>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
-      : base(range) { }
+      : base(range.begin(), range.end()) { }
     
     //! Constructs a forward_range from std::list
     template <typename T>
     forward_range(const std::list<T>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
-      : base(range) { }
+      : base(range.begin(), range.end()) { }
     
     //! Constructs a forward_range from std::set
     template <typename T>
     forward_range(const std::set<T>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
-      : base(range) { }
+      : base(range.begin(), range.end()) { }
 
     //! Constructs a forward_range from boost::array
     template <typename T, std::size_t N>
     forward_range(const boost::array<T, N>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
-      : base(range) { }
+      : base(range.begin(), range.end()) { }
 
     //! Constructs a forward_range from arma::Col
     template <typename T>
     forward_range(const arma::Col<T>& range,
                   typename enable_if< is_compatible_ref<const T&> >::type* = 0)
-      : base(range) { }
+      : base(range.begin(), range.end()) { }
 
   }; // class forward_range
   

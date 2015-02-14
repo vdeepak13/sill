@@ -9,7 +9,7 @@
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/datastructure/hybrid_index.hpp>
 #include <sill/factor/base/factor.hpp>
-#include <sill/factor/probability_matrix.hpp>
+#include <sill/factor/probability_array.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/factor/util/factor_mle.hpp>
 #include <sill/learning/dataset/hybrid_dataset.hpp>
@@ -40,7 +40,7 @@ namespace sill {
    * \see Factor
    */
   template <typename T = double>
-  class softmax_cpd : public factor {    
+  class softmax_cpd : public factor {
   public:
     // Public types
     //==========================================================================
@@ -324,9 +324,9 @@ namespace sill {
      * Conditions the factor on the given features in the factor's internal
      * ordering of tail variables.
      */
-    probability_matrix<T>
+    probability_array<T>
     condition(const vec_type& index) const {
-      return probability_matrix<T>(head_, param_(index));
+      return probability_array<T>({head_}, param_(index));
     }
 
     /**
@@ -334,16 +334,16 @@ namespace sill {
      * \param strict if true, requires that all the tail arguments are present
      *        in the assignment.
      */
-    probability_matrix<T>
+    probability_array<T>
     condition(const vector_assignment& a, bool strict = true) const {
       if (strict) {
         vec_type features;
         extract_features(a, features);
-        return probability_matrix<T>(head_, param_(features));
+        return probability_array<T>({head_}, param_(features));
       } else {
         sparse_index<T> features;
         extract_features(a, features);
-        return probability_matrix<T>(head_, param_(features));
+        return probability_array<T>({head_}, param_(features));
       }
     }
 

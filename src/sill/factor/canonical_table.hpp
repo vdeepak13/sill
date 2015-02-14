@@ -81,13 +81,13 @@ namespace sill {
       this->param_[0] = value.lv;
     }
 
-    //! Constructs a factor with the given arguments and constant likelihood.
+    //! Constructs a factor with the given arguments and constant value.
     canonical_table(const finite_var_vector& args, logarithmic<T> value) {
       this->reset(args);
       this->param_.fill(value.lv);
     }
 
-    //! Constructs a factor with the given argument set and constant likelihood.
+    //! Constructs a factor with the given argument set and constant value.
     canonical_table(const finite_domain& args, logarithmic<T> value) {
       this->reset(make_vector(args));
       this->param_.fill(value.lv);

@@ -5,41 +5,102 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 namespace sill {
 
   // Binary operators
   //========================================================================
 
-  /**
-   * A binary operator that computes the product of two values of possibly
-   * different types.
-   */
-  template <typename T, typename U = T>
+  //! A binary operator that implements C++14-like plus operator.
+  template <typename T = void>
+  struct plus {
+    T operator()(const T& x, const T& y) const {
+      return x + y;
+    }
+  };
+
+  //! A binary operator that implements C++14-like plus operator.
+  template <>
+  struct plus<void> {
+    template <typename T, typename U>
+    auto operator()(const T& x, const U& y) const -> decltype(x + y) {
+      return x + y;
+    }
+  };
+
+  //! A binary operator that implements C++14-like minus operator.
+  template <typename T = void>
+  struct minus {
+    T operator()(const T& x, const T& y) const {
+      return x - y;
+    }
+  };
+
+  //! A binary operator that implements C++14-like minus operator.
+  template <>
+  struct minus<void> {
+    template <typename T, typename U>
+    auto operator()(const T& x, const U& y) const -> decltype(x - y) {
+      return x - y;
+    }
+  };
+
+  //! A binary operator that implements C++14-like multiplies operator.
+  template <typename T = void>
   struct multiplies {
-    T operator()(const T& x, const U& y) const {
+    T operator()(const T& x, const T& y) const {
       return x * y;
     }
   };
 
-  /**
-   * A binary operator that computes the ratio of two values of possibly
-   * different types.
-   */
-  template <typename T, typename U = T>
+  //! A binary operator that implements C++14-like multiplies operator.
+  template <>
+  struct multiplies<void> {
+    template <typename T, typename U>
+    auto operator()(const T& x, const U& y) const -> decltype(x * y) {
+      return x * y;
+    }
+  };
+    
+  //! A binary operator that implements C++14-like divides operator.
+  template <typename T = void>
   struct divides {
-    T operator()(const T& x, const U& y) const {
+    T operator()(const T& x, const T& y) const {
       return x / y;
     }
   };
 
-  /**
-   * A binary operator that computes the ratio of two values of possibly
-   * different types, with the convention that \f$0 / 0 = 0\f$.
-   */
-  template <typename T, typename U = T>
+  //! A binary operator that implements C++14-like divides operator.
+  template <>
+  struct divides<void> {
+    template <typename T, typename U>
+    auto operator()(const T& x, const U& y) const -> decltype(x / y) {
+      return x / y;
+    }
+  };
+
+  //! A binary operator that implements C++14-like modulus operator.
+  template <typename T = void>
+  struct modulus {
+    T operator()(const T& x, const T& y) const {
+      return x % y;
+    }
+  };
+
+  //! A binary operator that implements C++14-like modulus operator.
+  template <>
+  struct modulus<void> {
+    template <typename T, typename U>
+    auto operator()(const T& x, const U& y) const -> decltype(x % y) {
+      return x % y;
+    }
+  };
+
+  //! A binary operator that computes the ratio of two values with \f$0 / 0 = 0\f$.
+  template <typename T>
   struct safe_divides {
-    T operator()(const T& x, const U& y) const { 
+    T operator()(const T& x, const T& y) const { 
       return (x == T(0)) ? T(0) : (x / y);
     }
   };
@@ -132,6 +193,16 @@ namespace sill {
 
   // Unary operators
   //========================================================================
+
+  /**
+   * An identity operator. Simply returns what is passed to it.
+   */
+  struct identity {
+    template <typename T>
+    auto operator()(T&& t) const -> decltype(std::forward<T>(t)) {
+      return std::forward<T>(t);
+    }
+  };
 
   /**
    * A unary operator that computes the sum of the argument and
