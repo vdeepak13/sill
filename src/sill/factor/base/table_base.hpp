@@ -27,9 +27,9 @@ namespace sill {
   class table_base : public factor {
   public:
     // Range types
-    typedef T* iterator;
+    typedef T*       iterator;
     typedef const T* const_iterator;
-    typedef T value_type;
+    typedef T        value_type;
 
     // Constructors
     //==========================================================================
@@ -121,29 +121,24 @@ namespace sill {
       return param_.end();
     }
 
-    //! Returns the parameter with the given linear index.
-    const T& operator[](size_t i) const {
-      return param_[i];
-    }
-
     //! Provides mutable access to the parameter with the given linear index.
     T& operator[](size_t i) {
       return param_[i];
     }
     
-    //! Returns the parameters of this factor.
-    const table<T>& param() const { 
-      return param_;
+    //! Returns the parameter with the given linear index.
+    const T& operator[](size_t i) const {
+      return param_[i];
     }
 
-    //! Provides mutable access to the parameters of this factor.
+    //! Provides mutable access to the parameter table of this factor.
     table<T>& param() {
       return param_;
     }
 
-    //! Returns the parameter for the given assignment.
-    const T& param(const finite_assignment& a) const {
-      return param_[index(a)];
+    //! Returns the parameter table of this factor.
+    const table<T>& param() const { 
+      return param_;
     }
 
     //! Provides mutable access to the paramater for the given assignment.
@@ -151,13 +146,18 @@ namespace sill {
       return param_[index(a)];
     }
     
-    //! Returns the parameter for the given index.
-    const T& param(const finite_index& index) const {
-      return param_(index);
+    //! Returns the parameter for the given assignment.
+    const T& param(const finite_assignment& a) const {
+      return param_[index(a)];
     }
 
     //! Provides mutable access to the parameter for the given index.
     T& param(const finite_index& index) {
+      return param_(index);
+    }
+
+    //! Returns the parameter for the given index.
+    const T& param(const finite_index& index) const {
       return param_(index);
     }
 

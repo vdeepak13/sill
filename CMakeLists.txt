@@ -131,6 +131,8 @@ if(NOT ${CMAKE_SYSTEM} MATCHES Windows)
   link_libraries(pthread)   
 endif(NOT ${CMAKE_SYSTEM} MATCHES Windows)
 
+include_directories(/usr/local/include/eigen3)
+
 # Flags for the debug and release mode
 if(CMAKE_COMPILER_IS_GNUCXX)
   # Note: -fkeep-inline-functions significantly slows down the compilation
@@ -138,7 +140,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
   # set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g -ggdb")
   set(CMAKE_CXX_FLAGS_RELEASE "-O3 -Wall -g")
 else()
-  set(CMAKE_CXX_FLAGS "-std=c++11")
+  set(CMAKE_CXX_FLAGS "-std=c++11 -g")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
 # uncomment the following line to get CMake variables to print to screen

@@ -8,10 +8,10 @@
 
 #include "../predicates.hpp"
 
-// Checks the basic properties of finite table factors
+// Checks the basic properties of finite table (and matrix) factors
 template <typename F>
 boost::test_tools::predicate_result
-table_properties(const F& f, const sill::finite_var_vector& vars) {
+table_properties(const F& f, const typename F::var_vector_type& vars) {
   size_t n = 1;
   for (sill::finite_variable* v : vars) { n *= v->size(); }
 
