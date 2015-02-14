@@ -17,6 +17,7 @@ add_executable(math_random math_random.cpp)
 add_executable(moment_gaussian_mle moment_gaussian_mle.cpp)
 add_executable(serialization_timing serialization_timing.cpp)
 add_executable(serialization_experiment serialization_experiment.cpp)
+add_executable(softmax_timing softmax_timing.cpp)
 #add_executable(sparse_linear_algebra sparse_linear_algebra.cpp)
 add_executable(table_factor_timing table_factor.cpp)
 #commented out until we clean up the stl_io stuff

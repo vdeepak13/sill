@@ -22,7 +22,6 @@
 #include <sill/optimization/line_search/backtracking_line_search.hpp>
 #include <sill/optimization/line_search/slope_binary_search.hpp>
 
-#include <armadillo>
 #include <iostream>
 
 #include <sill/macros_def.hpp>
@@ -60,8 +59,8 @@ namespace sill {
     typedef hybrid_record<T> record_type;
     
     // Types to represent the parameters
-    typedef arma::Mat<T> mat_type;
-    typedef arma::Col<T> vec_type;
+    typedef typename softmax<T>::mat_type mat_type;
+    typedef typename softmax<T>::vec_type vec_type;
  
     // Constructors and conversion operators
     //==========================================================================
@@ -519,7 +518,7 @@ namespace sill {
           weight += r.weight;
         }
         //std::cout << g_ << std::endl;
-        g_ /= weight;
+        g_ /= -weight;
         //g_ += regul * f;
         axpy(regul_, f, g_);
         ++grad_calls;
@@ -534,7 +533,7 @@ namespace sill {
           weight += r.weight;
         }
         //std::cout << h_ << std::endl;
-        h_ /= weight;
+        h_ /= -weight;
         h_ += regul_;
         return h_;
       }
