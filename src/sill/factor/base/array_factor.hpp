@@ -50,7 +50,7 @@ namespace sill {
      * Constructs an array_factor with the given arguments and initializes its
      * parameters to the given array.
      *
-     * \param zero_nan should the NaNs (if any) be zeroed out?
+     * \param zero_nan if true, any NaN parameters will be zeroed out
      */
     explicit array_factor(const domain_type& args,
                           const array_type& param,
@@ -60,6 +60,12 @@ namespace sill {
       if (zero_nan) clear_nan();
     }
 
+    /**
+     * Constructs an array_factor with the given arguments and moves its
+     * parameters from the given array.
+     *
+     * \param zero_nan if true, any NaN parameters will be zeroed out
+     */
     explicit array_factor(const domain_type& args,
                           array_type&& param,
                           bool zero_nan)
@@ -69,13 +75,22 @@ namespace sill {
       if (zero_nan) clear_nan();
     }
 
+    //! Copy constructor.
     array_factor(const array_factor& other) = default;
 
-    array_factor(array_factor&& other) { swap(other);  }
+    //! Move constructor.
+    array_factor(array_factor&& other) {
+      swap(other);
+    }
 
+    //! Assignment operator.
     array_factor& operator=(const array_factor& other) = default;
 
-    array_factor& operator=(array_factor&& other) { swap(other); return *this; }
+    //! Move assignment operator.
+    array_factor& operator=(array_factor&& other) {
+      swap(other);
+      return *this;
+    }
 
     // Serialization and initialization
     //==========================================================================
