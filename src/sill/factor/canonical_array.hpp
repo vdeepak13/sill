@@ -305,9 +305,13 @@ namespace sill {
 
     //! Computes the marginal of the factor over a subset of variables.
     void marginal(const domain_type& retain, canonical_array& result) const {
-      T max = this->param_.maxCoeff();
-      this->transform_aggregate(retain, exp_op<T>(-max), log_sum_op<T>(+max),
-                                result);
+      if (retain.empty()) {
+        result = canonical_array(marginal());
+      } else {
+        T max = this->param_.maxCoeff();
+        this->transform_aggregate(retain, exp_op<T>(-max), log_sum_op<T>(+max),
+                                  result);
+      }
     }
 
     //! Computes the maximum for each assignment to the given variables.
@@ -323,7 +327,10 @@ namespace sill {
     //! Returns the normalization constant of the factor.
     logarithmic<T> marginal() const {
       T max = this->param_.maxCoeff();
-      return logarithmic<T>(std::log(exp(this->param_ - max).sum()) + max, log_tag());
+      // std::log(exp(param()-max).sum())+max is slow (at least on LLVM 3.5)
+      T sum = std::accumulate(this->begin(), this->end(), T(0),
+                              plus_exp<T>(-max));
+      return logarithmic<T>(std::log(sum) + max, log_tag());
     }
 
     //! Returns the maximum value in the factor.
