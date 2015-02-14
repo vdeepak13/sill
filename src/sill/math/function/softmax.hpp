@@ -4,7 +4,7 @@
 #include <sill/datastructure/hybrid_index.hpp>
 #include <sill/datastructure/sparse_index.hpp>
 
-#include <armadillo>
+#include <Eigen/Core>
 
 #include <cmath>
 #include <iostream>
@@ -33,10 +33,9 @@ namespace sill {
     // OptimizationVector types
     typedef T value_type;
 
-    // Other types
-    typedef arma::Mat<T> mat_type;
-    typedef arma::Col<T> vec_type;
-    typedef hybrid_index<T> index_type;
+    // Underlying representation
+    typedef Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> mat_type;
+    typedef Eigen::Matrix<T, Eigen::Dynamic, 1> vec_type;
 
     // Constructors
     //======================================================================
@@ -52,31 +51,54 @@ namespace sill {
      * to any specific value.
      */
     softmax(size_t num_labels, size_t num_features)
-      : bias_(num_labels), weight_(num_labels, num_features) { }
+      : weight_(num_labels, num_features), bias_(num_labels) { }
 
     /**
      * Creates a softmax function with the given number of labels and
-     * featuers, and initializes the parameters to the given value.
+     * features, and initializes the parameters to the given value.
      */
     softmax(size_t num_labels, size_t num_features, T init)
-      : bias_(num_labels), weight_(num_labels, num_features) {
+      : weight_(num_labels, num_features), bias_(num_labels) {
       bias_.fill(init);
       weight_.fill(init);
     }
 
     /**
-     * Creates a softmax function with the given number weight matrix
-     * and bias vector.
+     * Creates a softmax function with the given parameters.
      */
     softmax(const mat_type& weight, const vec_type& bias)
       : weight_(weight), bias_(bias) {
-      assert(weight.n_rows == bias.n_rows);
+      assert(weight.rows() == bias.rows());
     }
 
     /**
-     * Swaps the content of two factors.
+     * Creates a softmax function with the given parameters.
      */
-    friend void swap(const softmax& f, const softmax& g) {
+    softmax(mat_type&& weight, vec_type&& bias) {
+      weight_.swap(weight);
+      bias_.swap(bias);
+      assert(weight.rows() == bias.rows());
+    }
+
+    //! Copy constructor.
+    softmax(const softmax& other) = default;
+
+    //! Move constructor.
+    softmax(softmax&& other) {
+      swap(*this, other);
+    }
+
+    //! Assignment operator.
+    softmax& operator=(const softmax& other) = default;
+
+    //! Move assignment operator.
+    softmax& operator=(softmax&& other) {
+      swap(*this, other);
+      return *this;
+    }
+    
+    //! Swaps the content of two softmax functions.
+    friend void swap(softmax& f, softmax& g) {
       f.weight_.swap(g.weight_);
       f.bias_.swap(g.bias_);
     }
@@ -86,26 +108,31 @@ namespace sill {
      * May invalidate the parameters.
      */
     void reset(size_t num_labels, size_t num_features) {
-      weight_.set_size(num_labels, num_features);
-      bias_.set_size(num_labels);
+      weight_.resize(num_labels, num_features);
+      bias_.resize(num_labels);
     }
 
     // Accessors and comparison operators
     //==========================================================================
 
-    //! Returns true if the function is empty.
+    //! Returns true if the softmax function is empty.
     bool empty() const {
-      return bias_.empty();
+      return !weight_.data();
     }
 
     //! Returns the number of labels.
     size_t num_labels() const {
-      return weight_.n_rows;
+      return weight_.rows();
     }
 
-    //! Returns the numebr of features.
+    //! Returns the number of features.
     size_t num_features() const {
-      return weight_.n_cols;
+      return weight_.cols();
+    }
+
+    //! Returns the weight matrix.
+    mat_type& weight() {
+      return weight_;
     }
 
     //! Returns the weight matrix.
@@ -114,14 +141,40 @@ namespace sill {
     }
 
     //! Returns the bias vector.
+    vec_type& bias() {
+      return bias_;
+    }
+
+    //! Returns the bias vector.
     const vec_type& bias() const {
       return bias_;
     }
 
+    //! Returns the weight with the given indices.
+    T& weight(size_t i, size_t j) {
+      return weight_(i, j);
+    }
+
+    //! Returns the weight with the given indices.
+    const T& weight(size_t i, size_t j) const {
+      return weight_(i, j);
+    }
+
+    //! Returns the bias with the given index.
+    T& bias(size_t i) {
+      return bias_[i];
+    }
+
+    //! Returns the bias with the given index.
+    const T& bias(size_t i) const {
+      return bias_[i];
+    }
+
     //! Evaluates the function for a dense feature vector.
     vec_type operator()(const vec_type& x) const {
-      vec_type y = exp(weight_ * x + bias_);
-      return y /= sum(y);
+      vec_type y(exp((weight_ * x + bias_).array()).matrix());
+      y /= y.sum();
+      return y;
     }
 
     //! Evaluates the function for a sparse feature vector.
@@ -130,8 +183,23 @@ namespace sill {
       for (std::pair<size_t,T> value : x) {
         y += weight_.col(value.first) * value.second;
       }
-      y = exp(y);
-      return y /= sum(y);
+      y = exp(y.array()).matrix();
+      y /= y.sum();
+      return y;
+    }
+
+    //! Returns the log-value for a dense feature vector.
+    vec_type log(const vec_type& x) const {
+      vec_type y = operator()(x);
+      y = y.array().log();
+      return y;
+    }
+
+    //! Returns the log-value for a sparse feature vector.
+    vec_type log(const sparse_index<T>& x) const {
+      vec_type y = operator()(x);
+      y = y.array().log();
+      return y;
     }
 
     // OptimizationVector functions
@@ -158,14 +226,8 @@ namespace sill {
     }
 
     softmax& operator/=(const softmax& f) {
-      weight_ /= f.weight_;
-      bias_ /= f.bias_;
-      return *this;
-    }
-
-    softmax& operator+=(T a) {
-      weight_ += a;
-      bias_ += a;
+      weight_.array() /= f.weight_.array();
+      bias_.array() /= f.bias_.array();
       return *this;
     }
 
@@ -187,76 +249,84 @@ namespace sill {
     }
 
     friend T dot(const softmax& f, const softmax& g) {
-      return dot(f.weight_, g.weight_) + dot(f.bias_, g.bias_);
+      return f.weight_.cwiseProduct(g.weight_).sum() + f.bias_.dot(g.bias_);
     }
 
     // LogLikelihoodDerivatives functions
     //=========================================================================
-    void add_gradient(const softmax& f,
-                      size_t label, const vec_type& x, T w) {
-      vec_type p = f(x);
+    void add_gradient(size_t label, const vec_type& x, T w,
+                      softmax& g) const {
+      vec_type p = operator()(x);
       p[label] -= T(1);
-      p *= w;
-      weight_ += p * x.t();
-      bias_ += p;
+      p *= -w;
+      g.weight().noalias() += p * x.transpose();
+      g.bias() += p;
     }
 
-    void add_gradient(const softmax& f,
-                      const vec_type& plabel, const vec_type& x, T w) {
-      vec_type p = f(x);
-      p -= plabel;
-      p *= w;
-      weight_ += p * x.t();
-      bias_ += p;
+    template <typename Derived>
+    void add_gradient(const Eigen::DenseBase<Derived>& plabel,
+                      const vec_type& x, T w,
+                      softmax& g) const {
+      vec_type p = operator()(x);
+      p -= plabel.derived();
+      p *= -w;
+      g.weight().noalias() += p * x.transpose();
+      g.bias() += p;
     }
 
-    void add_hessian_diag(const softmax& f, const vec_type& x, T w) {
-      vec_type v = f(x);
-      v -= v % v;
-      v *= w;
-      weight_ += v * trans(x % x);
-      bias_ += v;
+    void add_hessian_diag(const vec_type& x, T w, softmax& h) const {
+      vec_type v = operator()(x);
+      v -= v.cwiseProduct(v);
+      v *= -w;
+      h.weight().noalias() += v * x.cwiseProduct(x).transpose();
+      h.bias() += v;
     }
 
-    void add_gradient(const softmax& f,
-                      size_t label, const sparse_index<T>& x, T w) {
-      vec_type p = f(x);
+    void add_gradient(size_t label, const sparse_index<T>& x, T w,
+                      softmax& g) const {
+      vec_type p = operator()(x);
       p[label] -= T(1);
-      p *= w;
+      p *= -w;
       for (std::pair<size_t,T> value : x) {
-        weight_.col(value.first) += p * value.second;
+        g.weight().col(value.first) += p * value.second;
       }
-      bias_ += p;
+      g.bias() += p;
     }
 
-    void add_gradient(const softmax& f,
-                      const vec_type& plabel, const sparse_index<T>& x, T w) {
-      vec_type p = f(x);
-      p -= plabel;
-      p *= w;
+    template <typename Derived>
+    void add_gradient(const Eigen::DenseBase<Derived>& plabel,
+                      const sparse_index<T>& x, T w,
+                      softmax& g) const {
+      vec_type p = operator()(x);
+      p -= plabel.derived();
+      p *= -w;
       for (std::pair<size_t,T> value : x) {
-        weight_.col(value.first) += p * value.second;
+        g.weight().col(value.first) += p * value.second;
       }
-      bias_ += p;
+      g.bias() += p;
     }
 
-    void add_hessian_diag(const softmax& f, const sparse_index<T>& x, T w) {
-      vec_type v = f(x);
-      v -= v % v;
-      v *= w;
+    void add_hessian_diag(const sparse_index<T>& x, T w, softmax& h) const {
+      vec_type v = operator()(x);
+      v -= v.cwiseProduct(v);
+      v *= -w;
       for (std::pair<size_t,T> value : x) {
-        weight_.col(value.first) += v * (value.second * value.second);
+        h.weight().col(value.first) += v * (value.second * value.second);
       }
-      bias_ += v;
+      h.bias() += v;
     }
 
   private:
     // Private members
     //=========================================================================
+
+    //! The weight matrix.
     mat_type weight_;
+
+    //! The bias vector.
     vec_type bias_;
     
-  }; // class soft_max
+  }; // class softmax
   
   /**
    * Prints the softmax function parameters to a stream.
@@ -264,7 +334,9 @@ namespace sill {
    */
   template <typename T>
   std::ostream& operator<<(std::ostream& out, const softmax<T>& f) {
-    out << join_horiz(f.weight(), f.bias());
+    typename softmax<T>::mat_type a(f.num_labels(), f.num_features() + 1);
+    a << f.weight(), f.bias();
+    out << a << std::endl;
     return out;
   }
 
