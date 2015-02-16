@@ -3,6 +3,7 @@
 
 #include <sill/global.hpp>
 #include <sill/boost_unordered_utils.hpp>
+#include <sill/factor/traits.hpp>
 #include <sill/graph/bipartite_graph.hpp>
 #include <sill/parallel/worker_group.hpp>
 
@@ -22,22 +23,26 @@ namespace sill {
    * 
    * \tparam Vertex1 the type that represents a type-1 vertex
    * \tparam Vertex2 the type that represents a type-2 vertex
-   * \tparam F the type that represents the factor associated
-   *           with vertices and edges. Typically, this type
-   *           represents the canonical parameterization of
-   *           the distribution.
+   * \tparam NodeF the factor type associated with vertices
+   * \tparam EdgeF the factor type associated with edges
    */
-  template <typename Vertex1, typename Vertex2, typename F>
+  template <typename Vertex1, typename Vertex2,
+            typename NodeF, typename EdgeF = NodeF>
   class mean_field_bipartite {
   public:
+    static_assert(same_argument_type<NodeF, EdgeF>::value,
+                  "The node & edge factor types must have the same argument type");
+    static_assert(same_real_type<NodeF, EdgeF>::value,
+                  "The node & edge factor types must have the same real type");
+
     // factor-related typedefs
-    typedef typename F::real_type                   real_type;
-    typedef typename F::probability_factor_type     belief_type;
+    typedef typename NodeF::real_type               real_type;
+    typedef typename NodeF::probability_factor_type belief_type;
 
     // graph-related typedefs
-    typedef bipartite_graph<Vertex1, Vertex2, F, F> model_type;
-    typedef typename model_type::vertex             vertex_type;
-    typedef typename model_type::edge               edge_type;
+    typedef bipartite_graph<Vertex1, Vertex2, NodeF, EdgeF> model_type;
+    typedef typename model_type::vertex                     vertex_type;
+    typedef typename model_type::edge                       edge_type;
     
     /**
      * Creates a mean field engine for the given graph.
@@ -120,14 +125,14 @@ namespace sill {
      */
     template <typename Vertex>
     real_type update(Vertex v) {
-      F result = model_[v];
+      NodeF result = model_[v];
       foreach (edge_type e, model_.in_edges(v)) {
-        model_[e].log_exp_mult(belief(e.source()), result);
+        model_[e].exp_log_multiply(belief(e.source()), result);
       }
       belief_type new_belief(result);
       new_belief.normalize();
-      const_cast<belief_type&>(belief(v)).swap(new_belief);
-      return diff_1(new_belief, belief(v));
+      swap(const_cast<belief_type&>(belief(v)), new_belief);
+      return sum_diff(new_belief, belief(v));
     }
     
     //! The underlying graphical model

@@ -9,7 +9,7 @@
 using namespace sill;
 using namespace std;
 
-template <typename Array, typename Table>
+template <typename Array1, typename Array2, typename ArrayR, typename Table>
 void test_join(size_t n,
                const finite_var_vector& doma,
                const finite_var_vector& domb) {
@@ -19,11 +19,11 @@ void test_join(size_t n,
   cout << ": ";
   boost::timer t;
 
-  Array fa(doma);
-  Array ga(domb);
+  Array1 fa(doma);
+  Array2 ga(domb);
   t.restart();
   for (size_t i = 0; i < n; ++i) {
-    Array ha = fa * ga;
+    ArrayR ha = fa * ga;
   }
   cout << t.elapsed() << " ";
 
@@ -36,7 +36,7 @@ void test_join(size_t n,
   cout << t.elapsed() << endl;
 }
 
-template <typename Array, typename Table>
+template <typename Array1, typename Array2, typename Table>
 void test_join_inplace(size_t n,
                        const finite_var_vector& doma,
                        const finite_var_vector& domb) {
@@ -46,8 +46,8 @@ void test_join_inplace(size_t n,
   cout << ": ";
   boost::timer t;
 
-  Array fa(doma);
-  Array ga(domb);
+  Array1 fa(doma);
+  Array2 ga(domb);
   t.restart();
   for (size_t i = 0; i < n; ++i) {
     fa *= ga;
@@ -64,7 +64,7 @@ void test_join_inplace(size_t n,
 }
 
 
-template <typename Array, typename Table>
+template <typename Array1, typename ArrayR, typename Table>
 void test_aggregate(size_t n,
                     const finite_var_vector& doma,
                     const finite_var_vector& domb) {
@@ -74,10 +74,10 @@ void test_aggregate(size_t n,
   cout << ": ";
   boost::timer t;
 
-  Array fa(doma);
+  Array1 fa(doma);
   t.restart();
   for (size_t i = 0; i < n; ++i) {
-    Array ga = fa.marginal(domb);
+    ArrayR ga = fa.marginal(domb);
   }
   cout << t.elapsed() << " ";
 
@@ -89,39 +89,41 @@ void test_aggregate(size_t n,
   cout << t.elapsed() << endl;
 }
 
-template <typename Array, typename Table>
+template <typename Array1, typename Array2, typename Table>
 void test_all(size_t d, size_t n) {
   universe u;
   finite_variable* x = u.new_finite_variable("x", d);
   finite_variable* y = u.new_finite_variable("y", d);
 
-  test_join<Array, Table>(n, {x}, {x});
-  test_join<Array, Table>(n, {x}, {y});
-  test_join<Array, Table>(n, {x}, {x, y});
-  test_join<Array, Table>(n, {x}, {y, x});
-  test_join<Array, Table>(n, {x, y}, {});
-  test_join<Array, Table>(n, {x, y}, {x});
-  test_join<Array, Table>(n, {x, y}, {y});
-  test_join<Array, Table>(n, {x, y}, {x, y});
-  test_join<Array, Table>(n, {x, y}, {y, x});
+  test_join<Array1, Array1, Array1, Table>(n, {x}, {x});
+  test_join<Array1, Array2, Array2, Table>(n, {x}, {x, y});
+  test_join<Array1, Array2, Array2, Table>(n, {x}, {y, x});
+  test_join<Array2, Array1, Array2, Table>(n, {x, y}, {x});
+  test_join<Array2, Array1, Array2, Table>(n, {x, y}, {y});
+  test_join<Array2, Array2, Array2, Table>(n, {x, y}, {x, y});
+  test_join<Array2, Array2, Array2, Table>(n, {x, y}, {y, x});
 
   cout << endl;
 
-  test_join_inplace<Array, Table>(n, {x}, {x});
-  test_join_inplace<Array, Table>(n, {x, y}, {});
-  test_join_inplace<Array, Table>(n, {x, y}, {x});
-  test_join_inplace<Array, Table>(n, {x, y}, {y});
-  test_join_inplace<Array, Table>(n, {x, y}, {x, y});
-  test_join_inplace<Array, Table>(n, {x, y}, {y, x});
+  test_join_inplace<Array1, Array1, Table>(n, {x}, {x});
+  test_join_inplace<Array2, Array1, Table>(n, {x, y}, {x});
+  test_join_inplace<Array2, Array1, Table>(n, {x, y}, {y});
+  test_join_inplace<Array2, Array2, Table>(n, {x, y}, {x, y});
+  test_join_inplace<Array2, Array2, Table>(n, {x, y}, {y, x});
 
   cout << endl;
 
-  test_aggregate<Array, Table>(n, {x, y}, {x});
-  test_aggregate<Array, Table>(n, {x, y}, {y});
-  test_aggregate<Array, Table>(n, {x, y}, {});
+  test_aggregate<Array2, Array1, Table>(n, {x, y}, {x});
+  test_aggregate<Array2, Array1, Table>(n, {x, y}, {y});
 
   cout << endl;
 }
+
+typedef probability_array<double, 1> pa1_type;
+typedef probability_array<double, 2> pa2_type;
+typedef canonical_array<double, 1> ca1_type;
+typedef canonical_array<double, 2> ca2_type;
+
 
 int main(int argc, char** argv) {
   size_t d = argc > 1 ? atoi(argv[1]) : 100;
@@ -129,11 +131,11 @@ int main(int argc, char** argv) {
 
   cout << "Probability factors:" << endl;
   cout << "--------------------" << endl;
-  test_all<probability_array<double>, probability_table<double> >(d, n);
+  test_all<pa1_type, pa2_type, probability_table<double> >(d, n);
  
   cout << "Canonical factors:" << endl;
   cout << "------------------" << endl;
-  test_all<canonical_array<double>, canonical_table<double> >(d, n);
+  test_all<ca1_type, ca2_type, canonical_table<double> >(d, n);
 
   return 0;
 }

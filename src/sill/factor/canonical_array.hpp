@@ -22,32 +22,39 @@ namespace sill {
 
   // Forward declarations
   template <typename T> class canonical_table;
-  template <typename T> class probability_array;
+  template <typename T, size_t N> class probability_array;
 
   /**
-   * A factor of a categorical canonical distribution that may contain
-   * up to 2 arguments in its domain. This factor represents a non-negative
-   * function over finite variables X, Y using canonical (natural) parameters
-   * of the exponential family as f(X = x, Y = y | \theta) = exp(\theta_{x,y}),
-   * and similarly for unary and nullary functions. In some cases, e.g., when
-   * used in a Bayesian network, this factor also represents a probability
+   * A factor of a categorical canonical distribution that contains one or
+   * two arguments in its domain, where the number of arguments is fixed at
+   * compile-time. This factor represents a non-negative function
+   * using canonical (natural) parameters \theta of the exponential family as
+   * f(x, y | \theta) = exp(\theta_{x,y}) for binary factors and
+   * f(x | \theta) = exp(\theta_x) for unary factors. In some cases, e.g.,
+   * when used in a Bayesian network, this factor also represents a probability
    * distribution in the log-space.
    * 
    * \tparam T a real type that represents each parameter
+   * \tparam N the number of arguments
+   *
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename T = double>
-  class canonical_array : public array_factor<T> {
+  template <typename T, size_t N>
+  class canonical_array : public array_factor<T, N> {
   public:
+    // Helper types
+    typedef array_factor<T, N> base;
+    typedef array_domain<finite_variable*, 1> unary_domain_type;
+
     // Factor member types
-    typedef T                                    real_type;
-    typedef logarithmic<T>                       result_type;
-    typedef finite_variable                      variable_type;
-    typedef bounded_domain<finite_variable*, 2>  domain_type;
-    typedef bounded_domain<finite_variable*, 2>  var_vector_type;
-    typedef finite_assignment                    assignment_type;
-    typedef typename array_factor<T>::array_type param_type;
+    typedef T                                  real_type;
+    typedef logarithmic<T>                     result_type;
+    typedef finite_variable                    variable_type;
+    typedef array_domain<finite_variable*, N>  domain_type;
+    typedef array_domain<finite_variable*, N>  var_vector_type;
+    typedef finite_assignment                  assignment_type;
+    typedef typename base::array_type          param_type;
     
     // IndexableFactor member types
     typedef finite_index index_type;
@@ -58,7 +65,7 @@ namespace sill {
     typedef boost::function<canonical_array(const domain_type&,
                                             const domain_type&)>
       conditional_fn_type;
-    typedef probability_array<T> probability_factor_type;
+    typedef probability_array<T, N> probability_factor_type;
     
     // LearnableFactor types
     typedef finite_dataset dataset_type;
@@ -75,12 +82,6 @@ namespace sill {
       this->reset(args);
     }
 
-    //! Constructs a factor equivalent to a constant.
-    explicit canonical_array(logarithmic<T> value) {
-      this->reset();
-      this->param_(0) = value.lv;
-    }
-
     //! Constructs a factor with the given arguments and constant value.
     canonical_array(const domain_type& args, logarithmic<T> value) {
       this->reset(args);
@@ -88,26 +89,18 @@ namespace sill {
     }
 
     //! Constructs a factor with the given argument and parameters.
-    canonical_array(const domain_type& args,
-                    const param_type& param,
-                    bool zero_nan = false)
-      : array_factor<T>(args, param, zero_nan) { }
+    canonical_array(const domain_type& args, const param_type& param)
+      : base(args, param) { }
 
-    canonical_array(const domain_type& args,
-                    param_type&& param,
-                    bool zero_nan = false)
-      : array_factor<T>(args, std::move(param), zero_nan) { }
+    canonical_array(const domain_type& args, param_type&& param)
+      : base(args, std::move(param)) { }
 
     //! Constructs a factor with the given arguments and parameters.
-    canonical_array(const domain_type& args,
-                    std::initializer_list<T> values) {
-      this->reset(args);
-      assert(this->size() == values.size());
-      std::copy(values.begin(), values.end(), this->begin());
-    }
+    canonical_array(const domain_type& args, std::initializer_list<T> values)
+      : base(args, values) { }
 
     //! Conversion from a probability_array factor.
-    explicit canonical_array(const probability_array<T>& f) {
+    explicit canonical_array(const probability_array<T, N>& f) {
       *this = f;
     }
 
@@ -116,17 +109,10 @@ namespace sill {
       *this = f;
     }
 
-    //! Assigns a constant to this factor.
-    canonical_array& operator=(logarithmic<T> value) {
-      this->reset();
-      this->param_(0) = value.lv;
-      return *this;
-    }
-
     //! Assigns a probability_array factor to this factor.
-    canonical_array& operator=(const probability_array<T>& f) {
+    canonical_array& operator=(const probability_array<T, N>& f) {
       this->reset(f.arguments());
-      this->param_ = Eigen::log(f.param());
+      this->param_ = f.param().log();
       return *this;
     }
     
@@ -185,15 +171,27 @@ namespace sill {
     // Factor operations
     //==========================================================================
 
-    //! Multiplies another factor into this one.
-    canonical_array& operator*=(const canonical_array& f) {
-      this->join_inplace(f, sill::plus_assign<>(), false);
+    /**
+     * Multiplies another factor with arity M into this one.
+     * This operation is only supported when M <= N, i.e.,
+     * the given factor has no more arguments than this one.
+     */
+    template <size_t M>
+    typename std::enable_if<M <= N, canonical_array&>::type
+    operator*=(const canonical_array<T, M>& f) {
+      join_inplace(*this, f, sill::plus_assign<>());
       return *this;
     }
 
-    //! Divides another factor into this one.
-    canonical_array& operator/=(const canonical_array& f) {
-      this->join_inplace(f, sill::minus_assign<>(), false);
+    /**
+     * Divides another factor with arity M into this one.
+     * This operation is only supported when M <= N, i.e.,
+     * the given factor has no more arguments than this one.
+     */
+    template <size_t M>
+    typename std::enable_if<M <= N, canonical_array&>::type
+    operator/=(const canonical_array<T, M>& f) {
+      join_inplace(*this, f, sill::minus_assign<>());
       return *this;
     }
 
@@ -209,22 +207,10 @@ namespace sill {
       return *this;
     }
 
-    //! Returns the sum of hte probabilities of two factors.
+    //! Returns the sum of the probabilities of two factors.
     friend canonical_array
     operator+(const canonical_array& f, const canonical_array& g) {
       return transform<canonical_array>(f, g, log_sum_exp<T>());
-    }
-
-    //! Multiplies two canonical_array factors.
-    friend canonical_array
-    operator*(const canonical_array& f, const canonical_array& g) {
-      return join<canonical_array>(f, g, sill::plus<>());
-    }
-
-    //! Divides two canonical_array factors.
-    friend canonical_array
-    operator/(const canonical_array& f, const canonical_array& g) {
-      return join<canonical_array>(f, g, sill::minus<>());
     }
 
     //! Multiplies a canonical_array factor by a constant.
@@ -280,57 +266,90 @@ namespace sill {
                              (1-a) * f.param() + a * g.param());
     }
 
-    //! Computes the marginal of the factor over a subset of variables.
-    canonical_array marginal(const domain_type& retain) const {
-      canonical_array result; marginal(retain, result);
+    /**
+     * Computes the marginal of the factor over a single variable.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B, canonical_array<T, 1> >::type
+    marginal(const unary_domain_type& retain) const {
+      canonical_array<T, 1> result;
+      marginal(retain, result);
       return result;
     }
 
-    //! Computes the maximum for each assignment to the given variables.
-    canonical_array maximum(const domain_type& retain) const {
-      canonical_array result; maximum(retain, result);
-      return result;
+    /**
+     * Computes the maximum of the factor over a single variable.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B, canonical_array<T, 1> >::type
+    maximum(const unary_domain_type& retain) const { 
+      return aggregate<canonical_array<T, 1>>(*this, retain, max_coeff_op());
     }
 
-    //! Computes the minimum for each assignment to the given variables.
-    canonical_array minimum(const domain_type& retain) const {
-      canonical_array result; minimum(retain, result);
-      return result;
+    /**
+     * Computes the minimum of the factor over a single variable.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B, canonical_array<T, 1> >::type
+    minimum(const unary_domain_type& retain) const {
+      return aggregate<canonical_array<T, 1>>(*this, retain, min_coeff_op());
     }
 
-    //! If this factor represents p(x, y), returns p(x | y).
-    canonical_array conditional(const domain_type& tail) const {
+    /**
+     * If this factor represents p(x, y) where y = tail, returns p(x | y).
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B, canonical_array>::type
+    conditional(const unary_domain_type& tail) const {
       return (*this) / marginal(tail);
     }
 
-    //! Computes the marginal of the factor over a subset of variables.
-    void marginal(const domain_type& retain, canonical_array& result) const {
-      if (retain.empty()) {
-        result = canonical_array(marginal());
-      } else {
-        T max = this->param_.maxCoeff();
-        this->transform_aggregate(retain, exp_op<T>(-max), log_sum_op<T>(+max),
-                                  result);
-      }
+    /**
+     * Computes the marginal of the factor over a single variable.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B>::type
+    marginal(const unary_domain_type& retain,
+             canonical_array<T, 1>& result) const {
+      T max = this->param_.maxCoeff();
+      transform_aggregate(*this, retain, result,
+                          exp_op<T>(-max), log_sum_op<T>(+max));
     }
 
-    //! Computes the maximum for each assignment to the given variables.
-    void maximum(const domain_type& retain, canonical_array& result) const {
-      this->aggregate(retain, max_coeff_op(), result);
+    /**
+     * Computes the maximum of the factor over a single variable.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B>::type
+    maximum(const unary_domain_type& retain,
+            canonical_array<T, 1>& result) const {
+      aggregate(*this, retain, result, max_coeff_op());
     }
 
-    //! Computes the minimum for each assignment to the given variables.
-    void minimum(const domain_type& retain, canonical_array& result) const {
-      this->aggregate(retain, min_coeff_op(), result);
+    /**
+     * Computes the minimum of the factor over a single variable.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B>::type
+    minimum(const unary_domain_type& retain,
+            canonical_array<T, 1>& result) const {
+      aggregate(*this, retain, result, min_coeff_op());
     }
 
     //! Returns the normalization constant of the factor.
     logarithmic<T> marginal() const {
       T max = this->param_.maxCoeff();
-      // std::log(exp(param()-max).sum())+max is slow (at least on LLVM 3.5)
       T sum = std::accumulate(this->begin(), this->end(), T(0),
                               plus_exp<T>(-max));
       return logarithmic<T>(std::log(sum) + max, log_tag());
+      // std::log(exp(param()-max).sum())+max is slow (at least on LLVM 3.5)
     }
 
     //! Returns the maximum value in the factor.
@@ -365,24 +384,71 @@ namespace sill {
 
     //! Returns true if the factor is normalizable (approximation).
     bool is_normalizable() const {
-      return maximum().lv > inf<T>();
+      return maximum().lv > -inf<T>();
     }
     
-    //! Restricts this factor to an assignment.
-    canonical_array restrict(const finite_assignment& a) const {
-      canonical_array result; restrict(a, result);
+    /**
+     * Restricts the factor to an assignment and returns the result
+     * as a unary factor. This operation is only supported for binary
+     * factors, and the assignment must restrict exactly one argument.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B, canonical_array<T, 1> >::type
+    restrict(const finite_assignment& a) const {
+      canonical_array<T, 1> result;
+      restrict(a, result);
       return result;
     }
 
-    //! Restricts this factor to an assignment.
-    void restrict(const finite_assignment& a, canonical_array& result) const {
-      array_factor<T>::restrict(a, result);
+    /**
+     * Restricts this factor to an assignment and stores the result
+     * in a unary factor. This operation is only supported for binary
+     * factors, and teh assignment must restrict exactly one argument.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B>::type
+    restrict(const finite_assignment& a,
+             canonical_array<T, 1>& result) const {
+      restrict_assign(*this, a, result);
     }
 
-    //! Restricts this factor to an assignment and multiplies it into the result.
-    void restrict_multiply(const finite_assignment& a,
-                           canonical_array& result) const {
-      array_factor<T>::restrict_join(a, plus_assign<>(), false, result);
+    /**
+     * Restricts this factor to an assignment, excluding the variables in
+     * the unary factor result, and multiplies the restriction into result.
+     * This operation must not introduce any new variables and is only
+     * supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B>::type
+    restrict_multiply(const finite_assignment& a,
+                      canonical_array<T, 1>& result) const {
+      restrict_join(*this, a, result, plus_assign<>());
+    }
+
+    /**
+     * Computes the (exponentiated) expected value of the log of this
+     * factor w.r.t. the distribution given by a unary probability_array.
+     * More precisely, if f(x,y) is this factor and q(y) is the specified
+     * factor, returns a factor with parameters E_q[log f(x, Y)].
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B, canonical_array<T, 1> >::type
+    exp_log(const probability_array<T, 1>& q) const {
+      return expectation<canonical_array<T, 1> >(*this, q);
+    }
+
+    /**
+     * Computes the (exponentiated) expected value of the log of this
+     * factor w.r.t. the distribution given by a unary probability_array
+     * and multiplies the result to the result factor.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B>::type
+    exp_log_multiply(const probability_array<T, 1>& q,
+                     canonical_array<T, 1>& result) const {
+      join_expectation(result, *this, q, sill::plus_assign<>());
     }
 
     // Entropy and divergences
@@ -390,18 +456,30 @@ namespace sill {
 
     //! Computes the entropy for the distribution represented by this factor.
     T entropy() const {
-      return this->transform_accumulate(T(0), entropy_log_op<T>(), std::plus<T>());
+      return transform_accumulate(*this, entropy_log_op<T>(), std::plus<T>());
     }
 
-    //! Computes the entropy for a subset of variables. Performs marginalization.
-    T entropy(const domain_type& a) const {
-      return equivalent(this->arguments(), a) ? entropy() : marginal(a).entropy();
+    /**
+     * Computes the entropy for a single variable.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B, T>::type
+    entropy(const unary_domain_type& a) const {
+      return marginal(a).entropy();
     }
 
-    //! Computes the mutual information between two subsets of this factor's
-    //! arguments.
-    T mutual_information(const domain_type& a, const domain_type& b) const {
-      return entropy(a) + entropy(b) - entropy(left_union(a, b));
+    /**
+     * Computes the mutual information between two variables.
+     * This operation is only supported for binary factors.
+     */
+    template <bool B = (N == 2)>
+    typename std::enable_if<B, T>::type
+    mutual_information(const unary_domain_type& a,
+                       const unary_domain_type& b) const {
+      assert(subset(a, this->arguments()));
+      assert(subset(b, this->arguments()));
+      return entropy(a) + entropy(b) - entropy();
     }
 
     //! Computes the cross entropy from p to q.
@@ -439,93 +517,71 @@ namespace sill {
      * Models the LogLikelihoodObjective concept.
      */
     struct loglikelihood_type {
-      const param_type& a;
-      loglikelihood_type(const param_type* a) : a(*a) { }
+      typedef Eigen::Array<T, Eigen::Dynamic, 1> array1_type;
+      loglikelihood_type(const param_type* a) { }
       
-      void add_gradient(const finite_index& index, T w, param_type& g) {
-        check_shape_compatible(g);
-        size_t offset = linear_index(index);
-        g(offset) += w;
+      void add_gradient(size_t i, T w, param_type& g) {
+        g(i) += w;
       }
 
-      void add_gradient(const param_type& phead, const finite_index& tail, T w,
+      void add_gradient(size_t i, size_t j, T w, param_type& g) {
+        g(i, j) += w;
+      }
+
+      void add_gradient(const array1_type& phead, size_t j, T w,
                         param_type& g) {
-        check_shape_compatible(g);
-        size_t offset = linear_index(tail, phead.size());
-        size_t size = phead.size();
-        for (size_t i = 0; i < size; ++i) {
-          g(offset + i) += phead(i) * w;
-        }
+        g.col(j) += w * phead;
       }
       
-      void add_gradient_sqr(const param_type& phead, const finite_index& tail, T w,
-                            param_type& g) {
-        add_gradient(phead, tail, w, g);
-      }
+      void add_hessian_diag(size_t i, T w, param_type& h) { }
 
-      void add_hessian_diag(const finite_index& index, T w, param_type& h) { }
+      void add_hessian_diag(size_t i, size_t j, T w, param_type& h) { }
 
-      void add_hessian_diag(const param_type& phead, const finite_index& tail, T w,
+      void add_hessian_diag(const array1_type& phead, size_t j, T w,
                             param_type& h) { }
-
-      size_t linear_index(const finite_index& index, size_t mult = 1) const {
-        switch (index.size()) {
-        case 0:
-          assert(mult == a.size());
-          return 0;
-        case 1:
-          assert(mult == 1 && a.cols() == 1 || mult == a.rows());
-          return index[0] * mult;
-        case 2:
-          assert(mult == 1);
-          return index[0] + index[1] * a.rows();
-        default:
-          throw std::invalid_argument(
-            "An index with >2 elements passed to an array factor"
-          );
-        }
-      }
-
-      void check_shape_compatible(const param_type& x) const {
-        if (a.rows() != x.rows() || a.cols() != x.cols()) {
-          throw std::invalid_argument("Incompatible shape");
-        }
-      }
 
     }; // struct loglikelihood_type
 
   }; // class canonical_array
 
   /**
-   * Outputs a human-readable representation of ths factor to the stream.
+   * Outputs a human-readable representation of the factor to the stream.
+   * \relates canonical_array
    */
-  template <typename T>
-  std::ostream& operator<<(std::ostream& out, const canonical_array<T>& f) {
-    out << f.arg_vector() << std::endl
+  template <typename T, size_t N>
+  std::ostream& operator<<(std::ostream& out, const canonical_array<T, N>& f) {
+    out << f.arguments() << std::endl
         << f.param() << std::endl;
     return out;
   }
 
-#if 0
-    /**
-     * Computes the value exp{Exp_q(V)[log f(u, V)]}, where f(U,V) is this
-     * factor, and q(V) is the supplied probability_matrix distribution.
-     * Multiplies the result to the provided pre-allocated factor h(U).
-     */
-    void log_exp_mult(const probability_matrix<T>& q, canonical_matrix& h) const {
-      assert(q.num_arguments() == 1);
-      assert(h.num_arguments() == 1);
-      finite_variable* u = h.x_;
-      finite_variable* v = q.x_;
-      if (x_ == u && y_ == v) {
-        h.params_ += params_ * q.values_;
-      } else if (x_ == v && y_ == u) {
-        h.params_ += params_.t() * q.values_;
-      } else {
-        throw std::invalid_argument("Unsupported arguments.");
-      }
-    }
-#endif
+  /**
+   * Multiplies two canonical_array factors.
+   * \tparam M the arity of the first argument
+   * \tparam N the arity of the second argument
+   * \return a canonical_array factor whose arity is the maximum of M and N
+   * \relates canonical_array
+   */
+  template <typename T, size_t M, size_t N>
+  canonical_array<T, (M >= N) ? M : N>
+  operator*(const canonical_array<T, M>& f,const canonical_array<T, N>& g) {
+    typedef canonical_array<T, (M >= N) ? M : N> result_type;
+    return join<result_type>(f, g, sill::plus<>());
+  }
+
+  /**
+   * Divides two canonical_array factors.
+   * \tparam M the arity of the first argument
+   * \tparam N the arity of the second argument
+   * \return a canonical_array factor whose arity is the maximum of M and N
+   * \relates canonical_array
+   */
+  template <typename T, size_t M, size_t N>
+  canonical_array<T, (M >= N) ? M : N>
+  operator/(const canonical_array<T, M>& f,const canonical_array<T, N>& g) {
+    typedef canonical_array<T, (M >= N) ? M : N> result_type;
+    return join<result_type>(f, g, sill::minus<>());
+  }
 
 } // namespace sill
 
