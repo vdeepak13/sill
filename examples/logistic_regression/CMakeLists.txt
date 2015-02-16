@@ -1,2 +1,2 @@
-add_executable(logistic_regression logistic_regression.cpp)
+#add_executable(logistic_regression logistic_regression.cpp)
 

@@ -323,9 +323,9 @@ namespace sill {
      * Conditions the factor on the given features in the factor's internal
      * ordering of tail variables.
      */
-    probability_array<T>
+    probability_array<T, 1>
     condition(const vec_type& index) const {
-      return probability_array<T>({head_}, param_(index));
+      return probability_array<T, 1>({head_}, param_(index));
     }
 
     /**
@@ -333,16 +333,16 @@ namespace sill {
      * \param strict if true, requires that all the tail arguments are present
      *        in the assignment.
      */
-    probability_array<T>
+    probability_array<T, 1>
     condition(const vector_assignment& a, bool strict = true) const {
       if (strict) {
         vec_type features;
         extract_features(a, features);
-        return probability_array<T>({head_}, param_(features));
+        return probability_array<T, 1>({head_}, param_(features));
       } else {
         sparse_index<T> features;
         extract_features(a, features);
-        return probability_array<T>({head_}, param_(features));
+        return probability_array<T, 1>({head_}, param_(features));
       }
     }
 

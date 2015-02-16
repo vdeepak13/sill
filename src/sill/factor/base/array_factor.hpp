@@ -1,7 +1,7 @@
 #ifndef SILL_ARRAY_FACTOR_HPP
 #define SILL_ARRAY_FACTOR_HPP
 
-#include <sill/base/bounded_domain.hpp>
+#include <sill/base/array_domain.hpp>
 #include <sill/base/finite_assignment.hpp>
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/factor/base/factor.hpp>
@@ -11,24 +11,29 @@
 #include <Eigen/Core>
 
 #include <stdexcept>
+#include <initializer_list>
 
 namespace sill {
 
   /**
-   * A base class for discrete factors with up to two arguments. This
-   * class stores the parameters of the factor as an Eigen array
-   * and provides standard indexing functions join/aggregate/restrict
+   * A base class for discrete factors with a fixed number of either
+   * one or two arguments. This class stores the parameters of the factor
+   * as an Eigen array and provides the implementations of standard 
    * functions on the factors. This class does not model the Factor
    * concept.
    *
    * \tparam T the type of parameters stored in the table.
+   * \tparam N the arity of the factor (must be either 1 or 2).
    * \see canonical_array, probability_array
    */
-  template <typename T>
+  template <typename T, size_t N>
   class array_factor : public factor {
   public:
+    static_assert(N == 1 || N == 2, "The arity of factor must be 1 or 2");
+
     // Underlying representation
-    typedef Eigen::Array<T, Eigen::Dynamic, Eigen::Dynamic> array_type;
+    typedef Eigen::Array<T, Eigen::Dynamic, N == 1 ? 1 : Eigen::Dynamic>
+      array_type;
 
     // Range types
     typedef T*       iterator;
@@ -36,7 +41,7 @@ namespace sill {
     typedef T        value_type;
 
     // Domain
-    typedef bounded_domain<finite_variable*, 2> domain_type;
+    typedef array_domain<finite_variable*, N> domain_type;
 
     // Constructors
     //==========================================================================
@@ -49,30 +54,29 @@ namespace sill {
     /**
      * Constructs an array_factor with the given arguments and initializes its
      * parameters to the given array.
-     *
-     * \param zero_nan if true, any NaN parameters will be zeroed out
      */
-    explicit array_factor(const domain_type& args,
-                          const array_type& param,
-                          bool zero_nan)
+    array_factor(const domain_type& args, const array_type& param)
       : args_(args), param_(param) {
       check_param();
-      if (zero_nan) clear_nan();
     }
 
     /**
      * Constructs an array_factor with the given arguments and moves its
      * parameters from the given array.
-     *
-     * \param zero_nan if true, any NaN parameters will be zeroed out
      */
-    explicit array_factor(const domain_type& args,
-                          array_type&& param,
-                          bool zero_nan)
+    array_factor(const domain_type& args, array_type&& param)
       : args_(args) {
       param_.swap(param);
       check_param();
-      if (zero_nan) clear_nan();
+    }
+
+    /**
+     * Constructs an array_factor with the given arguments and parameters.
+     */
+    array_factor(const domain_type& args, std::initializer_list<T> init) {
+      reset(args);
+      assert(size() == init.size());
+      std::copy(init.begin(), init.end(), begin());
     }
 
     //! Copy constructor.
@@ -113,17 +117,12 @@ namespace sill {
     void reset(const domain_type& args) {
       if (args_ != args || empty()) {
         args_ = args;
-        param_.resize(x() ? x()->size() : 1, y() ? y()->size() : 1);
+        if (N == 1) {
+          param_.resize(x()->size(), 1);
+        } else {
+          param_.resize(x()->size(), y()->size());
+        }
       }
-    }
-
-    /**
-     * Resets the content of this factor to an empty domain.
-     * The array elements may be invalidated.
-     */
-    void reset() {
-      args_.clear();
-      param_.resize(1, 1);
     }
 
     // Accessors
@@ -141,12 +140,12 @@ namespace sill {
 
     //! Returns the second argument or NULL if the factor has <=1 arguments.
     finite_variable* y() const {
-      return args_[1];
+      return N == 2 ? args_[1] : NULL;
     }
 
     //! Returns the number of arguments of this factor.
-    size_t arity() const {
-      return args_.size();
+    constexpr size_t arity() const {
+      return N;
     }
 
     //! Returns the total number of elements of the factor.
@@ -227,18 +226,22 @@ namespace sill {
      * factor arguments.
      */
     void assignment(size_t linear_index, finite_assignment& a) const {
-      if (x()) { a[x()] = linear_index % param_.rows(); }
-      if (y()) { a[y()] = linear_index / param_.rows(); }
+      if (N == 1) {
+        a[x()] = linear_index;
+      } else {
+        a[x()] = linear_index % param_.rows();
+        a[y()] = linear_index / param_.rows();
+      }
     }
 
     /**
      * Returns the linear index corresponding to the given assignment.
      */
     size_t linear_index(const finite_assignment& a) const {
-      if (x() && y()) {
-        return safe_get(a, x()) + safe_get(a, y()) * param_.rows();
+      if (N == 1) {
+        return safe_get(a, x());
       } else {
-        return x() ? safe_get(a, x()) : 0;
+        return safe_get(a, x()) + safe_get(a, y()) * param_.rows();
       }
     }
 
@@ -246,13 +249,13 @@ namespace sill {
      * Returns the linear index corresponding to the given finite index.
      */
     size_t linear_index(const finite_index& index) const {
-      switch (index.size()) {
-      case 0: return 0;
-      case 1: return index[0];
-      case 2: return index[0] + index[1] * param_.rows();
-      default: throw std::invalid_argument(
-          "An index with >2 elements passed to a array factor"
-        );
+      if (index.size() != N) {
+        throw std::invalid_argument("Index size does not match the arity");
+      }
+      if (N == 1) {
+        return index[0];
+      } else {
+        return index[0] + index[1] * param_.rows();
       }
     }
 
@@ -278,7 +281,7 @@ namespace sill {
      * \throw std::runtime_error if some of the dimensions do not match
      */
     void check_param() const {
-      if (param_.rows() != (x() ? x()->size() : 1)) {
+      if (param_.rows() != x()->size()) {
         throw std::runtime_error("Invalid number of rows");
       }
       if (param_.cols() != (y() ? y()->size() : 1)) {
@@ -286,228 +289,13 @@ namespace sill {
       }
     }
 
-    /**
-     * Replaces NaNs with 0s. This operation is used when applying division
-     * for probability_array factors.
-     */
-    void clear_nan() {
-      for (T& value : *this) {
-        if (std::isnan(value)) { value = T(0); }
-      }
-    }
-    
-    // Implementations of common factor operations
+  protected:
+    // Protected members
     //========================================================================
-  protected:
-    /**
-     * Joins this factor in place with f using the given mutating operation.
-     * f must not introduce any new arguments into this factor.
-     */
-    template <typename Op>
-    void join_inplace(const array_factor& f, Op op, bool zero_nan) {
-      switch (f.arity()) {
-      case 0: // combine with a constant element-wise
-        op(param_, f[0]);
-        break;
-      case 1: // combine with a vector column- or row-wise
-        if (f.x() == x()) {
-          op(param_.colwise(), f.param_.col(0));
-        } else if (f.x() == y()) {
-          op(param_.rowwise(), f.param_.col(0).transpose());
-        } else {
-          throw std::invalid_argument(
-            "array_factor: inplace operation introduces new variable " + f.x()->str()
-          );
-        }
-        break;
-      case 2: // combine with a array directly or via transpose
-        if (x() == f.x() && y() == f.y()) {
-          op(param_, f.param_);
-        } else if (x() == f.y() && y() == f.x()) {
-          //op(param_, f.param_.transpose());
-          op(param_, f.param_.transpose());
-        } else {
-          throw std::invalid_argument(
-            "array_factor: inplace operation introduces new variable(s)"
-          );
-        }
-        break;
-      }
 
-      // convert nans back to zeros after division by zero
-      if (zero_nan) { clear_nan(); }
-    }
-
-    /**
-     * Transforms and aggregates the parameter array of this factor along
-     * all dimensions other than those for the retained variables and
-     * stores the result to the specified factor. When none of the
-     * dimensions are eliminated, copies the parameters (possibly transposed).
-     */
-    template <typename TransOp, typename AggOp>
-    void transform_aggregate(const domain_type& retained,
-                             TransOp trans_op,
-                             AggOp agg_op,
-                             array_factor& result) const {
-      switch (retained.size()) {
-      case 0: // aggregate all elements
-        result.reset();
-        result[0] = agg_op(trans_op(param_));
-        return;
-      case 1: // aggregate to one dimension
-        result.reset(retained);
-        if (result.x() == x()) {
-          result.param_ = agg_op(trans_op(param_).rowwise());
-        } else if (result.x() == y()) {
-          result.param_ = agg_op(trans_op(param_).colwise()).transpose();
-        } else {
-          throw std::invalid_argument(
-            "array_factor: retained variable not in the factor domain"
-          );
-        }
-        return;
-      case 2: // no aggregation; just copy the result
-        if (retained == args_) {
-          result = *this;
-        } else if (retained[0] == y() && retained[1] == x()) {
-          result.reset(retained);
-          result.param_ = param_.transpose();
-        } else {
-          throw std::invalid_argument(
-            "array_factor: retained variables not in the factor domain"
-          );
-        }
-        return;
-      }
-      throw std::logic_error("array_factor: invalid arity in aggregate");
-    }
-
-    /**
-     * Aggregates the parameter array of this factor along
-     * all dimensions other than those for the retained variables and
-     * stores the result to the specified factor. When none of the
-     * dimensions are eliminated, copies the parameters (possibly transposed).
-     * Shortcut for transform_aggregate<identity, AggOp>.
-     */
-    template <typename AggOp>
-    void aggregate(const domain_type& retained, AggOp agg_op,
-                   array_factor& result) const {
-      transform_aggregate(retained, identity(), agg_op, result);
-    }
-
-    /**
-     * Restricts this factor to an assignment and stores the result to the
-     * given array factor. This function must be protected, because the
-     * result is not strongly typed, i.e., we could accidentally restrict
-     * a probability_array and store the result in a canonical_array or
-     * vice versa.
-     */
-    void restrict(const finite_assignment& a, array_factor& result) const {
-      switch (arity()) {
-      case 0:   // this factor is already a constant; nothing to restrict
-        result = *this;
-        return;
-      case 1: { // if the assignment contains x(), restrict; otherwise not
-        auto itx = a.find(x());
-        if (itx != a.end()) {
-          result.reset();
-          result[0] = param_(itx->second);
-        } else {
-          result = *this;
-        }
-        return;
-      }
-      case 2: { // restrict both, one, or neither argument
-        auto itx = a.find(x());
-        auto ity = a.find(y());
-        if (itx != a.end() && ity != a.end()) {
-          result.reset();
-          result[0] = param_(itx->second, ity->second);
-        } else if (itx != a.end()) {
-          result.reset({y()});
-          result.param_ = param_.row(itx->second).transpose();
-        } else if (ity != a.end()) {
-          result.reset({x()});
-          result.param_ = param_.col(ity->second);
-        } else {
-          result = *this;
-        }
-        return;
-      }
-      }
-      throw std::logic_error("array_factor: invalid arity in restrict");
-    }
-
-    /**
-     * Restricts this factor to an assignment and joins the result to the
-     * given result factor using the given mutating operation. The join
-     * operation must not introduce any new arguments to the result.
-     */
-    template <typename Op>
-    void restrict_join(const finite_assignment& a, Op op, bool zero_nan,
-                       array_factor& result) const {
-      bool rx = a.count(x());
-      bool ry = a.count(y());
-      if (!rx && !ry) { // nothing to restrict, just join
-        result.join_inplace(*this, op, zero_nan);
-        return;
-      }
-
-      switch (arity()) {
-      case 1:            // restricting x()
-        op(result.param_, param(a));
-        break;
-      case 2:
-        if (rx && ry) {  // restricting both x() and y()
-          op(result.param_, param(a));
-        } else if (rx) { // restricting x(); join in a row
-          size_t i = safe_get(a, x());
-          if (y() == result.x()) {
-            op(result.param_.colwise(), param_.row(i).transpose());
-          } else if (y() == result.y()) {
-            op(result.param_.rowwise(), param_.row(i));
-          } else {
-            throw std::invalid_argument(
-              "restrict_join introduces " + y()->str() + " into the result"
-            );
-          }
-        } else if (ry) { // restricting y(); join in a column
-          size_t i = safe_get(a, y());
-          if (x() == result.x()) {
-            op(result.param_.colwise(), param_.col(i));
-          } else if (result.y() == x()) {
-            op(result.param_.rowwise(), param_.col(i).transpose());
-          } else {
-            throw std::invalid_argument(
-              "restrict_join introduces " + x()->str() + " into the result"
-            );
-          }
-        }
-        break;
-      default:
-        throw std::logic_error("restrict_join: inconsistent state");
-      }
-
-      // convert nans back to zeros after division by zero
-      if (zero_nan) { result.clear_nan(); }
-    }
-
-    /**
-     * Transforms the elements and aggregates them using the given operation.
-     */
-    template <typename TransOp, typename AccuOp>
-    T transform_accumulate(T init,  TransOp trans_op, AccuOp accu_op) const { 
-      T result(init);
-      for (const T& x : *this) {
-        result = accu_op(result, trans_op(x));
-      }
-      return result;
-    }
-
-  protected:
     /**
      * Implementation of the swap function. This function must be protected,
-     * because it's not type-safe.
+     * because it is not type-safe.
      */
     void swap(array_factor& other) {
       if (this != &other) {
@@ -519,14 +307,11 @@ namespace sill {
 
     /**
      * Implementation of operator==(). This function must be protected,
-     * because it's not type-safe.
+     * because it is not type-safe.
      */
     bool equal(const array_factor& other) const {
       return args_ == other.args_ && std::equal(begin(), end(), other.begin());
     }
-
-    // Protected data members
-    //========================================================================
 
     //! The arguments of this factor.
     domain_type args_;
@@ -536,15 +321,17 @@ namespace sill {
 
   }; // class array_factor
 
-  // Utility functions
+  // Implementations of common factor operations
   //========================================================================
 
   /**
    * Throws an std::invalid_argument exception if the two factors do not
    * have the same argument vectors.
+   * \relates array_factor
    */
-  template <typename T>
-  void check_same_arguments(const array_factor<T>& f, const array_factor<T>& g) {
+  template <typename T, size_t N>
+  void check_same_arguments(const array_factor<T, N>& f,
+                            const array_factor<T, N>& g) {
     if (f.arguments() != g.arguments()) {
       throw std::invalid_argument(
         "Element-wise operations require the two factors to have the same arguments"
@@ -553,86 +340,249 @@ namespace sill {
   }
 
   /**
-   * Joins the parameter tables of two factors using a binary operation.
-   * The resulting factor contains the union of f's and g's argument sets.
-   * This operation is only supported if the result has at most two arguments.
+   * Joins two factors with same arity element-wise.
+   * \relates array_factor
+   */
+  template <typename Result, typename T, size_t N, typename Op>
+  Result join(const array_factor<T, N>& f, const array_factor<T, N>& g, Op op) {
+    if (f.arguments() == g.arguments()) {
+      return Result(f.arguments(), op(f.param(), g.param()));
+    }
+    if (f.x() == g.y() && f.y() == g.x()) {
+      return Result(f.arguments(), op(f.param(), g.param().transpose()));
+    }
+    throw std::invalid_argument("array_factor:join introduces a new argument");
+  }
+
+  /**
+   * Joins a binary and a unary factor.
+   * \relates array_factor
    */
   template <typename Result, typename T, typename Op>
-  Result join(const array_factor<T>& f,
-              const array_factor<T>& g,
-              Op op, bool zero_nan = false) {
-    typedef typename array_factor<T>::array_type array_type;
-    using Eigen::Replicate;
-    using Eigen::Dynamic;
+  Result join(const array_factor<T, 2>& f, const array_factor<T, 1>& g, Op op) {
+    const auto& a = f.param(); // 2D array
+    const auto& b = g.param(); // 1D array
+    typedef Eigen::Array<T, Eigen::Dynamic, 1> b_type;
+    if (f.x() == g.x()) { // combine each column of f with g
+      Eigen::Replicate<b_type, 1, Eigen::Dynamic> brep(b, 1, a.cols());
+      return Result(f.arguments(), op(a, brep));
+    }
+    if (f.y() == g.x()) { // combine each row of f with g transposed
+      Eigen::Replicate<b_type, 1, Eigen::Dynamic> brep(b, 1, a.rows());
+      return Result(f.arguments(), op(a, brep.transpose()));
+    }
+    throw std::invalid_argument("array_factor: join creates a ternary factor");
+  }
 
-    const array_type& a = f.param();
-    const array_type& b = g.param();
+  /**
+   * Joins a unary and a binary factor.
+   * \relates array_factor
+   */
+  template <typename Result, typename T, typename Op>
+  Result join(const array_factor<T, 1>& f, const array_factor<T, 2>& g, Op op) {
+    const auto& a = f.param(); // 1D array
+    const auto& b = g.param(); // 2D array
+    typedef Eigen::Array<T, Eigen::Dynamic, 1> a_type;
+    if (f.x() == g.x()) { // combine f with each column of g
+      Eigen::Replicate<a_type, 1, Eigen::Dynamic> arep(a, 1, b.cols());
+      return Result({g.x(), g.y()}, op(arep, b));
+    }
+    if (f.x() == g.y()) { // combine f with each row of g 
+      Eigen::Replicate<a_type, 1, Eigen::Dynamic> arep(a, 1, b.rows());
+      return Result({g.y(), g.x()}, op(arep, b.transpose()));
+    }
+    throw std::invalid_argument("array_factor: join creates a ternary factor");
+  }
 
-    size_t nf = f.arity();
-    size_t ng = g.arity();
-    
-    if (nf == 0) { // combine a constant with all elements of g
-      return Result(g.arguments(), op(a(0), b), zero_nan);
+  /**
+   * Joins two factors with the same arity element-wise in-place
+   * using a mutating operation.
+   */
+  template <typename T, size_t N, typename Op>
+  void join_inplace(array_factor<T, N>& h, const array_factor<T, N>& f, Op op) {
+    if (h.arguments() == f.arguments()) {
+      op(h.param(), f.param());
+    } else if (h.x() == f.y() && h.y() == f.x()) {
+      op(h.param(), f.param().transpose());
+    } else {
+      throw std::invalid_argument(
+        "array_factor:join_inplace introduces a new argument"
+      );
     }
-    if (ng == 0) { // combine all elements of f with a constant
-      return Result(f.arguments(), op(a, b(0)), zero_nan);
+  }
+
+  /**
+   * Joins a binary factor with a unary factor in-place
+   * using a mutating operation.
+   */
+  template <typename T, typename Op>
+  void join_inplace(array_factor<T, 2>& h, const array_factor<T, 1>& f, Op op) {
+    if (h.x() == f.x()) {
+      op(h.param().colwise(), f.param());
+    } else if (h.y() == f.x()) {
+      op(h.param().rowwise(), f.param().transpose());
+    } else {
+      throw std::invalid_argument(
+        "array_factor:join_inplace introduces a new argument"
+        );
     }
-    if (nf == 1 && ng == 1) {
-      if (f.x() == g.x()) { // direct combination
-        return Result({f.x()}, op(a.col(0), b.col(0)), zero_nan);
-      } else {              // outer combination
-        Result result({f.x(), g.x()});
-        T* r = result.begin();
-        for (size_t j = 0; j < size_t(b.rows()); ++j) {
-          T y = b(j);
-          const T* x = a.data();
-          for (size_t i = 0; i < size_t(a.rows()); ++i) {
-            *r++ = op(*x++, y);
-          }
-        }
-        if (zero_nan) result.clear_nan();
-        return result;
-      }
+  }
+
+  /**
+   * Computes the expectation of the parameters of a binary factor
+   * under the probabilities given by a unary factor and returns
+   * a factor with the remaining variables.
+   * 
+   * \throws std::invalid_argument if f does not contain the argument of g
+   */
+  template <typename Result, typename T>
+  Result expectation(const array_factor<T, 2>& f,
+                     const array_factor<T, 1>& g) {
+    auto a = f.param().matrix(); // matrix
+    auto b = g.param().matrix(); // vector
+    if (f.y() == g.x()) {
+      return Result({f.x()}, a * b);
     }
-    if (nf == 1 && ng == 2) {
-      if (f.x() == g.x()) { // combine f with each column of g
-        Replicate<decltype(a.col(0)), 1, Dynamic> arep(a.col(0), 1, b.cols());
-        return Result({g.x(), g.y()}, op(arep, b), zero_nan);
-      }
-      if (f.x() == g.y()) { // combine f with each row of g 
-        Replicate<decltype(a.col(0)), 1, Dynamic> arep(a.col(0), 1, b.rows());
-        return Result({g.x(), g.y()}, op(arep, b.transpose()), zero_nan);
-      }
-      throw std::invalid_argument("array_factor: join creates a ternary factor");
+    if (f.x() == g.x()) {
+      return Result({f.y()}, a.transpose() * b);
     }
-    if (nf == 2 && ng == 1) {
-      if (f.x() == g.x()) { // combine each column of f with g
-        Replicate<decltype(b.col(0)), 1, Dynamic> brep(b.col(0), 1, a.cols());
-        return Result(f.arguments(), op(a, brep), zero_nan);
-      }
-      if (f.y() == g.x()) { // combine each row of f with g
-        return Result(f.arguments(), op(a.rowwise(), b.col(0).transpose()), zero_nan);
-      }
-      throw std::invalid_argument("array_factor: join creates a ternary factor");
+    throw std::invalid_argument(
+      "array_factor expectation: f does not contain the argument of g"
+    );
+  }
+
+  /**
+   * Computes the expectation of the parameters of a binary factor f
+   * under the probabilities given by a unary factor g and joins the
+   * result into a unary factor h.
+   */
+  template <typename T, typename Op>
+  void join_expectation(array_factor<T, 1>& h,
+                        const array_factor<T, 2>& f,
+                        const array_factor<T, 1>& g,
+                        Op op) {
+    auto a = f.param().matrix(); // matrix
+    auto b = g.param().matrix(); // vector
+    auto c = h.param().matrix(); // vector
+    if (f.x() == h.x() && f.y() == g.x()) {
+      op(c.noalias(), a * b);
+    } else if (f.x() == g.x() && f.y() == h.x()) {
+      op(c.noalias(), a.transpose() * b);
+    } else {
+      throw std::invalid_argument("array_factor join_expectation: unsupported arguments");
     }
-    if (nf == 2 && ng == 2) {
-      if (f.x() == g.x() && f.y() == g.y()) { // direct combination
-        return Result(f.arguments(), op(a, b), zero_nan);
-      }
-      if (f.x() == g.y() && f.y() == g.x()) { // combination with a transpose
-        return Result(f.arguments(), op(a, b.transpose()), zero_nan);
-      }
-      throw std::invalid_argument("array_factor: join creates a 3/4-ary factor");
+  }
+
+  /**
+   * Transforms and aggregates the parameter array of a binary factor along
+   * dimension different from retain and stores the result to the specified
+   * unary factor.
+   */
+  template <typename T, typename TransOp, typename AggOp>
+  void transform_aggregate(const array_factor<T, 2>& f,
+                           array_domain<finite_variable*, 1> retain,
+                           array_factor<T, 1>& h,
+                           TransOp trans_op,
+                           AggOp agg_op) {
+    h.reset({retain});
+    if (retain[0] == f.x()) {
+      h.param() = agg_op(trans_op(f.param()).rowwise());
+    } else if (retain[0] == f.y()) {
+      h.param() = agg_op(trans_op(f.param()).colwise()).transpose();
+    } else {
+      throw std::invalid_argument(
+        "array_factor: the retained variable not in the factor domain"
+      );
     }
-    throw std::invalid_argument("array_factor: Invalid arity of inputs in join");
+  }
+
+  /**
+   * Aggregates the parameter array of a binary factor along dimension
+   * different from retain (if any) and stores the result to the specified
+   * unary factor.
+   */
+  template <typename T, typename AggOp>
+  void aggregate(const array_factor<T, 2>& f,
+                 array_domain<finite_variable*, 1> retain,
+                 array_factor<T, 1>& h,
+                 AggOp agg_op) {
+    transform_aggregate(f, retain, h, identity(), agg_op);
+  }
+  
+  /**
+   * Aggregates the parameter array of a binary factor along dimension
+   * different from retain (if any) and returns the result with given type.
+   */
+  template <typename Result, typename T, typename AggOp>
+  Result aggregate(const array_factor<T, 2>& f,
+                   array_domain<finite_variable*, 1> retain,
+                   AggOp agg_op) {
+    Result result;
+    aggregate(f, retain, result, agg_op);
+    return result;
+  }
+  
+  /**
+   * Restricts a binary factor to an assignment and stores the result
+   * to the given unary factor. All variables other than one must be
+   * excluded, so that the result is exactly representable by
+   * a unary factor.
+   */
+  template <typename T>
+  void restrict_assign(const array_factor<T, 2>& f,
+                       const finite_assignment& a,
+                       array_factor<T, 1>& result) {
+    auto itx = a.find(f.x());
+    auto ity = a.find(f.y());
+    if (itx == a.end() && ity != a.end()) {
+      result.reset({f.x()});
+      result.param() = f.param().col(ity->second);
+    } else if (itx != a.end() && ity == a.end()) {
+      result.reset({f.y()});
+      result.param() = f.param().row(itx->second).transpose();
+    } else {
+      throw std::invalid_argument(
+        "array_factor: assignment must restrict all but one argument"
+      );
+    }
+  }
+
+  /**
+   * Restricts a binary factor to an assignment, excluding the variables
+   * in the unary factor result, and joins the restriction into result.
+   */
+  template <typename T, typename Op>
+  void restrict_join(const array_factor<T, 2>& f,
+                     const finite_assignment& a,
+                     array_factor<T, 1>& result,
+                     Op op) {
+    auto itx = result.x() != f.x() ? a.find(f.x()) : a.end();
+    auto ity = result.x() != f.y() ? a.find(f.y()) : a.end();
+    if (itx != a.end() && ity != a.end()) {
+      op(result.param(), f.param()(itx->second, ity->second));
+    } else if (itx == a.end() && f.x() == result.x()) {
+      op(result.param(), f.param().col(ity->second));
+    } else if (ity == a.end() && f.y() == result.x()) {
+      op(result.param(), f.param().row(itx->second).transpose());
+    } else if (itx == a.end() && ity == a.end()) {
+      throw std::invalid_argument(
+        "array_factor: restrict_join does not restrict anything"
+      );
+    } else {
+      throw std::invalid_argument(
+        "array_factor: restrict_join introduces an argument to the result"
+      );
+    }
   }
 
   /**
    * Transforms the parameters of two factors using a binary operation
    * and returns the result. The two factors must have the same domains.
    */
-  template <typename Result, typename T, typename Op>
-  Result transform(const array_factor<T>& f, const array_factor<T>& g, Op op) {
+  template <typename Result, typename T, size_t N, typename Op>
+  Result transform(const array_factor<T, N>& f,
+                   const array_factor<T, N>& g,
+                   Op op) {
     check_same_arguments(f, g);
     Result result(f.arguments());
     std::transform(f.begin(), f.end(), g.begin(), result.begin(), op);
@@ -640,22 +590,31 @@ namespace sill {
   }
 
   /**
+   * Transforms the elements of a single factor using a unary operation
+   * and accumulates the result using another operation.
+   */
+  template <typename T, size_t N, typename TransOp, typename AccuOp>
+  T transform_accumulate(const array_factor<T, N>& f,
+                         TransOp trans_op, AccuOp accu_op) {
+    T result(0);
+    for (const T& x : f) {
+      result = accu_op(result, trans_op(x));
+    }
+    return result;
+  }
+
+  /**
    * Transforms the parameters of two factors using a binary operation
    * and accumulates the result using another operation.
    */
-  template <typename T, typename JoinOp, typename AggOp>
-  T transform_accumulate(const array_factor<T>& f,
-                         const array_factor<T>& g,
+  template <typename T, size_t N, typename JoinOp, typename AggOp>
+  T transform_accumulate(const array_factor<T, N>& f,
+                         const array_factor<T, N>& g,
                          JoinOp join_op,
                          AggOp agg_op) {
-    assert(f.arguments() == g.arguments());
+    check_same_arguments(f, g);
     return std::inner_product(f.begin(), f.end(), g.begin(), T(0), agg_op, join_op);
   }
-
-  /*
-  //! Product-marginal
-  void product_marginal(f, g, retain, result) { }
-  */
 
 } // namespace sill
 
