@@ -3,10 +3,10 @@ set(SILL_BASE_SOURCES
   process
   universe
   variable
-  variables
-  assignment
+#  variables
+#  assignment
   finite_variable
   finite_assignment_iterator
   vector_variable
-  vector_assignment
+# vector_assignment
   PARENT_SCOPE)

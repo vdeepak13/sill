@@ -1,5 +1,5 @@
-#ifndef SILL_SOFTMAX_CPD_HPP
-#define SILL_SOFTMAX_CPD_HPP
+#ifndef SILL_SOFTMAX_HPP
+#define SILL_SOFTMAX_HPP
 
 #include <sill/global.hpp>
 #include <sill/base/assignment.hpp>
@@ -15,7 +15,7 @@
 #include <sill/learning/dataset/hybrid_dataset.hpp>
 #include <sill/learning/dataset/hybrid_record.hpp>
 #include <sill/math/constants.hpp>
-#include <sill/math/function/softmax.hpp>
+#include <sill/math/function/softmax_param.hpp>
 #include <sill/optimization/gradient_objective.hpp>
 #include <sill/optimization/gradient_method/conjugate_gradient.hpp>
 #include <sill/optimization/gradient_method/gradient_descent.hpp>
@@ -39,7 +39,7 @@ namespace sill {
    * \see Factor
    */
   template <typename T = double>
-  class softmax_cpd : public factor {
+  class softmax : public factor {
   public:
     // Public types
     //==========================================================================
@@ -49,7 +49,7 @@ namespace sill {
     typedef domain     domain_type;
     typedef var_vector var_vector_type;
     typedef assignment assignment_type;
-    typedef softmax<T> param_type;
+    typedef softmax_param<T> param_type;
 
     /// IndexableFactor member types
     typedef hybrid_index<T> index_type;
@@ -68,14 +68,14 @@ namespace sill {
     /**
      * Default constructor. Creates an empty factor.
      */
-    softmax_cpd()
+    softmax()
       : head_(NULL) { }
 
     /**
      * Constructs a factor with the given label variable and feature arguments.
      * Allocates the parameters but does not initialize their values.
      */
-    softmax_cpd(finite_variable* head, const vector_var_vector& tail)
+    softmax(finite_variable* head, const vector_var_vector& tail)
       : head_(NULL) {
       reset(head, tail);
     }
@@ -84,9 +84,9 @@ namespace sill {
      * Constructs a factor with the given label variable and feature arguments.
      * Sets the parameters to to the given parameter vector.
      */
-    softmax_cpd(finite_variable* head,
-                const vector_var_vector& tail,
-                const param_type& param)
+    softmax(finite_variable* head,
+            const vector_var_vector& tail,
+            const param_type& param)
       : head_(head),
         tail_(tail),
         param_(param) {
@@ -99,7 +99,7 @@ namespace sill {
     /**
      * Exchanges the arguments and the parameters of two factors.
      */
-    friend void swap(const softmax_cpd& f, const softmax_cpd& g) {
+    friend void swap(const softmax& f, const softmax& g) {
       if (&f != &g) {
         using std::swap;
         swap(f.args_, g.args_);
@@ -234,7 +234,7 @@ namespace sill {
      * Returns true if the two factors have the same argument vectors and
      * parameters.
      */
-    friend bool operator==(const softmax_cpd& f, const softmax_cpd& g) {
+    friend bool operator==(const softmax& f, const softmax& g) {
       return f.head_ == g.head_ && f.tail_ == g.tail_ && f.param_ == g.param_;
     }
 
@@ -242,7 +242,7 @@ namespace sill {
      * Returns true if the two factors do not have the same argument vectors
      * or parameters.
      */
-    friend bool operator==(const softmax_cpd& f, const softmax_cpd& g) {
+    friend bool operator==(const softmax& f, const softmax& g) {
       return !(f == g);
     }
 
@@ -387,14 +387,14 @@ namespace sill {
     //! The underlying softmax function
     softmax<T> param_;
     
-  }; // class softmax_cpd
+  }; // class softmax
 
   /**
    * Prints a human-readable representation of the CPD to a stream.
-   * \relates softmax_cpd
+   * \relates softmax
    */
   template <typename T>
-  std::ostream& operator<<(std::ostream& out, const softmax_cpd<T>& f) {
+  std::ostream& operator<<(std::ostream& out, const softmax<T>& f) {
     out << "softmax(" << f.head() << "|" << f.tail() << ")" << std::endl
         << f.param();
     return out;
@@ -410,7 +410,7 @@ namespace sill {
    * class.
    */
   template <typename T>
-  class factor_mle<softmax_cpd<T> > {
+  class factor_mle<softmax<T> > {
   public:
     // TODO: consider eliminating these
     typedef domain            domain_type;
@@ -437,7 +437,7 @@ namespace sill {
      * Returns the conditional distribution p(head | tail) for a vector
      * tail, computed iteratively.
      */
-    softmax_cpd<T> operator()(const finite_var_vector& head,
+    softmax<T> operator()(const finite_var_vector& head,
                               const vector_var_vector& tail) const {
       assert(head.size() == 1);
       //line_search<softmax<T> >* search = 
@@ -467,7 +467,7 @@ namespace sill {
       std::cout << "Number of calls: "
                 << objective.value_calls << " "
                 << objective.grad_calls << std::endl;
-      return softmax_cpd<T>(head[0], tail, optimizer.solution());
+      return softmax<T>(head[0], tail, optimizer.solution());
     }
 
   private:
@@ -551,7 +551,7 @@ namespace sill {
       size_t grad_calls;
     };
 
-  }; // class factor_mle<softmax_cpd<T>>
+  }; // class factor_mle<softmax<T>>
 
 } // namespace sill  
 

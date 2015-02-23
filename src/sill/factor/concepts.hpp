@@ -7,7 +7,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include <sill/base/assignment.hpp>
 #include <sill/copy_ptr.hpp>
 #include <sill/factor/util/factor_evaluator.hpp>
 #include <sill/factor/util/factor_mle.hpp>
@@ -16,6 +15,8 @@
 #include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/stl_concepts.hpp>
+
+#if 0
 
 #include <sill/macros_def.hpp>
 
@@ -806,6 +807,8 @@ namespace sill {
 } // namespace sill
 
 #include <sill/macros_undef.hpp>
+
+#endif // #if 0
 
 #endif
 

@@ -1,7 +1,7 @@
 #ifndef SILL_ARRAY_FACTOR_HPP
 #define SILL_ARRAY_FACTOR_HPP
 
-#include <sill/base/array_domain.hpp>
+#include <sill/argument/array_domain.hpp>
 #include <sill/base/finite_assignment.hpp>
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/factor/base/factor.hpp>

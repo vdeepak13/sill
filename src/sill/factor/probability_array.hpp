@@ -60,11 +60,6 @@ namespace sill {
     typedef finite_index index_type;
     
     // DistributionFactor member types
-    typedef boost::function<probability_array(const domain_type&)>
-      marginal_fn_type;
-    typedef boost::function<probability_array(const domain_type&,
-                                              const domain_type&)>
-      conditional_fn_type;
     typedef probability_array probability_factor_type;
     
     // LearnableFactor types

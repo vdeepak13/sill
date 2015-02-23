@@ -9,6 +9,7 @@ namespace sill {
   // Domain comparisons
   //============================================================================
 
+#if 0
   template <typename D1, typename D2>
   bool includes(const D1& a, const D2& b);
 
@@ -97,6 +98,7 @@ namespace sill {
                                  const vector_domain& vset,
                                  uvec& in_vset_indices,
                                  uvec& notin_vset_indices);
+#endif
 
 }; // namespace sill
 

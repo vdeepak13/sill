@@ -1,463 +1,728 @@
 #ifndef SILL_CANONICAL_GAUSSIAN_HPP
 #define SILL_CANONICAL_GAUSSIAN_HPP
 
-#include <sill/base/universe.hpp>
-#include <sill/factor/gaussian_base.hpp>
-#include <sill/factor/invalid_operation.hpp>
-#include <sill/factor/util/operations.hpp>
+#include <sill/argument/vector_assignment.hpp>
+#include <sill/factor/base/gaussian_factor.hpp>
 #include <sill/factor/traits.hpp>
-#include <sill/learning/dataset_old/vector_record.hpp>
-#include <sill/math/linear_algebra/armadillo.hpp>
-
-#include <boost/function.hpp>
-
-#include <sill/macros_def.hpp>
+#include <sill/math/eigen/dynamic.hpp>
+#include <sill/math/logarithmic.hpp>
+#include <sill/math/param/canonical_gaussian_param.hpp>
 
 namespace sill {
 
   // forward declaration
-  class moment_gaussian;
+  template <typename T> class moment_gaussian;
 
   /**
-   * A Gaussian factor in the natural (canonical) form. 
-   * The factor supports the sum-product operations.
+   * A factor of a Gaussian distribution in the natural parameterization.
    *
+   * \tparam T the real type for representing the parameters.
    * \ingroup factor_types
    */
-  class canonical_gaussian : public gaussian_base {
+  template <typename T>
+  class canonical_gaussian : public gaussian_factor {
   public:
-    // DistributionFactor concept types
-    typedef boost::function<canonical_gaussian(const vector_domain&)>
-      marginal_fn_type;
-    typedef boost::function<canonical_gaussian(const vector_domain&,
-                                               const vector_domain&)>
-      conditional_fn_type;
+    // Public types
+    //==========================================================================
+    // Base type
+    typedef gaussian_factor base;
+
+    // Underlying storage
+    typedef dynamic_matrix<T> mat_type;
+    typedef dynamic_vector<T> vec_type;
+
+    // Factor member types
+    typedef T                        real_type;
+    typedef logarithmic<T>           result_type;
+    typedef vector_variable          variable_type;
+    typedef domain<vector_variable*> domain_type;
+    typedef vector_assignment<T>     assignment_type;
+    typedef canonical_gaussian_param<T> param_type;
+    
+    // IndexableFactor member types
+    typedef vec_type index_type;
+    
+    // ExponentialFamily member types
+    typedef moment_gaussian<T> probability_factor_type;
 
     // Constructors and conversion operators
     //==========================================================================
-  public:
-    friend class moment_gaussian;
 
-    //! Constructs a canonical Gaussian factor with no arguments
-    explicit canonical_gaussian(logarithmic<double> value = 1.0)
-      : log_mult(log(value)) { }
+    //! Default constructor. Creats an empty factor.
+    canonical_gaussian() { }
 
-    /**
-     * Constructs a canonical Gaussian factor with a given set of
-     * arguments and zeroed parameters.
-     */
-    explicit canonical_gaussian(const vector_domain& args,
-                                logarithmic<double> value = 1.0);
+    //! Constructs a factor with given arguments and uninitialized parameters.
+    explicit canonical_gaussian(const domain_type& args) {
+      reset(args);
+    }
 
-    /**
-     * Constructs a canonical Gaussian factor with a given set of
-     * arguments and zeroed parameters, using the given variable ordering.
-     */
-    explicit canonical_gaussian(const vector_var_vector& args,
-                                logarithmic<double> value = 1.0);
+    //! Constructs a factor equivalent to a constant.
+    explicit canonical_gaussian(logarithmic<T> value)
+      : param_(0, value.lv) { }
 
-    /**
-     * Constructs a canonical Gaussian factor with the given sequence of
-     * arguments and natural parameters.
-     * \param args a sequence of variables
-     * \param lambda the information matrix
-     * \param eta the information vector
-     */
-    canonical_gaussian(const vector_var_vector& args,
-                       const mat& lambda,
-                       const vec& eta,
-                       double log_mult = 0.0);
+    //! Constructs a factor with given arguments and constant value.
+    canonical_gaussian(const domain_type& args, logarithmic<T> value)
+      : base(args), args_(args), param_(vector_size(args), value.lv) { }
+
+    //! Constructs a factor with the given arguments and parameters.
+    canonical_gaussian(const domain_type& args, const param_type& param)
+      : base(args), args_(args), param_(param) {
+      check_param();
+    }
+
+    //! Constructs a factor with the given arguments and parameters.
+    canonical_gaussian(const domain_type& args, param_type&& param)
+      : base(args), args_(args), param_(std::move(param)) {
+      check_param();
+    }
+
+    //! Constructs a factor with the given arguments and parameters.
+    canonical_gaussian(const domain_type& args,
+                       const vec_type& eta,
+                       const mat_type& lambda,
+                       T lv = T(0))
+      : base(args), args_(args), param_(eta, lambda, lv) {
+      check_param();
+    }
 
     //! Conversion from a moment_gaussian
-    canonical_gaussian(const moment_gaussian& mg);
-
-    canonical_gaussian& operator=(double x) {
-      reset(vector_var_vector(), mat(), vec(), std::log(x));
+    explicit canonical_gaussian(const moment_gaussian<T>& mg) {
+      *this = mg;
+    }
+    
+    //! Assigns a constant to this factor.
+    canonical_gaussian& operator=(logarithmic<T> value) {
+      reset();
+      param_.lm = value.lv;
       return *this;
     }
 
-    /**
-     * Mimics a constructor, but resets this factor rather than creating a
-     * new factor.
-     * \param args a sequence of variables
-     * \param lambda the information matrix
-     * \param eta the information vector
-     */
-    void reset(const vector_var_vector& args,
-               const mat& lambda,
-               const vec& eta,
-               double log_mult = 0.0);
+    //! Assigns a moment_gaussian to this factor.
+    canonical_gaussian& operator=(const moment_gaussian<T>& mg) {
+      reset(mg.arguments());
+      param_ = mg.param();
+      return *this;
+    }
 
-    // Serialization
+    //! Casts this canonical_gaussian to a moment_gaussian.
+    moment_gaussian<T> moment() const {
+      return moment_gaussian<T>(*this);
+    }
+
+    //! Exchanges the content of two factors.
+    friend void swap(canonical_gaussian& f, canonical_gaussian& g) {
+      using std::swap;
+      f.base_swap(g);
+      swap(f.args_, g.args_);
+      swap(f.param_, g.param_);
+    }
+
+    // Serialization and initialization
     //==========================================================================
-
-    void save(oarchive& ar) const;
-
-    void load(iarchive& ar);
-
-    // Accessors
-    //==========================================================================
-
-    //! Returns the argument list of this Gaussian
-    const vector_var_vector& arg_vector() const;
-
-    //! Returns the number of dimensions of this Gaussian
-    size_t size() const;
-
-    //! Returns the information matrix in the natural order
-    const mat& inf_matrix() const;
     
-    //! Returns the information matrix in the natural order
-    //! The caller must not alter the matrix dimensions
-    mat& inf_matrix();
+    //! Serializes the factor to an archive.
+    void save(oarchive& ar) const {
+      ar << args_ << param_;
+    }
 
-    //! Returns the information vector in the natural order
-    const vec& inf_vector() const;
+    //! Deserializes the factor from an archive.
+    void load(iarchive& ar) {
+      ar >> args_ >> param_;
+      this->compute_start(args_);
+      check_param();
+    }
 
-    //! Returns the information vector in the natural order
-    //! The caller must not alter the vector dimensions
-    vec& inf_vector();
+    //! Sets the arguments to the given domain and allocates the memory.
+    void reset(const domain_type& args = domain_type()) {
+      if (args_ != args) {
+        args_ = args;
+        size_t n = this->compute_start(args);
+        param_.resize(n);
+      }
+    }
+
+    //! Sets the arguments, but does not allocate the parameters.
+    size_t reset_prototype(const domain_type& args) {
+      if (args_ != args) {
+        args_ = args;
+        size_t n = this->compute_start(args);
+        param_.resize(0);
+        return n;
+      } else return vector_size(args);
+    }
+
+    // Accessors and comparison operators
+    //==========================================================================
+
+    //! Returns the arguments of this factor.
+    const domain_type& arguments() const {
+      return args_;
+    }
+
+    //! Returns the number of arguments of this factor.
+    size_t arity() const {
+      return args_.size();
+    }
+
+    //! Returns true if the factor is empty.
+    bool empty() const {
+      return args_.empty();
+    }
+
+    //! Returns the number of dimensions of this Gaussian.
+    size_t size() const {
+      return param_.size();
+    }
+
+    //! Returns the parameter struct. The caller must not alter its size.
+    param_type& param() {
+      return param_;
+    }
+
+    //! Returns the parameter struct.
+    const param_type& param() const {
+      return param_;
+    }
 
     //! Returns the log multiplier.
-    double log_multiplier() const;
+    T log_multiplier() const {
+      return param_.lm;
+    }
 
-    //! Returns the log multiplier.
-    double& log_multiplier();
+    //! Returns the information vector.
+    const vec_type& inf_vector() const {
+      return param_.eta;
+    }
 
-    //! Returns the information matrix for a subset of the arguments
-    mat inf_matrix(const vector_var_vector& args) const;
+    //! Returns the information matrix.
+    const mat_type& inf_matrix() const {
+      return param_.lambda;
+    }
+
+    //! Returns the information vector for a single variable.
+    Eigen::VectorBlock<const vec_type> inf_vector(vector_variable* v) const {
+      return param_.eta.segment(this->start(v), v->size());
+    }
+
+    //! Returns the information matrix for a single variable.
+    Eigen::Block<const mat_type> inf_matrix(vector_variable* v) const {
+      size_t i = this->start(v);
+      return param_.lambda.block(i, i, v->size(), v->size());
+    }
 
     //! Returns the information vector for a subset of the arguments
-    vec inf_vector(const vector_var_vector& args) const;
+    vec_type inf_vector(const domain_type& args) const {
+      matrix_index map = index_map(args);
+      return subvec(param_.eta, map).plain();
+    }
 
-    // Comparison operators
+    //! Returns the information matrix for a subset of the arguments
+    mat_type inf_matrix(const domain_type& args) const {
+      matrix_index map = index_map(args);
+      return submat(param_.eta, map, map).plain();
+    }
+
+    //! Returns true of the two factors have the same domains and parameters.
+    bool operator==(const canonical_gaussian& other) const {
+      return args_ == other.args_ && param_ == other.param_;
+    }
+
+    //! Returns true if the two factors do not have the same domains or params.
+    bool operator!=(const canonical_gaussian& other) const {
+      return !(*this == other);
+    }
+
+    // Indexing
     //==========================================================================
 
-    //! Returns true of the two factors have the same argument set
-    //! and are equivalent.
-    bool operator==(const canonical_gaussian& other) const;
-
-    //! Returns true if the two factors are not equivalent
-    bool operator!=(const canonical_gaussian& other) const;
-
-    //! Returns true if the first factor precedes the second in the
-    //! lexicographical ordering.
-    bool operator<(const canonical_gaussian& other) const;
-
-    // Factor operations
-    //==========================================================================
-
-    //! Evaluates the factor for an assignment
-    //! \todo this function needs to be tested
-    logarithmic<double> operator()(const vector_assignment& a) const;
-
-    //! Evaluates the factor for a record.
-    logarithmic<double> operator()(const record_type& r) const;
-
-    //! Evaluates the factor for a raw vector
-    logarithmic<double> operator()(const vec& v) const;
-
-    //! Returns the log-likelihood of the factor
-    double logv(const vector_assignment& a) const;
-
-    //! Returns the log-likelihood of the factor
-    double logv(const record_type& r) const;
-
-    //! multiplies in another factor
-    canonical_gaussian& operator*=(const canonical_gaussian& x);
-
-    //! divides by another factor
-    canonical_gaussian& operator/=(const canonical_gaussian& x);
-
-    //! multiplies the factor by the given constant
-    canonical_gaussian& operator*=(logarithmic<double> val);
-
-    //! divides the factor by the given constant
-    canonical_gaussian& operator/=(logarithmic<double> val);
+    /**
+     * Converts the given vector to an assignment.
+     */
+    void assignment(const vec_type& vec, assignment_type& a) const {
+      assert(vec.size() == size());
+      size_t i = 0;
+      for (vector_variable* v : args_) {
+        a[v] = vec.segment(i, v->size());
+        i += v->size();
+      }
+    }
 
     /**
-     * computes marginal over a subset of variables
-     * \throws invalid_operation if the information matrix over the retained
-     *         variables is singular.
+     * Substitutes the arguments in-place according to the given map.
      */
-    canonical_gaussian marginal(const vector_domain& retain) const;
-
-    //! Computes marginal, storing result in the given factor.
-    //! Avoids reallocation if possible.
-    void marginal(const vector_domain& retain, canonical_gaussian& cg) const;
-
-    //! Computes marginal, storing result in the given factor.
-    //! Avoids reallocation if possible.
-    //! This version does not update the normalization constant.
-    void marginal_unnormalized(const vector_domain& retain,
-                               canonical_gaussian& cg) const;
-
-    //! Computes the maximum for each assignment to the given variables
-    canonical_gaussian maximum(const vector_domain& retain) const;
-
-    //! Returns an assignment that achieves the maximum value (i.e., the mean).
-    //! @todo Move free functions into this class (and same for other factors).
-    vector_assignment arg_max() const;
-
-    //! Restricts (conditions) the variable for the given assignment
-    canonical_gaussian restrict(const vector_assignment& a) const;
-  
-    /**
-     * Restrict which stores the result in the given factor f.
-     * TO DO: Avoid reallocation if f has been pre-allocated.
-     *
-     * @param r_vars  Only restrict away arguments of this factor which
-     *                appear in both keys(r) and r_vars.
-     */
-    void restrict(const record_type& r, const vector_domain& r_vars,
-                  canonical_gaussian& f) const;
+    void subst_args(const vector_var_map& map) {
+      base::subst_args(map);
+      args_.subst(map);
+    }
 
     /**
-     * Restrict which stores the result in the given factor f.
-     * TO DO: Avoid reallocation if f has been pre-allocated.
-     *
-     * @param r_vars  Only restrict away arguments of this factor which
-     *                appear in both keys(r) and r_vars.
-     * @param strict  Require that all variables which are in
-     *                intersect(f.arguments(), r_vars) appear in keys(r).
+     * Reorders the arguments according to the given domain.
      */
-    void restrict(const record_type& r, const vector_domain& r_vars,
-                  bool strict, canonical_gaussian& f) const;
-  
-    //! implements Factor::subst_args
-    canonical_gaussian& subst_args(const vector_var_map& map);
-
-    //! implements IndexableFactor::reorder
-    canonical_gaussian reorder(const vector_var_vector& args) const;
-
-    //! If this factor represents P(A,B), then this returns P(A|B).
-    //! @todo Make this more efficient.
-    canonical_gaussian conditional(const vector_domain& B) const;
-
-    //! Returns true if this factor represents the conditional p(rest | tail)
-    //! @return true for now (TODO: figure out if we can test this)
-    bool is_conditional(const vector_domain& tail) const { return true; }
+    canonical_gaussian reorder(const domain_type& args) const {
+      if (!equivalent(args, args_)) {
+        throw std::runtime_error("canonical_gaussian::reorder: invalid ordering");
+      }
+      return canonical_gaussian(args, param_.reorder(index_map(args)));
+    }
     
-    //! implements DistributionFactor::is_normalizable
-    bool is_normalizable() const;
-
-    //! Returns the normalization constant
-    double norm_constant() const;
-
-    //! Returns the log of the normalization constant
-    double log_norm_constant() const;
-
-    //! implements Distribution::normalize
-    canonical_gaussian& normalize();
+    /**
+     * Checks if the size of the parameter struct matches this factor's
+     * arguments.
+     * \throw std::invalid_argument if the sizes do not match
+     */
+    void check_param() const {
+      param_.check();
+      if (param_.size() != vector_size(args_)) {
+        throw std::runtime_error("canonical_gaussian: Invalid parameter size");
+      }
+    }
 
     /**
-     * Returns a sample from the factor, which is assumed to be normalized
-     * to be a distribution P(arguments).
+     * Checks if two factors have the same (sequence of) arguments.
+     * \throw std::invalid_argument if the arguments do not match
+     */
+    friend void check_same_arguments(const canonical_gaussian& f,
+                                     const canonical_gaussian& g) {
+      if (f.arguments() != g.arguments()) {
+        throw std::invalid_argument("canonical_gaussian: incompatible arguments");
+      }
+    }
+
+    // Factor evaluation
+    //==========================================================================
+
+    //! Evaluates the factor for an assignment.
+    logarithmic<T> operator()(const assignment_type& a) const {
+      return logarithmic<T>(log(a), log_tag());
+    }
+
+    //! Evaluates the factor for a vector.
+    logarithmic<T> operator()(const vec_type& x) const {
+      return logarithmic<T>(log(x), log_tag());
+    }
+
+    //! Returns the log-value of the factor for an assignment.
+    T log(const assignment_type& a) const {
+      return param_(extract(a, args_));
+    }
+
+    //! Returns the log-value of the factor for a vector.
+    T log(const vec_type& x) const {
+      return param_(x);
+    }
+
+    // Factor operations (the parameter operation objects are computed below)
+    //==========================================================================
+
+    //! Multiplies this factor by another one in-place.
+    canonical_gaussian& operator*=(const canonical_gaussian& f) {
+      multiplies_assign_op(*this, f)(param_, f.param_);
+      return *this;
+    }
+
+    //! Divides this factor by another one in-place.
+    canonical_gaussian& operator/=(const canonical_gaussian& f) {
+      divides_assign_op(*this, f)(param_, f.param_);
+      return *this;
+    }
+
+    //! Multiplies this factor by a constant in-place.
+    canonical_gaussian& operator*=(logarithmic<T> x) {
+      multiplies_assign_op(*this)(param_, x.lv);
+      return *this;
+    }
+
+    //! Divides this factor by a constant in-place.
+    canonical_gaussian& operator/=(logarithmic<T> x) {
+      divides_assign_op(*this)(param_, x.lv);
+      return *this;
+    }
+
+    //! Multiplies two canonical_gaussian factors.
+    friend canonical_gaussian
+    operator*(const canonical_gaussian& f, const canonical_gaussian& g) {
+      canonical_gaussian result;
+      multiplies_op(f, g, result)(f.param_, g.param_, result.param_);
+      return result;
+    }
+
+    //! Divides two canonical_gaussian factors.
+    friend canonical_gaussian
+    operator/(const canonical_gaussian& f, const canonical_gaussian& g) {
+      canonical_gaussian result;
+      divides_op(f, g, result)(f.param_, g.param_, result.param_);
+      return result;
+    }
+
+    //! Multiplies a canonical_gaussian by a constant.
+    friend canonical_gaussian
+    operator*(canonical_gaussian f, logarithmic<T> x) {
+      multiplies_assign_op(f)(f.param_, x.lv);
+      return f;
+    }
+
+    //! Multiplies a canonical_gaussian by a constant.
+    friend canonical_gaussian
+    operator*(logarithmic<T> x, canonical_gaussian f) {
+      multiplies_assign_op(f)(f.param_, x.lv);
+      return f;
+    }
+
+    //! Divides a canonical_gaussian by a constant.
+    friend canonical_gaussian
+    operator/(canonical_gaussian f, logarithmic<T> x) {
+      divides_assign_op(f)(f.param_, x.lv);
+      return f;
+    }
+
+    //! Divides a constant by a canonical_gaussian.
+    friend canonical_gaussian
+    operator/(logarithmic<T> x, canonical_gaussian f) {
+      divides_assign_op(f)(x.lv, f.param_);
+      return f;
+    }
+
+    //! Raises a canonical_gaussian to an exponent.
+    friend canonical_gaussian
+    pow(canonical_gaussian f, T x) {
+      f.param_ *= x;
+      return f;
+    }
+
+    //! Returns \f$f^{(1-a)} * g^a\f$.
+    friend canonical_gaussian
+    weighted_update(const canonical_gaussian& f,
+                    const canonical_gaussian& g, T a) {
+      check_same_arguments(f, g);
+      return canonical_gaussian(f.args_, weighted_sum(f.param_, g.param_, a));
+    }
+
+    /**
+     * Computes the marginal of the factor over a sequence of arguments.
+     * \throws invalid_argument if retained is not a subset of arguments
+     * \throws numerical_error if the information matrix over the
+     *         mariginalized variables is singular.
+     */
+    canonical_gaussian marginal(const domain_type& retain) const {
+      canonical_gaussian result;
+      marginal(retain, result);
+      return result;
+    }
+
+    /**
+     * Computes the maximum of the factor over a sequence of arguments.
+     * \throws invalid_argument if retained is not a subset of arguments
+     * \throws numerical_error if the information matrix is singular
+     */
+    canonical_gaussian maximum(const domain_type& retain) const {
+      canonical_gaussian result;
+      maximum(retain, result);
+      return result;
+    }
+
+    /**
+     * If this factor represents p(x, y), returns p(x | y).
+     */
+    canonical_gaussian conditional(const domain_type& tail) const {
+      return *this / marginal(tail);
+    }
+
+    /**
+     * Computes the marginal of the factor over a sequence of arguments.
+     * \throws invalid_argument if retained is not a subset of arguments
+     * \throws numerical_error if the information matrix over the
+     *         marginalized variables is singular.
+     */
+    void marginal(const domain_type& retain, canonical_gaussian& result) const {
+      marginal_op(*this, retain, result)(param_, result.param_);
+    }
+
+    /**
+     * Computes the maximum of the factor over a sequence of arguments.
+     * \throws invalid_argument if retained is not a ubset of arguments
+     * \throws numerical_error if the information matrix over the
+     *         marginalized variables is singular.
+     */
+    void maximum(const domain_type& retain, canonical_gaussian& result) const {
+      maximum_op(*this, retain, result)(param_, result.param_);
+    }
+
+    //! Returns the normalization constant of the factor.
+    logarithmic<T> marginal() const {
+      return logarithmic<T>(param_.marginal(), log_tag());
+    }
+
+    //! Returns the maximum value in the factor.
+    logarithmic<T> maximum() const {
+      return logarithmic<T>(param_.maximum(), log_tag());
+    }
+
+    //! Computes the maximum value and stores the corresponding assignment.
+    logarithmic<T> maximum(assignment_type& a) const {
+      vec_type vec;
+      T max = param_.maximum(vec);
+      assignment(vec, a);
+      return logarithmic<T>(max, log_tag());
+    }
+
+    //! Normalizes the factor in-place.
+    canonical_gaussian& normalize() {
+      param_.lm -= param_.marginal();
+      return *this;
+    }
+
+    //! Returns true if the factor is normalizable.
+    bool normalizable() const {
+      return std::isfinite(param_.marginal());
+    }
+
+    //! Restricts the factor to the given assignment.
+    canonical_gaussian restrict(const assignment_type& a) const {
+      canonical_gaussian result;
+      restrict(a, result);
+      return result;
+    }
+
+    //! Restricts the factor to the given assignment.
+    void restrict(const assignment_type& a, canonical_gaussian& result) const {
+      restrict_op(*this, a, result)(param_, result.param_);
+    }
+
+    //! Restricts the factor to the given assignment and multiplies the result
+    void restrict_multiply(const assignment_type& a,
+                           canonical_gaussian& result) const {
+      restrict_multiply_op(*this, a, result)(param_, result.param_);
+    }
+  
+#if 0
+    /**
+     * Draws a sample from this factor, which is assumed to represent
+     * a (possibly unnormalized) marginal distribution.
      *
-     * NOTE: If you take multiple samples, it is better to convert to a
-     *       moment_gaussian and then sample.
-     *
-     * WARNING: Not all random number generators work with this; for example,
-     *  boost::mt11213b does not work, but boost::lagged_fibonacci607 works.
-     *  If this is given a wrong generator, it will use the given generator
-     *  to choose a random seed for a workable generator.
-     *
-     * @tparam RandomNumGen  Random number generator.
+     * When drawing multiple samples, use factor_sampler class.
      */
     template <typename RandomNumberGenerator>
-    vector_assignment sample(RandomNumberGenerator& rng) const;
+    assignment_type sample(RandomNumberGenerator& rng) const {
+      factor_sampler<canonical_gaussian> sampler(*this);
+      assignment_type a;
+      assignment(sampler(rng), a);
+      return a;
+    }
+#endif
 
-    //! implements Distribution::entropy
-    double entropy(double base) const;
-
-    //! implements Distribution::entropy
-    //! Uses base e logarithm.
-    double entropy() const;
-
-    //! implements Distribution::relative_entropy
-    double relative_entropy(const canonical_gaussian& q) const;
-
-    //! Computes the mutual information between two sets of variables
-    //! in this factor's arguments. The sets of f1, f2 must be disjoint.
-    //! Note: This factor must be a marginal distribution.
-    double mutual_information(const vector_domain& d1,
-                              const vector_domain& d2) const;
-
-    // Other operations
+    // Entropy and divergences
     //==========================================================================
 
-    /**
-     * Ensures that the information matrix is PSD, i.e., this factor represents
-     * a valid likelihood.
-     * \param mean the mean of the joint distribution
-     * @return  True if the information matrix was already PSD and false if
-     *          it was not and was adjusted.
-     */
-    bool enforce_psd(const vec& mean);
+    //! Computes the entropy for the distribution represented by this factor.
+    T entropy() const {
+      return param_.entropy();
+    }
 
+    //! Computes the entropy for a subset of variables.
+    T entropy(const domain_type& dom) const {
+      if (equivalent(args_, dom)) {
+        return entropy();
+      } else {
+        return marginal(dom).entropy();
+      }
+    }
+
+    //! Computes the mutual information bewteen two subsets of arguments.
+    T mutual_information(const domain_type& a, const domain_type& b) const {
+      return entropy(a) + entropy(b) - entropy(a | b);
+    }
+
+    //! Computes the Kullback-Liebler divergence from p to q.
+    friend T kl_divergence(const canonical_gaussian& p,
+                           const canonical_gaussian& q) {
+      check_same_arguments(p, q);
+      return kl_divergence(p.param_, q.param_);
+    }
+
+    friend T max_diff(const canonical_gaussian& f,
+                      const canonical_gaussian& g) {
+      check_same_arguments(f, g);
+      return max_diff(f.param_, g.param_);
+    }
+    
     // Private data members
     //==========================================================================
   private:
-    //! A list of arguments in their natural order
-    vector_var_vector arg_list;
+    //! The sequence of arguments of the factor.
+    domain_type args_;
 
-    //! The information matrix
-    mat lambda;
-
-    //! The information vector
-    vec eta;
-
-    //! The multiplicative constant
-    double log_mult;
-
-    // Private methods
-    //==========================================================================
-
-    /**
-     * Initializes this indices for the given arguments and initializes the
-     * information matrix and vector to zero. Leaves log-multiplier the same.
-     */
-    void initialize(const vector_var_vector& args);
-
-    void marginal(const vector_domain& retain,
-                  bool renormalize,
-                  canonical_gaussian& cg) const;
-
-    canonical_gaussian& combine_in(const canonical_gaussian& x, double sign);
-    
-    friend canonical_gaussian combine(const canonical_gaussian& x,
-                                      const canonical_gaussian& y,
-                                      double sign);
+    //! The parameters of the factor.
+    param_type param_;
 
   }; // class canonical_gaussian
   
-  //! \relates canonical_gaussian
-  std::ostream& operator<<(std::ostream& out, const canonical_gaussian& cg);
-
-  // Mulitplication and division
-  //==========================================================================
-
-  //! \relates canonical_gaussian
-  canonical_gaussian 
-  operator*(const canonical_gaussian& x, const canonical_gaussian& y);
-
-  //! \relates canonical_gaussian
-  inline canonical_gaussian
-  operator*(const moment_gaussian& mg, const canonical_gaussian& cg) {
-    return canonical_gaussian(mg) * cg;
-  }
-
-  //! \relates canonical_gaussian
-  inline canonical_gaussian
-  operator*(const canonical_gaussian& cg, const moment_gaussian& mg) {
-    return cg * canonical_gaussian(mg);
-  }
-
-  //! \relates canonical_gaussian
-  inline canonical_gaussian
-  operator*(canonical_gaussian cg, logarithmic<double> x) {
-    return cg *= x;
-  }
-
-  //! \relates canonical_gaussian
-  inline canonical_gaussian
-  operator*(logarithmic<double> x, canonical_gaussian cg) {
-    return cg *= x;
-  }
-  
-  //! \relates canonical_gaussian
-  canonical_gaussian
-  operator/(const canonical_gaussian& x, const canonical_gaussian& y);
-
-  //! \relates canonical_gaussian
-  inline canonical_gaussian
-  operator/(const moment_gaussian& mg, const canonical_gaussian& cg) {
-    return canonical_gaussian(mg) / cg;
-  }
-
-  //! \relates canonical_gaussian
-  inline canonical_gaussian
-  operator/(const canonical_gaussian& cg, const moment_gaussian& mg) {
-    return cg / canonical_gaussian(mg);
-  }
-
-  //! \relates canonical_gaussian
-  inline canonical_gaussian
-  operator/(canonical_gaussian cg, logarithmic<double> x) {
-    return cg /= x;
-  }
-  
-  //! \relates canonical_gaussian
-  inline canonical_gaussian
-  operator/(logarithmic<double> x, const canonical_gaussian& cg) {
-    return canonical_gaussian(x) /= cg;
-  }
-  
-  // Other functions
-  //==========================================================================
-
-  //! Computes the L-infinity norm of the parameters of two canonical Gaussians
-  //! \relates canonical_gaussian
-  double norm_inf(const canonical_gaussian& x, const canonical_gaussian& y);
-
-  //! Exponentiates a canonical Gaussian 
-  //! (which is equivalent to multiplying the parameters by a constant)
-  canonical_gaussian pow(const canonical_gaussian& cg, double a);
-
-  //! Returns an assignment that achieves the maximum value (i.e., the mean).
-  vector_assignment arg_max(const canonical_gaussian& cg);
-
-  //! Returns \f$f_1^{(1-a)} * f_2^a\f$
-  canonical_gaussian weighted_update(const canonical_gaussian& f1,
-                                     const canonical_gaussian& f2,
-                                     double a);
-  
-  //! Returns the inverse of the factor (flips the sign on information vec & mat)
-  canonical_gaussian invert(const canonical_gaussian& f);
-
-  // Utility classes
+  // Common operations
   //============================================================================
-  typedef boost::function<canonical_gaussian(const vector_domain&)>
-    marginal_canonical_gaussian_fn;
 
-  typedef boost::function<canonical_gaussian(const vector_domain&,
-                                          const vector_domain&)>
-    conditional_canonical_gaussian_fn;
+  /**
+   * Prints the canonical_gaussian to a stream.
+   * \relates canonical_gaussian
+   */
+  template <typename T>
+  std::ostream& operator<<(std::ostream& out, const canonical_gaussian<T>& f) {
+    out << f.arguments() << std::endl
+        << f.param() << std::endl;
+    return out;
+  }
 
+  // Factor operation objects
+  //============================================================================
+
+  /**
+   * Returns an object that can add the parameters of one canonical Gaussian
+   * to another one in-place.
+   */
+  template <typename T>
+  canonical_gaussian_join_inplace<T, sill::plus_assign<> >
+  multiplies_assign_op(canonical_gaussian<T>& h, const canonical_gaussian<T>& f) {
+    return { h.index_map(f.arguments()) };
+  }
+
+  /**
+   * Returns an object that can add a constant to the log-multiplier of
+   * a canonical Gaussian in-place.
+   */
+  template <typename T>
+  canonical_gaussian_join_inplace<T, sill::plus_assign<> >
+  multiplies_assign_op(canonical_gaussian<T>& h) {
+    return { };
+  }
+
+  /**
+   * Returns an object that can subrtact the parameters of one canonical Gaussian
+   * from another one in-place.
+   */
+  template <typename T>
+  canonical_gaussian_join_inplace<T, sill::minus_assign<> >
+  divides_assign_op(canonical_gaussian<T>& h, const canonical_gaussian<T>& f) {
+    return { h.index_map(f.arguments()) };
+  }
+
+  /**
+   * Returns an object that can subtract a constant to the log-multiplier of
+   * a canonical Gaussian in-place.
+   */
+  template <typename T>
+  canonical_gaussian_join_inplace<T, sill::minus_assign<> >
+  divides_assign_op(canonical_gaussian<T>& h) {
+    return { };
+  }
+
+  /**
+   * Returns an object that can compute the parameters corresponding to the
+   * product of two canonical Gaussians. Initializes the arguments of the result.
+   */
+  template <typename T>
+  canonical_gaussian_join<T, sill::plus_assign<> >
+  multiplies_op(const canonical_gaussian<T>& f, const canonical_gaussian<T>& g,
+                canonical_gaussian<T>& h) {
+    size_t n = h.reset_prototype(f.arguments() | g.arguments());
+    return { h.index_map(f.arguments()), h.index_map(g.arguments()), n };
+  }
+
+  /**
+   * Returns an object that can compute the parameters corresponding to the
+   * ratio of two canonical Gaussians. Initializes the arguments of the result.
+   */
+  template <typename T>
+  canonical_gaussian_join<T, sill::minus_assign<> >
+  divides_op(const canonical_gaussian<T>& f, const canonical_gaussian<T>& g,
+             canonical_gaussian<T>& h) {
+    size_t n = h.reset_prototype(f.arguments() | g.arguments());
+    return { h.index_map(f.arguments()), h.index_map(g.arguments()), n };
+  }
+
+  /**
+   * Returns an object that can compute the parameters corresponding to
+   * the marginal of a canonical Gaussian over a subset of arguments.
+   */
+  template <typename T>
+  canonical_gaussian_marginal<T>
+  marginal_op(const canonical_gaussian<T>& f,
+              const domain<vector_variable*>& retain,
+              canonical_gaussian<T>& h) {
+    h.reset_prototype(retain);
+    return { f.index_map(retain), f.index_map(f.arguments() - retain) };
+  }
+  
+  /**
+   * Returns an object that can compute the parameters corresponding to
+   * the maximum of a canonical Gaussian over a subset of arguments.
+   */
+  template <typename T>
+  canonical_gaussian_marginal<T>
+  maximum_op(const canonical_gaussian<T>& f,
+             const domain<vector_variable*>& retain,
+             canonical_gaussian<T>& h) {
+    h.reset_prototype(retain);
+    return { f.index_map(retain), f.index_map(f.arguments() - retain) };
+  }
+
+  /**
+   * Returns an object that can compute the parameters corresponding to
+   * restricting a canonical Gaussian to the given assignment.
+   */
+  template <typename T>
+  canonical_gaussian_restrict<T>
+  restrict_op(const canonical_gaussian<T>& f,
+              const vector_assignment<T>& a,
+              canonical_gaussian<T>& h) {
+    domain<vector_variable*> y, x; // restricted, retained
+    f.arguments().partition(a, y, x);
+    h.reset_prototype(x);
+    return { f.index_map(x), f.index_map(y), extract(a, y) };
+  }
+
+  /**
+   * Returns an object that can restrict a canonical Gaussian and
+   * add the resulting parameters to another one.
+   */
+  template <typename T>
+  canonical_gaussian_restrict_join<T, sill::plus_assign<> >
+  restrict_multiply_op(const canonical_gaussian<T>& f,
+                       const vector_assignment<T>& a,
+                       canonical_gaussian<T>& h) {
+    domain<vector_variable*> y, x; // restricted, retained
+    f.arguments().partition(a, y, x);
+    return { f.index_map(x), f.index_map(y), h.index_map(x), extract(a, y) };
+  }
+  
   // Traits
   //============================================================================
 
   //! \addtogroup factor_traits
   //! @{
 
-  template <>
-  struct has_multiplies<canonical_gaussian> : public boost::true_type { };
+  template <typename T>
+  struct has_multiplies<canonical_gaussian<T>> : public std::true_type { };
 
-  template <>
-  struct has_multiplies_assign<canonical_gaussian> : public boost::true_type { };
+  template <typename T>
+  struct has_multiplies_assign<canonical_gaussian<T>> : public std::true_type { };
 
-  template <>
-  struct has_divides<canonical_gaussian> : public boost::true_type { };
+  template <typename T>
+  struct has_divides<canonical_gaussian<T>> : public std::true_type { };
 
-  template <>
-  struct has_divides_assign<canonical_gaussian> : public boost::true_type { };
+  template <typename T>
+  struct has_divides_assign<canonical_gaussian<T>> : public std::true_type { };
 
-  template <>
-  struct has_marginal<canonical_gaussian> : public boost::true_type { };
+  template <typename T>
+  struct has_marginal<canonical_gaussian<T>> : public std::true_type { };
 
-  template <>
-  struct has_maximum<canonical_gaussian> : public boost::true_type { };
+  template <typename T>
+  struct has_maximum<canonical_gaussian<T>> : public std::true_type { };
 
-  template <>
-  struct has_arg_max<canonical_gaussian> : public boost::true_type { };
-
-  //! @}
+  template <typename T>
+  struct has_arg_max<canonical_gaussian<T>> : public std::true_type { };
   
+  //! @}
+
 } // namespace sill
 
-#include <sill/macros_undef.hpp>
-
-#include <sill/factor/gaussian_common.hpp>
-#include <sill/factor/util/operations.hpp>
+//#include <sill/factor/gaussian_common.hpp>
 
 #endif
