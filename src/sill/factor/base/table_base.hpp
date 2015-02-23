@@ -166,7 +166,7 @@ namespace sill {
     
     /**
      * Converts the index to this factor's arguments to an assignment.
-     * The index may be merely a prefix, and the ouptut assignment is not cleared.
+     * The index may be merely a prefix, and the output assignment is not cleared.
      */
     void assignment(const finite_index& index, finite_assignment& a) const {
       assert(index.size() <= finite_args_.size());

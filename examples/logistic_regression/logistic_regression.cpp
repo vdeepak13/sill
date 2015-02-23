@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
   logistic_regression<> learner(label, features);
 
   // train the model and output some statistics
-  softmax_cpd<> model;
+  softmax<> model;
   double ll = learner.learn(ds, params, model);
   std::cout << model << std::endl;
   std::cout << "log-likelihood: " << ll << std::endl;

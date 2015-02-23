@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE array_domain
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/array_domain.hpp>
+#include <sill/argument/array_domain.hpp>
 
 namespace sill {
   template class array_domain<int, 2>;

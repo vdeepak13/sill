@@ -1,7 +1,7 @@
 add_subdirectory(base)
 add_subdirectory(factor)
 add_subdirectory(inference)
-add_subdirectory(learning)
+#add_subdirectory(learning)
 add_subdirectory(math)
 add_subdirectory(model)
 #add_subdirectory(optimization)
@@ -19,7 +19,7 @@ add_library(sill
   ${SILL_BASE_SOURCES}
   ${SILL_FACTOR_SOURCES}
   ${SILL_INFERENCE_SOURCES}
-  ${SILL_LEARNING_SOURCES}
+#  ${SILL_LEARNING_SOURCES}
   ${SILL_MATH_SOURCES}
   ${SILL_MODEL_SOURCES}
 #  ${SILL_OPTIMIZATION_SOURCES}

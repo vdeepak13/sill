@@ -1,7 +1,7 @@
 #ifndef SILL_LOGISTIC_REGRESSION_HPP
 #define SILL_LOGISTIC_REGRESSION_HPP
 
-#include <sill/factor/softmax_cpd.hpp>
+#include <sill/factor/softmax.hpp>
 
 namespace sill {
 
@@ -13,10 +13,10 @@ namespace sill {
   class logistic_regression {
   public:
     // Learner concept types
-    typedef softmax_cpd<T>    model_type;
+    typedef softmax<T>    model_type;
     typedef T                 real_type;
     typedef hybrid_dataset<T> dataset_type;
-    typedef typename factor_mle<softmax_cpd<T> >::param_type param_type;
+    typedef typename factor_mle<softmax<T> >::param_type param_type;
     
     /**
      * Constructs a learner for the given label variable and features.
@@ -40,7 +40,7 @@ namespace sill {
      */
     real_type learn(const dataset_type& ds, const param_type& params,
                     model_type& model) {
-      factor_mle<softmax_cpd<T> > mle(&ds, params);
+      factor_mle<softmax<T> > mle(&ds, params);
       model = mle({label_}, features_);
       return model.log_likelihood(ds);
     }

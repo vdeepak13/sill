@@ -36,7 +36,7 @@ namespace sill {
       std::copy(elems.begin(), elems.end(), this->begin());
     }
 
-    //! Returns the number of times element is present in the domain.
+    //! Returns the number of times an argument is present in the domain.
     size_t count(const T& x) const {
       return std::count(this->begin(), this->end(), x);
     }

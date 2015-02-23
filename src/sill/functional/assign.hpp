@@ -3,6 +3,23 @@
 
 namespace sill {
 
+  //! Assigns one object to another.
+  template <typename T = void>
+  struct assign {
+    auto operator()(T& a, const T& b) const -> decltype(a = b) {
+      return a = b;
+    }
+  };
+
+  //! Assigns one object to another.
+  template <>
+  struct assign<void> {
+    template <typename T, typename U>
+    auto operator()(T&& a, const U& b) const -> decltype(a = b) {
+      return a = b;
+    }
+  };
+
   //! Adds one object to another one in place.
   template <typename T = void>
   struct plus_assign {
@@ -17,6 +34,10 @@ namespace sill {
     template <typename T, typename U>
     auto operator()(T&& a, const U& b) const -> decltype(a += b) {
       return a += b;
+    }
+    template <typename T>
+    T&& operator()(T&& a) const {
+      return a;
     }
   };
 
@@ -34,6 +55,11 @@ namespace sill {
     template <typename T, typename U>
     auto operator()(T&& a, const U& b) const -> decltype(a -= b) {
       return a -= b;
+    }
+    template <typename T>
+    T&& operator()(T&& a) const {
+      a = -a;
+      return a;
     }
   };
 

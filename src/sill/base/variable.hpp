@@ -142,7 +142,7 @@ namespace sill {
   /**
    * A set of arbitrary variables.
    */
-  typedef std::set<variable*> domain;
+  //typedef std::set<variable*> domain;
 
   /**
    * A vector of arbitrary variables.
@@ -159,7 +159,8 @@ namespace sill {
 
   // Free functions
   //============================================================================
-
+  
+#if 0
   /**
    * Returns the intersection of a generic and a specific domain type
    * \relates variable
@@ -181,6 +182,7 @@ namespace sill {
     concept_assert((Variable<V>));
     return intersect(t, s);
   }
+#endif
 
   /**
    * A convenience function that returns a domain constructed from a

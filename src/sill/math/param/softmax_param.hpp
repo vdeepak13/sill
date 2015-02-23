@@ -1,10 +1,9 @@
-#ifndef SILL_SOFTMAX_HPP
-#define SILL_SOFTMAX_HPP
+#ifndef SILL_SOFTMAX_PARAM_HPP
+#define SILL_SOFTMAX_PARAM_HPP
 
 #include <sill/datastructure/hybrid_index.hpp>
 #include <sill/datastructure/sparse_index.hpp>
-
-#include <Eigen/Core>
+#include <sill/math/eigen/dynamic.hpp>
 
 #include <cmath>
 #include <iostream>
@@ -26,7 +25,7 @@ namespace sill {
    * \ingroup math_functions
    */
   template <typename T>
-  class softmax {
+  class softmax_param {
   public:
     // Public types
     //======================================================================
@@ -34,8 +33,8 @@ namespace sill {
     typedef T value_type;
 
     // Underlying representation
-    typedef Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> mat_type;
-    typedef Eigen::Matrix<T, Eigen::Dynamic, 1> vec_type;
+    typedef dynamic_matrix<T> mat_type;
+    typedef dynamic_vector<T> vec_type;
 
     // Constructors
     //======================================================================
@@ -43,21 +42,21 @@ namespace sill {
     /**
      * Creates an empty softmax. This does not represent a valid function.
      */
-    softmax() { }
+    softmax_param() { }
 
     /**
      * Creates a softmax function with the given number of labels and
      * features. Allocates the parameters, but does not initialize them
      * to any specific value.
      */
-    softmax(size_t num_labels, size_t num_features)
+    softmax_param(size_t num_labels, size_t num_features)
       : weight_(num_labels, num_features), bias_(num_labels) { }
 
     /**
      * Creates a softmax function with the given number of labels and
      * features, and initializes the parameters to the given value.
      */
-    softmax(size_t num_labels, size_t num_features, T init)
+    softmax_param(size_t num_labels, size_t num_features, T init)
       : weight_(num_labels, num_features), bias_(num_labels) {
       bias_.fill(init);
       weight_.fill(init);
@@ -66,7 +65,7 @@ namespace sill {
     /**
      * Creates a softmax function with the given parameters.
      */
-    softmax(const mat_type& weight, const vec_type& bias)
+    softmax_param(const mat_type& weight, const vec_type& bias)
       : weight_(weight), bias_(bias) {
       assert(weight.rows() == bias.rows());
     }
@@ -74,31 +73,37 @@ namespace sill {
     /**
      * Creates a softmax function with the given parameters.
      */
-    softmax(mat_type&& weight, vec_type&& bias) {
+    softmax_param(mat_type&& weight, vec_type&& bias) {
       weight_.swap(weight);
       bias_.swap(bias);
       assert(weight.rows() == bias.rows());
     }
 
     //! Copy constructor.
-    softmax(const softmax& other) = default;
+    softmax_param(const softmax_param& other) = default;
 
     //! Move constructor.
-    softmax(softmax&& other) {
+    softmax_param(softmax_param&& other) {
       swap(*this, other);
     }
 
     //! Assignment operator.
-    softmax& operator=(const softmax& other) = default;
+    softmax_param& operator=(const softmax_param& other) {
+      if (this != &other) {
+        weight_ = other.weight_;
+        bias_ = other.bias_;
+      }
+      return *this;
+    }
 
     //! Move assignment operator.
-    softmax& operator=(softmax&& other) {
+    softmax_param& operator=(softmax_param&& other) {
       swap(*this, other);
       return *this;
     }
     
     //! Swaps the content of two softmax functions.
-    friend void swap(softmax& f, softmax& g) {
+    friend void swap(softmax_param& f, softmax_param& g) {
       f.weight_.swap(g.weight_);
       f.bias_.swap(g.bias_);
     }
@@ -209,53 +214,53 @@ namespace sill {
       bias_.fill(0);
     }
 
-    softmax operator-() const {
-      return softmax(-weight_, -bias_);
+    softmax_param operator-() const {
+      return softmax_param(-weight_, -bias_);
     }
 
-    softmax& operator+=(const softmax& f) {
+    softmax_param& operator+=(const softmax_param& f) {
       weight_ += f.weight_;
       bias_ += f.bias_;
       return *this;
     }
 
-    softmax& operator-=(const softmax& f) {
+    softmax_param& operator-=(const softmax_param& f) {
       weight_ -= f.weight_;
       bias_ -= f.bias_;
       return *this;
     }
 
-    softmax& operator/=(const softmax& f) {
+    softmax_param& operator/=(const softmax_param& f) {
       weight_.array() /= f.weight_.array();
       bias_.array() /= f.bias_.array();
       return *this;
     }
 
-    softmax& operator*=(T a) {
+    softmax_param& operator*=(T a) {
       weight_ *= a;
       bias_ *= a;
       return *this;
     }
 
-    softmax& operator/=(T a) {
+    softmax_param& operator/=(T a) {
       weight_ /= a;
       bias_ /= a;
       return *this;
     }
 
-    friend void axpy(T a, const softmax& x, softmax& y) {
+    friend void axpy(T a, const softmax_param& x, softmax_param& y) {
       y.weight_ += a * x.weight_;
       y.bias_ += a * x.bias_;
     }
 
-    friend T dot(const softmax& f, const softmax& g) {
+    friend T dot(const softmax_param& f, const softmax_param& g) {
       return f.weight_.cwiseProduct(g.weight_).sum() + f.bias_.dot(g.bias_);
     }
 
     // LogLikelihoodDerivatives functions
     //=========================================================================
     void add_gradient(size_t label, const vec_type& x, T w,
-                      softmax& g) const {
+                      softmax_param& g) const {
       vec_type p = operator()(x);
       p[label] -= T(1);
       p *= -w;
@@ -266,7 +271,7 @@ namespace sill {
     template <typename Derived>
     void add_gradient(const Eigen::DenseBase<Derived>& plabel,
                       const vec_type& x, T w,
-                      softmax& g) const {
+                      softmax_param& g) const {
       vec_type p = operator()(x);
       p -= plabel.derived();
       p *= -w;
@@ -274,7 +279,7 @@ namespace sill {
       g.bias() += p;
     }
 
-    void add_hessian_diag(const vec_type& x, T w, softmax& h) const {
+    void add_hessian_diag(const vec_type& x, T w, softmax_param& h) const {
       vec_type v = operator()(x);
       v -= v.cwiseProduct(v);
       v *= -w;
@@ -283,7 +288,7 @@ namespace sill {
     }
 
     void add_gradient(size_t label, const sparse_index<T>& x, T w,
-                      softmax& g) const {
+                      softmax_param& g) const {
       vec_type p = operator()(x);
       p[label] -= T(1);
       p *= -w;
@@ -296,7 +301,7 @@ namespace sill {
     template <typename Derived>
     void add_gradient(const Eigen::DenseBase<Derived>& plabel,
                       const sparse_index<T>& x, T w,
-                      softmax& g) const {
+                      softmax_param& g) const {
       vec_type p = operator()(x);
       p -= plabel.derived();
       p *= -w;
@@ -306,7 +311,7 @@ namespace sill {
       g.bias() += p;
     }
 
-    void add_hessian_diag(const sparse_index<T>& x, T w, softmax& h) const {
+    void add_hessian_diag(const sparse_index<T>& x, T w, softmax_param& h) const {
       vec_type v = operator()(x);
       v -= v.cwiseProduct(v);
       v *= -w;
@@ -326,15 +331,15 @@ namespace sill {
     //! The bias vector.
     vec_type bias_;
     
-  }; // class softmax
+  }; // class softmax_param
   
   /**
    * Prints the softmax function parameters to a stream.
-   * \relates softmax
+   * \relates softmax_param
    */
   template <typename T>
-  std::ostream& operator<<(std::ostream& out, const softmax<T>& f) {
-    typename softmax<T>::mat_type a(f.num_labels(), f.num_features() + 1);
+  std::ostream& operator<<(std::ostream& out, const softmax_param<T>& f) {
+    typename softmax_param<T>::mat_type a(f.num_labels(), f.num_features() + 1);
     a << f.weight(), f.bias();
     out << a << std::endl;
     return out;

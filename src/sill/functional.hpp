@@ -69,7 +69,7 @@ namespace sill {
   // Unary functors
   //============================================================================
 
-
+#if 0
   //! A simple functor that updates a value using another functor.
   template <typename T, typename Functor>
   struct update : std::unary_function<T, T> {
@@ -84,6 +84,7 @@ namespace sill {
   make_update(Functor f) {
     return update<typename Functor::argument_type, Functor>(f);
   }
+#endif
 
   //! A simple functor that returns its input unchanged.
   template <typename T>

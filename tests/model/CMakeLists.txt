@@ -10,8 +10,8 @@ add_executable(factor_graph factor_graph.cpp)
 #add_executable(factor_graph_model factor_graph_model.cpp)
 #add_executable(factor_list_model factor_list_model.cpp)
 add_executable(junction_tree junction_tree.cpp)
-add_executable(learnt_decomposable learnt_decomposable.cpp)
-add_executable(learnt_junction_tree learnt_junction_tree.cpp)
+#add_executable(learnt_decomposable learnt_decomposable.cpp)
+#add_executable(learnt_junction_tree learnt_junction_tree.cpp)
 #add_executable(random random.cpp)
 
 add_test(bayesian_markov_graph bayesian_markov_graph)
@@ -21,5 +21,5 @@ add_test(decomposable decomposable) # this test is flaky
 add_test(factor_graph factor_graph)
 add_test(factor_graph_model factor_graph_model)
 add_test(junction_tree junction_tree)
-add_test(learnt_decomposable learnt_decomposable) # this test is flaky
-add_test(learnt_junction_tree learnt_junction_tree)
+#add_test(learnt_decomposable learnt_decomposable) # this test is flaky
+#add_test(learnt_junction_tree learnt_junction_tree)

@@ -12,6 +12,7 @@ endif(CMAKE_COMPILER_IS_GNUCXX)
 # set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -frepo")
 
 subdirs(
+  argument
   base
   datastructure
   factor
