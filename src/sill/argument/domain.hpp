@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
+#include <limits>
 #include <vector>
 
 namespace sill {
@@ -76,6 +77,9 @@ namespace sill {
     print_range(out, dom, '[', ',', ']');
     return out;
   }
+
+  // Set operations
+  //============================================================================
 
   /**
    * The concatenation of two domains.
@@ -187,6 +191,36 @@ namespace sill {
   template <typename Arg>
   bool superset(const domain<Arg>& a, const domain<Arg>& b) {
     return subset(b, a);
+  }
+
+  // Argument operations
+  //============================================================================
+
+  /**
+   * Returns the number of assignments for a collection of finite arguments.
+   */
+  template <typename Arg>
+  size_t finite_size(const domain<Arg>& dom) {
+    size_t size = 1;
+    for (Arg arg : dom) {
+      if (std::numeric_limits<size_t>::max() / arg->size() <= size) {
+        throw std::out_of_range("finite_size: possibly overflows size_t");
+      }
+      size *= arg->size();
+    }
+    return size;
+  }
+
+  /**
+   * Returns the vector dimensionality for a collection of vector arguments.
+   */
+  template <typename Arg>
+  size_t vector_size(const domain<Arg>& dom) {
+    size_t size = 0;
+    for (Arg arg : dom) {
+      size += arg->size();
+    }
+    return size;
   }
 
   /**

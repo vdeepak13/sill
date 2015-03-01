@@ -10,7 +10,7 @@
 
 namespace sill {
 
-  //! \addtogroup argument_type
+  //! \addtogroup argument_types
   //! @{
 
   /**

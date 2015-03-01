@@ -55,10 +55,10 @@ namespace sill {
     }
 
     //! Constructs canonical Gaussian parameters with the given log-multiplier.
-    canonical_gaussian_param(size_t size, T lm) {
+    canonical_gaussian_param(size_t size, T lm)
+      : lm(lm) {
       eta.setZero(size);
       lambda.setZero(size, size);
-      lm = lm;
     }
 
     //! Constructor for the given natural parameters.

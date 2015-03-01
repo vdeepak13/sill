@@ -1,9 +1,10 @@
 #define BOOST_TEST_MODULE canonical_array
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/finite_assignment_iterator.hpp>
-#include <sill/base/universe.hpp>
 #include <sill/factor/canonical_array.hpp>
+
+#include <sill/argument/finite_assignment_iterator.hpp>
+#include <sill/base/universe.hpp>
 #include <sill/factor/canonical_table.hpp>
 #include <sill/factor/probability_array.hpp>
 
@@ -18,34 +19,29 @@ namespace sill {
 
 using namespace sill;
 
-typedef canonical_array<double, 1> ca1_type;
-typedef canonical_array<double, 2> ca2_type;
-typedef ca1_type::param_type param1_type;
-typedef ca2_type::param_type param2_type;
-typedef logarithmic<double> logd;
-typedef probability_array<double, 1> pa1_type;
-typedef probability_array<double, 2> pa2_type;
+typedef carray1::param_type param1_type;
+typedef carray2::param_type param2_type;
 
 BOOST_AUTO_TEST_CASE(test_constructors) {
   universe u;
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  ca2_type b({x, y});
+  carray2 b({x, y});
   BOOST_CHECK(table_properties(b, {x, y}));
 
-  ca1_type d({x}, logd(3.0));
+  carray1 d({x}, logd(3.0));
   BOOST_CHECK(table_properties(d, {x}));
   BOOST_CHECK_CLOSE(d[0], std::log(3.0), 1e-8);
   BOOST_CHECK_CLOSE(d[1], std::log(3.0), 1e-8);
 
   param2_type params(2, 3);
   params.fill(5.0);
-  ca2_type f({x, y}, params);
+  carray2 f({x, y}, params);
   BOOST_CHECK(table_properties(f, {x, y}));
   BOOST_CHECK_EQUAL(boost::count(f, 5.0), 6);
 
-  ca1_type g({x}, {6.0, 6.5});
+  carray1 g({x}, {6.0, 6.5});
   BOOST_CHECK(table_properties(g, {x}));
   BOOST_CHECK_EQUAL(g[0], 6.0);
   BOOST_CHECK_EQUAL(g[1], 6.5);
@@ -56,10 +52,10 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  ca1_type f;
-  ca2_type g;
-  ca2_type h;
-  g = pa2_type({x, y}, logd(1.0, log_tag()));
+  carray1 f;
+  carray2 g;
+  carray2 h;
+  g = parray2({x, y}, logd(1.0, log_tag()));
   BOOST_CHECK(table_properties(g, {x, y}));
   BOOST_CHECK_EQUAL(g[0], 1.0);
 
@@ -74,13 +70,13 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   BOOST_CHECK_EQUAL(g[0], 2.0);
   BOOST_CHECK_EQUAL(h[0], 1.0);
 
-  probability_array<double, 1> pa({x}, {0.5, 0.7});
+  parray1 pa({x}, {0.5, 0.7});
   f = pa;
   BOOST_CHECK(table_properties(f, {x}));
   BOOST_CHECK_CLOSE(f[0], std::log(0.5), 1e-8);
   BOOST_CHECK_CLOSE(f[1], std::log(0.7), 1e-8);
 
-  canonical_table<> ct({y}, {0.1, 0.2, 0.3});
+  ctable ct({y}, {0.1, 0.2, 0.3});
   f = ct;
   BOOST_CHECK(table_properties(f, {y}));
   BOOST_CHECK_EQUAL(f[0], 0.1);
@@ -94,7 +90,7 @@ BOOST_AUTO_TEST_CASE(test_indexing) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
   
-  ca2_type f({x, y});
+  carray2 f({x, y});
   std::iota(f.begin(), f.end(), 1);
   BOOST_CHECK_CLOSE(f(finite_index{0,0}).lv, 1.0, 1e-8);
   BOOST_CHECK_CLOSE(f(finite_index{1,0}).lv, 2.0, 1e-8);
@@ -132,9 +128,9 @@ BOOST_AUTO_TEST_CASE(test_operators) {
   finite_variable* y = u.new_finite_variable("y", 2);
   finite_variable* z = u.new_finite_variable("z", 3);
 
-  ca2_type f({x, y}, {0, 1, 2, 3});
-  ca1_type g({y}, {3, 4});
-  ca2_type h;
+  carray2 f({x, y}, {0, 1, 2, 3});
+  carray1 g({y}, {3, 4});
+  carray2 h;
   h = f * g;
   BOOST_CHECK(table_properties(h, {x, y}));
   for (const finite_assignment& a : assignments({x, y})) {
@@ -201,8 +197,8 @@ BOOST_AUTO_TEST_CASE(test_operators) {
     BOOST_CHECK_CLOSE(h.log(a), 2.0 * f.log(a), 1e-8);
   }
   
-  ca2_type f1({x, y}, {0, 1, 2, 3});
-  ca2_type f2({x, y}, {-2, 3, 0, 0});
+  carray2 f1({x, y}, {0, 1, 2, 3});
+  carray2 f2({x, y}, {-2, 3, 0, 0});
   std::vector<double> fmax = {0, 3, 2, 3};
   std::vector<double> fmin = {-2, 1, 0, 0};
 
@@ -226,8 +222,8 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  ca2_type f({x, y}, {0, 1, 2, 3, 5, 6});
-  ca1_type h;
+  carray2 f({x, y}, {0, 1, 2, 3, 5, 6});
+  carray1 h;
   finite_assignment a;
 
   std::vector<double> hmax = {1, 3, 6};
@@ -249,9 +245,9 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
   BOOST_CHECK_EQUAL(a[x], 0);
   BOOST_CHECK_EQUAL(a[y], 0);
 
-  pa2_type pxy({x, y}, {1.1, 0.5, 0.1, 0.2, 0.4, 0.0});
-  pa1_type py({y}, {1.6, 0.3, 0.4});
-  ca2_type g(pxy);
+  parray2 pxy({x, y}, {1.1, 0.5, 0.1, 0.2, 0.4, 0.0});
+  parray1 py({y}, {1.6, 0.3, 0.4});
+  carray2 g(pxy);
   h = g.marginal({y});
   BOOST_CHECK(table_properties(h, {y}));
   for (size_t i = 0; i < 3; ++i) {
@@ -272,8 +268,8 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  ca2_type f({x, y}, {0, 1, 2, 3, 5, 6});
-  ca1_type h = f.restrict({{x, 1}});
+  carray2 f({x, y}, {0, 1, 2, 3, 5, 6});
+  carray1 h = f.restrict({{x, 1}});
   std::vector<double> fr = {1, 3, 6};
   BOOST_CHECK(table_properties(h, {y}));
   BOOST_CHECK(boost::equal(h, fr));
@@ -285,11 +281,11 @@ BOOST_AUTO_TEST_CASE(test_entropy) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 2);
 
-  pa2_type pxy({x, y}, {0.1, 0.2, 0.3, 0.4});
-  pa2_type qxy({x, y}, {0.4*0.3, 0.6*0.3, 0.4*0.7, 0.6*0.7});
-  ca2_type p(pxy);
-  ca2_type q(qxy);
-  ca2_type m = (p+q) / logd(2);
+  parray2 pxy({x, y}, {0.1, 0.2, 0.3, 0.4});
+  parray2 qxy({x, y}, {0.4*0.3, 0.6*0.3, 0.4*0.7, 0.6*0.7});
+  carray2 p(pxy);
+  carray2 q(qxy);
+  carray2 m = (p+q) / logd(2);
   double hpxy = -(0.1*log(0.1) + 0.2*log(0.2) + 0.3*log(0.3) + 0.4*log(0.4));
   double hpx = -(0.4*log(0.4) + 0.6*log(0.6));
   double hpy = -(0.3*log(0.3) + 0.7*log(0.7));

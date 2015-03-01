@@ -1,15 +1,13 @@
-#ifndef SILL_TABLE_BASE_HPP
-#define SILL_TABLE_BASE_HPP
+#ifndef SILL_TABLE_FACTOR_HPP
+#define SILL_TABLE_FACTOR_HPP
 
-#include <sill/base/finite_assignment.hpp>
+#include <sill/argument/domain.hpp>
+#include <sill/argument/finite_assignment.hpp>
 #include <sill/datastructure/table.hpp>
 #include <sill/factor/base/factor.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <algorithm>
-#include <map>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
@@ -24,24 +22,26 @@ namespace sill {
    * \see canonical_table, probability_table, hybrid
    */
   template <typename T>
-  class table_base : public factor {
+  class table_factor : public factor {
   public:
     // Range types
     typedef T*       iterator;
     typedef const T* const_iterator;
     typedef T        value_type;
 
+    // Finite domain
+    typedef domain<finite_variable*> domain_type;
+
     // Constructors
     //==========================================================================
 
     //! Default constructor. Creates an empty table factor.
-    table_base() { }
+    table_factor() { }
 
     //! Creates a factor with the given finite arguments and parameters
-    table_base(const finite_var_vector& args, const table<T>& param)
+    table_factor(const domain_type& args, const table<T>& param)
       : finite_args_(args),
-        param_(param),
-        args_(args.begin(), args.end()) {
+        param_(param) {
       check_param();
     }
 
@@ -56,8 +56,6 @@ namespace sill {
     //! Deserializes members.
     void load(iarchive& ar) {
       ar >> finite_args_ >> param_;
-      args_.clear();
-      args_.insert(finite_args_.begin(), finite_args_.end());
       check_param();
     }
 
@@ -65,11 +63,9 @@ namespace sill {
      * Resets the content of this factor to the given sequence of arguments.
      * If the table size changes, the table elements become invalidated.
      */
-    void reset(const finite_var_vector& args) {
+    void reset(const domain_type& args = domain_type()) {
       if (empty() || finite_args_ != args) {
         finite_args_ = args;
-        args_.clear();
-        args_.insert(args.begin(), args.end());
         finite_index shape(args.size());
         for (size_t i = 0; i < args.size(); ++i) {
           shape[i] = args[i]->size();
@@ -82,7 +78,7 @@ namespace sill {
     //==========================================================================
 
     //! Returns the finite arguments of this factor.
-    const finite_var_vector& finite_args() const {
+    const domain_type& finite_args() const {
       return finite_args_;
     }
 
@@ -208,10 +204,10 @@ namespace sill {
      * over in a non-linear fashion. The vector vars are the arguments
      * of the table that is iterated over in a linear fashion.
      */
-    finite_index dim_map(const finite_var_vector& vars, bool strict = true) const {
+    finite_index dim_map(const domain_type& vars, bool strict = true) const {
       finite_index map(arity(), std::numeric_limits<size_t>::max());
       for(size_t i = 0; i < map.size(); i++) {
-        finite_var_vector::const_iterator it = 
+        domain_type::const_iterator it = 
           std::find(vars.begin(), vars.end(), finite_args_[i]);
         if (it != vars.end()) {
           map[i] = it - vars.begin();
@@ -227,9 +223,8 @@ namespace sill {
      * in place.
      */
     void subst_args(const finite_var_map& var_map) {
-      args_ = subst_vars(args_, var_map);
-      foreach (finite_variable*& var, finite_args_) {
-        finite_variable* new_var = safe_get(var_map, var);
+      for (finite_variable*& var : finite_args_) {
+        finite_variable* new_var = var_map.at(var);
         if (!var->type_compatible(new_var)) {
           throw std::invalid_argument(
             "subst_args: " + var->str() + " and " + new_var->str() +
@@ -263,7 +258,7 @@ namespace sill {
      * f must not introduce any new arguments into this factor.
      */
     template <typename Op>
-    void join_inplace(const table_base& f, Op op) {
+    void join_inplace(const table_factor& f, Op op) {
       if (finite_args_ == f.finite_args_) {
         param_.transform(f.param_, op);
       } else {
@@ -277,7 +272,7 @@ namespace sill {
      * The two factors must have the same argument vectors.
      */
     template <typename Op>
-    void transform_inplace(const table_base& f, Op op) {
+    void transform_inplace(const table_factor& f, Op op) {
       assert(finite_args_ == f.finite_args_);
       param_.transform(f.param_, op);
     }
@@ -289,10 +284,9 @@ namespace sill {
      * avoids reallocation if the target argument vector has not changed.
      */
     template <typename Op>
-    void aggregate(const finite_domain& retained, T init, Op op,
-                   table_base& result) const {
-      finite_domain new_args = set_intersect(args_, retained);
-      result.reset(make_vector(new_args));
+    void aggregate(const domain_type& retain, T init, Op op,
+                   table_factor& result) const {
+      result.reset(retain);
       result.param_.fill(init);
       finite_index result_map = result.dim_map(finite_args_);
       table_aggregate<T, T, Op>(result.param_, param_, result_map, op)();
@@ -304,9 +298,9 @@ namespace sill {
      * strongly typed, i.e., we could accidentally restrict a probability_table
      * and store the result in a canonical_table or vice versa.
      */
-    void restrict(const finite_assignment& a, table_base& result) const {
-      finite_var_vector new_vars;
-      foreach (finite_variable* v, finite_args_) {
+    void restrict(const finite_assignment& a, table_factor& result) const {
+      domain_type new_vars;
+      for (finite_variable* v : finite_args_) {
         if (!a.count(v)) { new_vars.push_back(v); }
       }
       result.reset(new_vars);
@@ -324,26 +318,21 @@ namespace sill {
     /**
      * Implementation of the swap function (not type-safe).
      */
-    void swap(table_base& other) {
+    void base_swap(table_factor& other) {
       if (this != &other) {
         using std::swap;
-        swap(args_, other.args_);
         swap(finite_args_, other.finite_args_);
         swap(param_, other.param_);
       }
     }
 
     //! The sequence of arguments of this factor
-    finite_var_vector finite_args_;
+    domain_type finite_args_;
 
     //! The canonical parameters of this factor
     table<T> param_;
 
-    //! The argument set of this factor.
-    //! \deprecated This will be removed in favor of sequential domains
-    finite_domain args_;
-
-  }; // class table_base
+  }; // class table_factor
 
 
   // Utility functions
@@ -354,13 +343,13 @@ namespace sill {
    * The resulting factor contains the union of f's and g's argument sets.
    */
   template <typename Result, typename T, typename Op>
-  Result join(const table_base<T>& f, const table_base<T>& g, Op op) {
+  Result join(const table_factor<T>& f, const table_factor<T>& g, Op op) {
     if (f.finite_args() == g.finite_args()) {
       Result result(f.finite_args());
       std::transform(f.begin(), f.end(), g.begin(), result.begin(), op);
       return result;
     } else {
-      Result result(set_union(f.finite_args(), g.finite_args()));
+      Result result(f.finite_args() | g.finite_args());
       finite_index f_map = f.dim_map(result.finite_args());
       finite_index g_map = g.dim_map(result.finite_args());
       table_join<T, T, Op>(result.param(), f.param(), g.param(),
@@ -374,7 +363,7 @@ namespace sill {
    * and returns the result.
    */
   template <typename Result, typename T, typename Op>
-  Result transform(const table_base<T>& f, Op op) {
+  Result transform(const table_factor<T>& f, Op op) {
     Result result(f.finite_args());
     std::transform(f.begin(), f.end(), result.begin(), op);
     return result;
@@ -385,7 +374,7 @@ namespace sill {
    * and returns the result. The two factors must have the same argument vectors.
    */
   template <typename Result, typename T, typename Op>
-  Result transform(const table_base<T>& f, const table_base<T>& g, Op op) {
+  Result transform(const table_factor<T>& f, const table_factor<T>& g, Op op) {
     assert(f.finite_args() == g.finite_args());
     Result result(f.finite_args());
     std::transform(f.begin(), f.end(), g.begin(), result.begin(), op);
@@ -397,8 +386,8 @@ namespace sill {
    * and accumulates the result using another operation.
    */
   template <typename T, typename JoinOp, typename AggOp>
-  T transform_accumulate(const table_base<T>& f,
-                         const table_base<T>& g,
+  T transform_accumulate(const table_factor<T>& f,
+                         const table_factor<T>& g,
                          JoinOp join_op,
                          AggOp agg_op) {
     assert(f.finite_args() == g.finite_args());
@@ -406,7 +395,5 @@ namespace sill {
   }
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

@@ -1,37 +1,44 @@
-#ifndef SILL_MOMENT_GAUSSIAN_FN_BUILDER_HPP
-#define SILL_MOMENT_GAUSSIAN_FN_BUILDER_HPP
+#ifndef SILL_MOMENT_GAUSSIAN_BUILDER_HPP
+#define SILL_MOMENT_GAUSSIAN_BUILDER_HPP
 
 #include <sill/factor/random/alternating_generator.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
-#include <sill/factor/random/functional.hpp>
 
 #include <boost/program_options.hpp>
 
-#include <sill/macros_def.hpp>
+#include <functional>
 
 namespace sill {
 
   /**
-   * A class that is able to parse the parameters of moment_gaussian
-   * generator from Boost Program Options and return factor functors
-   * that generate random moment_gaussian factors according to these parameters.
+   * A class that parses the parameters of moment_gaussian generator from
+   * Boost Program Options and returns an object that can generate random
+   * moment_gaussian factors according to these parameters.
    * 
    * To use this class, first call add_options to register options
    * within the given description. After argv is parsed, use can invoke
-   * marginal_fn(), and conditional_fn() to retrieve the functors
-   * corresponding to the specified parameters.
+   * marginal(), and conditional() to retrieve the functors for the
+   * specified parameters.
    * 
+   * \tparam the real type of the moment_gaussian factor
    * \ingroup factor_random
    */
-  class moment_gaussian_fn_builder {
+  template <typename T>
+  class moment_gaussian_builder {
   public:
-    moment_gaussian_fn_builder() { }
+    //! The factor domain_type.
+    typedef domain<vector_variable*> domain_type;
+
+    //! The base generator type.
+    typedef moment_gaussian_generator<T> generator_type;
+
+    moment_gaussian_builder() { }
 
     /**
      * Add options to the given Options Description.
      *
      * @param opt_prefix Prefix added to command line option names.
-     *                   This is useful when using multiple functor instances.
+     *                   This is useful when using multiple builder instances.
      */
     void add_options(boost::program_options::options_description& desc,
                      const std::string& opt_prefix = "") {
@@ -42,90 +49,86 @@ namespace sill {
              + "options");
       sub_desc.add_options()
         ((opt_prefix + "period").c_str(),
-         po::value<size_t>(&period)->default_value(0),
+         po::value<size_t>(&period_)->default_value(0),
          "Alternation period. If 0, only the default is used.");
-      add_options(sub_desc, opt_prefix, def);
-      add_options(sub_desc, opt_prefix + "alt_", alt);
+      add_options(sub_desc, opt_prefix, def_);
+      add_options(sub_desc, opt_prefix + "alt_", alt_);
       desc.add(sub_desc);
     }
     
     /**
      * Returns a functor that generates random marginals according to the
      * parameters specified by the parsed Boost program options.
-     * \param rng The random number generator used to generate the marginals.
+     * \param rng The underlying random number generator
      */
     template <typename RandomNumberGenerator>
-    marginal_moment_gaussian_fn
-    marginal_fn(RandomNumberGenerator& rng) const {
+    std::function<moment_gaussian<T>(const domain_type&)>
+    marginal(RandomNumberGenerator& rng) const {
+      using namespace std::placedholders;
       if (period == 0) {
-        // regular generator
-        moment_gaussian_generator gen(def);
-        return sill::marginal_fn(gen, rng);
+        generator_type gen(def_);
+        return std::bind(gen, _1, std::ref(rng));
       } else {
-        // alternating generator
-        moment_gaussian_generator gen1(def);
-        moment_gaussian_generator gen2(alt);
-        return sill::marginal_fn(make_alternating_generator(gen1, gen2, period), rng);
+        alternating_generator<generator_type> gen(def_, alt_, period_);
+        return std::bind(gen, _1, std::ref(rng));
       }
     }
 
     /**
      * Returns a functor that generates random conditionals according to the
      * parameters specified by the parsed Boost program options.
-     * \param rng 
+     * \param rng The underlying random number generator
      */
     template <typename RandomNumberGenerator>
-    conditional_moment_gaussian_fn
-    conditional_fn(RandomNumberGenerator& rng) const {
+    std::function<moment_gaussian<T>(const domain_type&, const domain_type&)>
+    conditional(RandomNumberGenerator& rng) const {
+      using namespace std::placedholders;
       if (period == 0) {
-        // regular generator
-        moment_gaussian_generator gen(def);
-        return sill::conditional_fn(gen, rng);
+        generator_type gen(def_);
+        return std::bind(gen, _1, _2, std::ref(rng));
       } else {
-        // alternating generator
-        moment_gaussian_generator gen1(def);
-        moment_gaussian_generator gen2(alt);
-        return sill::conditional_fn(make_alternating_generator(gen1, gen2, period), rng);
+        alternating_generator<generator_type> gen(def_, alt_, period_);
+        return std::bind(gen, _1, _2, std::ref(rng));
       }
     }
 
   private:
     //! Parameters that can be specified on the command line
-    typedef moment_gaussian_generator::param_type param_type;
+    typedef typename moment_gaussian_generator<T>::param_type param_type;
 
     void add_options(boost::program_options::options_description& desc,
                      const std::string& opt_prefix,
-                     param_type& params) {
+                     param_type& param) {
       namespace po = boost::program_options;
       desc.add_options()
         ((opt_prefix + "mean_lower").c_str(),
-         po::value<double>(&(params.mean_lower))->default_value(-1.0),
+         po::value<double>(&(param.mean_lower))->default_value(-1.0),
          "Each element of the mean is chosen from Uniform[mean_lower,mean_upper].")
         ((opt_prefix + "mean_upper").c_str(),
-         po::value<double>(&(params.mean_upper))->default_value(1.0),
+         po::value<double>(&(param.mean_upper))->default_value(1.0),
          "Each element of the mean is chosen from Uniform[mean_lower,mean_upper].")
         ((opt_prefix + "variance").c_str(),
-         po::value<double>(&(params.variance))->default_value(1.0),
+         po::value<double>(&(param.variance))->default_value(1.0),
          "Set the variance of each variable to this value. (variance > 0)")
         ((opt_prefix + "correlation").c_str(),
-         po::value<double>(&(params.correlation))->default_value(.3),
+         po::value<double>(&(param.correlation))->default_value(.3),
          "Set the correlation of each pair of variables. (-1 < correlation < 1)")
         ((opt_prefix + "coeff_lower").c_str(),
-         po::value<double>(&(params.coeff_lower))->default_value(-1.0),
+         po::value<double>(&(param.coeff_lower))->default_value(-1.0),
          "Each element of the coefficient matrix C is chosen from Uniform[coef_lower,coeff_upper].")
         ((opt_prefix + "coeff_upper").c_str(),
-         po::value<double>(&(params.coeff_upper))->default_value(1.0),
+         po::value<double>(&(param.coeff_upper))->default_value(1.0),
          "Each element of the coefficient matrix C is chosen from Uniform[coef_lower,coeff_upper].");        
       desc.add(desc);
     }
 
   private:
-    size_t period;
-    param_type def;
-    param_type alt;
+    size_t period_;
+    param_type def_;
+    param_type alt_;
 
     friend std::ostream&
-    operator<<(std::ostream& out, const moment_gaussian_fn_builder& b) {
+    operator<<(std::ostream& out, const moment_gaussian_builder& b) {
       out << b.period << " ";
       if (b.period == 0) {
         out << "(" << b.def << ")";
@@ -135,10 +138,8 @@ namespace sill {
       return out;
     }
 
-  }; // class moment_gaussian_fn_builder
+  }; // class moment_gaussian_builder
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

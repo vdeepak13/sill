@@ -5,7 +5,7 @@
 #include <sill/base/finite_variable.hpp>
 #include <sill/base/vector_variable.hpp>
 #include <sill/base/process.hpp>
-#include <sill/base/finite_assignment_iterator.hpp>
+#include <sill/argument/finite_assignment_iterator.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <sill/macros_def.hpp>

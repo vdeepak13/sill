@@ -1,9 +1,7 @@
 #ifndef SILL_ALTERNATING_GENERATOR_HPP
 #define SILL_ALTERNATING_GENERATOR_HPP
 
-#include <boost/random/uniform_int.hpp>
-
-#include <sill/macros_def.hpp>
+#include <sill/global.hpp>
 
 namespace sill {
 
@@ -27,25 +25,25 @@ namespace sill {
     typedef typename Generator::param_type  gen_param_type;
 
     struct param_type {
-      gen_param_type def_params;
-      gen_param_type alt_params;
+      gen_param_type def_param;
+      gen_param_type alt_param;
       size_t period;
 
       param_type()
         : period(2) { }
       
-      param_type(const gen_param_type& def_params,
-                 const gen_param_type& alt_params,
+      param_type(const gen_param_type& def_param,
+                 const gen_param_type& alt_param,
                  size_t period)
-        : def_params(def_params),
-          alt_params(alt_params),
+        : def_param(def_param),
+          alt_param(alt_param),
           period(period) {
         assert(period > 0);
       }
 
       friend std::ostream& operator<<(std::ostream& out, const param_type& p) {
-        out << "[" << p.def_params
-            << ", " << p.alt_params
+        out << "[" << p.def_param
+            << ", " << p.alt_param
             << ", " << p.period << "]";
         return out;
       }
@@ -62,17 +60,17 @@ namespace sill {
 
     //! Constructs an alternating generator using the parameter sets for
     //! the default and alternate base generators.
-    alternating_generator(const gen_param_type& def_params,
-                          const gen_param_type& alt_params,
+    alternating_generator(const gen_param_type& def_param,
+                          const gen_param_type& alt_param,
                           size_t period = 2)
-      : def_gen(def_params), alt_gen(alt_params), period(period), count(0) { 
+      : def_gen(def_param), alt_gen(alt_param), period(period), count(0) { 
       assert(period > 0);
     }
 
     //! Constructs an alternating generator using the parameter set.
     explicit alternating_generator(const param_type& params)
-      : def_gen(params.def_params),
-        alt_gen(params.alt_params), 
+      : def_gen(params.def_param),
+        alt_gen(params.alt_param), 
         period(params.period),
         count(0) { 
       assert(period > 0);
@@ -113,8 +111,8 @@ namespace sill {
     void param(const param_type& params) {
       assert(params.period > 0);
       period = params.period;
-      def_gen.param(params.def_params);
-      alt_gen.param(params.alt_params);
+      def_gen.param(params.def_param);
+      alt_gen.param(params.alt_param);
     }
 
   private:
@@ -124,17 +122,21 @@ namespace sill {
 
   }; // class alternating_generator
 
-  //! Prints the parameters of this generator to an output stream
-  //! \relates alternating_generator
+  /**
+   * Prints the parameters of this generator to an output stream.
+   * \relates alternating_generator
+   */
   template <typename Generator>
-  inline std::ostream&
+  std::ostream&
   operator<<(std::ostream& out, const alternating_generator<Generator>& gen) {
     out << gen.param();
     return out;
   }
 
-  //! Creates an alternating generator using two base generators
-  //! \relates alternating_generator
+  /**
+   * Creates an alternating generator using two base generators.
+   * \relates alternating_generator
+   */
   template <typename Generator>
   alternating_generator<Generator>
   make_alternating_generator(const Generator& gen1,
@@ -144,7 +146,5 @@ namespace sill {
   }
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

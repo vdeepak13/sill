@@ -556,6 +556,12 @@ namespace sill {
 
   }; // class canonical_gaussian
   
+  /**
+   * A canonical_gaussian factor using double precision.
+   * \relates canonical_gaussian
+   */
+  typedef canonical_gaussian<double> cgaussian;
+  
   // Common operations
   //============================================================================
 
@@ -640,6 +646,7 @@ namespace sill {
   /**
    * Returns an object that can compute the parameters corresponding to
    * the marginal of a canonical Gaussian over a subset of arguments.
+   * Initializes the arguments of the result.
    */
   template <typename T>
   canonical_gaussian_marginal<T>
@@ -653,6 +660,7 @@ namespace sill {
   /**
    * Returns an object that can compute the parameters corresponding to
    * the maximum of a canonical Gaussian over a subset of arguments.
+   * Initializes the arguments of the result.
    */
   template <typename T>
   canonical_gaussian_marginal<T>
@@ -666,6 +674,7 @@ namespace sill {
   /**
    * Returns an object that can compute the parameters corresponding to
    * restricting a canonical Gaussian to the given assignment.
+   * Initializes the arguments of the result.
    */
   template <typename T>
   canonical_gaussian_restrict<T>

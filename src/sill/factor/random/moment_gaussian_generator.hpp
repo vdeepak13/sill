@@ -3,64 +3,63 @@
 
 #include <sill/factor/moment_gaussian.hpp>
 
+#include <algorithm>
+#include <functional>
+#include <random>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
 
   /**
-   * Functor for generating random moment_gaussian factors.
+   * Object for generating random moment_gaussian factors.
    * 
-   * The functor returns a moment Gaussian, where each element of the
-   * (conditional) mean is drawn from Uniform[mean_lower, mean_upper].
-   * The covariance matrix is such that the variances on the diagonal
-   * and the correlations between the variables are fixed.
+   * For each call to operator(), this functor returns a moment Gaussian,
+   * where each element of the (possibly conditionla) mean is drawn from
+   * Uniform[mean_lower, mean_upper]. The variances on the diagonal of
+   * the covariance and the correlations between the variables are fixed.
    *
    * For conditional linear Gaussians, each entry of the coefficient
    * matrix is drawn from Uniform[coeff_lower, coeff_upper].
    *
+   * \tparam T the real type of the moment_gaussian factor
+   *
    * \see RandomFactorGenerator
    * \ingroup factor_random
    */
+  template <typename T>
   class moment_gaussian_generator {
   public:
     // RandomFactorGenerator typedefs
-    typedef vector_domain   domain_type;
-    typedef moment_gaussian result_type;
+    typedef domain<vector_variable*> domain_type;
+    typedef moment_gaussian<T> result_type;
 
     struct param_type {
-      double mean_lower;
-      double mean_upper;
-      double variance;
-      double correlation;
-      double coeff_lower;
-      double coeff_upper;
+      T mean_lower;
+      T mean_upper;
+      T variance;
+      T correlation;
+      T coef_lower;
+      T coef_upper;
 
-      param_type()
-        : mean_lower(-1.0),
-          mean_upper(1.0),
-          variance(1.0),
-          correlation(0.3),
-          coeff_lower(-1.0),
-          coeff_upper(1.0) { }
-
-      param_type(double mean_lower,
-                 double mean_upper,
-                 double variance,
-                 double correlation,
-                 double coeff_lower,
-                 double coeff_upper)
+      explicit param_type(T mean_lower = T(-1),
+                          T mean_upper = T(+1),
+                          T variance = T(1),
+                          T correlation = T(0.3),
+                          T coef_lower = T(-1),
+                          T coef_upper = T(+1))
         : mean_lower(mean_lower),
           mean_upper(mean_upper),
           variance(variance),
           correlation(correlation),
-          coeff_lower(coeff_lower),
-          coeff_upper(coeff_upper) {
+          coef_lower(coef_lower),
+          coef_upper(coef_upper) {
         check();
       }
 
       void check() const {
         assert(variance > 0.0);
-        assert(fabs(correlation) < 1.0);
+        assert(std::abs(correlation) < 1.0);
       }
 
       friend std::ostream& operator<<(std::ostream& out, const param_type& p) {
@@ -68,97 +67,104 @@ namespace sill {
             << p.mean_upper << " "
             << p.variance << " "
             << p.correlation << " "
-            << p.coeff_lower << " "
-            << p.coeff_upper;
+            << p.coef_lower << " "
+            << p.coef_upper;
         return out;
       }
     }; // struct param_type
 
     //! Constructs a generator with the given parameters
-    explicit moment_gaussian_generator(double mean_lower = -1.0,
-                                       double mean_upper = +1.0,
-                                       double variance = 1.0,
-                                       double correlation = 0.3,
-                                       double coeff_lower = -1.0,
-                                       double coeff_upper = +1.0)
-      : params(mean_lower, mean_upper, variance, correlation, 
-               coeff_lower, coeff_upper) { }
+    explicit moment_gaussian_generator(T mean_lower = T(-1),
+                                       T mean_upper = T(+1),
+                                       T variance = T(1),
+                                       T correlation = T(0.3),
+                                       T coef_lower = T(-1),
+                                       T coef_upper = T(+1))
+      : param_(mean_lower, mean_upper, variance, correlation, 
+               coef_lower, coef_upper) { }
     
     //! Constructs a generator with the given parameters
-    moment_gaussian_generator(const param_type& params)
-      : params(params) { }
+    moment_gaussian_generator(const param_type& param)
+      : param_(param) { }
 
     //! Generates a marginal distribution p(args) using the stored parameters
     template <typename RandomNumberGenerator>
-    moment_gaussian operator()(const vector_domain& args,
-                               RandomNumberGenerator& rng) {
-      moment_gaussian result(args);
-      choose_moments(rng, result);
+    moment_gaussian<T> operator()(const domain_type& args,
+                                  RandomNumberGenerator& rng) {
+      moment_gaussian<T> result(args);
+      generate_moments(rng, result.param().mean, result.param().cov);
       return result;
     }
 
     //! Generates a conditional distribution p(head | tail) using the stored
     //! parameters.
     template <typename RandomNumberGenerator>
-    moment_gaussian operator()(const vector_domain& head,
-                               const vector_domain& tail,
-                               RandomNumberGenerator& rng) {
-      moment_gaussian result(make_vector(head), make_vector(tail));
-      choose_moments(rng, result);
-      choose_coeffs(rng, result);
+    moment_gaussian<T> operator()(const domain_type& head,
+                                  const domain_type& tail,
+                                  RandomNumberGenerator& rng) {
+      moment_gaussian<T> result(head, tail);
+      generate_moments(rng, result.param().mean, result.param().cov);
+      generate_coeffs(rng, result.param().coef);
       return result;
     }
 
     //! Returns the parameter set associated with this generator
     const param_type& param() const {
-      return params;
+      return param_;
     }
 
     //! Sets the parameter set associated with this generator
-    void param(const param_type& params) {
-      params.check();
-      this->params = params;
+    void param(const param_type& param) {
+      param.check();
+      param_ = param;
     }
 
   private:
-    param_type params;
+    param_type param_;
 
-    template <typename RandomNumberGenerator>
-    void choose_moments(RandomNumberGenerator& rng, moment_gaussian& mg) {
-      boost::uniform_real<double> unif(params.mean_lower, params.mean_upper);
-      foreach(double& val, mg.mean()) {
-        val = unif(rng);
+    typedef dynamic_vector<T> vec_type;
+    typedef dynamic_matrix<T> mat_type;
+
+    template <typename RNG>
+    void generate_moments(RNG& rng, vec_type& mean, mat_type& cov) const {
+      std::uniform_real_distribution<T> unif(param_.mean_lower,
+                                             param_.mean_upper);
+      size_t n = mean.size();
+      for (size_t i = 0; i < n; ++i) {
+        mean[i] = unif(rng);
       }
 
-      double covariance = params.correlation * params.variance;
-      mat& cov = mg.covariance();
+      T covariance = param_.correlation * param_.variance;
       cov.fill(covariance);
-      cov.diag().fill(params.variance);
-      if (mg.size_head() > 2 && covariance < 0.0) {
-        mat tmp;
-        if (!chol(tmp, cov)) {
-          const char* msg =
-            "moment_gaussian_generator: the correlation is too negative, "
-            "the resulting covariance matrix is not PSD.";
-          throw std::invalid_argument(msg);
+      cov.diagonal().fill(param_.variance);
+      if (n > 2 && covariance < T(0)) {
+        Eigen::LLT<mat_type> chol(cov);
+        if (chol.info() != Eigen::Success) {
+          throw std::invalid_argument(
+            "moment_gaussian_generator: the correlation is too negative; "
+            "the resulting covariance matrix is not PSD."
+          );
         }
       }
     }
 
-    template <typename RandomNumberGenerator>
-    void choose_coeffs(RandomNumberGenerator& rng, moment_gaussian& mg) {
-      boost::uniform_real<double> unif(params.coeff_lower, params.coeff_upper);
-      foreach(double& val, mg.coefficients()) {
-        val = unif(rng);
-      }
+    template <typename RNG>
+    void generate_coeffs(RNG& rng, mat_type& coef) const {
+      std::uniform_real_distribution<T> unif(param_.coef_lower,
+                                             param_.coef_upper);
+      std::generate(coef.data(), coef.data() + coef.size(),
+                    std::bind(unif, std::ref(rng)));
     }
 
   }; // class moment_gaussian_generator
 
-  //! Prints the parameters of this generator to an output stream
-  //! \relates moment_gaussian_generator
-  inline std::ostream&
-  operator<<(std::ostream& out, const moment_gaussian_generator& gen) {
+  /**
+   * Prints the parameters of this generator to an output stream
+   * \relates moment_gaussian_generator
+   */
+  template <typename T>
+  std::ostream&
+  operator<<(std::ostream& out, const moment_gaussian_generator<T>& gen) {
     out << gen.param();
     return out;
   }
