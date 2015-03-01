@@ -1,10 +1,11 @@
 #define BOOST_TEST_MODULE probability_array
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/finite_assignment_iterator.hpp>
+#include <sill/factor/probability_array.hpp>
+
+#include <sill/argument/finite_assignment_iterator.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/factor/canonical_array.hpp>
-#include <sill/factor/probability_array.hpp>
 #include <sill/factor/probability_table.hpp>
 
 #include <boost/range/algorithm.hpp>
@@ -18,31 +19,29 @@ namespace sill {
 
 using namespace sill;
 
-typedef probability_array<double, 1> pa1_type;
-typedef probability_array<double, 2> pa2_type;
-typedef pa1_type::param_type param1_type;
-typedef pa2_type::param_type param2_type;
+typedef parray1::param_type param1_type;
+typedef parray2::param_type param2_type;
 
 BOOST_AUTO_TEST_CASE(test_constructors) {
   universe u;
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  pa2_type b({x, y});
+  parray2 b({x, y});
   BOOST_CHECK(table_properties(b, {x, y}));
 
-  pa1_type d({x}, 3.0);
+  parray1 d({x}, 3.0);
   BOOST_CHECK(table_properties(d, {x}));
   BOOST_CHECK_CLOSE(d[0], 3.0, 1e-8);
   BOOST_CHECK_CLOSE(d[1], 3.0, 1e-8);
 
   param2_type params(2, 3);
   params.fill(5.0);
-  pa2_type f({x, y}, params);
+  parray2 f({x, y}, params);
   BOOST_CHECK(table_properties(f, {x, y}));
   BOOST_CHECK_EQUAL(boost::count(f, 5.0), 6);
 
-  pa1_type g({x}, {6.0, 6.5});
+  parray1 g({x}, {6.0, 6.5});
   BOOST_CHECK(table_properties(g, {x}));
   BOOST_CHECK_EQUAL(g[0], 6.0);
   BOOST_CHECK_EQUAL(g[1], 6.5);
@@ -53,10 +52,10 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  pa1_type f;
-  pa2_type g;
-  pa2_type h;
-  g = pa2_type({x, y}, 1.0);
+  parray1 f;
+  parray2 g;
+  parray2 h;
+  g = parray2({x, y}, 1.0);
   BOOST_CHECK(table_properties(g, {x, y}));
   BOOST_CHECK_EQUAL(g[0], 1.0);
 
@@ -71,13 +70,13 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   BOOST_CHECK_EQUAL(g[0], 2.0);
   BOOST_CHECK_EQUAL(h[0], 1.0);
 
-  canonical_array<double, 1> ca({x}, {0.5, 0.7});
+  carray1 ca({x}, {0.5, 0.7});
   f = ca;
   BOOST_CHECK(table_properties(f, {x}));
   BOOST_CHECK_CLOSE(f[0], std::exp(0.5), 1e-8);
   BOOST_CHECK_CLOSE(f[1], std::exp(0.7), 1e-8);
 
-  probability_table<> ct({y}, {0.1, 0.2, 0.3});
+  ptable ct({y}, {0.1, 0.2, 0.3});
   f = ct;
   BOOST_CHECK(table_properties(f, {y}));
   BOOST_CHECK_EQUAL(f[0], 0.1);
@@ -91,7 +90,7 @@ BOOST_AUTO_TEST_CASE(test_indexing) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
   
-  pa2_type f({x, y});
+  parray2 f({x, y});
   std::iota(f.begin(), f.end(), 1);
   BOOST_CHECK_CLOSE(f(finite_index{0,0}), 1.0, 1e-8);
   BOOST_CHECK_CLOSE(f(finite_index{1,0}), 2.0, 1e-8);
@@ -128,9 +127,9 @@ BOOST_AUTO_TEST_CASE(test_operators) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 2);
 
-  pa2_type f({x, y}, {0, 1, 2, 3});
-  pa1_type g({y}, {3, 4});
-  pa2_type h;
+  parray2 f({x, y}, {0, 1, 2, 3});
+  parray1 g({y}, {3, 4});
+  parray2 h;
   h = f * g;
   BOOST_CHECK(table_properties(h, {x, y}));
   for (const finite_assignment& a : assignments({x, y})) {
@@ -201,8 +200,8 @@ BOOST_AUTO_TEST_CASE(test_operators) {
     BOOST_CHECK_CLOSE(h(a), std::pow(f(a), 3.0), 1e-8);
   }
   
-  pa2_type f1({x, y}, {0, 1, 2, 3});
-  pa2_type f2({x, y}, {-2, 3, 0, 0});
+  parray2 f1({x, y}, {0, 1, 2, 3});
+  parray2 f2({x, y}, {-2, 3, 0, 0});
   std::vector<double> fmax = {0, 3, 2, 3};
   std::vector<double> fmin = {-2, 1, 0, 0};
 
@@ -226,8 +225,8 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  pa2_type f({x, y}, {0, 1, 2, 3, 5, 6});
-  pa1_type h;
+  parray2 f({x, y}, {0, 1, 2, 3, 5, 6});
+  parray1 h;
   finite_assignment a;
 
   std::vector<double> hmax = {1, 3, 6};
@@ -249,8 +248,8 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
   BOOST_CHECK_EQUAL(a[x], 0);
   BOOST_CHECK_EQUAL(a[y], 0);
 
-  pa2_type pxy({x, y}, {1.1, 0.5, 0.1, 0.2, 0.4, 0.0});
-  pa1_type py({y}, {1.6, 0.3, 0.4});
+  parray2 pxy({x, y}, {1.1, 0.5, 0.1, 0.2, 0.4, 0.0});
+  parray1 py({y}, {1.6, 0.3, 0.4});
   h = pxy.marginal({y});
   BOOST_CHECK(table_properties(h, {y}));
   for (size_t i = 0; i < 3; ++i) {
@@ -259,21 +258,21 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
   BOOST_CHECK_CLOSE(pxy.marginal(), 1.1+0.5+0.1+0.2+0.4, 1e-8);
   BOOST_CHECK_CLOSE(h.normalize().marginal(), 1.0, 1e-8);
 
-  pa1_type qx({x}, {0.4, 0.6});
-  pa1_type qy({y}, {0.2, 0.5, 0.3});
+  parray1 qx({x}, {0.4, 0.6});
+  parray1 qy({y}, {0.2, 0.5, 0.3});
 
-  pa1_type rx = product_marginal(pxy, qy, {x});
+  parray1 rx = product_marginal(pxy, qy, {x});
   BOOST_CHECK(table_properties(rx, {x}));
   BOOST_CHECK_CLOSE(rx[0], 1.1*0.2+0.1*0.5+0.4*0.3, 1e-8);
   BOOST_CHECK_CLOSE(rx[1], 0.5*0.2+0.2*0.5+0.0*0.3, 1e-8);
   
-  pa1_type ry = product_marginal(qx, pxy, {y});
+  parray1 ry = product_marginal(qx, pxy, {y});
   BOOST_CHECK(table_properties(ry, {y}));
   BOOST_CHECK_CLOSE(ry[0], 1.1*0.4 + 0.5*0.6, 1e-8);
   BOOST_CHECK_CLOSE(ry[1], 0.1*0.4 + 0.2*0.6, 1e-8);
   BOOST_CHECK_CLOSE(ry[2], 0.4*0.4 + 0.0*0.6, 1e-8);
 
-  pa1_type sx = product_marginal(pxy, qx, {x});
+  parray1 sx = product_marginal(pxy, qx, {x});
   BOOST_CHECK(table_properties(sx, {x}));
   BOOST_CHECK_CLOSE(sx[0], (1.1+0.1+0.4)*0.4, 1e-8);
   BOOST_CHECK_CLOSE(sx[1], (0.5+0.2+0.0)*0.6, 1e-8);
@@ -285,8 +284,8 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  pa2_type f({x, y}, {0, 1, 2, 3, 5, 6});
-  pa1_type h = f.restrict({{x, 1}});
+  parray2 f({x, y}, {0, 1, 2, 3, 5, 6});
+  parray1 h = f.restrict({{x, 1}});
   std::vector<double> fr = {1, 3, 6};
   BOOST_CHECK(table_properties(h, {y}));
   BOOST_CHECK(boost::equal(h, fr));
@@ -299,9 +298,9 @@ BOOST_AUTO_TEST_CASE(test_entropy) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 2);
 
-  pa2_type p({x, y}, {0.1, 0.2, 0.3, 0.4});
-  pa2_type q({x, y}, {0.4*0.3, 0.6*0.3, 0.4*0.7, 0.6*0.7});
-  pa2_type m = (p+q) / 2.0;
+  parray2 p({x, y}, {0.1, 0.2, 0.3, 0.4});
+  parray2 q({x, y}, {0.4*0.3, 0.6*0.3, 0.4*0.7, 0.6*0.7});
+  parray2 m = (p+q) / 2.0;
   double hpxy = -(0.1*log(0.1) + 0.2*log(0.2) + 0.3*log(0.3) + 0.4*log(0.4));
   double hpx = -(0.4*log(0.4) + 0.6*log(0.6));
   double hpy = -(0.3*log(0.3) + 0.7*log(0.7));

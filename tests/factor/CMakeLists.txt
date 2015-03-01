@@ -1,4 +1,4 @@
-#subdirs(random)
+subdirs(random)
 
 add_executable(array_factor array_factor.cpp)
 add_executable(canonical_array canonical_array.cpp)

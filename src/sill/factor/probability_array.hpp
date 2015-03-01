@@ -3,13 +3,12 @@
 
 #include <sill/global.hpp>
 #include <sill/functional.hpp>
-#include <sill/base/finite_assignment.hpp>
+#include <sill/argument/finite_assignment.hpp>
 #include <sill/base/finite_variable.hpp>
 #include <sill/factor/base/array_factor.hpp>
 #include <sill/functional/assign.hpp>
 #include <sill/functional/eigen.hpp>
 #include <sill/functional/entropy.hpp>
-#include <sill/learning/dataset/finite_dataset.hpp>
 
 #include <armadillo>
 #include <boost/function.hpp>
@@ -52,7 +51,6 @@ namespace sill {
     typedef T                                 result_type;
     typedef finite_variable                   variable_type;
     typedef array_domain<finite_variable*, N> domain_type;
-    typedef array_domain<finite_variable*, N> var_vector_type;
     typedef finite_assignment                 assignment_type;
     typedef typename base::array_type         param_type;
     
@@ -63,8 +61,8 @@ namespace sill {
     typedef probability_array probability_factor_type;
     
     // LearnableFactor types
-    typedef finite_dataset dataset_type;
-    typedef finite_record  record_type;
+    // typedef finite_dataset dataset_type;
+    // typedef finite_record  record_type;
 
     // Constructors and conversion operators
     //==========================================================================
@@ -114,7 +112,7 @@ namespace sill {
     
     //! Assigns a probability_table to this factor
     probability_array& operator=(const probability_table<T>& f) {
-      this->reset(f.arg_vector());
+      this->reset(f.arguments());
       assert(f.size() == this->size());
       std::copy(f.begin(), f.end(), this->begin());
       return *this;
@@ -135,11 +133,6 @@ namespace sill {
     
     // Accessors
     //==========================================================================
-    //! Returns the argument vector. Deprecated.
-    const var_vector_type& arg_vector() const {
-      return this->args_;
-    }
-    
     //! Returns the value of this factor for an assignment
     T operator()(const finite_assignment& a) const {
       return this->param(a);
@@ -581,6 +574,21 @@ namespace sill {
   }; // class probability_array
 
   /**
+   * A probability_array factor over a single argument using double precision.
+   * \relates probability_array
+   */
+  typedef probability_array<double, 1> parray1;
+
+  /**
+   * A probability_array factor over two arguments using double precision.
+   * \relates probability_array
+   */
+  typedef probability_array<double, 2> parray2;
+
+  // Input / output
+  //============================================================================
+
+  /**
    * Outputs a human-readable representation of the factor to the stream.
    * \relates probability_array
    */
@@ -590,6 +598,9 @@ namespace sill {
         << f.param() << std::endl;
     return out;
   }
+
+  // Join operation
+  //============================================================================
 
   /**
    * Multiplies two probability_array factors.

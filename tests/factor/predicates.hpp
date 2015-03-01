@@ -12,9 +12,8 @@
 // Checks the basic properties of finite table (and matrix) factors
 template <typename F>
 boost::test_tools::predicate_result
-table_properties(const F& f, const typename F::var_vector_type& vars) {
-  size_t n = 1;
-  for (sill::finite_variable* v : vars) { n *= v->size(); }
+table_properties(const F& f, const typename F::domain_type& vars) {
+  size_t n = finite_size(vars);
 
   if (f.empty()) {
     boost::test_tools::predicate_result result(false);
@@ -33,16 +32,10 @@ table_properties(const F& f, const typename F::var_vector_type& vars) {
                      << f.size() << " != " << n << "]";
     return result;
   }
-  if (f.arguments() != make_domain(vars)) {
+  if (f.arguments() != vars) {
     boost::test_tools::predicate_result result(false);
     result.message() << "Invalid factor domain ["
-                     << f.arguments() << " != " << make_domain(vars) << "]";
-    return result;
-  }
-  if (f.arg_vector() != vars) {
-    boost::test_tools::predicate_result result(false);
-    result.message() << "Invalid factor argument vector ["
-                     << f.arg_vector() << " != " << vars << "]";
+                     << f.arguments() << " != " << vars << "]";
     return result;
   }
   return true;

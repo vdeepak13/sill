@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE canonical_table
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/finite_assignment_iterator.hpp>
+#include <sill/argument/finite_assignment_iterator.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/factor/canonical_table.hpp>
 #include <sill/factor/probability_table.hpp>
@@ -17,43 +17,35 @@ namespace sill {
 
 using namespace sill;
 
-typedef canonical_table<double> ct_type;
-typedef canonical_table<double>::param_type param_type;
-typedef logarithmic<double> logd;
+typedef ctable::param_type param_type;
 
 BOOST_AUTO_TEST_CASE(test_constructors) {
   universe u;
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  ct_type a;
+  ctable a;
   BOOST_CHECK(a.empty());
   BOOST_CHECK(a.arguments().empty());
-  BOOST_CHECK(a.arg_vector().empty());
 
-  ct_type b({x, y});
+  ctable b({x, y});
   BOOST_CHECK(table_properties(b, {x, y}));
 
-  ct_type c(logd(2.0));
+  ctable c(logd(2.0));
   BOOST_CHECK(table_properties(c, {}));
   BOOST_CHECK_CLOSE(c[0], std::log(2.0), 1e-8);
   
-  ct_type d(make_vector(x), logd(3.0));
+  ctable d({x}, logd(3.0));
   BOOST_CHECK(table_properties(d, {x}));
   BOOST_CHECK_CLOSE(d[0], std::log(3.0), 1e-8);
   BOOST_CHECK_CLOSE(d[1], std::log(3.0), 1e-8);
 
-  ct_type e(make_domain(x), logd(4.0));
-  BOOST_CHECK(table_properties(e, {x}));
-  BOOST_CHECK_CLOSE(e[0], std::log(4.0), 1e-8);
-  BOOST_CHECK_CLOSE(e[1], std::log(4.0), 1e-8);
-  
   param_type params({2, 3}, 5.0);
-  ct_type f({x, y}, params);
+  ctable f({x, y}, params);
   BOOST_CHECK(table_properties(f, {x, y}));
   BOOST_CHECK_EQUAL(boost::count(f, 5.0), 6);
 
-  ct_type g({x}, {6.0, 6.5});
+  ctable g({x}, {6.0, 6.5});
   BOOST_CHECK(table_properties(g, {x}));
   BOOST_CHECK_EQUAL(g[0], 6.0);
   BOOST_CHECK_EQUAL(g[1], 6.5);
@@ -64,7 +56,7 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  ct_type f;
+  ctable f;
   f = logd(2.0);
   BOOST_CHECK(table_properties(f, {}));
   BOOST_CHECK_CLOSE(f[0], std::log(2.0), 1e-8);
@@ -76,13 +68,13 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   BOOST_CHECK(table_properties(f, {}));
   BOOST_CHECK_CLOSE(f[0], std::log(3.0), 1e-8);
   
-  probability_table<> pt({x}, {0.5, 0.7});
+  ptable pt({x}, {0.5, 0.7});
   f = pt;
   BOOST_CHECK(table_properties(f, {x}));
   BOOST_CHECK_CLOSE(f[0], std::log(0.5), 1e-8);
   BOOST_CHECK_CLOSE(f[1], std::log(0.7), 1e-8);
 
-  ct_type g({x, y});
+  ctable g({x, y});
   swap(f, g);
   BOOST_CHECK(table_properties(f, {x, y}));
   BOOST_CHECK(table_properties(g, {x}));
@@ -94,7 +86,7 @@ BOOST_AUTO_TEST_CASE(test_indexing) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
   
-  ct_type f({x, y});
+  ctable f({x, y});
   std::iota(f.begin(), f.end(), 1);
   BOOST_CHECK_CLOSE(f(finite_index{0,0}).lv, 1.0, 1e-8);
   BOOST_CHECK_CLOSE(f(finite_index{1,0}).lv, 2.0, 1e-8);
@@ -132,9 +124,9 @@ BOOST_AUTO_TEST_CASE(test_operators) {
   finite_variable* y = u.new_finite_variable("y", 2);
   finite_variable* z = u.new_finite_variable("z", 3);
 
-  ct_type f({x, y}, {0, 1, 2, 3});
-  ct_type g({y, z}, {1, 2, 3, 4, 5, 6});
-  ct_type h;
+  ctable f({x, y}, {0, 1, 2, 3});
+  ctable g({y, z}, {1, 2, 3, 4, 5, 6});
+  ctable h;
   h = f * g;
   BOOST_CHECK(table_properties(h, {x, y, z}));
   for (const finite_assignment& a : assignments({x, y, z})) {
@@ -201,8 +193,8 @@ BOOST_AUTO_TEST_CASE(test_operators) {
     BOOST_CHECK_CLOSE(h.log(a), 2.0 * f.log(a), 1e-8);
   }
   
-  ct_type f1({x, y}, {0, 1, 2, 3});
-  ct_type f2({x, y}, {-2, 3, 0, 0});
+  ctable f1({x, y}, {0, 1, 2, 3});
+  ctable f2({x, y}, {-2, 3, 0, 0});
   std::vector<double> fmax = {0, 3, 2, 3};
   std::vector<double> fmin = {-2, 1, 0, 0};
 
@@ -226,8 +218,8 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  ct_type f({x, y}, {0, 1, 2, 3, 5, 6});
-  ct_type h;
+  ctable f({x, y}, {0, 1, 2, 3, 5, 6});
+  ctable h;
   finite_assignment a;
 
   std::vector<double> hmax = {1, 3, 6};
@@ -251,7 +243,7 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
 
   double pxy[] = {1.1, 0.5, 0.1, 0.2, 0.4, 0.0};
   double py[] = {1.6, 0.3, 0.4};
-  ct_type g({x, y});
+  ctable g({x, y});
   std::transform(pxy, pxy + 6, g.begin(), logarithm<double>());
   h = g.marginal({y});
   BOOST_CHECK(table_properties(h, {y}));
@@ -268,8 +260,8 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 3);
 
-  ct_type f({x, y}, {0, 1, 2, 3, 5, 6});
-  ct_type h = f.restrict({{x, 1}});
+  ctable f({x, y}, {0, 1, 2, 3, 5, 6});
+  ctable h = f.restrict({{x, 1}});
   std::vector<double> fr = {1, 3, 6};
   BOOST_CHECK(table_properties(h, {y}));
   BOOST_CHECK(boost::equal(h, fr));
@@ -282,11 +274,11 @@ BOOST_AUTO_TEST_CASE(test_entropy) {
   finite_variable* x = u.new_finite_variable("x", 2);
   finite_variable* y = u.new_finite_variable("y", 2);
 
-  probability_table<> pxy({x, y}, {0.1, 0.2, 0.3, 0.4});
-  probability_table<> qxy({x, y}, {0.4*0.3, 0.6*0.3, 0.4*0.7, 0.6*0.7});
-  ct_type p(pxy);
-  ct_type q(qxy);
-  ct_type m = (p+q) / logd(2);
+  ptable pxy({x, y}, {0.1, 0.2, 0.3, 0.4});
+  ptable qxy({x, y}, {0.4*0.3, 0.6*0.3, 0.4*0.7, 0.6*0.7});
+  ctable p(pxy);
+  ctable q(qxy);
+  ctable m = (p+q) / logd(2);
   double hpxy = -(0.1*log(0.1) + 0.2*log(0.2) + 0.3*log(0.3) + 0.4*log(0.4));
   double hpx = -(0.4*log(0.4) + 0.6*log(0.6));
   double hpy = -(0.3*log(0.3) + 0.7*log(0.7));

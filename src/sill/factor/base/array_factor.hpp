@@ -2,7 +2,7 @@
 #define SILL_ARRAY_FACTOR_HPP
 
 #include <sill/argument/array_domain.hpp>
-#include <sill/base/finite_assignment.hpp>
+#include <sill/argument/finite_assignment.hpp>
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/factor/base/factor.hpp>
 #include <sill/functional/assign.hpp>
@@ -239,9 +239,9 @@ namespace sill {
      */
     size_t linear_index(const finite_assignment& a) const {
       if (N == 1) {
-        return safe_get(a, x());
+        return a.at(x());
       } else {
-        return safe_get(a, x()) + safe_get(a, y()) * param_.rows();
+        return a.at(x()) + a.at(y()) * param_.rows();
       }
     }
 
@@ -265,7 +265,7 @@ namespace sill {
      */
     void subst_args(const finite_var_map& var_map) {
       for (finite_variable*& x : args_) {
-        finite_variable* xn = safe_get(var_map, x);
+        finite_variable* xn = var_map.at(x);
         if (!x->type_compatible(xn)) {
           throw std::invalid_argument(
             "subst_args: " + x->str() + " and " + xn->str() + " are not compatible"

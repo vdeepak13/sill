@@ -19,14 +19,11 @@ namespace sill {
 using namespace sill;
 
 typedef canonical_gaussian_param<double> param_type;
-typedef canonical_gaussian<double> cg_type;
-typedef moment_gaussian<double> mg_type;
 typedef dynamic_vector<double> vec_type;
 typedef dynamic_matrix<double> mat_type;
-typedef logarithmic<double> logd;
 
 boost::test_tools::predicate_result
-cg_properties(const cg_type& f,
+cg_properties(const cgaussian& f,
               const domain<vector_variable*>& vars) {
   size_t n = vector_size(vars);
 
@@ -57,7 +54,7 @@ cg_properties(const cg_type& f,
 }
 
 boost::test_tools::predicate_result
-cg_params(const cg_type& f,
+cg_params(const cgaussian& f,
           const vec_type& eta, const mat_type& lambda, double lm) {
   if (!f.inf_vector().isApprox(eta, 1e-8)) {
     boost::test_tools::predicate_result result(false);
@@ -86,30 +83,30 @@ BOOST_AUTO_TEST_CASE(test_constructors) {
   vector_variable* x = u.new_vector_variable("x", 2);
   vector_variable* y = u.new_vector_variable("y", 1);
 
-  cg_type a;
+  cgaussian a;
   BOOST_CHECK(a.empty());
   BOOST_CHECK(cg_properties(a, {}));
 
-  cg_type b({x, y});
+  cgaussian b({x, y});
   BOOST_CHECK(cg_properties(b, {x, y}));
 
-  cg_type c(logd(2.0));
+  cgaussian c(logd(2.0));
   BOOST_CHECK(cg_properties(c, {}));
   BOOST_CHECK_CLOSE(c.log_multiplier(), std::log(2.0), 1e-8);
   
-  cg_type e({x}, logd(4.0));
+  cgaussian e({x}, logd(4.0));
   BOOST_CHECK(cg_properties(e, {x}));
   BOOST_CHECK_CLOSE(e.log_multiplier(), std::log(4.0), 1e-8);
   
   param_type paramsf(3, 1.0);
-  cg_type f({x, y}, std::move(paramsf));
+  cgaussian f({x, y}, std::move(paramsf));
   BOOST_CHECK(cg_properties(f, {x, y}));
   BOOST_CHECK_EQUAL(f.log_multiplier(), 1.0);
   BOOST_CHECK_EQUAL(f.inf_vector(), vec_type::Zero(3));
   BOOST_CHECK_EQUAL(f.inf_matrix(), mat_type::Zero(3, 3));
 
   param_type paramsg(vec2(1, 3), mat22(2, 1, 1, 2), 5.0);
-  cg_type g({x}, paramsg);
+  cgaussian g({x}, paramsg);
   BOOST_CHECK(cg_properties(g, {x}));
   BOOST_CHECK_EQUAL(g.log_multiplier(), 5.0);
   BOOST_CHECK_EQUAL(g.inf_vector(), vec2(1, 3));
@@ -121,7 +118,7 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   vector_variable* x = u.new_vector_variable("x", 2);
   vector_variable* y = u.new_vector_variable("y", 1);
 
-  cg_type f;
+  cgaussian f;
   f = logd(2.0);
   BOOST_CHECK(cg_properties(f, {}));
   BOOST_CHECK_CLOSE(f.log_multiplier(), std::log(2.0), 1e-8);
@@ -135,14 +132,14 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
 
   mat_type cov = mat22(2,1,1,2);
   mat_type lam = mat22(2,-1,-1,2) / 3.0;
-  mg_type mg({x}, {y}, vec2(2, 1), cov, mat21(3,4), 1.5);
+  mgaussian mg({x}, {y}, vec2(2, 1), cov, mat21(3,4), 1.5);
   f = mg;
   BOOST_CHECK(cg_properties(f, {x, y}));
   mat_type lam3 = mat33(2,-1,-2,-1,2,-5,-2,-5,26)/3.0;
   double lm = 1.5-std::log(two_pi<double>())-0.5*std::log(3)-0.5*2;
   BOOST_CHECK(cg_params(f, vec3(1,0,-3), lam3, lm));
 
-  cg_type g({x, y});
+  cgaussian g({x, y});
   f.reset({x});
   swap(f, g);
   BOOST_CHECK(cg_properties(f, {x, y}));
@@ -155,7 +152,7 @@ BOOST_AUTO_TEST_CASE(test_indexing) {
   vector_variable* x = u.new_vector_variable("x", 2);
   vector_variable* y = u.new_vector_variable("y", 1);
   
-  cg_type f({x, y}, vec3(2, 1, 0), 2*mat_type::Identity(3, 3), 0.5);
+  cgaussian f({x, y}, vec3(2, 1, 0), 2*mat_type::Identity(3, 3), 0.5);
   vec_type vec = vec3(0.5, -2, 0);
   BOOST_CHECK_CLOSE(f.log(vec), -0.5*8.5 + 2*0.5 - 1*2 + 0.5, 1e-8);
 
@@ -178,10 +175,10 @@ BOOST_AUTO_TEST_CASE(test_operators) {
 
   vec_type eta = vec3(2, 0.5, 0.2);
   mat_type lambda = mat33(2, 1, 1, 1, 2, 1, 1, 1, 2);
-  cg_type f({x, y}, eta, lambda, 5);
-  cg_type g({y}, vec1(1), mat11(3), 6);
+  cgaussian f({x, y}, eta, lambda, 5);
+  cgaussian g({y}, vec1(1), mat11(3), 6);
 
-  cg_type h;
+  cgaussian h;
   h = g * f;
   BOOST_CHECK(cg_properties(h, {y, x}));
   BOOST_CHECK(cg_params(h, 
@@ -253,11 +250,11 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
 
   vec_type eta = vec3(2, 0.5, 0.2);
   mat_type lambda = mat33(2, 1, 1, 1, 2, 1, 1, 1, 2);
-  cg_type f({x, y, z}, eta, lambda, 2.0);
+  cgaussian f({x, y, z}, eta, lambda, 2.0);
 
 
   // test all marginal
-  cg_type h = f;
+  cgaussian h = f;
   BOOST_CHECK(h.normalizable());
   h.normalize();
   BOOST_CHECK_SMALL(h.marginal().lv, 1e-8);
@@ -299,12 +296,12 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
 
   vec_type eta = vec3(2, 0.5, 0.2);
   mat_type lambda = mat33(2, 1, 1, 1, 3, 1, 1, 1, 4);
-  cg_type f({x, y, z}, eta, lambda, 2.0);
+  cgaussian f({x, y, z}, eta, lambda, 2.0);
 
   // test block restrict (z) = (1.5)
   vector_assignment<double> a;
   a[z] = vec1(1.5);
-  cg_type h = f.restrict(a);
+  cgaussian h = f.restrict(a);
   BOOST_CHECK(cg_properties(h, {x, y}));
   BOOST_CHECK(cg_params(h, vec2(2-1.5, 0.5-1.5), mat22(2, 1, 1, 3), 2.3-1.5*1.5*2));
 
@@ -317,7 +314,7 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
 
   // test restrict-multiply
   param_type p = h.param();
-  h = cg_type({y}, vec1(1), mat11(1.5), 2.0);
+  h = cgaussian({y}, vec1(1), mat11(1.5), 2.0);
   f.restrict_multiply(a, h);
   BOOST_CHECK(cg_properties(h, {y}));
   BOOST_CHECK(cg_params(h, p.eta + vec1(1), p.lambda + mat11(1.5), p.lm + 2.0));
@@ -333,7 +330,7 @@ BOOST_AUTO_TEST_CASE(test_entropy) {
   vec_type eta = vec3(2, 0.5, 0.2);
   mat_type lambda = mat33(2, 1, 1, 1, 3, 1, 1, 1, 4);
   mat_type cov = lambda.inverse();
-  cg_type p({x, y, z}, eta, lambda, 2.0);
+  cgaussian p({x, y, z}, eta, lambda, 2.0);
 
   double l2pi = std::log(two_pi<double>());
   double ent_xyz = std::log(cov.determinant()) + 3.0 * (l2pi + 1.0);
@@ -342,7 +339,7 @@ BOOST_AUTO_TEST_CASE(test_entropy) {
   double ent_x = std::log(cov.block(0, 0, 1, 1).determinant()) + l2pi + 1.0;
   BOOST_CHECK_CLOSE(p.entropy({x}), ent_x / 2.0, 1e-5);
   
-  cg_type q({x, y, z}, eta, lambda + mat_type::Identity(3, 3));
+  cgaussian q({x, y, z}, eta, lambda + mat_type::Identity(3, 3));
   BOOST_CHECK_GE(kl_divergence(p, q), 0.0);
   BOOST_CHECK_SMALL(kl_divergence(p, p), 1e-6);
 }

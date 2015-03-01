@@ -2,20 +2,15 @@
 #define SILL_CANONICAL_TABLE_HPP
 
 #include <sill/global.hpp>
-#include <sill/factor/base/table_base.hpp>
+#include <sill/factor/base/table_factor.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional/operators.hpp>
 #include <sill/functional/entropy.hpp>
-#include <sill/learning/dataset/finite_dataset.hpp>
 #include <sill/math/constants.hpp>
 #include <sill/math/logarithmic.hpp>
 
 #include <initializer_list>
 #include <iostream>
-
-#include <boost/function.hpp>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
@@ -34,8 +29,8 @@ namespace sill {
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename T = double>
-  class canonical_table : public table_base<T> {
+  template <typename T>
+  class canonical_table : public table_factor<T> {
   public: 
     // Public types
     //==========================================================================
@@ -44,8 +39,7 @@ namespace sill {
     typedef T                 real_type;
     typedef logarithmic<T>    result_type;
     typedef finite_variable   variable_type;
-    typedef finite_domain     domain_type;
-    typedef finite_var_vector var_vector_type;
+    typedef domain<finite_variable*> domain_type;
     typedef finite_assignment assignment_type;
     typedef table<T>          param_type;
     
@@ -56,8 +50,8 @@ namespace sill {
     typedef probability_table<T> probability_factor_type;
     
     // LearnableFactor member types
-    typedef finite_dataset dataset_type;
-    typedef finite_record record_type;
+    //typedef finite_dataset dataset_type;
+    //typedef finite_record record_type;
     
     // Constructors and conversion operators
     //==========================================================================
@@ -66,34 +60,28 @@ namespace sill {
     canonical_table() { }
 
     //! Constructs a factor with given arguments and uninitialized parameters.
-    explicit canonical_table(const finite_var_vector& args) {
+    explicit canonical_table(const domain_type& args) {
       this->reset(args);
     }
 
     //! Constructs a factor equivalent to a constant.
     explicit canonical_table(logarithmic<T> value) {
-      this->reset(finite_var_vector());
+      this->reset();
       this->param_[0] = value.lv;
     }
 
     //! Constructs a factor with the given arguments and constant value.
-    canonical_table(const finite_var_vector& args, logarithmic<T> value) {
+    canonical_table(const domain_type& args, logarithmic<T> value) {
       this->reset(args);
       this->param_.fill(value.lv);
     }
 
-    //! Constructs a factor with the given argument set and constant value.
-    canonical_table(const finite_domain& args, logarithmic<T> value) {
-      this->reset(make_vector(args));
-      this->param_.fill(value.lv);
-    }
+    //! Creates a factor with the specified arguments and parameters.
+    canonical_table(const domain_type& args, const table<T>& param)
+      : table_factor<T>(args, param) { }
 
     //! Creates a factor with the specified arguments and parameters.
-    canonical_table(const finite_var_vector& args, const table<T>& param)
-      : table_base<T>(args, param) { }
-
-    //! Creates a factor with the specified arguments and parameters.
-    canonical_table(const finite_var_vector& args,
+    canonical_table(const domain_type& args,
                     std::initializer_list<T> values) {
       this->reset(args);
       assert(values.size() == this->size());
@@ -107,33 +95,28 @@ namespace sill {
 
     //! Assigns a constant to this factor.
     canonical_table& operator=(logarithmic<T> value) {
-      this->reset(finite_var_vector());
+      this->reset();
       this->param_[0] = value.lv;
       return *this;
     }
 
     //! Assigns a probability table factor to this factor.
     canonical_table& operator=(const probability_table<T>& f) {
-      this->reset(f.finite_args());
+      this->reset(f.arguments());
       std::transform(f.begin(), f.end(), this->begin(), logarithm<T>());
       return *this;
     }
 
     //! Exchanges the content of two factors.
     friend void swap(canonical_table& f, canonical_table& g) {
-      f.swap(g);
+      f.base_swap(g);
     }
 
     // Accessors and comparison operators
     //==========================================================================
 
     //! Returns the argument set of this factor.
-    const finite_domain& arguments() const {
-      return this->args_;
-    }
-
-    //! Returns the argument vector of this factor.
-    const finite_var_vector& arg_vector() const {
+    const domain_type& arguments() const {
       return this->finite_args_;
     }
 
@@ -159,7 +142,7 @@ namespace sill {
 
     //! Returns true if the two factors have the same argument vectors and values.
     friend bool operator==(const canonical_table& f, const canonical_table& g) {
-      return f.arg_vector() == g.arg_vector() && f.param() == g.param();
+      return f.arguments() == g.arguments() && f.param() == g.param();
     }
 
     //! Returns true if the two factors do not have the same arguments or values.
@@ -261,42 +244,45 @@ namespace sill {
     }
 
     //! Computes the marginal of the factor over a subset of variables.
-    canonical_table marginal(const finite_domain& retain) const {
-      canonical_table result; marginal(retain, result);
+    canonical_table marginal(const domain_type& retain) const {
+      canonical_table result;
+      marginal(retain, result);
       return result;
     }
 
     //! Computes the maximum for each assignment to the given variables.
-    canonical_table maximum(const finite_domain& retain) const {
-      canonical_table result; maximum(retain, result);
+    canonical_table maximum(const domain_type& retain) const {
+      canonical_table result;
+      maximum(retain, result);
       return result;
     }
 
     //! Computes the minimum for each assignment to the given variables.
-    canonical_table minimum(const finite_domain& retain) const {
-      canonical_table result; minimum(retain, result);
+    canonical_table minimum(const domain_type& retain) const {
+      canonical_table result;
+      minimum(retain, result);
       return result;
     }
 
     //! If this factor represents p(x, y), returns p(x | y).
-    canonical_table conditional(const finite_domain& tail) const {
+    canonical_table conditional(const domain_type& tail) const {
       return (*this) / marginal(tail);
     }
 
     //! Computes the marginal of the factor over a subset of variables.
-    void marginal(const finite_domain& retain, canonical_table& result) const {
+    void marginal(const domain_type& retain, canonical_table& result) const {
       T offset = maximum().lv;
       this->aggregate(retain, T(0), plus_exp<T>(-offset), result);
-      foreach(T& x, result.param_) { x = std::log(x) + offset; }
+      for (T& x : result.param_) { x = std::log(x) + offset; }
     }
 
     //! Computes the maximum for each assignment to the given variables.
-    void maximum(const finite_domain& retain, canonical_table& result) const {
+    void maximum(const domain_type& retain, canonical_table& result) const {
       this->aggregate(retain, -inf<T>(), sill::maximum<T>(), result);
     }
 
     //! Computes the minimum for each assignment to the given variables.
-    void minimum(const finite_domain& retain, canonical_table& result) const {
+    void minimum(const domain_type& retain, canonical_table& result) const {
       this->aggregate(retain, +inf<T>(), sill::minimum<T>(), result);
     }
 
@@ -346,13 +332,14 @@ namespace sill {
     
     //! Restricts this factor to an assignment.
     canonical_table restrict(const finite_assignment& a) const {
-      canonical_table result; restrict(a, result);
+      canonical_table result;
+      restrict(a, result);
       return result;
     }
 
     //! Restricts this factor to an assignment.
     void restrict(const finite_assignment& a, canonical_table& result) const {
-      table_base<T>::restrict(a, result);
+      table_factor<T>::restrict(a, result);
     }
 
     // Entropy and divergences
@@ -364,14 +351,14 @@ namespace sill {
     }
 
     //! Computes the entropy for a subset of variables. Performs marginalization.
-    T entropy(const finite_domain& a) const {
-      return (arguments() == a) ? entropy() : marginal(a).entropy();
+    T entropy(const domain_type& a) const {
+      return equivalent(arguments(), a) ? entropy() : marginal(a).entropy();
     }
 
     //! Computes the mutual information between two subsets of this factor's
     //! arguments.
-    T mutual_information(const finite_domain& a, const finite_domain& b) const {
-      return entropy(a) + entropy(b) - entropy(set_union(a, b));
+    T mutual_information(const domain_type& a, const domain_type& b) const {
+      return entropy(a) + entropy(b) - entropy(a | b);
     }
 
     //! Computes the cross entropy from p to q.
@@ -432,6 +419,12 @@ namespace sill {
 
   }; // class canonical_table
 
+  /**
+   * A canonical_table factor using double precision.
+   * \relates canonical_table
+   */
+  typedef canonical_table<double> ctable;
+
   // Input / output
   //============================================================================
 
@@ -441,7 +434,7 @@ namespace sill {
    */
   template <typename T>
   std::ostream& operator<<(std::ostream& out, const canonical_table<T>& f) {
-    out << "#CT(" << f.arg_vector() << ")" << std::endl;
+    out << "#CT(" << f.arguments() << ")" << std::endl;
     out << f.param();
     return out;
   }
@@ -487,7 +480,5 @@ namespace sill {
   struct has_arg_min<canonical_table<T> > : public boost::true_type { };
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

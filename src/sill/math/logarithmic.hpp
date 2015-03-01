@@ -430,6 +430,11 @@ namespace sill {
   }; // struct logarithmic
 
   /**
+   * Logarithmic value with double storage.
+   */
+  typedef logarithmic<double> logd;
+
+  /**
    * Returns the value representing the sum of this value and the
    * supplied value.
    *

@@ -2,8 +2,7 @@
 #define SILL_PROBABILITY_TABLE_HPP
 
 #include <sill/global.hpp>
-#include <sill/factor/base/table_base.hpp>
-#include <sill/factor/table_factor.hpp>
+#include <sill/factor/base/table_factor.hpp>
 #include <sill/factor/traits.hpp>
 #include <sill/functional/operators.hpp>
 #include <sill/functional/entropy.hpp>
@@ -31,8 +30,8 @@ namespace sill {
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename T = double>
-  class probability_table : public table_base<T> {
+  template <typename T>
+  class probability_table : public table_factor<T> {
   public: 
     // Public types
     //==========================================================================
@@ -41,8 +40,7 @@ namespace sill {
     typedef T                 real_type;
     typedef T                 result_type;
     typedef finite_variable   variable_type;
-    typedef finite_domain     domain_type;
-    typedef finite_var_vector var_vector_type;
+    typedef domain<finite_variable*> domain_type;
     typedef finite_assignment assignment_type;
     typedef table<T>          param_type;
     
@@ -53,8 +51,8 @@ namespace sill {
     typedef probability_table probability_factor_type;
     
     // LearnableFactor member types
-    typedef finite_dataset dataset_type;
-    typedef finite_record  record_type;
+    // typedef finite_dataset dataset_type;
+    // typedef finite_record  record_type;
 
     // Constructors and conversion operators
     //==========================================================================
@@ -63,34 +61,28 @@ namespace sill {
     probability_table() { }
 
     //! Constructs a factor with given arguments and uninitialized parameters.
-    explicit probability_table(const finite_var_vector& args) {
+    explicit probability_table(const domain_type& args) {
       this->reset(args);
     }
 
     //! Constructs a factor equivalent to a constant.
     explicit probability_table(T value) {
-      this->reset(finite_var_vector());
+      this->reset();
       this->param_[0] = value;
     }
 
     //! Constructs a factor with the given arguments and constant value.
-    probability_table(const finite_var_vector& args, T value) {
+    probability_table(const domain_type& args, T value) {
       this->reset(args);
       this->param_.fill(value);
     }
 
-    //! Constructs a factor with the given argument set and constant value.
-    probability_table(const finite_domain& args, T value) {
-      this->reset(make_vector(args));
-      this->param_.fill(value);
-    }
+    //! Creates a factor with the specified arguments and parameters.
+    probability_table(const domain_type& args, const table<T>& param)
+      : table_factor<T>(args, param) { }
 
     //! Creates a factor with the specified arguments and parameters.
-    probability_table(const finite_var_vector& args, const table<T>& param)
-      : table_base<T>(args, param) { }
-
-    //! Creates a factor with the specified arguments and parameters.
-    probability_table(const finite_var_vector& args,
+    probability_table(const domain_type& args,
                       std::initializer_list<T> values) {
       this->reset(args);
       assert(values.size() == this->size());
@@ -104,33 +96,28 @@ namespace sill {
 
     //! Assigns a constant to this factor.
     probability_table& operator=(T value) {
-      this->reset(finite_var_vector());
+      this->reset();
       this->param_[0] = value;
       return *this;
     }
 
     //! Assigns a probability table factor to this factor.
     probability_table& operator=(const canonical_table<T>& f) {
-      this->reset(f.arg_vector());
+      this->reset(f.arguments());
       std::transform(f.begin(), f.end(), this->begin(), exponent<T>());
       return *this;
     }
 
     //! Exchanges the content of two factors.
     friend void swap(probability_table& f, probability_table& g) {
-      f.swap(g);
+      f.base_swap(g);
     }
 
     // Accessors and comparison operators
     //==========================================================================
 
     //! Returns the argument set of this factor.
-    const finite_domain& arguments() const {
-      return this->args_;
-    }
-
-    //! Returns the argument vector of this factor.
-    const finite_var_vector& arg_vector() const {
+    const domain_type& arguments() const {
       return this->finite_args_;
     }
 
@@ -156,7 +143,7 @@ namespace sill {
 
     //! Returns true if the two factors have the same argument vectors and values.
     friend bool operator==(const probability_table& f, const probability_table& g) {
-      return f.arg_vector() == g.arg_vector() && f.param() == g.param();
+      return f.arguments() == g.arguments() && f.param() == g.param();
     }
 
     //! Returns true if the two factors do not have the same arguments or values.
@@ -312,40 +299,43 @@ namespace sill {
     }
 
     //! Computes the marginal of the factor over a subset of variables.
-    probability_table marginal(const finite_domain& retain) const {
-      probability_table result; marginal(retain, result);
+    probability_table marginal(const domain_type& retain) const {
+      probability_table result;
+      marginal(retain, result);
       return result;
     }
 
     //! Computes the maximum for each assignment to the given variables.
-    probability_table maximum(const finite_domain& retain) const {
-      probability_table result; maximum(retain, result);
+    probability_table maximum(const domain_type& retain) const {
+      probability_table result;
+      maximum(retain, result);
       return result;
     }
 
     //! Computes the minimum for each assignment to the given variables.
-    probability_table minimum(const finite_domain& retain) const {
-      probability_table result; minimum(retain, result);
+    probability_table minimum(const domain_type& retain) const {
+      probability_table result;
+      minimum(retain, result);
       return result;
     }
 
     //! If this factor represents p(x, y), returns p(x | y).
-    probability_table conditional(const finite_domain& tail) const {
+    probability_table conditional(const domain_type& tail) const {
       return (*this) / marginal(tail);
     }
 
     //! Computes the marginal of the factor over a subset of variables.
-    void marginal(const finite_domain& retain, probability_table& result) const {
+    void marginal(const domain_type& retain, probability_table& result) const {
       this->aggregate(retain, T(0), std::plus<T>(), result);
     }
 
     //! Computes the maximum for each assignment to the given variables.
-    void maximum(const finite_domain& retain, probability_table& result) const {
+    void maximum(const domain_type& retain, probability_table& result) const {
       this->aggregate(retain, -inf<T>(), sill::maximum<T>(), result);
     }
 
     //! Computes the minimum for each assignment to the given variables.
-    void minimum(const finite_domain& retain, probability_table& result) const {
+    void minimum(const domain_type& retain, probability_table& result) const {
       this->aggregate(retain, +inf<T>(), sill::minimum<T>(), result);
     }
 
@@ -391,13 +381,14 @@ namespace sill {
     
     //! Restricts this factor to an assignment.
     probability_table restrict(const finite_assignment& a) const {
-      probability_table result; restrict(a, result);
+      probability_table result;
+      restrict(a, result);
       return result;
     }
 
     //! Restricts this factor to an assignment.
     void restrict(const finite_assignment& a, probability_table& result) const {
-      table_base<T>::restrict(a, result);
+      table_factor<T>::restrict(a, result);
     }
 
     // Entropy and divergences
@@ -409,14 +400,14 @@ namespace sill {
     }
 
     //! Computes the entropy for a subset of variables. Performs marginalization.
-    T entropy(const finite_domain& a) const {
-      return (arguments() == a) ? entropy() : marginal(a).entropy();
+    T entropy(const domain_type& a) const {
+      return equivalent(arguments(), a) ? entropy() : marginal(a).entropy();
     }
 
     //! Computes the mutual information between two subsets of this factor's
     //! arguments.
-    T mutual_information(const finite_domain& a, const finite_domain& b) const {
-      return entropy(a) + entropy(b) - entropy(set_union(a, b));
+    T mutual_information(const domain_type& a, const domain_type& b) const {
+      return entropy(a) + entropy(b) - entropy(a | b);
     }
 
     //! Computes the cross entropy from p to q.
@@ -487,6 +478,12 @@ namespace sill {
 
   }; // class probability_table
 
+  /**
+   * A probability_table factor using double precision.
+   * \relates probability_table
+   */
+  typedef probability_table<double> ptable;
+
   // Input / output
   //============================================================================
 
@@ -496,7 +493,7 @@ namespace sill {
    */
   template <typename T>
   std::ostream& operator<<(std::ostream& out, const probability_table<T>& f) {
-    out << "#PT(" << f.arg_vector() << ")" << std::endl;
+    out << "#PT(" << f.arguments() << ")" << std::endl;
     out << f.param();
     return out;
   }

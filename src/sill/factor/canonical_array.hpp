@@ -2,14 +2,13 @@
 #define SILL_CANONICAL_ARRAY_HPP
 
 #include <sill/global.hpp>
-#include <sill/base/finite_assignment.hpp>
+#include <sill/argument/finite_assignment.hpp>
 #include <sill/base/finite_variable.hpp>
 #include <sill/factor/base/array_factor.hpp>
 #include <sill/functional/assign.hpp>
 #include <sill/functional/eigen.hpp>
 #include <sill/functional/entropy.hpp>
 #include <sill/functional/operators.hpp>
-#include <sill/learning/dataset/finite_dataset.hpp>
 #include <sill/math/constants.hpp>
 #include <sill/math/logarithmic.hpp>
 
@@ -52,7 +51,6 @@ namespace sill {
     typedef logarithmic<T>                     result_type;
     typedef finite_variable                    variable_type;
     typedef array_domain<finite_variable*, N>  domain_type;
-    typedef array_domain<finite_variable*, N>  var_vector_type;
     typedef finite_assignment                  assignment_type;
     typedef typename base::array_type          param_type;
     
@@ -63,8 +61,8 @@ namespace sill {
     typedef probability_array<T, N> probability_factor_type;
     
     // LearnableFactor types
-    typedef finite_dataset dataset_type;
-    typedef finite_record  record_type;
+    // typedef finite_dataset dataset_type;
+    // typedef finite_record  record_type;
 
     // Constructors and conversion operators
     //==========================================================================
@@ -113,7 +111,7 @@ namespace sill {
     
     //! Assigns a canonical_table to this factor
     canonical_array& operator=(const canonical_table<T>& f) {
-      this->reset(f.arg_vector());
+      this->reset(f.arguments());
       assert(this->size() == f.size());
       std::copy(f.begin(), f.end(), this->begin());
       return *this;
@@ -126,11 +124,6 @@ namespace sill {
 
     // Accessors
     //==========================================================================
-    //! Returns the argument vector.
-    const var_vector_type& arg_vector() const {
-      return this->args_;
-    }
-    
     //! Returns the value of this factor for an assignment
     logarithmic<T> operator()(const finite_assignment& a) const {
       return logarithmic<T>(this->param(a), log_tag());
@@ -540,6 +533,21 @@ namespace sill {
   }; // class canonical_array
 
   /**
+   * A canonical_array factor over a single argument using double precision.
+   * \relates canonical_array
+   */
+  typedef canonical_array<double, 1> carray1;
+
+  /**
+   * A canonical_array factor over two arguments using double precision.
+   * \relates canonical_array
+   */
+  typedef canonical_array<double, 2> carray2;
+
+  // Input / output
+  //============================================================================
+
+  /**
    * Outputs a human-readable representation of the factor to the stream.
    * \relates canonical_array
    */
@@ -549,6 +557,9 @@ namespace sill {
         << f.param() << std::endl;
     return out;
   }
+
+  // Join operation
+  //============================================================================
 
   /**
    * Multiplies two canonical_array factors.

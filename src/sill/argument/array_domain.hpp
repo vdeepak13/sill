@@ -56,6 +56,9 @@ namespace sill {
     return out;
   }
 
+  // Set operations
+  //============================================================================
+
   /**
    * The concatentation of two fixed-size domains.
    * \relates array_domain
@@ -259,6 +262,51 @@ namespace sill {
   template <typename T, size_t N>
   array_domain<T, N> make_domain(const array_domain<T, N>& a) {
     return a;
+  }
+
+  // Argument operations
+  //============================================================================
+
+  /**
+   * Returns the number of assignments for a collection of finite arguments.
+   */
+  template <typename Arg, size_t N>
+  size_t finite_size(const array_domain<Arg, N>& dom) {
+    size_t size = 1;
+    for (Arg arg : dom) {
+      if (std::numeric_limits<size_t>::max() / arg->size() <= size) {
+        throw std::out_of_range("finite_size: possibly overflows size_t");
+      }
+      size *= arg->size();
+    }
+    return size;
+  }
+
+  /**
+   * Returns the vector dimensionality for a collection of vector arguments.
+   */
+  template <typename Arg, size_t N>
+  size_t vector_size(const array_domain<Arg, N>& dom) {
+    size_t size = 0;
+    for (Arg arg : dom) {
+      size += arg->size();
+    }
+    return size;
+  }
+
+  /**
+   * Returns true if two domains are type-compatible.
+   * \relates domain
+   */
+  template <typename Arg, size_t N>
+  bool type_compatible(const array_domain<Arg, N>& a,
+                       const array_domain<Arg, N>& b) {
+    for (size_t i = 0; i < a.size(); ++i) {
+      if (!a[i]->type_compatible(b[i])) {
+        return false;
+      }
+    }
+    return true;
   }
 
 } // namespace sill

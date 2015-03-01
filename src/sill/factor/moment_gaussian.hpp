@@ -616,6 +616,12 @@ namespace sill {
     param_type param_;
 
   }; // class moment_gaussian
+
+  /**
+   * A moment_gaussian factor using double precision.
+   * \relates moment_gaussian
+   */
+  typedef moment_gaussian<double> mgaussian;
   
   // Input / outputx
   //============================================================================
@@ -685,6 +691,7 @@ namespace sill {
   /**
    * Returns an object that can compute the parameters corresponding to
    * the marginal of a moment Gaussian over a subset of arguments.
+   * Initializes the arguments of the result.
    */
   template <typename T>
   moment_gaussian_collapse<T>
@@ -711,6 +718,7 @@ namespace sill {
   /**
    * Returns an object that can compute the parameters corresponding to
    * the maximum of a moment Gaussian over a subset of arguments.
+   * Initializes the arguments of the result.
    */
   template <typename T>
   moment_gaussian_collapse<T>
@@ -737,6 +745,7 @@ namespace sill {
   /**
    * Returns an object that can compute the parameters corresponding to
    * conditioning a marginal moment Gaussian distribution.
+   * Initializes the arguments of the result.
    */
   template <typename T>
   moment_gaussian_conditional<T>
@@ -757,6 +766,7 @@ namespace sill {
   /**
    * Returns an object that can compute the parameters corresponding to
    * restricting a moment Gaussian to the given assignment.
+   * Initializes the arguments of the result.
    */
   template <typename T>
   moment_gaussian_restrict<T>

@@ -38,7 +38,7 @@ namespace sill {
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename T = double>
+  template <typename T>
   class softmax : public factor {
   public:
     // Public types
