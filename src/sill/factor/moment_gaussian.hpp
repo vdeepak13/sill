@@ -4,9 +4,11 @@
 #include <sill/argument/vector_assignment.hpp>
 #include <sill/factor/base/gaussian_factor.hpp>
 #include <sill/factor/traits.hpp>
-#include <sill/math/eigen/dynamic.hpp>
 #include <sill/math/logarithmic.hpp>
+#include <sill/math/eigen/dynamic.hpp>
+#include <sill/math/likelihood/moment_gaussian_mle.hpp>
 #include <sill/math/param/moment_gaussian_param.hpp>
+#include <sill/math/random/gaussian_distribution.hpp>
 
 namespace sill {
 
@@ -37,14 +39,15 @@ namespace sill {
     typedef vector_variable          variable_type;
     typedef domain<vector_variable*> domain_type;
     typedef vector_assignment<T>     assignment_type;
-    typedef moment_gaussian_param<T> param_type;
-    
-    // IndexableFactor member types
-    typedef vec_type index_type;
-    
-    // ExponentialFamily member types
-    typedef moment_gaussian<T> probability_factor_type;
 
+    // ParametricFactor member types
+    typedef moment_gaussian_param<T> param_type;
+    typedef dynamic_vector<T>        index_type;
+    typedef gaussian_distribution<T> distribution_type;
+
+    // LearnableDistributionFactor member types
+    typedef moment_gaussian_mle<T> mle_type;
+    
     // Constructors and conversion operators
     //==========================================================================
 
@@ -332,12 +335,12 @@ namespace sill {
     //==========================================================================
 
     /**
-     * Converts the given vector to an assignment.
+     * Converts the given vector to an assignment over head variables.
      */
     void assignment(const vec_type& vec, assignment_type& a) const {
-      assert(vec.size() == size());
+      assert(vec.size() == head_size());
       size_t i = 0;
-      for (vector_variable* v : arguments()) {
+      for (vector_variable* v : head()) {
         a[v] = vec.segment(i, v->size());
         i += v->size();
       }
@@ -549,21 +552,47 @@ namespace sill {
       restrict_op(*this, a, result)(param_, result.param_);
     }
 
-#if 0
-    /**
-     * Draws a sample from this factor, which is assumed to represent
-     * a (possibly unnormalized) marginal distribution.
-     *
-     * When drawing multiple samples, use factor_sampler class.
-     */
-    template <typename RandomNumberGenerator>
-    assignment_type sample(RandomNumberGenerator& rng) const {
-      factor_sampler<moment_gaussian> sampler(*this);
-      assignment_type a;
-      assignment(sampler(rng), a);
-      return a;
+    // Sampling
+    //==========================================================================
+    
+    //! Returns the distribution with the parameters of this factor.
+    gaussian_distribution<T> distribution() const {
+      return gaussian_distribution<T>(param_);
     }
-#endif
+
+    //! Draws a random sample from a marginal distribution.
+    template <typename Generator>
+    vec_type sample(Generator& rng) const {
+      return param_.sample(rng);
+    }
+
+    //! Draws a random sample from a conditional distribution.
+    template <typename Generator>
+    vec_type sample(Generator& rng, const vec_type& tail) const {
+      assert(tail.size() == tail_size());
+      return param_.sample(rng, tail);
+    }
+
+    /**
+     * Draws a random sample from a marginal distribution,
+     * storing the result in an assignment.
+     */
+    template <typename Generator>
+    void sample(Generator& rng, assignment_type& a) const {
+      this->assignment(sample(rng, extract(a, tail_)), a);
+    }
+
+    /**
+     * Draws a random sample from a conditional distribution,
+     * extracting the tail from and storing the result to an assignment.
+     * \param ntail the tail variables (must be equivalent to factor tail).
+     */
+    template <typename Generator>
+    void sample(Generator& rng, const domain_type& tail,
+                assignment_type& a) const {
+      assert(equivalent(tail, tail_));
+      this->assignment(sample(rng, extract(a, tail_)), a);
+    }
 
     // Entropy and divergences
     //==========================================================================

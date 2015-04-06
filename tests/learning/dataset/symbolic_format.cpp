@@ -12,33 +12,33 @@ using namespace sill;
 BOOST_AUTO_TEST_CASE(test_load_save) {
   int argc = boost::unit_test::framework::master_test_suite().argc;
   BOOST_REQUIRE(argc > 1);
-  char* filename = boost::unit_test::framework::master_test_suite().argv[1];
+  std::string dir = boost::unit_test::framework::master_test_suite().argv[1];
   
   symbolic_format format;
   universe u;
-  format.load_config(filename, u);
+  format.load(dir + "/symbolic.cfg", u);
 
   BOOST_CHECK_EQUAL(format.separator, "\t");
   BOOST_CHECK_EQUAL(format.skip_rows, 0);
   BOOST_CHECK_EQUAL(format.skip_cols, 1);
   BOOST_CHECK_EQUAL(format.weighted, 1);
   
-  BOOST_CHECK_EQUAL(format.vars.size(), 3);
+  BOOST_CHECK_EQUAL(format.var_infos.size(), 3);
 
-  BOOST_CHECK_EQUAL(format.vars[0].name(), "plain_finite");
-  BOOST_CHECK_EQUAL(format.vars[0].size(), 4);
-  BOOST_CHECK_EQUAL(format.vars[0].is_plain_finite(), true);
+  BOOST_CHECK_EQUAL(format.var_infos[0].name(), "plain_finite");
+  BOOST_CHECK_EQUAL(format.var_infos[0].size(), 4);
+  BOOST_CHECK_EQUAL(format.var_infos[0].is_plain_finite(), true);
 
-  BOOST_CHECK_EQUAL(format.vars[1].name(), "named_finite");
-  BOOST_CHECK_EQUAL(format.vars[1].size(), 3);
-  BOOST_CHECK_EQUAL(format.vars[1].is_named_finite(), true);
+  BOOST_CHECK_EQUAL(format.var_infos[1].name(), "named_finite");
+  BOOST_CHECK_EQUAL(format.var_infos[1].size(), 3);
+  BOOST_CHECK_EQUAL(format.var_infos[1].is_named_finite(), true);
 
-  BOOST_CHECK_EQUAL(format.vars[2].name(), "vector");
-  BOOST_CHECK_EQUAL(format.vars[2].size(), 2);
-  BOOST_CHECK_EQUAL(format.vars[2].is_vector(), true);
+  BOOST_CHECK_EQUAL(format.var_infos[2].name(), "vector");
+  BOOST_CHECK_EQUAL(format.var_infos[2].size(), 2);
+  BOOST_CHECK_EQUAL(format.var_infos[2].is_vector(), true);
 
   const char* filename2 = "symbolic_format_tmp.cfg";
-  format.save_config(filename2);
+  format.save(filename2);
 
   boost::array<const char*, 11> lines = {
     "[options]",

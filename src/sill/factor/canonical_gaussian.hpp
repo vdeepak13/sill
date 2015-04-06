@@ -37,12 +37,12 @@ namespace sill {
     typedef vector_variable          variable_type;
     typedef domain<vector_variable*> domain_type;
     typedef vector_assignment<T>     assignment_type;
+
+    // ParametricFactor member types
     typedef canonical_gaussian_param<T> param_type;
+    typedef dynamic_vector<T>           index_type;
     
-    // IndexableFactor member types
-    typedef vec_type index_type;
-    
-    // ExponentialFamily member types
+    // ExponentialFamilyFactor member types
     typedef moment_gaussian<T> probability_factor_type;
 
     // Constructors and conversion operators
@@ -494,22 +494,6 @@ namespace sill {
       restrict_multiply_op(*this, a, result)(param_, result.param_);
     }
   
-#if 0
-    /**
-     * Draws a sample from this factor, which is assumed to represent
-     * a (possibly unnormalized) marginal distribution.
-     *
-     * When drawing multiple samples, use factor_sampler class.
-     */
-    template <typename RandomNumberGenerator>
-    assignment_type sample(RandomNumberGenerator& rng) const {
-      factor_sampler<canonical_gaussian> sampler(*this);
-      assignment_type a;
-      assignment(sampler(rng), a);
-      return a;
-    }
-#endif
-
     // Entropy and divergences
     //==========================================================================
 

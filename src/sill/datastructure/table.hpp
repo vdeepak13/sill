@@ -1,10 +1,11 @@
 #ifndef SILL_TABLE_HPP
 #define SILL_TABLE_HPP
 
+#include <sill/global.hpp>
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/datastructure/finite_index_iterator.hpp>
 #include <sill/functional/operators.hpp>
-#include <sill/global.hpp>
+#include <sill/range/iterator_range.hpp>
 #include <sill/stl_concepts.hpp>
 #include <sill/serialization/serialize.hpp>
 #include <sill/serialization/range.hpp>
@@ -15,16 +16,18 @@
 #include <iterator>
 #include <iostream>
 #include <limits>
+#include <memory>
 #include <numeric>
+#include <random>
+#include <stdexcept>
 #include <vector>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
   /**
    * A class that can perform conversions between finite_index and linear
-   * index in a dense table.
+   * index in a dense table. It stores the multipliers for each dimension
+   * and the total size of the table.
    *
    * \ingroup datastructure
    */
@@ -32,8 +35,9 @@ namespace sill {
   public:
     /**
      * Constructs a table_offset object for an empty shape.
+     * Initializes the size to 0.
      */
-    table_offset() { }
+    table_offset() : nelem_(0) { }
     
     /**
      * Constructs a table_offset object for the table with the given shape.
@@ -50,50 +54,40 @@ namespace sill {
      */
     friend void swap(table_offset& x, table_offset& y) {
       std::swap(x.multiplier_, y.multiplier_);
+      std::swap(x.nelem_, y.nelem_);
     }
 
-    /**
-     * Resets the table_offset object to the given shape.
-     * May be called multiple times.
-     */
+    //! Resets the table_offset object to the given shape.
     void reset(const finite_index& shape) {
-      multiplier_.assign(shape.size(), 1);
-      for (size_t i = 1; i < shape.size(); ++i) {
-        multiplier_[i] = multiplier_[i-1] * shape[i-1];
+      multiplier_.resize(shape.size());
+      nelem_ = 1;
+      for (size_t i = 0; i < shape.size(); ++i) {
+        multiplier_[i] = nelem_;
+        nelem_ *= shape[i];
       }
     }
 
-    /**
-     * Resets the table_offset object to an empty shape.
-     */
-    void reset() {
-      multiplier_.clear();
-    }
-
-    /**
-     * Returns the number of dimensions of this offset.
-     */
+    //! Returns the number of dimensions of this offset.
     size_t size() const {
       return multiplier_.size();
     }
 
-    /**
-     * Returns the multiplier vector.
-     */
+    //! Returns the total number of elements occupied by the table.
+    size_t num_elements() const {
+      return nelem_;
+    }
+    
+    //! Returns the multiplier vector.
     const std::vector<size_t>& multiplier() const {
       return multiplier_;
     }
 
-    /**
-     * Returns the multiplier associated with the given dimension.
-     */
-    size_t multiplier(size_t dimension) const{
-      return multiplier_[dimension];
+    //! Returns the multiplier associated with the dimension d <= size().
+    size_t multiplier(size_t d) const {
+      return (d == size()) ? nelem_ : multiplier_[d];
     }
 
-    /**
-     * Calculates the linear index for the given finite index.
-     */
+    //! Calculates the linear index for the given finite index.
     size_t linear(const finite_index& index) const {
       assert(multiplier_.size() == index.size());
       size_t result = 0;
@@ -132,23 +126,27 @@ namespace sill {
     }
 
     /**
-     * Computes the finite index corresponding to the linear index
+     * Returns the finite index corresponding to the linear index
      * for the first n dimensions. The specified linear index must
      * not exceed the total number of elements in the first n
      * dimensions.
      */
-    void finite(size_t offset, size_t n, finite_index& ind) const {
-      ind.resize(n);
+    finite_index finite(size_t offset, size_t n) const {
+      finite_index ind(n);
       for (int i = n - 1; i >= 0; --i) {
         ind[i] = offset / multiplier_[i];
         offset = offset % multiplier_[i];
       }
+      return ind;
     }
 
   private:
     //! The multiplier associated with the index in each dimension.
     std::vector<size_t> multiplier_;
-    
+
+    //! The total number of elements in the underlying table.
+    size_t nelem_;
+
   }; // class table_offset
 
 
@@ -242,16 +240,14 @@ namespace sill {
     /**
      * Default constructor. Creates an empty table with no elements.
      */
-    table()
-      : size_(0), data_(NULL) { }
+    table() { }
 
     /**
      * Constructs a table with the given shape. This constructor does not
      * initialize the table elements. If needed, the table contents can be
      * initialized with other constructors or with the the fill() function.
      */
-    explicit table(const finite_index& shape)
-      : size_(0), data_(NULL) {
+    explicit table(const finite_index& shape) {
       reset(shape);
     }
 
@@ -259,8 +255,7 @@ namespace sill {
      * Constructs a table with the given shape and initializes its elements
      * to the given value.
      */
-    table(const finite_index& shape, const T& init)
-      : size_(0), data_(NULL) {
+    table(const finite_index& shape, const T& init) {
       reset(shape);
       fill(init);
     }
@@ -269,51 +264,38 @@ namespace sill {
      * Constructs a table with the given shape and initializes its elements
      * to the given list.
      */
-    table(const finite_index& shape, std::initializer_list<T> values)
-      : size_(0), data_(NULL) {
+    table(const finite_index& shape, std::initializer_list<T> values) {
       reset(shape);
-      assert(size_ == values.size());
-      std::copy(values.begin(), values.end(), data_);
+      assert(size() == values.size());
+      std::copy(values.begin(), values.end(), data());
     }
 
     /**
      * Copy constructor. Copies the shape and elements of a table to this one.
      */
     table(const table& x)
-      : shape_(x.shape_),
-        offset_(x.offset_),
-        size_(0),
-        data_(NULL) {
-      reallocate(x.size());
-      std::copy(x.begin(), x.end(), data_);
+      : shape_(x.shape_), offset_(x.offset_) {
+      data_.reset(new T[size()]);
+      std::copy(x.begin(), x.end(), data());
     }
 
     //! Move constructor
-    table(table&& x) : data_(NULL) {
-      using std::swap;
+    table(table&& x) {
       swap(*this, x);
-    }
-
-    //! Destructs a table, freeing up the memory.
-    ~table() {
-      if (data_) {
-        delete[] data_;
-      }
     }
 
     //! Assignment operator. Copies the shape and elements from x to this table.
     table& operator=(const table& x) {
       if (this != &x) {
+        if (size() != x.size()) { data_.reset(new T[x.size()]); }
         shape_ = x.shape_;
         offset_ = x.offset_;
-        reallocate(x.size());
-        std::copy(x.begin(), x.end(), data_);
+        std::copy(x.begin(), x.end(), data());
       }
       return *this;
     }
 
     table& operator=(table&& x) {
-      using std::swap;
       swap(*this, x);
       return *this;
     }
@@ -324,7 +306,6 @@ namespace sill {
         using std::swap;
         swap(x.shape_, y.shape_);
         swap(x.offset_, y.offset_);
-        swap(x.size_, y.size_);
         swap(x.data_, y.data_);
       }
     }
@@ -340,7 +321,7 @@ namespace sill {
       finite_index shape;
       ar >> shape;
       reset(shape);
-      deserialize_range<T>(ar, data_);
+      deserialize_range<T>(ar, data());
     }
 
     /**
@@ -348,24 +329,16 @@ namespace sill {
      * not initialize the elements.
      */
     void reset(const finite_index& shape) {
+      size_t old_size = size();
       shape_ = shape;
-      offset_.reset(shape);
-      size_t new_size = 1;
+      offset_.reset(shape); // affects size()
+      if (size() != old_size) { data_.reset(new T[size()]); }
       for (size_t i = 0; i < shape.size(); ++i) {
-        if (std::numeric_limits<size_t>::max() / shape[i] <= new_size) {
-          // TODO: should this be <?
+        if (std::numeric_limits<size_t>::max() / shape[i] <=
+            offset_.multiplier(i)) {
           throw std::out_of_range("table::reset possibly overflows size_t");
         }
-        new_size *= shape[i];
       }
-      reallocate(new_size);
-    }
-
-    //! Resets this table to an empty table, releasing the memory.
-    void reset() {
-      shape_.clear();
-      offset_.reset();
-      reallocate(0);
     }
 
     // Accessors
@@ -393,42 +366,42 @@ namespace sill {
 
     //! Total number of elements in the table.
     size_t size() const {
-      return size_;
+      return offset_.num_elements();
     }
 
     //! Returns true if the table was default-initialized and thus has no elements.
     bool empty() const {
-      return size_ == 0;
+      return offset_.num_elements() == 0;
     }
 
-    //! Returns the pointer to the allocated elements or NULL if the table is empty
+    //! Returns the pointer to the allocated elements or null if the table is empty
     T* data() {
-      return data_;
+      return data_.get();
     }
 
-    //! Returns the pointer to the allocated elements or NULL if the table is empty
+    //! Returns the pointer to the allocated elements or null if the table is empty
     const T* data() const {
-      return data_;
+      return data_.get();
     }
 
     //! Returns the pointer (iterator) to the first element.
     T* begin() {
-      return data_;
+      return data_.get();
     }
     
     //! Returns the pointer (iterator) to the first element.
     const T* begin() const {
-      return data_;
+      return data_.get();
     }
 
     //! Returns the pointer (iterator) to the one past the last element.
     T* end() {
-      return data_ + size_;
+      return data_.get() + size();
     }
 
     //! Returns the pointer (iterator) to the one past the last element.
     const T* end() const {
-      return data_ + size_;
+      return data_.get() + size();
     }
 
     //! Returns the index associated with an iterator position
@@ -438,12 +411,12 @@ namespace sill {
     }
 
     //! Returns an iterator range over indices into this table.
-    std::pair<index_iterator, index_iterator>
-    indices() const {
+    iterator_range<index_iterator> indices() const {
+      typedef iterator_range<index_iterator> range_type;
       if (empty()) {
-        return std::make_pair(index_iterator(), index_iterator());
+        return range_type(index_iterator(), index_iterator());
       } else {
-        return std::make_pair(index_iterator(&shape_), index_iterator(arity()));
+        return range_type(index_iterator(&shape_), index_iterator(arity()));
       }
     }
 
@@ -492,7 +465,7 @@ namespace sill {
      */
     template <typename Op>
     table<T>& transform(Op op) {
-      for (size_t i = 0; i < size_; ++i) {
+      for (size_t i = 0; i < size(); ++i) {
         data_[i] = op(data_[i]);
       }
       return *this;
@@ -506,7 +479,7 @@ namespace sill {
     template <typename Op>
     table<T>& transform(const table& x, Op op) {
       assert(shape() == x.shape());
-      for (size_t i = 0; i < size_; ++i) {
+      for (size_t i = 0; i < size(); ++i) {
         data_[i] = op(data_[i], x.data_[i]);
       }
       return *this;
@@ -528,7 +501,7 @@ namespace sill {
     template <typename R, typename TransOp, typename AccuOp>
     R transform_accumulate(R init,  TransOp trans_op, AccuOp accu_op) const { 
       R result(init);
-      for (size_t i = 0; i < size_; ++i) {
+      for (size_t i = 0; i < size(); ++i) {
         result = accu_op(result, trans_op(data_[i]));
       }
       return result;
@@ -541,40 +514,50 @@ namespace sill {
      * be copied. This table must be preallocated, and its first n
      * dimensions must match the first n dimensions of the input table.
      */
-    void restrict(const table& x, size_t x_start) const {
+    void restrict(const table& x, size_t x_start) {
       assert(arity() <= x.arity());
       assert(std::equal(shape_.begin(), shape_.end(), x.shape_.begin()));
       assert(x_start + size() <= x.size());
-      std::copy(x.data_ + x_start, x.data_ + x_start + size(), data_);
+      std::copy(x.data() + x_start, x.data() + x_start + size(), data());
+    }
+
+    /**
+     * Draws a sample when this table represents a distribution.
+     * \param trans_op an object that transforms the elements to probabilities
+     * \param rng a random number generator object
+     * \param tail the assignment to tail arguments
+     */
+    template <typename TransOp, typename Generator>
+    finite_index
+    sample(TransOp trans, Generator& rng, const finite_index& tail) const {
+      assert(tail.size() < arity());
+      size_t nhead = arity() - tail.size();
+      size_t nelem = offset().multiplier(nhead);
+      const T* elem = data() + offset().linear(tail, nhead);
+      T p = std::uniform_real_distribution<T>()(rng);
+      for (size_t i = 0; i < nelem; ++i) {
+        T prob = trans(elem[i]);
+        if (p <= prob) {
+          return offset().finite(i, nhead);
+        } else {
+          p -= prob;
+        }
+      }
+      throw std::invalid_argument("The total probability is less than 1");
     }
 
   private:
     // Private members
     //==========================================================================
 
-    /**
-     * Reallocates the memory to the given element count if the count is
-     * different than the number of presently allocated elements.
-     */
-    void reallocate(size_t n) {
-      if (size_ != n) {
-        if (data_) delete[] data_;
-        data_ = (n > 0) ? new T[n] : NULL;
-        size_ = n;
-      }
-    }
-
-    //! The dimensions of this table
+    //! The dimensions of this table.
     finite_index shape_;
 
-    //! Translates between finite and linear indices
+    //! Translates between finite and linear indices.
     table_offset offset_;
 
-    //! The total number of elements (if 0, then data_ = NULL).
-    size_t size_;
-
-    //! The elements of this table, stored in a linear order
-    T* data_;
+    //! The elements of this table, stored in a linear order.
+    std::unique_ptr<T[]> data_;
 
   }; // class table
 
@@ -586,7 +569,7 @@ namespace sill {
   std::ostream& operator<<(std::ostream& out, const table<T>& table) {
     std::ostream_iterator<size_t, char> out_it(out, " ");
     const T* elem = table.data();
-    foreach(const finite_index& index, table.indices()) {
+    for (const finite_index& index :  table.indices()) {
       std::copy(index.begin(), index.end(), out_it);
       out << *elem++ << std::endl;
     }
@@ -1176,7 +1159,5 @@ namespace sill {
   }; // class table_restrict_join
   
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

@@ -6,8 +6,6 @@
 #include <functional>
 #include <boost/range/algorithm.hpp>
 
-#include <sill/macros_def.hpp>
-
 namespace sill {
   template class table<double>;
   template class table<float>;
@@ -30,7 +28,7 @@ BOOST_AUTO_TEST_CASE(test_accessors) {
 
   // Index iterator and indexing
   int value = 0;
-  foreach(const finite_index& index, x.indices()) {
+  for (const finite_index& index : x.indices()) {
     x(index) = value++;
   }
   std::vector<int> seq(m);

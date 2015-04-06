@@ -2,10 +2,6 @@
 #define SILL_FACTOR_OPERATIONS_HPP
 
 #include <sill/factor/util/commutative_semiring.hpp>
-#include <sill/factor/concepts.hpp>
-#include <sill/stl_concepts.hpp>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
@@ -19,21 +15,21 @@ namespace sill {
   template <typename F>
   F sum(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support marginalization
-    return f.marginal(set_difference(f.arguments(), eliminate));
+    return f.marginal(f.arguments() - eliminate);
   }
 
   //! Returns the maximum of a factor over a subset of variabless
   template <typename F>
   F max(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support maximization
-    return f.maximum(set_difference(f.arguments(), eliminate));
+    return f.maximum(f.arguments() - eliminate);
   }
 
   //! Returns the minimum of a factor over a subset of variables
   template <typename F>
   F min(const F& f, const typename F::domain_type& eliminate) {
     // if the compilation fails here, F does not support minimization
-    return f.minimum(set_difference(f.arguments(), eliminate));
+    return f.minimum(f.arguments() - eliminate);
   }
 
   // Functions on collections of factors
@@ -45,8 +41,13 @@ namespace sill {
   prod_all(const Range& factors) {
     typedef typename Range::value_type factor_type;
     factor_type result(1);
-    foreach(const factor_type& f, factors) {
-      result *= f;
+    for (const factor_type& f : factors) {
+      // this is not quite right for moment_gaussian factors
+      if (superset(result.arguments(), f.arguments())) {
+        result *= f;
+      } else {
+        result = result * f;
+      }
     }
     return result;
   }
@@ -57,7 +58,7 @@ namespace sill {
   sum_all(const Range& factors) {
     typedef typename Range::value_type factor_type;
     factor_type result(0);
-    foreach(const factor_type& f, factors) {
+    for (const factor_type& f : factors) {
       result += f;
     }
     return result;
@@ -71,7 +72,7 @@ namespace sill {
     concept_assert((InputRange<Range>));
     typedef typename Range::value_type factor_type;
     factor_type result = csr.combine_init();
-    foreach(const factor_type& f, factors) {
+    for (const factor_type& f : factors) {
       csr.combine_in(result, f);
     }
     return result;
@@ -83,7 +84,7 @@ namespace sill {
   arguments(const Range& factors) {
     concept_assert((InputRange<Range>));
     typename Range::value_type::domain_type args;
-    foreach(const typename Range::value_type& f, factors) {
+    for (const typename Range::value_type& f : factors) {
       args.insert(f.arguments().begin(), f.arguments().end());
     }
     return args;
@@ -92,8 +93,6 @@ namespace sill {
   //! @} group factor_operations
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif
 

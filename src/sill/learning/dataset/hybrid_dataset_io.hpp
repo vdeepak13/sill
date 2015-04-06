@@ -2,15 +2,11 @@
 #define SILL_HYBRID_DATASET_IO_HPP
 
 #include <sill/learning/dataset/hybrid_dataset.hpp>
-#include <sill/learning/dataset/hybrid_memory_dataset.hpp>
 #include <sill/learning/dataset/symbolic_format.hpp>
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
-
-#include <boost/math/special_functions/fpclassify.hpp>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
@@ -22,8 +18,8 @@ namespace sill {
   template <typename T>
   void load(const std::string& filename,
             const symbolic_format& format,
-            hybrid_memory_dataset<T>& ds) {
-    var_vector vars = format.all_var_vec();
+            hybrid_dataset<T>& ds) {
+    hybrid_domain vars = format.vars();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -33,42 +29,44 @@ namespace sill {
 
     std::string line;
     size_t line_number = 0;
-    hybrid_record<T> r(vars);
+    hybrid_index<T> index(vars.finite_size(), vars.vector_size());
+    size_t ncols = index.finite_size() + index.vector_size();
     while (std::getline(in, line)) { 
       std::vector<const char*> tokens;
-      if (format.parse(r.size(), line, line_number, tokens)) {
+      if (format.parse(ncols, line, line_number, tokens)) {
         size_t col = format.skip_cols;
         size_t fi = 0;
         size_t vi = 0;
-        foreach(const symbolic_format::variable_info& var, format.vars) {
-          if (var.is_finite()) {
+        for (const symbolic_format::variable_info& info : format.var_infos) {
+          if (info.is_finite()) {
             const char* token = tokens[col++];
             if (token == format.missing) {
-              r.values.finite[fi++] = size_t(-1);
+              index.finite()[fi++] = size_t(-1);
             } else {
-              r.values.finite[fi++] = var.parse(token);
+              index.finite()[fi++] = info.parse(token);
             }
-          } else if (var.is_vector()) {
-            size_t size = var.size();
+          } else if (info.is_vector()) {
+            size_t size = info.size();
             if (std::count(&tokens[col], &tokens[col] + size, format.missing)) {
               // TODO: warning if only a subset of columns missing
-              std::fill(&r.values.vector[vi], &r.values.vector[vi] + size,
+              std::fill(index.vector().data() + vi,
+                        index.vector().data() + vi + size,
                         std::numeric_limits<T>::quiet_NaN());
               col += size;
               vi += size;
             } else {
               for (size_t j = 0; j < size; ++j) {
-                r.values.vector[vi++] = parse_string<T>(tokens[col++]);
+                index.vector()[vi++] = parse_string<T>(tokens[col++]);
               }
             }
           } else {
-            throw std::logic_error("Unsupported variable type " + var.name());
+            throw std::logic_error("Unsupported variable type " + info.name());
           }
         }
-        assert(r.values.finite.size() == fi);
-        assert(r.values.vector.size() == vi);
-        r.weight = format.weighted ? parse_string<T>(tokens[col]) : 1.0;
-        ds.insert(r);
+        assert(index.finite_size() == fi);
+        assert(index.vector_size() == vi);
+        T weight = format.weighted ? parse_string<T>(tokens[col]) : 1.0;
+        ds.insert(index, weight);
       }
     }
   }
@@ -81,7 +79,7 @@ namespace sill {
   void save(const std::string& filename,
             const symbolic_format& format,
             const hybrid_dataset<T>& data) {
-    var_vector vars = format.all_var_vec();
+    hybrid_domain vars = format.vars();
     
     std::ofstream out(filename);
     if (!out) {
@@ -93,27 +91,27 @@ namespace sill {
     }
     
     std::string separator = format.separator.empty() ? " " : format.separator;
-    foreach(const hybrid_record<T>& r, data.records(vars)) {
+    for (const auto& s : data(vars)) {
       for (size_t i = 0; i < format.skip_cols; ++i) {
         out << "0" << separator;
       }
       size_t fi = 0;
       size_t vi = 0;
       bool first = true;
-      foreach(const symbolic_format::variable_info& var, format.vars) {
-        if (var.is_finite()) {
+      for (const symbolic_format::variable_info& info : format.var_infos) {
+        if (info.is_finite()) {
           if (first) { first = false; } else { out << separator; }
-          size_t value = r.values.finite[fi++];
+          size_t value = s.first.finite()[fi++];
           if (value == size_t(-1)) {
             out << format.missing;
           } else {
-            var.print(out, value);
+            info.print(out, value);
           }
         } else {
-          for (size_t j = 0; j < var.size(); ++j) {
+          for (size_t j = 0; j < info.size(); ++j) {
             if (first) { first = false; } else { out << separator; }
-            T value = r.values.vector[vi++];
-            if (boost::math::isnan(value)) {
+            T value = s.first.vector()[vi++];
+            if (std::isnan(value)) {
               out << format.missing;
             } else {
               out << value;
@@ -122,7 +120,7 @@ namespace sill {
         }
       }
       if (format.weighted) {
-        out << separator << r.weight;
+        out << separator << s.second;
       }
       out << std::endl;
     }

@@ -4,36 +4,6 @@
 namespace sill {
 
   /**
-   * Represents a sequence of values for a sequence of variables,
-   * along with a weight.
-   * 
-   * \ingroup dataset_concepts
-   * \see finite_record, vector_record, hybrid_record
-   */
-  template <typename R>
-  struct Record {
-    //! The sequence of variables stored in this record.
-    typedef typename R::var_vector_type var_vector_type;
-
-    //! The assignment type corresponding to this record
-    typedef typename R::assignment_type assignment_type;
-
-    //! The type of values stored in this record
-    typedef typename R::values_type values_type;
-
-    //! The type of weight associated with this record
-    typedef typename R::weight_type weight_type;
-
-    //! Extracts the values stored in this record to an assignment
-    void extract(assignment_type& a) const;
-
-    friend operator<<(std::ostream& out, const Record& record);
-
-  }; // concept Record
-
-  // todo: static records, sequence records
-
-  /**
    * Represents a sequence of dense datapoints, where each column
    * is a variable of the specified type. Supports efficient 
    * iteration over all the data for a specified subset of the columns,
@@ -102,27 +72,6 @@ namespace sill {
     template <typename RandomNumberGenerator>
     record_type sample(const var_vector_type& vars, RandomNumberGenerator& rng) const;
     
-  };
-
-  /**
-   * Dataset that allows views over contiguous ranges (slices) of the rows.
-   * \see finite_memory_dataset, finite_file_dataset
-   */
-  template <typename DS>
-  struct SliceableDataset : public Dataset<DS> {
-
-    //! slice_view_type is itself a dataset
-    typedef typename DS::slice_view_type slice_view_type;
-
-    //! Returns a view representing a contiguous range of rows
-    slice_view_type subset(size_t begin_row, size_t end_row) const;
-
-    //! Returns a view representing a contiguous range of rows
-    slice_view_type subset(const slice& rows) const;
-
-    //! Returns a view represetning a union of contiguous ranges of rows
-    slice_view_type subset(const std::vector<slice>& slices) const;
-
   };
 
   /**

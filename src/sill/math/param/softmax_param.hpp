@@ -7,6 +7,8 @@
 
 #include <cmath>
 #include <iostream>
+#include <random>
+#include <stdexcept>
 
 namespace sill {
 
@@ -112,7 +114,7 @@ namespace sill {
      * Resets the function to the given number of labels and features.
      * May invalidate the parameters.
      */
-    void reset(size_t num_labels, size_t num_features) {
+    void resize(size_t num_labels, size_t num_features) {
       weight_.resize(num_labels, num_features);
       bias_.resize(num_labels);
     }
@@ -177,6 +179,7 @@ namespace sill {
 
     //! Evaluates the function for a dense feature vector.
     vec_type operator()(const vec_type& x) const {
+      assert(x.size() == weight_.cols());
       vec_type y(exp((weight_ * x + bias_).array()).matrix());
       y /= y.sum();
       return y;
@@ -186,6 +189,7 @@ namespace sill {
     vec_type operator()(const sparse_index<T>& x) const {
       vec_type y = bias_;
       for (std::pair<size_t,T> value : x) {
+        assert(value.first < weight_.cols());
         y += weight_.col(value.first) * value.second;
       }
       y = exp(y.array()).matrix();
@@ -205,6 +209,37 @@ namespace sill {
       vec_type y = operator()(x);
       y = y.array().log();
       return y;
+    }
+
+    //! Returns true if all the parameters are finite and not NaN.
+    bool is_finite() const {
+      return weight_.allFinite() && bias_.allFinite();
+    }
+
+    //! Returns true if two softmax parameter vectors are equal.
+    friend bool operator==(const softmax_param& f, const softmax_param& g) {
+      return f.weight_ == g.weight_ && f.bias_ == g.bias_;
+    }
+
+    //! Returns true if two softmax parameter vecors are not equal.
+    friend bool operator!=(const softmax_param& f, const softmax_param& g) {
+      return !(f == g);
+    }
+
+    // Sampling
+    //==========================================================================
+    template <typename Generator>
+    size_t sample(Generator& rng, const vec_type& x) const {
+      vec_type p = operator()(x);
+      T val = std::uniform_real_distribution<T>()(rng);
+      for (size_t i = 0; i < p.size(); ++i) {
+        if (val <= p[i]) {
+          return i;
+        } else {
+          val -= p[i];
+        }
+      }
+      throw std::logic_error("The probabilities do not sum to 1");
     }
 
     // OptimizationVector functions
@@ -236,6 +271,18 @@ namespace sill {
       return *this;
     }
 
+    softmax_param& operator+=(T a) {
+      weight_.array() += a;
+      bias_.array() += a;
+      return *this;
+    }
+
+    softmax_param& operator-=(T a) {
+      weight_.array() -= a;
+      bias_.array() -= a;
+      return *this;
+    }
+
     softmax_param& operator*=(T a) {
       weight_ *= a;
       bias_ *= a;
@@ -255,70 +302,6 @@ namespace sill {
 
     friend T dot(const softmax_param& f, const softmax_param& g) {
       return f.weight_.cwiseProduct(g.weight_).sum() + f.bias_.dot(g.bias_);
-    }
-
-    // LogLikelihoodDerivatives functions
-    //=========================================================================
-    void add_gradient(size_t label, const vec_type& x, T w,
-                      softmax_param& g) const {
-      vec_type p = operator()(x);
-      p[label] -= T(1);
-      p *= -w;
-      g.weight().noalias() += p * x.transpose();
-      g.bias() += p;
-    }
-
-    template <typename Derived>
-    void add_gradient(const Eigen::DenseBase<Derived>& plabel,
-                      const vec_type& x, T w,
-                      softmax_param& g) const {
-      vec_type p = operator()(x);
-      p -= plabel.derived();
-      p *= -w;
-      g.weight().noalias() += p * x.transpose();
-      g.bias() += p;
-    }
-
-    void add_hessian_diag(const vec_type& x, T w, softmax_param& h) const {
-      vec_type v = operator()(x);
-      v -= v.cwiseProduct(v);
-      v *= -w;
-      h.weight().noalias() += v * x.cwiseProduct(x).transpose();
-      h.bias() += v;
-    }
-
-    void add_gradient(size_t label, const sparse_index<T>& x, T w,
-                      softmax_param& g) const {
-      vec_type p = operator()(x);
-      p[label] -= T(1);
-      p *= -w;
-      for (std::pair<size_t,T> value : x) {
-        g.weight().col(value.first) += p * value.second;
-      }
-      g.bias() += p;
-    }
-
-    template <typename Derived>
-    void add_gradient(const Eigen::DenseBase<Derived>& plabel,
-                      const sparse_index<T>& x, T w,
-                      softmax_param& g) const {
-      vec_type p = operator()(x);
-      p -= plabel.derived();
-      p *= -w;
-      for (std::pair<size_t,T> value : x) {
-        g.weight().col(value.first) += p * value.second;
-      }
-      g.bias() += p;
-    }
-
-    void add_hessian_diag(const sparse_index<T>& x, T w, softmax_param& h) const {
-      vec_type v = operator()(x);
-      v -= v.cwiseProduct(v);
-      v *= -w;
-      for (std::pair<size_t,T> value : x) {
-        h.weight().col(value.first) += v * (value.second * value.second);
-      }
-      h.bias() += v;
     }
 
   private:

@@ -2,6 +2,8 @@
 #define SILL_SYMBOLIC_FORMAT_HPP
 
 #include <sill/global.hpp>
+#include <sill/argument/domain.hpp>
+#include <sill/argument/hybrid_domain.hpp>
 #include <sill/base/discrete_process.hpp>
 #include <sill/base/universe.hpp>
 #include <sill/parsers/simple_config.hpp>
@@ -13,8 +15,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
@@ -237,26 +237,26 @@ namespace sill {
       }
     }; // class discrete_process_info
 
-    //! Specifies the separator for the fields (default whitespace)
+    //! Specifies the separator for the fields (default whitespace).
     std::string separator;
 
-    //! Specifies the symbol for missing values
+    //! Specifies the symbol for missing values.
     std::string missing;
 
-    //! The number of lines at the beginning of the file to skip (default = 0)
+    //! The number of lines at the beginning of the file to skip (default = 0).
     size_t skip_rows;
 
-    //! The number of columns at the beginning of each line to skip (default = 0)
+    //! The number of columns at the beginning of each line to skip (default = 0).
     size_t skip_cols;
 
-    //! Indicates if the dataset is weighted (default = false)
+    //! Indicates if the dataset is weighted (default = false).
     bool weighted;
 
-    //! The variables in the dataset
-    std::vector<variable_info> vars;
+    //! The information about variables in the dataset.
+    std::vector<variable_info> var_infos;
 
-    //! The discrete processes in the dataset
-    std::vector<discrete_process_info> discrete_procs;
+    //! The information about discrete processes in the dataset.
+    std::vector<discrete_process_info> discrete_infos;
 
     /**
      * Constructs the symbolic format with default parameters.
@@ -271,7 +271,7 @@ namespace sill {
      * Returns true if all the variables in the format are finite.
      */
     bool is_finite() const {
-      foreach (const variable_info& info, vars) {
+      for (const variable_info& info : var_infos) {
         if (!info.is_finite()) {
           return false;
         }
@@ -280,18 +280,11 @@ namespace sill {
     }
 
     /**
-     * Returns the set of all finite variables in the format.
+     * Returns the domain of all finite variables in the format.
      */
-    finite_domain finite_vars() const {
-      return make_domain(finite_var_vec());
-    }
-
-    /**
-     * Returns the vector of all finite variables in the format.
-     */
-    finite_var_vector finite_var_vec() const {
-      finite_var_vector result;
-      foreach (const variable_info& info, vars) {
+    domain<finite_variable*> finite_vars() const {
+      domain<finite_variable*> result;
+      for (const variable_info& info : var_infos) {
         if (info.is_finite()) {
           result.push_back(info.as_finite());
         }
@@ -305,7 +298,7 @@ namespace sill {
      * \throw std::domain_error if the variable is present but is not finite
      */
     finite_variable* finite_var(const std::string& name) const {
-      foreach (const variable_info& info, vars) {
+      for (const variable_info& info : var_infos) {
         if (info.name() == name) {
           if (info.is_finite()) {
             return info.as_finite();
@@ -321,7 +314,7 @@ namespace sill {
      * Returns true if all the variables in the format are vector.
      */
     bool is_vector() const {
-      foreach (const variable_info& info, vars) {
+      for (const variable_info& info : var_infos) {
         if (!info.is_vector()) {
           return false;
         }
@@ -330,18 +323,11 @@ namespace sill {
     }
 
     /**
-     * Returns the set of all vector variables in the format.
+     * Returns the domain of all vector variables in the format.
      */
-    vector_domain vector_vars() const {
-      return make_domain(vector_var_vec());
-    }
-
-    /**
-     * Returns the vector of all vector variables in the format.
-     */
-    vector_var_vector vector_var_vec() const {
-      vector_var_vector result;
-      foreach (const variable_info& info, vars) {
+    domain<vector_variable*> vector_vars() const {
+      domain<vector_variable*> result;
+      for (const variable_info& info : var_infos) {
         if (info.is_vector()) {
           result.push_back(info.as_vector());
         }
@@ -355,7 +341,7 @@ namespace sill {
      * \throw std::domain_error if the variable is present but is not vector
      */
     vector_variable* vector_var(const std::string& name) const {
-      foreach (const variable_info& info, vars) {
+      for (const variable_info& info : var_infos) {
         if (info.name() == name) {
           if (info.is_vector()) {
             return info.as_vector();
@@ -368,19 +354,16 @@ namespace sill {
     }
 
     /**
-     * Returns the set of variables in this format.
+     * Returns the domain of variables in this format.
      */
-    domain all_vars() const {
-      return make_domain(all_var_vec());
-    }
-
-    /**
-     * Returns the vector of variables in this format.
-     */
-    var_vector all_var_vec() const {
-      var_vector result;
-      foreach (const variable_info& info, vars) {
-        result.push_back(info.var());
+    hybrid_domain vars() const {
+      hybrid_domain result;
+      for (const variable_info& info : var_infos) {
+        if (info.is_finite()) {
+          result.finite().push_back(info.as_finite());
+        } else {
+          result.vector().push_back(info.as_vector());
+        }
       }
       return result;
     }
@@ -390,7 +373,7 @@ namespace sill {
      * \throw std::out_of_range if the variable with the name is not present
      */
     variable* var(const std::string& name) const {
-      foreach (const variable_info& info, vars) {
+      for (const variable_info& info : var_infos) {
         if (info.name() == name) {
           return info.var();
         }
@@ -405,7 +388,7 @@ namespace sill {
      * Returns true if all the discrete processes in the format are finite.
      */
     bool is_finite_discrete() const {
-      foreach (const discrete_process_info& info, discrete_procs) {
+      for (const discrete_process_info& info : discrete_infos) {
         if (!info.is_finite()) {
           return false;
         }
@@ -414,18 +397,11 @@ namespace sill {
     }
 
     /**
-     * Returns the set of all finite discrete processes in the format.
+     * Returns the domain of all finite discrete processes in the format.
      */
-    std::set<finite_discrete_process*> finite_discrete_procs() const {
-      return make_domain(finite_discrete_proc_vec());
-    }
-
-    /**
-     * Returns the vector of all finite discrete processes in the format.
-     */
-    std::vector<finite_discrete_process*> finite_discrete_proc_vec() const {
-      std::vector<finite_discrete_process*> result;
-      foreach (const discrete_process_info& info, discrete_procs) {
+    domain<finite_discrete_process*> finite_discrete_procs() const {
+      domain<finite_discrete_process*> result;
+      for (const discrete_process_info& info : discrete_infos) {
         if (info.is_finite()) {
           result.push_back(info.as_finite());
         }
@@ -439,7 +415,7 @@ namespace sill {
      * \throw std::domain_error if the process is present but is not finite
      */
     finite_discrete_process* finite_discrete_proc(const std::string& name) const {
-      foreach (const discrete_process_info& info, discrete_procs) {
+      for (const discrete_process_info& info : discrete_infos) {
         if (info.name() == name) {
           if (info.is_finite()) {
             return info.as_finite();
@@ -455,7 +431,7 @@ namespace sill {
      * Returns true if all the discrete processs in the format are vector.
      */
     bool is_vector_discrete() const {
-      foreach (const discrete_process_info& info, discrete_procs) {
+      for (const discrete_process_info& info : discrete_infos) {
         if (!info.is_vector()) {
           return false;
         }
@@ -464,18 +440,11 @@ namespace sill {
     }
 
     /**
-     * Returns the set of all vector discrete processes in the format.
+     * Returns the domain of all vector discrete processes in the format.
      */
-    std::set<vector_discrete_process*> vector_discrete_procs() const {
-      return make_domain(vector_discrete_proc_vec());
-    }
-
-    /**
-     * Returns the vector of all vector discrete processes in the format.
-     */
-    std::vector<vector_discrete_process*> vector_discrete_proc_vec() const {
-      std::vector<vector_discrete_process*> result;
-      foreach (const discrete_process_info& info, discrete_procs) {
+    domain<vector_discrete_process*> vector_discrete_procs() const {
+      domain<vector_discrete_process*> result;
+      for (const discrete_process_info& info : discrete_infos) {
         if (info.is_vector()) {
           result.push_back(info.as_vector());
         }
@@ -489,7 +458,7 @@ namespace sill {
      * \throw std::domain_error if the variable is present but is not vector
      */
     vector_discrete_process* vector_discrete_proc(const std::string& name) const {
-      foreach (const discrete_process_info& info, discrete_procs) {
+      for (const discrete_process_info& info : discrete_infos) {
         if (info.name() == name) {
           if (info.is_vector()) {
             return info.as_vector();
@@ -502,34 +471,27 @@ namespace sill {
     }
 
     /**
-     * Returns the set of discrete processes in this format.
+     * Returns the domain of discrete processes in this format.
      */
-    std::set<discrete_process<variable>*> all_discrete_procs() const {
-      return make_domain(all_discrete_proc_vec());
-    }
-
-    /**
-     * Returns the vector of discrete processes in this format.
-     */
-    std::vector<discrete_process<variable>*> all_discrete_proc_vec() const {
-      std::vector<discrete_process<variable>*> result;
-      foreach (const discrete_process_info& info, discrete_procs) {
+    domain<discrete_process<variable>*> discrete_procs() const {
+      domain<discrete_process<variable>*> result;
+      for (const discrete_process_info& info : discrete_infos) {
         result.push_back(info.proc());
       }
       return result;
     }
 
     /**
-     * Returns a variable with the given name.
+     * Returns a process with the given name.
      * \throw std::out_of_range if the variable with the name is not present
      */
     discrete_process<variable>* discrete_proc(const std::string& name) const {
-      foreach (const discrete_process_info& info, discrete_procs) {
+      for (const discrete_process_info& info : discrete_infos) {
         if (info.name() == name) {
           return info.proc();
         }
       }
-      throw std::out_of_range("Could not find the variable \"" + name + "\"");
+      throw std::out_of_range("Could not find the process \"" + name + "\"");
     }
 
     // Functions related to parsing
@@ -594,13 +556,38 @@ namespace sill {
      * Comments can be prepended with #. Whitespace is ignored. Sections order
      * can be swapped.
      */
-    void load_config(const std::string& filename, universe& u) {
+    void load(const std::string& filename, universe& u) {
       simple_config config;
       config.load(filename);
-      typedef std::pair<std::string, std::string> config_entry;
 
-      // load the options
-      foreach(const config_entry& entry, config["options"]) {
+      // load the components of a config
+      load_options(config);
+      load_variables(config, u);
+      load_discrete(config);
+
+      // empty formats are not allowed
+      if (var_infos.empty() && discrete_infos.empty()) {
+        throw std::out_of_range("Please specify at least one variable or process");
+      }
+    }
+
+    /**
+     * Saves the symbolic_format to a configuration file with the format
+     * given in load().
+     */
+    void save(const std::string& filename) const {
+      simple_config config;
+      save_variables(config);
+      save_discrete(config);
+      save_options(config);
+      config.save(filename);
+    }
+
+  private:
+    //! load the options
+    void load_options(simple_config& config) {
+      typedef std::pair<std::string, std::string> config_entry;
+      for (const config_entry& entry : config["options"]) {
         if (entry.first == "separator") {
           separator = parse_escaped(entry.second);
         } else if (entry.first == "missing") {
@@ -616,9 +603,12 @@ namespace sill {
                     << "\", ignoring" << std::endl;
         }
       }
+    }
 
-      // load the variables
-      foreach(const config_entry& entry, config["variables"]) {
+    //! load the variables
+    void load_variables(simple_config& config, universe& u) {
+      typedef std::pair<std::string, std::string> config_entry;
+      for (const config_entry& entry : config["variables"]) {
         if (entry.second.compare(0, 7, "vector(") == 0) {
           std::string param = entry.second.substr(7, entry.second.size() - 8);
           size_t dim;
@@ -628,7 +618,7 @@ namespace sill {
               "\": " + entry.second;
             throw std::invalid_argument(msg);
           }
-          vars.push_back(variable_info(u.new_vector_variable(entry.first, dim)));
+          var_infos.emplace_back(u.new_vector_variable(entry.first, dim));
         } else if (entry.second.compare(0, 7, "finite(") == 0) {
           std::string param = entry.second.substr(7, entry.second.size() - 8);
           size_t arity;
@@ -638,7 +628,7 @@ namespace sill {
               "\": " + entry.second;
             throw std::invalid_argument(msg);
           }
-          vars.push_back(variable_info(u.new_finite_variable(entry.first, arity)));
+          var_infos.emplace_back(u.new_finite_variable(entry.first, arity));
         } else { // finite variable with named values
           std::vector<std::string> values;
           string_split(entry.second, ", ", values);
@@ -655,12 +645,15 @@ namespace sill {
             throw std::invalid_argument(msg);
           }
           finite_variable* v = u.new_finite_variable(entry.first, values.size());
-          vars.push_back(variable_info(v, values));
+          var_infos.emplace_back(v, values);
         }
       }
+    }
 
-      // load the discrete processes
-      foreach(const config_entry& entry, config["discrete_processes"]) {
+    //! load the discrete processes
+    void load_discrete(simple_config& config) {
+      typedef std::pair<std::string, std::string> config_entry;
+      for (const config_entry& entry : config["discrete_processes"]) {
         if (entry.second.compare(0, 7, "vector(") == 0) {
           std::string name = entry.first;
           std::string param = entry.second.substr(7, entry.second.size() - 8);
@@ -671,8 +664,7 @@ namespace sill {
               "\": " + entry.second;
             throw std::invalid_argument(msg);
           }
-          vector_discrete_process* p = new vector_discrete_process(name, dim);
-          discrete_procs.push_back(discrete_process_info(p));
+          discrete_infos.emplace_back(new vector_discrete_process(name, dim));
         } else if (entry.second.compare(0, 7, "finite(") == 0) {
           std::string name = entry.first;
           std::string param = entry.second.substr(7, entry.second.size() - 8);
@@ -683,8 +675,7 @@ namespace sill {
               "\": " + entry.second;
             throw std::invalid_argument(msg);
           }
-          finite_discrete_process* p = new finite_discrete_process(name, arity);
-          discrete_procs.push_back(discrete_process_info(p));
+          discrete_infos.emplace_back(new finite_discrete_process(name, arity));
         } else { // finite discrete process with named values
           std::string name = entry.first;
           std::vector<std::string> values;
@@ -702,25 +693,23 @@ namespace sill {
             throw std::invalid_argument(msg);
           }
           finite_discrete_process* p = new finite_discrete_process(name, values.size());
-          discrete_procs.push_back(discrete_process_info(p, values));
+          discrete_infos.emplace_back(p, values);
         }
-      }
-
-      // empty formats are not allowed
-      if (vars.empty() && discrete_procs.empty()) {
-        throw std::out_of_range("Please specify at least one variable or process");
       }
     }
 
-    /**
-     * Saves the symbolic_format to a configuration file with the format
-     * given in load_config().
-     */
-    void save_config(const std::string& filename) const {
-      simple_config config;
-      
-      // store the variables
-      foreach(const variable_info& info, vars) {
+    //! store the options
+    void save_options(simple_config& config) const {
+      config.add("options", "separator", escape_string(separator));
+      config.add("options", "missing", escape_string(missing));
+      config.add("options", "skip_rows", skip_rows);
+      config.add("options", "skip_cols", skip_cols);
+      config.add("options", "weighted", weighted);
+    }
+
+    //! store the variables
+    void save_variables(simple_config& config) const {
+      for (const variable_info& info : var_infos) {
         if (info.is_vector()) {
           std::string dim = to_string(info.size());
           config.add("variables", info.name(), "vector(" + dim + ")");
@@ -734,9 +723,11 @@ namespace sill {
           throw std::logic_error("Unsupported variable type " + info.name());
         }
       }
+    }
 
-      // store the discrete processes
-      foreach(const discrete_process_info& info, discrete_procs) {
+    //! store the discrete processes
+    void save_discrete(simple_config& config) const {
+      for (const discrete_process_info& info : discrete_infos) {
         if (info.is_vector()) {
           std::string dim = to_string(info.size());
           config.add("discrete_processes", info.name(), "vector(" + dim + ")");
@@ -750,22 +741,10 @@ namespace sill {
           throw std::logic_error("Unsupported discrete process type " + info.name());
         }
       }
-
-      // store the options
-      config.add("options", "separator", escape_string(separator));
-      config.add("options", "missing", escape_string(missing));
-      config.add("options", "skip_rows", skip_rows);
-      config.add("options", "skip_cols", skip_cols);
-      config.add("options", "weighted", weighted);
-
-      // save the config to the output file
-      config.save(filename);
     }
 
   }; // struct symbolic_format
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

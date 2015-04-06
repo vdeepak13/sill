@@ -17,7 +17,7 @@ namespace sill {
    * A type that represents an assignment to vector variables.
    * Each vector variable is mapped to an Eigen vector.
    */
-  template <typename T>
+  template <typename T = double>
   using vector_assignment =
     std::unordered_map<vector_variable*, dynamic_vector<T> >;
   
@@ -37,6 +37,7 @@ namespace sill {
   /**
    * Returns the concatenation of (a subset of) vectors in an assignment
    * in the order specified by the given domain.
+   * \relates vector_assignment
    */
   template <typename T>
   dynamic_vector<T>

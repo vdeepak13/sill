@@ -258,12 +258,6 @@ namespace sill {
     return a[0] == b[0] || a[1] == b[0];
   }
 
-  // deprecated
-  template <typename T, size_t N>
-  array_domain<T, N> make_domain(const array_domain<T, N>& a) {
-    return a;
-  }
-
   // Argument operations
   //============================================================================
 

@@ -38,10 +38,17 @@ namespace sill {
     //! Default constructor. Creates an empty table factor.
     table_factor() { }
 
-    //! Creates a factor with the given finite arguments and parameters
+    //! Creates a factor with the given finite arguments and parameters.
     table_factor(const domain_type& args, const table<T>& param)
       : finite_args_(args),
         param_(param) {
+      check_param();
+    }
+
+    //! Creates a factor with the given finite arguments and parameters.
+    table_factor(const domain_type& args, table<T>&& param)
+      : finite_args_(args),
+        param_(std::move(param)) {
       check_param();
     }
 

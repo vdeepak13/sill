@@ -1,143 +1,68 @@
 #ifndef SILL_FINITE_DATASET_HPP
 #define SILL_FINITE_DATASET_HPP
 
-#include <sill/base/finite_assignment.hpp>
+#include <sill/argument/finite_assignment.hpp>
+#include <sill/argument/domain.hpp>
 #include <sill/base/finite_variable.hpp>
-#include <sill/learning/dataset/finite_record.hpp>
-#include <sill/learning/dataset/raw_record_iterators.hpp>
+#include <sill/datastructure/finite_index.hpp>
+#include <sill/learning/dataset/basic_dataset.hpp>
 
-#include <iostream>
-#include <vector>
-
-#include <boost/random/uniform_int.hpp>
-
-#include <sill/macros_def.hpp>
+#include <limits>
 
 namespace sill {
-  
-  // forward declaration
-  template <typename BaseDS> class slice_view;
-
-  // forward declaration; to use this class (e.g., in sequence_dataset), use
-  // #include <sill/learning/dataset/finite_sequence_record.hpp>
-  class finite_sequence_record;
 
   /**
-   * A dataset that stores observations only for finite variables.
+   * The traits for a dataset that stores observations for finite variables.
+   * \tparam T the type representing the weights
+   */
+  template <typename T>
+  struct finite_data_traits {
+    typedef finite_variable          variable_type;
+    typedef domain<finite_variable*> domain_type;
+    typedef finite_assignment        assignment_type;
+    typedef finite_index             data_type;
+    typedef size_t                   element_type;
+    typedef T                        weight_type;
+
+    //! Returns the number of columns occupied by a variable (always 1).
+    static constexpr size_t ncols(finite_variable* v) {
+      return 1;
+    }
+
+    //! Returns the number of columns occupied by a domain.
+    static size_t ncols(const domain_type& dom) {
+      return dom.size();
+    }
+
+    //! Returns the special "missing" value.
+    static constexpr size_t missing() {
+      return std::numeric_limits<size_t>::max();
+    }
+
+    //! Extracts the value for a single variable.
+    static void copy(size_t* const* ptrs, size_t ncols, size_t row, size_t& val) {
+      val = ptrs[0][row];
+    }
+
+    //! Copies the value for a single variable.
+    static void copy(size_t val, size_t ncols, size_t* dest) {
+      *dest = val;
+    }
+
+  }; // struct finite_data_traits
+  
+  /**
+   * A dense dataset that stores observations for finite variables
+   * in memory. The observations are stored in the column-major
+   * format, i.e., we first store the values for the first variable
+   * for all time steps, then for the second variable etc.
+   *
+   * \tparam T the type representing the weights
    * \see Dataset
    */
-  class finite_dataset {
-  public:
-    // types for the Dataset concept
-    typedef finite_variable   argument_type;
-    typedef finite_domain     domain_type;
-    typedef finite_var_vector var_vector_type;
-    typedef finite_assignment assignment_type;
-    typedef finite_record     record_type;
-
-    typedef raw_record_iterator<finite_dataset>       record_iterator;
-    typedef raw_const_record_iterator<finite_dataset> const_record_iterator;
-
-    // types for sequence_dataset class
-    typedef finite_sequence_record sequence_record_type;
-
-    //! Default constructor
-    finite_dataset() { }
-
-    //! Destructor
-    virtual ~finite_dataset() { }
-
-    //! Returns the number of datapoints in the dataset.
-    virtual size_t size() const = 0;
-
-    //! Returns true if the dataset has no datapoints.
-    bool empty() const { return size() == 0; }
-
-    //! Returns the columns of this dataset.
-    const finite_domain arguments() const { return make_domain(args); }
-
-    //! Returns the columns of this dataset.
-    const finite_var_vector& arg_vector() const { return args; }
-
-    //! Returns a single data point in the dataset's natural ordering.
-    finite_record record(size_t row) const { return record(row, args); }
-
-    //! Returns a single data point for a subset of the variables.
-    virtual finite_record
-    record(size_t row, const finite_var_vector& vars) const = 0;
-
-    //! Returns mutable records for the specified finite variables.
-    std::pair<record_iterator, record_iterator>
-    records(const finite_var_vector& vars) {
-      return std::make_pair(record_iterator(this, vars),
-                            record_iterator(size()));
-    }
-
-    //! Returns immutable records for the specified finite variables.
-    std::pair<const_record_iterator, const_record_iterator>
-    records(const finite_var_vector& vars) const {
-      return std::make_pair(const_record_iterator(this, vars),
-                            const_record_iterator(size()));
-    }
-
-    //! Draws a random sample from this dataset.
-    template <typename RandomNumberGenerator>
-    finite_record sample(const finite_var_vector& vars,
-                         RandomNumberGenerator& rng) const {
-      assert(!empty());
-      boost::uniform_int<size_t> uniform(0, size() - 1);
-      return record(uniform(rng), vars);
-    }
-
-    // Utility functions, invoked by the iterators and subclasses
-    //========================================================================
-  protected:
-    typedef raw_record_iterator_state<finite_record> iterator_state_type;
-
-    //! swaps the arguments of this dataset and ds
-    void swap(finite_dataset& ds) {
-      std::swap(args, ds.args);
-    }
-
-    //! initializes the data structures in the record iterator
-    virtual aux_data* init(const finite_var_vector& args,
-                           iterator_state_type& state) const = 0;
-
-    //! advances the internal pointer in data by the given difference
-    virtual void advance(ptrdiff_t diff,
-                         iterator_state_type& state,
-                         aux_data* data) const = 0;
-
-    //! loads at most n rows
-    virtual size_t load(size_t n,
-                        iterator_state_type& state,
-                        aux_data* data) const = 0;
-
-    //! saves the previously loaded data
-    virtual void save(iterator_state_type& state, aux_data* data) = 0;
-
-    //! prints the summary of this dataset to a stream
-    virtual void print(std::ostream& out) const = 0;
-
-    //! initializes the variables in this dataset
-    void initialize(const finite_var_vector& vars) { args = vars; }
-
-    //! The variables in the dataset's internal ordering of columns.
-    finite_var_vector args;
-
-    // friends
-    friend class raw_record_iterator<finite_dataset>;
-    friend class raw_const_record_iterator<finite_dataset>;
-    friend class slice_view<finite_dataset>;
-    friend std::ostream& operator<<(std::ostream& out, const finite_dataset& ds) {
-      ds.print(out);
-      return out;
-    }
-
-  }; // class finite_dataset
+  template <typename T = double>
+  using finite_dataset = basic_dataset<finite_data_traits<T> >;
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

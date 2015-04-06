@@ -7,8 +7,11 @@
 #include <sill/functional/operators.hpp>
 #include <sill/functional/entropy.hpp>
 #include <sill/math/constants.hpp>
+#include <sill/math/likelihood/canonical_table_ll.hpp>
 #include <sill/math/logarithmic.hpp>
+#include <sill/math/random/table_distribution.hpp>
 
+#include <cmath>
 #include <initializer_list>
 #include <iostream>
 
@@ -24,7 +27,7 @@ namespace sill {
    * exp(\sum_x \theta_x * 1(X=x)). In some cases, e.g. in a Bayesian network,
    * this factor also represents a probability distribution in the log-space.
    *
-   * \tparam T a real type for representing each parameter
+   * \tparam T a real type representing each parameter
    *
    * \ingroup factor_types
    * \see Factor
@@ -41,17 +44,17 @@ namespace sill {
     typedef finite_variable   variable_type;
     typedef domain<finite_variable*> domain_type;
     typedef finite_assignment assignment_type;
-    typedef table<T>          param_type;
-    
-    // IndexableFactor member types
+
+    // ParametricFactor types
+    typedef table<T>     param_type;
     typedef finite_index index_type;
+    typedef table_distribution<T> distribution_type;
     
-    // DistributionFactor member types
+    // LearnableDistributionFactor member types
+    typedef canonical_table_ll<T> ll_type;
+    
+    // ExponentialFamilyFactor member types
     typedef probability_table<T> probability_factor_type;
-    
-    // LearnableFactor member types
-    //typedef finite_dataset dataset_type;
-    //typedef finite_record record_type;
     
     // Constructors and conversion operators
     //==========================================================================
@@ -79,6 +82,10 @@ namespace sill {
     //! Creates a factor with the specified arguments and parameters.
     canonical_table(const domain_type& args, const table<T>& param)
       : table_factor<T>(args, param) { }
+
+    //! Creates a factor with the specified arguments and parameters.
+    canonical_table(const domain_type& args, table<T>&& param)
+      : table_factor<T>(args, std::move(param)) { }
 
     //! Creates a factor with the specified arguments and parameters.
     canonical_table(const domain_type& args,
@@ -342,6 +349,47 @@ namespace sill {
       table_factor<T>::restrict(a, result);
     }
 
+    // Sampling
+    //==========================================================================
+    
+    //! Returns the distribution with the parameters of this factor.
+    table_distribution<T> distribution() const {
+      return table_distribution<T>(this->param_, log_tag());
+    }
+
+    //! Draws a random sample from a marginal distribution.
+    template <typename Generator>
+    finite_index sample(Generator& rng) const {
+      return sample(rng, finite_index());
+    }
+
+    //! Draws a random sample from a conditional distribution.
+    template <typename Generator>
+    finite_index sample(Generator& rng, const finite_index& tail) const {
+      return this->param_.sample(exponent<T>(), rng, tail);
+    }
+
+    /**
+     * Draws a random sample from a marginal distribution,
+     * storing the result in an assignment.
+     */
+    template <typename Generator>
+    void sample(Generator& rng, finite_assignment& a) const {
+      this->assignment(sample(rng), a);
+    }
+
+    /**
+     * Draws a random sample from a conditional distribution,
+     * extracting the tail from and storing the result to an assignment.
+     * \param ntail the tail variables (must be a suffix of the domain).
+     */
+    template <typename Generator>
+    void sample(Generator& rng, const domain_type& tail,
+                finite_assignment& a) const {
+      assert(suffix(tail, arguments()));
+      this->assignment(sample(rng, extract(a, tail)), a);
+    }
+
     // Entropy and divergences
     //==========================================================================
 
@@ -385,37 +433,6 @@ namespace sill {
     friend T max_diff(const canonical_table& p, const canonical_table& q) {
       return transform_accumulate(p, q, abs_difference<T>(), sill::maximum<T>());
     }
-
-    /**
-     * A type that represents the log-likelihood function and its derivatives.
-     * Models the LogLikelihoodObjective concept.
-     */
-    struct loglikelihood_type {
-      loglikelihood_type(const table<T>* /* ct */) { }
-      
-      void add_gradient(const finite_index& index, T w, table<T>& g) {
-        g(index) += w;
-      }
-
-      void add_gradient(const table<T>& phead, const finite_index& tail, T w,
-                        table<T>& g) {
-        assert(phead.arity() + tail.size() == g.arity());
-        size_t index = g.offset().linear(tail, phead.arity());
-        for (size_t i = 0; i < phead.size(); ++i) {
-          g[index + i] += phead[i] * w;
-        }
-      }
-      
-      void add_gradient_sqr(const table<T>& phead, const finite_index& tail, T w,
-                            table<T>& g) {
-        add_gradient(phead, tail, w, g);
-      }
-
-      void add_hessian_diag(const finite_index& index, T w, table<T>& h) { }
-
-      void add_hessian_diag(const table<T>& phead, const finite_index& tail, T w,
-                            table<T>& h) { }
-    }; // struct loglikelihood_type
 
   }; // class canonical_table
 

@@ -7,9 +7,13 @@
 #include <sill/functional/operators.hpp>
 #include <sill/functional/entropy.hpp>
 #include <sill/math/constants.hpp>
+#include <sill/math/likelihood/probability_table_ll.hpp>
+#include <sill/math/likelihood/probability_table_mle.hpp>
+#include <sill/math/random/table_distribution.hpp>
 
 #include <initializer_list>
 #include <iostream>
+#include <random>
 
 namespace sill {
 
@@ -25,7 +29,7 @@ namespace sill {
    * e.g. in a Markov network, there are no constraints on the normalization
    * of f.
    *
-   * \tparam T a real type for representing each parameter
+   * \tparam T a real type representing each parameter
    *
    * \ingroup factor_types
    * \see Factor
@@ -42,17 +46,15 @@ namespace sill {
     typedef finite_variable   variable_type;
     typedef domain<finite_variable*> domain_type;
     typedef finite_assignment assignment_type;
-    typedef table<T>          param_type;
-    
-    // IndexableFactor member types
+
+    // ParametricFactor types
+    typedef table<T>     param_type;
     typedef finite_index index_type;
+    typedef table_distribution<T> distribution_type;
     
-    // DistributionFactor member types
-    typedef probability_table probability_factor_type;
-    
-    // LearnableFactor member types
-    // typedef finite_dataset dataset_type;
-    // typedef finite_record  record_type;
+    // LearnableDistributionFactor types
+    typedef probability_table_ll<T>  ll_type;
+    typedef probability_table_mle<T> mle_type;
 
     // Constructors and conversion operators
     //==========================================================================
@@ -80,6 +82,10 @@ namespace sill {
     //! Creates a factor with the specified arguments and parameters.
     probability_table(const domain_type& args, const table<T>& param)
       : table_factor<T>(args, param) { }
+
+    //! Creates a factor with the specified arguments and parameters.
+    probability_table(const domain_type& args, table<T>&& param)
+      : table_factor<T>(args, std::move(param)) { }
 
     //! Creates a factor with the specified arguments and parameters.
     probability_table(const domain_type& args,
@@ -320,6 +326,7 @@ namespace sill {
     }
 
     //! If this factor represents p(x, y), returns p(x | y).
+    //! \todo reorder the variables, so that tail comes last
     probability_table conditional(const domain_type& tail) const {
       return (*this) / marginal(tail);
     }
@@ -391,6 +398,47 @@ namespace sill {
       table_factor<T>::restrict(a, result);
     }
 
+    // Sampling
+    //==========================================================================
+    
+    //! Returns the distribution with the parameters of this factor.
+    table_distribution<T> distribution() const {
+      return table_distribution<T>(this->param_);
+    }
+
+    //! Draws a random sample from a marginal distribution.
+    template <typename Generator>
+    finite_index sample(Generator& rng) const {
+      return sample(rng, finite_index());
+    }
+
+    //! Draws a random sample from a conditional distribution.
+    template <typename Generator>
+    finite_index sample(Generator& rng, const finite_index& tail) const {
+      return this->param_.sample(identity(), rng, tail);
+    }
+
+    /**
+     * Draws a random sample from a marginal distribution,
+     * storing the result in an assignment.
+     */
+    template <typename Generator>
+    void sample(Generator& rng, finite_assignment& a) const {
+      this->assignment(sample(rng), a);
+    }
+
+    /**
+     * Draws a random sample from a conditional distribution,
+     * extracting the tail from and storing the result to an assignment.
+     * \param ntail the tail variables (must be a suffix of the domain).
+     */
+    template <typename Generator>
+    void sample(Generator& rng, const domain_type& tail,
+                finite_assignment& a) const {
+      assert(suffix(tail, arguments()));
+      this->assignment(sample(rng, extract(a, tail)), a);
+    }
+
     // Entropy and divergences
     //==========================================================================
 
@@ -435,47 +483,6 @@ namespace sill {
       return transform_accumulate(p, q, abs_difference<T>(), sill::maximum<T>());
     }
 
-    /**
-     * A type that represents the log-likelihood function and its derivatives.
-     * Models the LogLikelihoodObjective concept.
-     */
-    struct loglikelihood_type {
-      const table<T>& f;
-      loglikelihood_type(const table<T>* f) : f(*f) { }
-      
-      void add_gradient(const finite_index& index, T w, table<T>& g) {
-        g(index) += w / f(index);
-      }
-
-      void add_gradient(const table<T>& phead, const finite_index& tail, T w,
-                        table<T>& g) {
-        assert(phead.arity() + tail.size() == g.arity());
-        size_t index = g.offset().linear(tail, phead.arity());
-        for (size_t i = 0; i < phead.size(); ++i) {
-          g[index + i] += phead[i] * w / f[index + i];
-        }
-      }
-      
-      void add_gradient_sqr(const table<T>& phead, const finite_index& tail, T w,
-                            table<T>& g) {
-        add_gradient(phead, tail, w, g);
-      }
-
-      void add_hessian_diag(const finite_index& index, T w, table<T>& h) {
-        T fval = f(index);
-        h(index) -= w / (fval * fval);
-      }
-
-      void add_hessian_diag(const table<T>& phead, const finite_index& tail, T w,
-                            table<T>& h) {
-        assert(phead.arity() + tail.size() == h.arity());
-        size_t index = h.offset().linear(tail, phead.arity());
-        for (size_t i = 0; i < phead.size(); ++i) {
-          h[index + i] -= phead[i] * w / (f[index + i] * f[index + i]);
-        }
-      }
-    }; // struct loglikelihood_type
-
   }; // class probability_table
 
   /**
@@ -488,7 +495,7 @@ namespace sill {
   //============================================================================
 
   /**
-   * Prints a human-readable representatino of the table factor to the stream.
+   * Prints a human-readable representation of the table factor to the stream.
    * \relates probability_table
    */
   template <typename T>
@@ -498,45 +505,45 @@ namespace sill {
     return out;
   }
 
-  // Utilities - TODO
+  // Utilities
   //============================================================================
-
+  
 
   // Traits
   //============================================================================
 
   template <typename T>
-  struct has_multiplies<probability_table<T> > : public boost::true_type { };
+  struct has_multiplies<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_multiplies_assign<probability_table<T> > : public boost::true_type { };
+  struct has_multiplies_assign<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_divides<probability_table<T> > : public boost::true_type { };
+  struct has_divides<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_divides_assign<probability_table<T> > : public boost::true_type { };
+  struct has_divides_assign<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_max<probability_table<T> > : public boost::true_type { };
+  struct has_max<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_min<probability_table<T> > : public boost::true_type { };
+  struct has_min<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_marginal<probability_table<T> > : public boost::true_type { };
+  struct has_marginal<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_maximum<probability_table<T> > : public boost::true_type { };
+  struct has_maximum<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_minimum<probability_table<T> > : public boost::true_type { };
+  struct has_minimum<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_arg_max<probability_table<T> > : public boost::true_type { };
+  struct has_arg_max<probability_table<T> > : public std::true_type { };
 
   template <typename T>
-  struct has_arg_min<probability_table<T> > : public boost::true_type { };
+  struct has_arg_min<probability_table<T> > : public std::true_type { };
 
 } // namespace sill
 

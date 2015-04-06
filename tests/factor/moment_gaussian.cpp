@@ -359,6 +359,48 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
 }
 
 
+BOOST_AUTO_TEST_CASE(test_sample) {
+  universe u;
+  vector_variable* x = u.new_vector_variable("x", 1);
+  vector_variable* y = u.new_vector_variable("y", 1);
+  vector_variable* z = u.new_vector_variable("z", 1);
+  std::mt19937 rng1;
+  std::mt19937 rng2;
+  std::mt19937 rng3;
+  vector_assignment<double> a;
+
+  // test marginal sample
+  mgaussian f({x, y}, vec2(3,4), mat22(2,1,1,2));
+  auto fd = f.distribution();
+  for (size_t i = 0; i < 20; ++i) {
+    vec_type sample = fd(rng1);
+    BOOST_CHECK_SMALL((sample - f.sample(rng2)).cwiseAbs().sum(), 1e-8);
+    f.sample(rng3, a);
+    BOOST_CHECK_EQUAL(a[x].size(), 1);
+    BOOST_CHECK_EQUAL(a[y].size(), 1);
+    BOOST_CHECK_SMALL(a[x][0] - sample[0], 1e-8);
+    BOOST_CHECK_SMALL(a[y][0] - sample[1], 1e-8);
+  }
+
+  // test conditional sample
+  mgaussian g({x, y}, {z}, vec2(3,4), mat22(2,1,1,2), mat21(2,-1), 2.0);
+  auto gd = g.distribution();
+  for (double zv = -1; zv < 1; zv += 0.2) {
+    vec_type tail = vec_type::Constant(1, zv);
+    a[z] = vec_type::Constant(1, zv);
+    for (size_t i = 0; i < 20; ++i) {
+      vec_type sample = gd(rng1, tail);
+      BOOST_CHECK_SMALL((sample - g.sample(rng2, tail)).cwiseAbs().sum(), 1e-8);
+      g.sample(rng3, a);
+      BOOST_CHECK_EQUAL(a[x].size(), 1);
+      BOOST_CHECK_EQUAL(a[y].size(), 1);
+      BOOST_CHECK_SMALL(a[x][0] - sample[0], 1e-8);
+      BOOST_CHECK_SMALL(a[y][0] - sample[1], 1e-8);
+    }
+  }
+}
+
+
 BOOST_AUTO_TEST_CASE(test_entropy) {
   universe u;
   vector_variable* x = u.new_vector_variable("x", 1);

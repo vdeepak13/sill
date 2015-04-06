@@ -18,6 +18,8 @@ namespace sill {
 
 using namespace sill;
 
+BOOST_TEST_DONT_PRINT_LOG_VALUE(finite_index)
+
 typedef ptable::param_type param_type;
 
 BOOST_AUTO_TEST_CASE(test_constructors) {
@@ -268,6 +270,44 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
   std::vector<double> fr = {1, 3, 6};
   BOOST_CHECK(table_properties(h, {y}));
   BOOST_CHECK(boost::equal(h, fr));
+}
+
+
+BOOST_AUTO_TEST_CASE(test_sample) {
+  universe u;
+  finite_variable* x = u.new_finite_variable("x", 2);
+  finite_variable* y = u.new_finite_variable("y", 3);
+  ptable f({x, y}, {0, 1, 2, 3, 5, 6});
+  f.normalize();
+  std::mt19937 rng1;
+  std::mt19937 rng2;
+  std::mt19937 rng3;
+  finite_assignment a;
+  
+  // test marginal sample
+  auto fd = f.distribution();
+  for (size_t i = 0; i < 20; ++i) {
+    finite_index sample = fd(rng1);
+    BOOST_CHECK_EQUAL(f.sample(rng2), sample);
+    f.sample(rng3, a);
+    BOOST_CHECK_EQUAL(a[x], sample[0]);
+    BOOST_CHECK_EQUAL(a[y], sample[1]);
+  }
+
+  // test conditional sample
+  ptable g = f.conditional({y});
+  auto gd = g.distribution();
+  for (size_t yv = 0; yv < 3; ++yv) {
+    finite_index tail(1, yv);
+    a[y] = yv;
+    for (size_t i = 0; i < 20; ++i) {
+      finite_index sample = gd(rng1, tail);
+      BOOST_CHECK_EQUAL(g.sample(rng2, tail), sample);
+      g.sample(rng3, {y}, a);
+      BOOST_CHECK_EQUAL(a[x], sample[0]);
+      BOOST_CHECK_EQUAL(a[y], yv);
+    }
+  }
 }
 
 
