@@ -3,34 +3,32 @@
 
 #include <sill/learning/dataset/symbolic_format.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
-#include <sill/learning/dataset/vector_memory_dataset.hpp>
 #include <sill/parsers/string_functions.hpp>
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
-
-#include <boost/math/special_functions/fpclassify.hpp>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
   /**
    * Loads a vector memory dataset using the symbolic format.
-   * All the variables in the format must be vector. The dataset
-   * must not be initialized.
+   * All the variables in the format must be vector.
+   * The dataset must not be initialized.
    * \throw std::domain_error if the format contains variables that are not vector
    * \relates vector_memory_dataset
    */
   template <typename T>
   void load(const std::string& filename,
             const symbolic_format& format,
-            vector_memory_dataset<T>& ds) {
+            vector_dataset<T>& ds) {
     if (!format.is_vector()) {
-      throw std::domain_error("The dataset contains variable(s) that are not vector");
+      throw std::domain_error(
+        "The dataset contains variable(s) that are not vector"
+      );
     }
-    vector_var_vector vars = format.vector_var_vec();
+    domain<vector_variable*> vars = format.vector_vars();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -40,28 +38,27 @@ namespace sill {
 
     std::string line;
     size_t line_number = 0;
-    vector_record<T> r(vars);
+    dynamic_vector<T> index(vector_size(vars));
     while (std::getline(in, line)) {
       std::vector<const char*> tokens;
-      if (format.parse(r.values.size(), line, line_number, tokens)) {
+      if (format.parse(index.size(), line, line_number, tokens)) {
         size_t col = format.skip_cols;
         size_t i = 0;
-        foreach (vector_variable* v, vars) {
+        for (vector_variable* v : vars) {
           size_t size = v->size();
           if (std::count(&tokens[col], &tokens[col] + size, format.missing)) {
             // TODO: warning if only a subset of columns missing
-            std::fill(&r.values[i], &r.values[i] + size,
-                      std::numeric_limits<T>::quiet_NaN());
+            index.segment(i, size).fill(std::numeric_limits<T>::quiet_NaN());
             col += size;
             i += size;
           } else {
             for (size_t j = 0; j < size; ++j) {
-              r.values[i++] = parse_string<T>(tokens[col++]);
+              index[i++] = parse_string<T>(tokens[col++]);
             }
           }
         }
-        r.weight = format.weighted ? parse_string<T>(tokens.back()) : 1.0;
-        ds.insert(r);
+        T weight = format.weighted ? parse_string<T>(tokens.back()) : T(1);
+        ds.insert(index, weight);
       }
     }
   }
@@ -75,11 +72,13 @@ namespace sill {
   template <typename T>
   void save(const std::string& filename,
             const symbolic_format& format,
-            const vector_dataset<T>& data) {
+            const vector_dataset<T>& ds) {
     if (!format.is_vector()) {
-      throw std::domain_error("The dataset contains variable(s) that are not vector");
+      throw std::domain_error(
+        "The dataset contains variable(s) that are not vector"
+      );
     }
-    vector_var_vector vars = format.vector_var_vec();
+    domain<vector_variable*> vars = format.vector_vars();
     
     std::ofstream out(filename);
     if (!out) {
@@ -91,27 +90,25 @@ namespace sill {
     }
     
     std::string separator = format.separator.empty() ? " " : format.separator;
-    foreach(const vector_record<T>& r, data.records(vars)) {
+    for (const auto& p : ds(vars)) {
       for (size_t i = 0; i < format.skip_cols; ++i) {
         out << "0" << separator;
       }
-      for (size_t i = 0; i < r.values.size(); ++i) {
+      for (size_t i = 0; i < p.first.size(); ++i) {
         if (i > 0) { out << separator; }
-        if (boost::math::isnan(r.values[i])) {
+        if (std::isnan(p.first[i])) {
           out << format.missing;
         } else {
-          out << r.values[i];
+          out << p.first[i];
         }
       }
       if (format.weighted) {
-        out << separator << r.weight;
+        out << separator << p.second;
       }
       out << std::endl;
     }
   }
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

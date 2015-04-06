@@ -8,9 +8,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include <sill/copy_ptr.hpp>
-#include <sill/factor/util/factor_evaluator.hpp>
-#include <sill/factor/util/factor_mle.hpp>
-#include <sill/factor/util/factor_sampler.hpp>
 #include <sill/global.hpp>
 #include <sill/learning/validation/crossval_parameters.hpp>
 #include <sill/range/concepts.hpp>
@@ -199,13 +196,6 @@ namespace sill {
      */
     F reorder(const typename F::var_vector_type& vars) const;
 
-    /**
-     * A helper class that can be used to evaluate the factor efficiently.
-     * The primary template simply invokes F::operator(); this template can
-     * be further specialized to evalute the factor more efficiently.
-     * \see factor_evaluator<moment_gaussian>
-     */
-    friend class factor_evaluator<F>;
   };
   
   /**
@@ -335,12 +325,6 @@ namespace sill {
      */
     friend F operator*(typename F::result_type x, const F& f);
 
-    /**
-     * A helper class that can draw samples from distribution represented by
-     * this factor in the factor's internal ordering of variables.
-     */
-    friend class factor_sampler<F>;
-
     // TODO: fix this
     concept_usage(DistributionFactor) {
       bool b;
@@ -390,15 +374,6 @@ namespace sill {
      * \deprecated This is part of the old dataset framework and is deprecated.
      */
     typename F::result_type operator()(const record_type& record) const;
-
-    /**
-     * A helper class that can be used to compute the maximum likelihood
-     * estimate (MLE) of this factor type for a subset of variables.
-     * The primary template of factor_mle is defunct; the template must
-     * be specialized to this factor type (there is usually no generic
-     * way of computing the MLE of any factor type).
-     */
-    friend class factor_mle<F>;
 
   };    
   

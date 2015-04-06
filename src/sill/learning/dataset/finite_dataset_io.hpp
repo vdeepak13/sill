@@ -2,31 +2,31 @@
 #define SILL_FINITE_DATASET_IO_HPP
 
 #include <sill/learning/dataset/finite_dataset.hpp>
-#include <sill/learning/dataset/finite_memory_dataset.hpp>
 #include <sill/learning/dataset/symbolic_format.hpp>
 
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
 
-#include <sill/macros_def.hpp>
-
 namespace sill {
 
   /**
    * Loads a finite memory dataset using the symbolic format.
-   * All the variables in the format must be finite. The dataset
-   * must not be initialized.
+   * All the variables in the format must be finite.
+   * The dataset must not be initialized.
    * \throw std::domain_error if the format contains variables that are not finite
-   * \relates finite_memory_dataset
+   * \relates finite_dataset
    */
+  template <typename T>
   void load(const std::string& filename,
             const symbolic_format& format,
-            finite_memory_dataset& ds) {
+            finite_dataset<T>& ds) {
     if (!format.is_finite()) {
-      throw std::domain_error("The dataset contains variable(s) that are not finite");
+      throw std::domain_error(
+        "The dataset contains variable(s) that are not finite"
+      );
     }
-    finite_var_vector vars = format.finite_var_vec();
+    domain<finite_variable*> vars = format.finite_vars();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -36,20 +36,20 @@ namespace sill {
 
     std::string line;
     size_t line_number = 0;
-    finite_record r(vars);
+    finite_index index(vars.size());
     while (std::getline(in, line)) {
       std::vector<const char*> tokens;
       if (format.parse(vars.size(), line, line_number, tokens)) {
         for (size_t i = 0; i < vars.size(); ++i) {
           const char* token = tokens[i + format.skip_cols];
           if (token == format.missing) {
-            r.values[i] = -1;
+            index[i] = -1;
           } else {
-            r.values[i] = format.vars[i].parse(token);
+            index[i] = format.var_infos[i].parse(token);
           }
         }
-        r.weight = format.weighted ? parse_string<double>(tokens.back()) : 1.0;
-        ds.insert(r);
+        T weight = format.weighted ? parse_string<T>(tokens.back()) : T(1);
+        ds.insert(index, weight);
       }
     }
   }
@@ -60,13 +60,16 @@ namespace sill {
    * \throw std::domain_error if the format contains variables that are not finite
    * \relates finite_dataset, finite_memory_dataset
    */
+  template <typename T>
   void save(const std::string& filename,
             const symbolic_format& format,
-            const finite_dataset& data) {
+            const finite_dataset<T>& ds) {
     if (!format.is_finite()) {
-      throw std::domain_error("The dataset contains variable(s) that are not finite");
+      throw std::domain_error(
+        "The dataset contains variable(s) that are not finite"
+      );
     }
-    finite_var_vector vars = format.finite_var_vec();
+    domain<finite_variable*> vars = format.finite_vars();
     
     std::ofstream out(filename);
     if (!out) {
@@ -78,27 +81,25 @@ namespace sill {
     }
 
     std::string separator = format.separator.empty() ? " " : format.separator;
-    foreach(const finite_record& r, data.records(vars)) {
+    for (const auto& p : ds(vars)) {
       for (size_t i = 0; i < format.skip_cols; ++i) {
         out << "0" << separator;
       }
       for (size_t i = 0; i < vars.size(); ++i) {
         if (i > 0) { out << separator; }
-        if (r.values[i] == size_t(-1)) {
+        if (p.first[i] == size_t(-1)) {
           out << format.missing;
         } else {
-          format.vars[i].print(out, r.values[i]);
+          format.var_infos[i].print(out, p.first[i]);
         }
       }
       if (format.weighted) {
-        out << separator << r.weight;
+        out << separator << p.second;
       }
       out << std::endl;
     }
   }
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

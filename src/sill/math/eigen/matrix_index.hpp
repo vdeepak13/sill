@@ -89,12 +89,24 @@ namespace sill {
       }
     }
 
+    //! Swaps the contents of this index with another one.
+    void swap(matrix_index& other) {
+      using std::swap;
+      swap(start_, other.start_);
+      swap(size_, other.size_);
+      swap(indices_, other.indices_);
+    }
+
   private:
     size_t start_, size_;
     std::vector<size_t> indices_;
 
   }; // class matrix_index
 
+  /**
+   * Outputs a matrix_index to an output stream.
+   * \relates matrix_index
+   */
   inline std::ostream&
   operator<<(std::ostream& out, const matrix_index& index) {
     if (index.contiguous()) {
@@ -110,6 +122,14 @@ namespace sill {
       out << '}';
     }
     return out;
+  }
+  
+  /**
+   * Swaps the contents of two matrix_index objects.
+   * \relates matrix_index
+   */
+  inline void swap(matrix_index& a, matrix_index& b) {
+    a.swap(b);
   }
 
 } // namespace sill

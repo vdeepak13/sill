@@ -10,6 +10,7 @@
 #include <sill/serialization/eigen.hpp>
 
 #include <algorithm>
+#include <random>
 
 #include <Eigen/Cholesky>
 
@@ -303,6 +304,38 @@ namespace sill {
       T dcov  = (f.cov - g.cov).array().abs().max();
       T dcoef = (f.coef - g.coef).array().abs().max();
       return std::max(std::max(dmean, dcov), dcoef);
+    }
+
+    // Sampling
+    //==========================================================================
+    
+    /**
+     * Draws a random sample from a marginal distribution.
+     * This is only recommended for drawing a single sample. For multiple
+     * samples, use gaussian_distribution.
+     */
+    template <typename Generator>
+    vec_type sample(Generator& rng) const {
+      return sample(rng, vec_type());
+    }
+
+    /**
+     * Draws a random sample from a conditional distribution.
+     * This is only recommended for drawing a single sample. For multiple
+     * samples, use gaussian_distribution.
+     */
+    template <typename Generator>
+    vec_type sample(Generator& rng, const vec_type& tail) const {
+      Eigen::LLT<mat_type> chol(cov);
+      if (chol.info() != Eigen::Success) {
+        throw numerical_error(
+          "moment_gaussian::sample: Cannot compute the Cholesky decomposition"
+        );
+      }
+      vec_type z(mean.size());
+      std::normal_distribution<T> normal;
+      for (size_t i = 0; i < z.size(); ++i) { z[i] = normal(rng); }
+      return mean + chol.matrixL() * z + coef * tail;
     }
 
   }; // struct moment_gaussian_param

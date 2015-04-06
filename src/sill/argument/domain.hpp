@@ -12,13 +12,17 @@
 namespace sill {
 
   /**
-   * A domain that holds the elements in a std::vector.
+   * A domain that holds the elements in an std::vector.
    */
   template <typename Arg>
   class domain : public std::vector<Arg> {
   public:
-    //! Default constructor. Creates an empty domain
+    //! Default constructor. Creates an empty domain.
     domain() { }
+
+    //! Constructs a domain with given number of empty arguments.
+    explicit domain(size_t n)
+      : std::vector<Arg>(n) { }
 
     //! Creates a domain with the given elements.
     domain(std::initializer_list<Arg> init)
@@ -43,14 +47,6 @@ namespace sill {
       return std::count(this->begin(), this->end(), x);
     }
 
-    //! Substitutes arguments in-place according to a map.
-    template <typename Map>
-    void subst(const Map& map) {
-      for (Arg& arg : *this) {
-        arg = map.at(arg); // TODO: check compatibility
-      }
-    }
-
     /**
      * Partitions this domain into those elements that are present in the
      * given map and those that are not.
@@ -66,6 +62,26 @@ namespace sill {
         }
       }
     }
+
+    //! Substitutes arguments in-place according to a map.
+    template <typename Map>
+    void subst(const Map& map) {
+      for (Arg& arg : *this) {
+        arg = map.at(arg); // TODO: check compatibility
+      }
+    }
+
+    /**
+     * Removes the duplicate elements from the domain in place.
+     * Does not preserve the relative ordere of elements in the domain.
+     */
+    domain& unique() {
+      std::sort(this->begin(), this->end());
+      auto new_end = std::unique(this->begin(), this->end());
+      this->erase(new_end, this->end());
+      return *this;
+    }
+
   };
 
   /**
@@ -191,6 +207,25 @@ namespace sill {
   template <typename Arg>
   bool superset(const domain<Arg>& a, const domain<Arg>& b) {
     return subset(b, a);
+  }
+
+  /**
+   * Returns true if domain a is a suffix of domain b.
+   * \relates domain
+   */
+  template <typename Arg>
+  bool prefix(const domain<Arg>& a, const domain<Arg>& b) {
+    return a.size() <= b.size() && std::equal(a.begin(), a.end(), b.begin());
+  }
+
+  /**
+   * Returns true if domain a is a suffix of domain b.
+   * \relates domain
+   */
+  template <typename Arg>
+  bool suffix(const domain<Arg>& a, const domain<Arg>& b) {
+    return a.size() <= b.size()
+      && std::equal(a.begin(), a.end(), b.end() - a.size());
   }
 
   // Argument operations

@@ -4,7 +4,7 @@
 #include <set>
 
 #include <sill/iterator/transform_output_iterator.hpp>
-#include <sill/factor/util/factor_mle.hpp>
+#include <sill/learning/parameter/factor_mle.hpp>
 #include <sill/model/decomposable.hpp>
 #include <sill/model/projections.hpp>
 

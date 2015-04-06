@@ -10,7 +10,9 @@
 #include <sill/functional/entropy.hpp>
 #include <sill/functional/operators.hpp>
 #include <sill/math/constants.hpp>
+#include <sill/math/likelihood/canonical_array_ll.hpp>
 #include <sill/math/logarithmic.hpp>
+#include <sill/math/random/array_distribution.hpp>
 
 #include <armadillo>
 #include <boost/function.hpp>
@@ -52,18 +54,18 @@ namespace sill {
     typedef finite_variable                    variable_type;
     typedef array_domain<finite_variable*, N>  domain_type;
     typedef finite_assignment                  assignment_type;
-    typedef typename base::array_type          param_type;
-    
-    // IndexableFactor member types
-    typedef finite_index index_type;
-    
-    // DistributionFactor member types
-    typedef probability_array<T, N> probability_factor_type;
+
+    // ParametricFactor member types
+    typedef typename base::array_type param_type;
+    typedef finite_index              index_type;
+    typedef array_distribution<T, N> distribution_type;
     
     // LearnableFactor types
-    // typedef finite_dataset dataset_type;
-    // typedef finite_record  record_type;
+    typedef canonical_array_ll<T, N> ll_type;
 
+    // ExponentialFamilyFactor member types
+    typedef probability_array<T, N> probability_factor_type;
+    
     // Constructors and conversion operators
     //==========================================================================
   public:
@@ -499,36 +501,6 @@ namespace sill {
                       const canonical_array& q) {
       return transform_accumulate(p, q, abs_difference<T>(), sill::maximum<T>());
     }
-
-    /**
-     * A type that represents the log-likelihood function and its derivatives.
-     * Models the LogLikelihoodObjective concept.
-     */
-    struct loglikelihood_type {
-      typedef Eigen::Array<T, Eigen::Dynamic, 1> array1_type;
-      loglikelihood_type(const param_type* a) { }
-      
-      void add_gradient(size_t i, T w, param_type& g) {
-        g(i) += w;
-      }
-
-      void add_gradient(size_t i, size_t j, T w, param_type& g) {
-        g(i, j) += w;
-      }
-
-      void add_gradient(const array1_type& phead, size_t j, T w,
-                        param_type& g) {
-        g.col(j) += w * phead;
-      }
-      
-      void add_hessian_diag(size_t i, T w, param_type& h) { }
-
-      void add_hessian_diag(size_t i, size_t j, T w, param_type& h) { }
-
-      void add_hessian_diag(const array1_type& phead, size_t j, T w,
-                            param_type& h) { }
-
-    }; // struct loglikelihood_type
 
   }; // class canonical_array
 

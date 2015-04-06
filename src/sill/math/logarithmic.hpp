@@ -11,14 +11,12 @@
 #include <boost/math/special_functions/log1p.hpp>
 
 #include <sill/global.hpp>
+#include <sill/math/log_tag.hpp>
 #include <sill/serialization/serialize.hpp>
+
 #include <sill/macros_def.hpp>
 
 namespace sill {
-
-  //! A tag that is used to indicate a log-space value.
-  //! \ingroup math_number
-  struct log_tag { };
 
   /**
    * A numeric representation which represents the real number \f$x\f$

@@ -1,4 +1,4 @@
-subdirs(eigen linear_algebra)
+subdirs(eigen likelihood linear_algebra random)
 
 #add_executable(functions functions.cpp)
 add_executable(logarithmic logarithmic.cpp)

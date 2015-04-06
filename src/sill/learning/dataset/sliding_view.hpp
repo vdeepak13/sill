@@ -1,162 +1,400 @@
 #ifndef SILL_SLIDING_VIEW_HPP
 #define SILL_SLIDING_VIEW_HPP
 
-#include <sill/base/discrete_process.hpp>
-#include <sill/learning/dataset/aux_data.hpp>
+#include <sill/range/iterator_range.hpp>
 
+#include <iterator>
+#include <tuple>
+#include <utility>
 #include <vector>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
-  // forward declaration
-  template <typename BaseDS> class sequence_dataset;
-
   /**
-   * A view of sequence datasets over a moving, fixed-size sliding window
-   * over the sequence data.
-   * \todo allow mutations?
+   * A view of sequence datasets over a sliding, fixed-size window with
+   * given positive length. For each row in the base (sequence) dataset
+   * whose number of steps is at least length, this view contains rows
+   * over variables with indices [0, length), [1, 1 + length), etc.
+   *
+   * \tparam BaseDS the dataset being viewed
+   * \see Dataset
    */
   template <typename BaseDS>
-  class sliding_view : public BaseDS {
+  class sliding_view {
   public:
-    // Bring in some types from BaseDS
-    typedef typename BaseDS::argument_type   argument_type;
-    typedef typename BaseDS::var_vector_type var_vector_type;
-    typedef typename BaseDS::record_type     record_type;
+    // Dataset concept types
+    typedef typename BaseDS::traits_type          traits_type;
+    typedef typename traits_type::variable_type   argument_type;
+    typedef typename traits_type::var_domain_type domain_type;
+    typedef typename traits_type::var_data_type   data_type;
+    typedef typename traits_type::assignment_type assignment_type;
+    typedef typename traits_type::weight_type     weight_type;
+    class assignment_iterator;
 
-    // helper typedefs
-    typedef discrete_process<argument_type> process_type;
-    typedef typename BaseDS::iterator_state_type iterator_state_type;
-    typedef typename BaseDS::sequence_record_type sequence_record_type;
-    typedef typename sequence_record_type::var_indices_type var_indices_type;
+    // Range concept types
+    typedef std::pair<data_type, weight_type> value_type;
+    class const_iterator;
+    typedef const_iterator iterator;
+
+    // Helper types
+    typedef typename traits_type::index_type index_type;
+    typedef typename traits_type::offset_map_type offset_map_type;
 
     //! Default constructor. Creates an uninitialized view
     sliding_view()
-      : dataset_(NULL), window_(0) { }
+      : dataset_(nullptr), length_(0) { }
 
     //! Constructs a sliding view for the given sequence dataset
-    sliding_view(const sequence_dataset<BaseDS>* dataset, size_t window)
-      : dataset_(dataset), window_(window) {
-      assert(window <= 1); // need to clean up discrete_process to support >1
+    sliding_view(const BaseDS* dataset, size_t length)
+      : dataset_(dataset), length_(length) {
+      assert(length > 0);
 
-      // initialize the variables
-      var_vector_type vars;
-      vars.reserve((window+1) * dataset->num_arguments());
-      foreach (process_type* proc, dataset->arg_vector()) {
-        vars.push_back(proc->current());
-        if (window == 1) vars.push_back(proc->next());
-      }
-      BaseDS::initialize(vars);
-
-      // compute the (cumulative) size for each record in the underlying dataset
-      size_t sum = 0;
-      cum_size_.reserve(dataset->size());
-      std::vector<process_type*> no_procs;
-      foreach(const sequence_record_type& r, dataset->records(no_procs)) {
-        if (r.num_steps() > window) {
-          sum += r.num_steps() - window;
+      // initialize the state
+      all_ = traits_type::initialize(dataset->arguments(),
+                                     0, length, args_, offset_);
+      
+      // compute the cumulative size for each record in the underlying dataset
+      size_t size = 0;
+      cumsize_.reserve(dataset->size());
+      for (const auto& value : *dataset) {
+        if (value.first.cols() >= length) {
+          size += value.first.cols() - length + 1;
         }
-        cum_size_.push_back(sum);
+        cumsize_.push_back(size);
       }
     }
 
-    //! Returns the logical number of rows in this view
+    //! Swaps two views.
+    friend void swap(sliding_view& a, sliding_view& b) {
+      using std::swap;
+      swap(a.dataset_, b.dataset_);
+      swap(a.length_, b.length_);
+      swap(a.cumsize_, b.cumsize_);
+      swap(a.args_, b.args_);
+      swap(a.offset_, b.offset_);
+      swap(a.all_, b.all_);
+    }
+    
+    // Accessors
+    //==========================================================================
+
+    //! Returns the arguments of this view.
+    const domain_type& arguments() const {
+      return args_;
+    }
+
+    //! Returns the number of arguments of this view.
+    size_t arity() const {
+      return args_.size();
+    }
+
+    //! Returns the number of rows in this view.
     size_t size() const {
-      return cum_size_.empty() ? 0 : cum_size_.back();
+      return cumsize_.empty() ? 0 : cumsize_.back();
     }
 
-    //! Returns a single data point for a subset of variables
-    record_type record(size_t row, const var_vector_type& vars) const {
-      assert(row < size());
-      size_t ds_row =
-        std::upper_bound(cum_size_.begin(), cum_size_.end(), row) - 
-        cum_size_.begin();
-      size_t offset = // TODO this needs to be fixed after process refactor
-        (ds_row > 0) ? row - cum_size_[ds_row-1] : row;
-      var_indices_type var_indices;
-      dataset_->index_mapping().indices(vars, offset, var_indices);
-      record_type result(vars);
-      dataset_->record(ds_row).extract(var_indices, result);
-      return result;
-    }
-    
-  protected:
-    struct view_data : public aux_data {
-      //! The underlying iterator range
-      typename sequence_dataset<BaseDS>::const_record_iterator it, end;
-      //! True if we are at the beginning of the range
-      bool start;
-      //! The indices of the variables in the underlying records
-      var_indices_type indices;
-    };
-
-    // initializes the data structures in the record iterator
-    aux_data* init(const var_vector_type& vars,
-                   iterator_state_type& state) const {
-      view_data& d = *(new view_data);
-      std::vector<process_type*> procs =
-        make_vector(discrete_processes(make_domain(vars)));
-      boost::tie(d.it, d.end) = dataset_->records(procs);
-      d.start = true;
-      typename sequence_record_type::index_map_type index_map(procs);
-      index_map.indices(vars, d.indices);
-      return &d;
+    //! Returns true if the view has no datapoints.
+    bool empty() const {
+      return size() == 0;
     }
 
-    void advance(ptrdiff_t diff,
-                 iterator_state_type& state,
-                 aux_data* data) const {
-      throw std::logic_error("sliding_view does not support advance()");
+    //! Returns the underlying dataset.
+    const BaseDS& dataset() const {
+      return *dataset_;
     }
 
-    // loads rows (n is ignored)
-    size_t load(size_t n,
-                iterator_state_type& state,
-                aux_data* data) const {
-      view_data& d = cast(data);
-
-      // advance to the next valid position
-      do {
-        if (d.start) { d.start = false; } else { ++d.it; }
-      } while (d.it != d.end && d.it->num_steps() <= window_);
-
-      // if not at the end, extract the state
-      if (d.it == d.end) {
-        return 0;
-      } else {
-        d.it->extract(d.indices, state);
-        return d.it->num_steps() - window_;
-      }
+    //! Returns the length of the window.
+    size_t length() const {
+      return length_;
     }
+
+    //! Returns the iterator to the first datapoint.
+    const_iterator begin() const {
+      return const_iterator(dataset().begin(), length_, index_type(all_));
+    }
+
+    //! Returns the iterator to the datapoint past the last one.
+    const_iterator end() const {
+      return const_iterator(dataset().end());
+    }
+
+    //! Returns a single datapoint in the dataset.
+    value_type operator[](size_t row) const {
+      size_t r, t;
+      std::tie(r, t) = absolute(row);
+      value_type value;
+      traits_type::extract(dataset()[r], all_, t, value);
+      return value;
+    }
+
+    //! Returns an immutable range of datapoints over a subset of arguments.
+    iterator_range<const_iterator> operator()(const domain_type& dom) const {
+      return iterator_range<const_iterator>(
+        const_iterator(dataset().begin(), length_, offsets(dom)),
+        const_iterator(dataset().end())
+      );
+    }
+
+    //! Returns a single datapoint in the dataset over a subset of arguments.
+    value_type operator()(size_t row, const domain_type& dom) const {
+      size_t r, t;
+      std::tie(r, t) = absolute(row);
+      value_type value;
+      traits_type::extract(dataset()[r], offsets(dom), t, value);
+      return value;
+    }
+
+    //! Returns a range over assignment-weight pairs.
+    iterator_range<assignment_iterator> assignments() const {
+      return iterator_range<assignment_iterator>(
+        assignment_iterator(dataset().begin(), length_, args_, &offset_),
+        assignment_iterator(dataset().end())
+      );
+    }
+
+    //! Returns a range over the assignment-weight pairs for a subset of args.
+    iterator_range<assignment_iterator> assignments(const domain_type& d) const {
+      return iterator_range<assignment_iterator>(
+        assignment_iterator(dataset().begin(), length_, d, &offset_),
+        assignment_iterator(dataset().end())
+      );
+    }
+
+    //! Returns an assignment and weight for a single datapoint.
+    std::pair<assignment_type, weight_type> assignment(size_t row) const {
+      return assignment(row, args_);
+    }
+
+    //! Returns an assignment and weight for a single datapoint.
+    std::pair<assignment_type, weight_type>
+    assignment(size_t row, const domain_type& dom) const {
+      size_t r, t;
+      std::tie(r, t) = absolute(row);
+      std::pair<assignment_type, weight_type> a;
+      traits_type::extract(dataset()[r], dom, offset_, t, a);
+      return a;
+    }
+
+    //! Prints the view summary to a stream.
+    friend std::ostream&
+    operator<<(std::ostream& out, const sliding_view& view) {
+      out << "sliding_view(N=" << view.size()
+          << ", length=" << view.length()
+          << ", base=" << view.dataset()
+          << ")";
+      return out;
+    }
+
+    // Iterators
+    //==========================================================================
+
+    /**
+     * Iterator over (a subset of) columns of a sliding_view.
+     * Provides const access to the elements and the weights.
+     */
+    class const_iterator
+      : public std::iterator<std::forward_iterator_tag, const value_type> {
+    public:
+      typedef typename BaseDS::const_iterator base_iterator;
+
+      //! default constructor
+      const_iterator()
+        : time_(0) { }
+
+      //! end constructor
+      const_iterator(base_iterator&& it)
+        : it_(std::move(it)),
+          time_(0) { }
   
-    // noop, data is not saved yet. in the future, this will be done by load()
-    void save(iterator_state_type& state, aux_data* data) { }
+      //! begin constructor
+      const_iterator(base_iterator&& it, size_t length, index_type&& index)
+        : it_(std::move(it)),
+          time_(0),
+          length_(length),
+          index_(std::move(index)) {
+        load();
+      }
 
-    // prints the summary of this view to a stream
-    void print(std::ostream& out) const {
-      out << "sliding_view(N=" << size() << ", window=" << window_ << ") "
-          << "base dataset: " << dataset_;
-    }
+      //! returns true if the iterator has reached the end of the range
+      bool end() const {
+        return it_.end();
+      }
+
+      const value_type& operator*() const {
+        return value_;
+      }
+
+      const value_type* operator->() const {
+        return &value_;
+      }
+
+      const_iterator& operator++() {
+        ++time_;
+        load();
+        return *this;
+      }
+
+      const_iterator operator++(int) {
+        // this operation is too expensive and is not supported
+        throw std::logic_error("data iterators do not support postincrement");
+      }
+    
+      bool operator==(const const_iterator& other) const {
+        return it_ == other.it_ && time_ == other.time_;
+      }
+    
+      bool operator!=(const const_iterator other) const {
+        return it_ != other.it_ || time_ != other.time_;
+      }
+  
+      friend void swap(const_iterator& a, const_iterator& b) {
+        using std::swap;
+        swap(a.it_, b.it_);
+        swap(a.time_, b.time_);
+        swap(a.length_, b.length_);
+        swap(a.index_, b.index_);
+        swap(a.value_, b.value_);
+      }
+  
+    private:
+      //! Searches for the next valid sequence and loads the data
+      void load() {
+        while (!it_.end() && it_->first.cols() < time_ + length_) {
+          ++it_;
+          time_ = 0;
+        }
+        if (!it_.end()) {
+          traits_type::extract(*it_, index_, time_, value_);
+        }
+      }
+
+      base_iterator it_; // the iterator over the underlying sequence dataset
+      size_t time_;      // the current time offset
+      size_t length_;    // the length of the window
+      index_type index_; // linear index of the values
+      value_type value_; // user-facing data
+
+    }; // class const_iterator
+
+    /**
+     * Iterator over (a subset of) columns of a sliding_view,
+     * converted to an assignment-weight pair.
+     */
+    class assignment_iterator
+      : public std::iterator<std::forward_iterator_tag,
+                             const std::pair<assignment_type, value_type> > {
+    public:
+      typedef typename BaseDS::const_iterator base_iterator;
+
+      //! default constructor
+      assignment_iterator()
+        : time_(0) { }
+
+      //! end constructor
+      assignment_iterator(const base_iterator& it)
+        : it_(it),
+          time_(0) { }
+  
+      //! begin constructor
+      assignment_iterator(const base_iterator& it,
+                          size_t length,
+                          const domain_type& args,
+                          const offset_map_type* offset)
+        : it_(std::move(it)),
+          time_(0),
+          length_(length),
+          args_(args),
+          offset_(offset) {
+        load();
+      }
+
+      //! returns true if the iterator has reached the end of the range
+      bool end() const {
+        return it_.end();
+      }
+
+      const std::pair<assignment_type, weight_type>& operator*() const {
+        return value_;
+      }
+
+      const std::pair<assignment_type, weight_type>* operator->() const {
+        return &value_;
+      }
+
+      assignment_iterator& operator++() {
+        ++time_;
+        load();
+        return *this;
+      }
+
+      assignment_iterator operator++(int) {
+        // this operation is too expensive and is not supported
+        throw std::logic_error("data iterators do not support postincrement");
+      }
+    
+      bool operator==(const assignment_iterator& other) const {
+        return it_ == other.it_ && time_ == other.time_;
+      }
+    
+      bool operator!=(const assignment_iterator other) const {
+        return it_ != other.it_ || time_ == other.time_;
+      }
+  
+      friend void swap(assignment_iterator& a, assignment_iterator& b) {
+        using std::swap;
+        swap(a.it_, b.it_);
+        swap(a.time_, b.time_);
+        swap(a.length_, b.length_);
+        swap(a.args_, b.args_);
+        swap(a.offset_, b.offset_);
+        swap(a.value_, b.value_);
+      }
+  
+    private:
+      //! Searches for the next valid sequence and loads the data
+      void load() {
+        while (!it_.end() && it_->first.cols() < time_ + length_) {
+          ++it_;
+          time_ = 0;
+        }
+        if (!it_.end()) {
+          traits_type::extract(*it_, args_, *offset_, time_, value_);
+        }
+      }
+
+      base_iterator it_; //!< the iterator over the underlying sequence dataset
+      size_t time_;      //!< the current time offset
+      size_t length_;    //!< the length of the window
+      domain_type args_; //!< the arguments iterated over
+      const offset_map_type* offset_; //!< map from arguments to offsets
+      std::pair<assignment_type, weight_type> value_; //!< user-facing data
+
+    }; // class assignment_iterator
     
   private:
-    // downcasts the auxiliary data to this dataset's data type
-    static view_data& cast(aux_data* data) {
-      view_data* result = dynamic_cast<view_data*>(data);
-      assert(result);
-      return *result;
+    //! Returns the absolute row and time offset for the given logical row
+    std::pair<size_t, size_t> absolute(size_t row) const {
+      assert(row < size());
+      size_t r =
+        std::upper_bound(cumsize_.begin(), cumsize_.end(), row) - 
+        cumsize_.begin();
+      return {r, (r > 0) ? row - cumsize_[r-1] : row};
+    }
+    
+    //! Returns the linear indices of the given arguments
+    index_type offsets(const domain_type& args) const {
+      return traits_type::index(args, offset_);
     }
 
-  private:
-    const sequence_dataset<BaseDS>* dataset_;
-    size_t window_;
-    std::vector<size_t> cum_size_;
+    const BaseDS* dataset_;  //!< the underlying dataset
+    size_t length_;          //!< the length of the window
+    std::vector<size_t> cumsize_; //!< the cumulative sums of datapoint count
+    domain_type args_;       //!< the arguments of the view
+    offset_map_type offset_; //!< the mapping from arguments to sequence offsets
+    index_type all_;         //!< the index range containing all arguments
 
   }; // class sliding_view
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

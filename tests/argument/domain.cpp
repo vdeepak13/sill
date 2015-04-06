@@ -55,6 +55,7 @@ BOOST_AUTO_TEST_CASE(test_operations) {
   domain_type yzw  = {y, z, w};
   domain_type xyzw = {x, y, z, w};
   domain_type xwzy = {x, w, z, y};
+  domain_type xywx = {x, y, w, x};
 
   BOOST_CHECK_EQUAL(x1 + y1, xy);
   BOOST_CHECK_EQUAL(xy + z1, xyz);
@@ -77,6 +78,9 @@ BOOST_AUTO_TEST_CASE(test_operations) {
 
   BOOST_CHECK_EQUAL(xyz.count(x), 1);
   BOOST_CHECK_EQUAL(xyz.count(w), 0);
+  xywx.unique();
+  BOOST_CHECK_EQUAL(xywx.size(), 3);
+  BOOST_CHECK(equivalent(xywx, xyw));
   
   finite_var_map map;
   map[x] = x;

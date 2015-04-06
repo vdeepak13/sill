@@ -9,9 +9,9 @@
 #include <sill/functional/assign.hpp>
 #include <sill/functional/eigen.hpp>
 #include <sill/functional/entropy.hpp>
-
-#include <armadillo>
-#include <boost/function.hpp>
+#include <sill/math/likelihood/probability_array_ll.hpp>
+#include <sill/math/likelihood/probability_array_mle.hpp>
+#include <sill/math/random/array_distribution.hpp>
 
 #include <iostream>
 
@@ -52,18 +52,16 @@ namespace sill {
     typedef finite_variable                   variable_type;
     typedef array_domain<finite_variable*, N> domain_type;
     typedef finite_assignment                 assignment_type;
-    typedef typename base::array_type         param_type;
-    
-    // IndexableFactor member types
-    typedef finite_index index_type;
-    
-    // DistributionFactor member types
-    typedef probability_array probability_factor_type;
-    
-    // LearnableFactor types
-    // typedef finite_dataset dataset_type;
-    // typedef finite_record  record_type;
 
+    // ParametricFactor member types
+    typedef typename base::array_type param_type;
+    typedef finite_index              index_type;
+    typedef array_distribution<T, N> distribution_type; 
+    
+    // LearnableDistributionFactor member types
+    typedef probability_array_ll<T, N>  ll_type;
+    typedef probability_array_mle<T, N> mle_type;
+    
     // Constructors and conversion operators
     //==========================================================================
   public:
@@ -533,43 +531,6 @@ namespace sill {
                       const probability_array& q) {
       return transform_accumulate(p, q, abs_difference<T>(), sill::maximum<T>());
     }
-
-    /**
-     * A type that represents the log-likelihood function and its derivatives.
-     * Models the LogLikelihoodObjective concept.
-     */
-    struct loglikelihood_type {
-      typedef Eigen::Array<T, Eigen::Dynamic, 1> array1_type;
-      const param_type& a;
-      loglikelihood_type(const param_type* a) : a(*a) { }
-      
-      void add_gradient(size_t i, T w, param_type& g) {
-        g(i) += w / a(i);
-      }
-
-      void add_gradient(size_t i, size_t j, T w, param_type& g) {
-        g(i, j) += w / a(i, j);
-      }
-
-      void add_gradient(const array1_type& phead, size_t j, T w,
-                        param_type& g) {
-        g.col(j) += w * phead / a.col(j);
-      }
-      
-      void add_hessian_diag(size_t i, T w, param_type& h) {
-        h(i) -= w / (a(i) * a(i));
-      }
-
-      void add_hessian_diag(size_t i, size_t j, T w, param_type& h) {
-        h(i, j) -= w / (a(i, j) * a(i, j));
-      }
-
-      void add_hessian_diag(const array1_type& phead, size_t j, T w,
-                            param_type& h) {
-        h.col(j) -= w * phead / a.col(j) / a.col(j);
-      }
-
-    }; // struct loglikelihood_type
 
   }; // class probability_array
 
