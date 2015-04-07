@@ -5,10 +5,7 @@
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/optimization/line_search/line_search_result.hpp>
 #include <sill/serialization/serialize.hpp>
-
-#include <boost/function.hpp>
-
-#include <sill/macros_def.hpp>
+#include <sill/traits/vector_value.hpp>
 
 namespace sill {
 
@@ -87,7 +84,7 @@ namespace sill {
     // Public types
     //==========================================================================
   public:
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
     typedef line_search_result<real_type> result_type;
     typedef exponential_decay_search_parameters<real_type> param_type;
 
@@ -99,18 +96,18 @@ namespace sill {
       assert(params.valid());
     }
 
-    void objective(gradient_objective<Vec>* obj) {
+    void objective(gradient_objective<Vec>* obj) override {
       f_.objective(obj);
     }
 
-    result_type step(const Vec& x, const Vec& direction) {
+    result_type step(const Vec& x, const Vec& direction) override {
       f_.line(&x, &direction);
       result_type result = f_.value_result(step_);
       step_ *= params_.rate;
       return result;
     }
 
-    void print(std::ostream& out) const {
+    void print(std::ostream& out) const override {
       out << "exponential_decay_search(" << params_ << ")";
     }
 
@@ -125,7 +122,4 @@ namespace sill {
 
 } // namespace sill
 
-#include <sill/macros_undef.hpp>
-
 #endif
-

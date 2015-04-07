@@ -1,6 +1,8 @@
 #ifndef SILL_GRADIENT_OBJECTIVE_HPP
 #define SILL_GRADIENT_OBJECTIVE_HPP
 
+#include <sill/traits/vector_value.hpp>
+
 namespace sill {
 
   /**
@@ -10,7 +12,7 @@ namespace sill {
   class gradient_objective {
   public:
     //! The storage type of the vector
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
     
     /**
      * Default constructor.

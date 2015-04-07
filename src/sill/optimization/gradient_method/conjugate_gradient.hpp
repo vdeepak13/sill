@@ -5,10 +5,10 @@
 #include <sill/optimization/concepts.hpp>
 #include <sill/optimization/gradient_method/gradient_method.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
+#include <sill/traits/vector_value.hpp>
 
-#include <boost/math/special_functions.hpp>
-#include <boost/shared_ptr.hpp>
-
+#include <cmath>
+#include <memory>
 
 namespace sill {
 
@@ -23,7 +23,7 @@ namespace sill {
   template <typename Vec>
   class conjugate_gradient : public gradient_method<Vec> {
   public:
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
     typedef line_search_result<real_type> result_type;
 
     struct param_type {
@@ -105,39 +105,39 @@ namespace sill {
         value_(nan<real_type>()),
         converged_(false) { }
     
-    void objective(gradient_objective<Vec>* obj) {
+    void objective(gradient_objective<Vec>* obj) override {
       objective_ = obj;
       search_->objective(obj);
       value_ = nan<real_type>();
       converged_ = false;
     }
 
-    void solution(const Vec& init) {
+    void solution(const Vec& init) override {
       x_ = init;
     }
 
-    const Vec& solution() const {
+    const Vec& solution() const override {
       return x_;
     }
 
-    bool converged() const {
+    bool converged() const override {
       return converged_;
     }
 
-    result_type iterate() {
+    result_type iterate() override {
       if (params_.precondition) {
         direction_preconditioned();
       } else {
         direction_standard();
       }
       result_type result = search_->step(x_, dir_);
-      axpy(result.step, dir_, x_);
+      update(x_, dir_, result.step);
       converged_ = (value_ - result.value) < params_.convergence;
       value_ = result.value;
       return result;
     }
 
-    void print(std::ostream& out) const {
+    void print(std::ostream& out) const override {
       out << "conjugate_gradient(" << params_ << ")";
     }
 
@@ -147,7 +147,7 @@ namespace sill {
      * conjugate gradient descent.
      */
     void direction_standard() {
-      if (boost::math::isnan(value_)) {
+      if (std::isnan(value_)) {
         g_ = objective_->gradient(x_);
         dir_ = -g_;
       } else {
@@ -163,7 +163,7 @@ namespace sill {
      * descent.
      */
     void direction_preconditioned() {
-      if (boost::math::isnan(value_)) {
+      if (std::isnan(value_)) {
         g_ = objective_->gradient(x_);
         p_ = g_;
         p_ /= objective_->hessian_diag(x_);
@@ -199,7 +199,7 @@ namespace sill {
     }
 
     //! The line search algorithm
-    boost::shared_ptr<line_search<Vec> > search_;
+    std::unique_ptr<line_search<Vec> > search_;
 
     //! The update and convergence parameters
     param_type params_;
@@ -213,7 +213,7 @@ namespace sill {
     //! Last gradient
     Vec g_;
 
-    //! Last preconditioned gradient (when using precondigioning)
+    //! Last preconditioned gradient (when using preconditioning)
     Vec p_;
 
     //! Last descent direction

@@ -7,6 +7,7 @@
 #include <sill/optimization/gradient_method/gradient_descent.hpp>
 #include <sill/optimization/gradient_method/lbfgs.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
+#include <sill/traits/vector_value.hpp>
 
 namespace sill {
 
@@ -18,7 +19,7 @@ namespace sill {
   template <typename Vec>
   class gradient_method_builder {
   public:
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_traits<Vec>::value_type real_type;
 
     gradient_method_builder() { }
 

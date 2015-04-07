@@ -47,7 +47,7 @@ namespace sill {
      */
     template <typename Range>
     void estimate(const Range& samples, softmax_param<T>& p) const {
-      p.zero();
+      p.fill(T(0));
       auto search = new slope_binary_search<param_type>(
         1e-6,
         wolfe_conditions<T>::param_type::conjugate_gradient()
@@ -55,7 +55,7 @@ namespace sill {
       typename conjugate_gradient<param_type>::param_type cg_param;
       cg_param.precondition = false;//true;
       conjugate_gradient<param_type> optimizer(search, cg_param);
-      softmax_objective<Range> objective(samples, p.num_labels(), p.num_features(), regul_);
+      softmax_objective<Range> objective(samples, regul_);
       optimizer.objective(&objective);
       optimizer.solution(p);
       for (size_t it = 0; !optimizer.converged() && it < max_iter_; ++it) {
@@ -91,16 +91,8 @@ namespace sill {
      */
     template <typename Range>
     struct softmax_objective : public gradient_objective<softmax_param<T> > {
-      softmax_objective(const Range& samples,
-                        size_t nlabels,
-                        size_t nfeatures,
-                        regul_type regul)
-        : samples(samples),
-          g(nlabels, nfeatures),
-          h(nlabels, nfeatures),
-          regul(regul),
-          value_calls(0),
-          grad_calls(0) { }
+      softmax_objective(const Range& samples, regul_type regul)
+        : samples(samples), regul(regul), value_calls(0), grad_calls(0) { }
 
       T value(const softmax_param<T>& x) {
         softmax_ll<T> f(x);
@@ -118,21 +110,21 @@ namespace sill {
 
       const softmax_param<T>& gradient(const softmax_param<T>& x) {
         softmax_ll<T> f(x);
-        g.zero();
+        g.zero(x.labels(), x.features());
         T weight = T(0);
         for (const auto& r : samples) {
           f.add_gradient(r.first, r.second, g);
           weight += r.second;
         }
         g /= -weight;
-        axpy(regul, x, g); //g_ += regul * f;
+        update(g, x, regul);
         ++grad_calls;
         return g;
       }
 
       const softmax_param<T>& hessian_diag(const softmax_param<T>& x) {
         softmax_ll<T> f(x);
-        h.zero();
+        h.zero(x.labels(), x.features());
         T weight = T(0);
         for (const auto& r : samples) {
           f.add_hessian_diag(r.first, r.second, h);
@@ -144,9 +136,9 @@ namespace sill {
       }
 
       const Range& samples;
+      T regul;
       param_type g;
       param_type h;
-      T regul;
       size_t value_calls;
       size_t grad_calls;
 

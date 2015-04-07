@@ -1,8 +1,9 @@
 #include <sill/optimization/line_search/line_search_builder.hpp>
 
-#include <armadillo>
+#include <sill/math/eigen/dynamic.hpp>
+#include <sill/math/eigen/optimization.hpp>
 
-#include <boost/shared_ptr.hpp>
+#include <memory>
 
 int main(int argc, char** argv) {
   using namespace sill;
@@ -11,7 +12,7 @@ int main(int argc, char** argv) {
   namespace po = boost::program_options;
   po::options_description desc("line_search_builder test");
   desc.add_options()("help", "Print command options");
-  line_search_builder<arma::vec> builder;
+  line_search_builder<dynamic_vector<double>> builder;
   builder.add_options(desc);
 
   // Parse the options
@@ -26,7 +27,7 @@ int main(int argc, char** argv) {
   }
   
   // Create the line_search object
-  boost::shared_ptr<line_search<arma::vec> > ls(builder.get());
+  std::unique_ptr<line_search<dynamic_vector<double>>> ls(builder.get());
   // TODO: change to std::unique_ptr
   std::cout << *ls << std::endl;
   

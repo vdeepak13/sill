@@ -159,13 +159,13 @@ namespace sill {
     }
 
     //! Returns the number of assignments to the head variable.
-    size_t num_labels() const {
-      return param_.num_labels();
+    size_t labels() const {
+      return param_.labels();
     }
 
     //! Returns the dimensionality of the underlying feature vector.
-    size_t num_features() const {
-      return param_.num_features();
+    size_t features() const {
+      return param_.features();
     }
 
     //! Returns the parameters of this factor.

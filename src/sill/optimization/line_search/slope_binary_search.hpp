@@ -9,10 +9,9 @@
 #include <sill/optimization/line_search/line_search_result.hpp>
 #include <sill/optimization/line_search/wolfe_conditions.hpp>
 #include <sill/parsers/string_functions.hpp>
+#include <sill/traits/vector_value.hpp>
 
-#include <boost/bind.hpp>
-
-#include <sill/macros_def.hpp>
+#include <functional>
 
 namespace sill {
 
@@ -32,7 +31,7 @@ namespace sill {
     // Public types
     //==========================================================================
   public:
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
     typedef line_search_result<real_type> result_type;
     typedef bracketing_line_search_parameters<real_type> param_type;
     typedef typename wolfe_conditions<real_type>::param_type wolfe_param_type;
@@ -56,18 +55,18 @@ namespace sill {
      */
     slope_binary_search(const param_type& params,
                         const wolfe_param_type& wolfe_params)
-      : wolfe_(boost::bind(&line_function<Vec>::value, &f_, _1),
-               boost::bind(&line_function<Vec>::slope, &f_, _1),
+      : wolfe_(std::bind(&line_function<Vec>::value, &f_, std::placeholders::_1),
+               std::bind(&line_function<Vec>::slope, &f_, std::placeholders::_1),
                wolfe_params),
         params_(params) {
       assert(params.valid());
     }
 
-    void objective(gradient_objective<Vec>* obj) {
+    void objective(gradient_objective<Vec>* obj) override {
       f_.objective(obj);
     }
 
-    result_type step(const Vec& x, const Vec& direction) {
+    result_type step(const Vec& x, const Vec& direction) override {
       // reset the function to the given line and initialize the Wolfe conds
       f_.line(&x, &direction);
       wolfe_.reset();
@@ -117,7 +116,7 @@ namespace sill {
       return f_.value_result(left.step);
     }
 
-    void print(std::ostream& out) const {
+    void print(std::ostream& out) const override {
       out << "slope_binary_search(" << params_ << ", " << wolfe_.params() << ")";
     }
 
@@ -131,7 +130,5 @@ namespace sill {
   }; // class slope_binary_search
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

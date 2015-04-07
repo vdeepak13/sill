@@ -4,6 +4,7 @@
 #include <sill/optimization/concepts.hpp>
 #include <sill/optimization/gradient_objective.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
+#include <sill/traits/vector_value.hpp>
 
 #include <iostream>
 
@@ -21,7 +22,7 @@ namespace sill {
   class gradient_method {
   public:
     //! The storage type of the vector
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
 
     //! A type that represents the step and the corresponding objective value
     typedef line_search_result<real_type> result_type;

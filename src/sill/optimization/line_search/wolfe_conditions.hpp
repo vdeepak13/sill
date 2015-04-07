@@ -1,7 +1,7 @@
 #ifndef SILL_WOLFE_CONDITIONS_HPP
 #define SILL_WOLFE_CONDITIONS_HPP
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace sill {
 
@@ -19,7 +19,7 @@ namespace sill {
      * A type that represents a real-valued function (objective, gradient)
      * over the reals (position along the line).
      */
-    typedef boost::function<real_type(real_type)> real_fn;
+    typedef std::function<real_type(real_type)> real_fn;
 
     /**
      * Parameters that govern the Wolfe conditions. Sensible defaults

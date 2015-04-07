@@ -2,7 +2,6 @@
 #define SILL_SOFTMAX_PARAM_HPP
 
 #include <sill/datastructure/hybrid_index.hpp>
-#include <sill/datastructure/sparse_index.hpp>
 #include <sill/math/eigen/dynamic.hpp>
 
 #include <cmath>
@@ -51,15 +50,15 @@ namespace sill {
      * features. Allocates the parameters, but does not initialize them
      * to any specific value.
      */
-    softmax_param(size_t num_labels, size_t num_features)
-      : weight_(num_labels, num_features), bias_(num_labels) { }
+    softmax_param(size_t labels, size_t features)
+      : weight_(labels, features), bias_(labels) { }
 
     /**
      * Creates a softmax function with the given number of labels and
      * features, and initializes the parameters to the given value.
      */
-    softmax_param(size_t num_labels, size_t num_features, T init)
-      : weight_(num_labels, num_features), bias_(num_labels) {
+    softmax_param(size_t labels, size_t features, T init)
+      : weight_(labels, features), bias_(labels) {
       bias_.fill(init);
       weight_.fill(init);
     }
@@ -114,9 +113,26 @@ namespace sill {
      * Resets the function to the given number of labels and features.
      * May invalidate the parameters.
      */
-    void resize(size_t num_labels, size_t num_features) {
-      weight_.resize(num_labels, num_features);
-      bias_.resize(num_labels);
+    void resize(size_t labels, size_t features) {
+      weight_.resize(labels, features);
+      bias_.resize(labels);
+    }
+
+    /**
+     * Sets the function to the given number of labels and features,
+     * filling the contents with 0.
+     */
+    void zero(size_t labels, size_t features) {
+      weight_.setZero(labels, features);
+      bias_.setZero(labels);
+    }
+    
+    /**
+     * Fills the parameters with the given constant.
+     */
+    void fill(T value) {
+      weight_.fill(value);
+      bias_.fill(value);
     }
 
     // Accessors and comparison operators
@@ -128,12 +144,12 @@ namespace sill {
     }
 
     //! Returns the number of labels.
-    size_t num_labels() const {
+    size_t labels() const {
       return weight_.rows();
     }
 
     //! Returns the number of features.
-    size_t num_features() const {
+    size_t features() const {
       return weight_.cols();
     }
 
@@ -177,35 +193,39 @@ namespace sill {
       return bias_[i];
     }
 
-    //! Evaluates the function for a dense feature vector.
-    vec_type operator()(const vec_type& x) const {
-      assert(x.size() == weight_.cols());
-      vec_type y(exp((weight_ * x + bias_).array()).matrix());
+    //! Evaluates the function for an Eigen dense or sparse vector.
+    template <typename Derived>
+    vec_type operator()(const Eigen::EigenBase<Derived>& x) const {
+      assert(x.rows() == weight_.cols());
+      assert(x.cols() == 1);
+      vec_type y(weight_ * x.derived() + bias_);
+      y = y.array().exp();
       y /= y.sum();
       return y;
     }
 
-    //! Evaluates the function for a sparse feature vector.
-    vec_type operator()(const sparse_index<T>& x) const {
+    //! Evaluates the function for a sparse feature vector with unit values.
+    vec_type operator()(const std::vector<size_t>& x) const {
       vec_type y = bias_;
-      for (std::pair<size_t,T> value : x) {
-        assert(value.first < weight_.cols());
-        y += weight_.col(value.first) * value.second;
+      for (size_t i : x) {
+        assert(i < weight_.cols());
+        y += weight_.col(i);
       }
-      y = exp(y.array()).matrix();
+      y = y.array().exp();
       y /= y.sum();
       return y;
     }
 
     //! Returns the log-value for a dense feature vector.
-    vec_type log(const vec_type& x) const {
+    template <typename Derived>
+    vec_type log(const Eigen::EigenBase<Derived>& x) const {
       vec_type y = operator()(x);
       y = y.array().log();
       return y;
     }
 
     //! Returns the log-value for a sparse feature vector.
-    vec_type log(const sparse_index<T>& x) const {
+    vec_type log(const std::vector<size_t>& x) const {
       vec_type y = operator()(x);
       y = y.array().log();
       return y;
@@ -228,8 +248,8 @@ namespace sill {
 
     // Sampling
     //==========================================================================
-    template <typename Generator>
-    size_t sample(Generator& rng, const vec_type& x) const {
+    template <typename Generator, typename Derived>
+    size_t sample(Generator& rng, const Eigen::EigenBase<Derived>& x) const {
       vec_type p = operator()(x);
       T val = std::uniform_real_distribution<T>()(rng);
       for (size_t i = 0; i < p.size(); ++i) {
@@ -244,11 +264,6 @@ namespace sill {
 
     // OptimizationVector functions
     //=========================================================================
-    void zero() {
-      weight_.fill(0);
-      bias_.fill(0);
-    }
-
     softmax_param operator-() const {
       return softmax_param(-weight_, -bias_);
     }
@@ -295,9 +310,9 @@ namespace sill {
       return *this;
     }
 
-    friend void axpy(T a, const softmax_param& x, softmax_param& y) {
-      y.weight_ += a * x.weight_;
-      y.bias_ += a * x.bias_;
+    friend void update(softmax_param& f, const softmax_param& g, T a) {
+      f.weight_ += a * g.weight_;
+      f.bias_ += a * g.bias_;
     }
 
     friend T dot(const softmax_param& f, const softmax_param& g) {

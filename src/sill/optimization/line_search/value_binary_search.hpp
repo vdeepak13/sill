@@ -7,8 +7,7 @@
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/optimization/line_search/line_search_failed.hpp>
 #include <sill/optimization/line_search/line_search_result.hpp>
-
-#include <sill/macros_def.hpp>
+#include <sill/traits/vector_value.hpp>
 
 namespace sill {
 
@@ -31,7 +30,7 @@ namespace sill {
     // Public types
     //==========================================================================
   public:
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
     typedef line_search_result<real_type> result_type;
     typedef bracketing_line_search_parameters<real_type> param_type;
 
@@ -47,11 +46,11 @@ namespace sill {
       assert(params.valid());
     }
 
-    void objective(gradient_objective<Vec>* obj) {
+    void objective(gradient_objective<Vec>* obj) override {
       f_.objective(obj);
     }
     
-    result_type step(const Vec& x, const Vec& direction) {
+    result_type step(const Vec& x, const Vec& direction) override {
       // set the line
       f_.line(&x, &direction);
       result_type left  = f_.value_result(0.0);
@@ -106,7 +105,7 @@ namespace sill {
       return mid;
     }
 
-    void print(std::ostream& out) const {
+    void print(std::ostream& out) const override {
       out << "value_binary_search(" << params_ << ")";
     }
 
@@ -118,6 +117,4 @@ namespace sill {
 
 } // namespace sill
 
-#include <sill/macros_undef.hpp>
-
-#endif // #ifndef SILL_OPTIMIZATION_LINE_SEARCH_HPP
+#endif

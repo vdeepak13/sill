@@ -5,9 +5,9 @@
 #include <sill/optimization/concepts.hpp>
 #include <sill/optimization/gradient_method/gradient_method.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
+#include <sill/traits/vector_value.hpp>
 
-#include <boost/shared_ptr.hpp>
-
+#include <memory>
 #include <vector>
 
 namespace sill {
@@ -27,7 +27,7 @@ namespace sill {
   template <typename Vec>
   class lbfgs : public gradient_method<Vec> {
   public:
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
     typedef line_search_result<real_type> result_type;
     
     struct param_type {
@@ -69,7 +69,7 @@ namespace sill {
         value_(nan()),
         converged_(false) { }
 
-    void objective(gradient_objective<Vec>* obj) {
+    void objective(gradient_objective<Vec>* obj) override {
       objective_ = obj;
       search_->objective(obj);
       iteration_ = 0;
@@ -77,19 +77,19 @@ namespace sill {
       converged_ = false;
     }
 
-    void solution(const Vec& init) {
+    void solution(const Vec& init) override {
       x_ = init;
     }
 
-    const Vec& solution() const {
+    const Vec& solution() const override {
       return x_;
     }
 
-    bool converged() const {
+    bool converged() const override {
       return converged_;
     }
 
-    result_type iterate() {
+    result_type iterate() override {
       const Vec& g = objective_->gradient(x_);
       
       // compute the direction
@@ -115,7 +115,7 @@ namespace sill {
       size_t index = iteration_ % params_.history;
       shist_[index] = result.step * dir_;
       yhist_[index] = (iteration_ > 0) ? (g - g_) : g;
-      rhist_[index] = real_type(1.0) / dot(shist_[index], yhist_[index]);
+      rhist_[index] = real_type(1) / dot(shist_[index], yhist_[index]);
       x_ += shist_[index];
       g_ = g;
       ++iteration_;
@@ -126,7 +126,7 @@ namespace sill {
       return result;
     }
 
-    void print(std::ostream& out) const {
+    void print(std::ostream& out) const override {
       out << "lbfgs(" << params_ << ")";
     }
 
@@ -147,7 +147,7 @@ namespace sill {
     }
     
     //! The line search algorithm
-    boost::shared_ptr<line_search<Vec> > search_;
+    std::unique_ptr<line_search<Vec> > search_;
 
     //! Convergence and history parameters
     param_type params_;
