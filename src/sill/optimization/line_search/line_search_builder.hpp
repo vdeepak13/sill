@@ -9,6 +9,7 @@
 #include <sill/optimization/line_search/slope_binary_search.hpp>
 #include <sill/optimization/line_search/value_binary_search.hpp>
 #include <sill/optimization/line_search/wolfe_conditions.hpp>
+#include <sill/traits/vector_value.hpp>
 
 namespace sill {
 
@@ -20,7 +21,7 @@ namespace sill {
   template <typename Vec>
   class line_search_builder {
   public:
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
 
     line_search_builder() { }
 

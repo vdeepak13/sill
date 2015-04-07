@@ -1,3 +1,4 @@
+subdirs(gradient_method line_search)
 
 # UNCOMMENT THESE ONCE ARMA TYPES ARE SUPPORTED FOR OPTIMIZATION
 #add_executable(conjugate_gradient_test conjugate_gradient_test.cpp)

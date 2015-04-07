@@ -8,6 +8,8 @@
 #include <cmath>
 #include <type_traits>
 
+#include <Eigen/SparseCore>
+
 namespace sill {
 
   /**
@@ -28,9 +30,6 @@ namespace sill {
     //! The table of probabilities.
     typedef softmax_param<T> param_type;
 
-    //! The index type.
-    typedef dynamic_vector<T> vec_type;
-
     /**
      * Creates a log-likelihood function for a probability table with
      * the specified parameters.
@@ -38,57 +37,71 @@ namespace sill {
     explicit softmax_ll(const softmax_param<T>& f)
       : f(f) { }
 
-    /**
-     * Returns the parameters of the log-likelihood function.
-     */
+    //! Returns the parameters of the log-likelihood function.
     const param_type& param() const {
       return f;
     }
     
-    /**
-     * Returns the log-likelihood of the specified data point.
-     */
-    T log(size_t label, const vec_type& x) const {
+    //! Returns the log-likelihood of the label for dense/sparse features.
+    template <typename Derived>
+    T log(size_t label, const Eigen::EigenBase<Derived>& x) const {
       return std::log(f(x)[label]);
     }
 
-    /**
-     * Returns the log-likelihood of the specified data point.
-     */
+    //! Returns the log-likelihood of the label for sparse unit features.
+    T log(size_t label, const std::vector<size_t>& x) const {
+      return std::log(f(x)[label]);
+    }
+     
+    //! Returns the log-likelihood of the specified data point.
     T log(const hybrid_index<T>& index) const {
       return std::log(f(index.vector())[index.finite()[0]]);
     }
 
     /**
-     * Returns the log-likelihood of a collection of weighted samples.
+     * Adds (expected) gradient of the log-likelihood to g for a datapoint
+     * specified as a label and a dense Eigen feature vector.
+     * \tparam Label either size_t or a dense Eigen vector of probabilities
      */
-    template <typename Range>
-    typename std::enable_if<
-      is_sample_range<Range, hybrid_index<T>, T>::value, T>::type
-    log(const Range& samples) const {
-      T result(0);
-      for (const auto& sample : samples) {
-        result += log(sample.first) * sample.second;
-      }
-      return result;
-    }
-
-    /**
-     * Adds a gradient of the log-likelihood of the specified data
-     * point with weight w to the parameters g.
-     */
-    void add_gradient(size_t label, const vec_type& x, T w,
+    template <typename Label>
+    void add_gradient(const Label& label, const dynamic_vector<T>& x, T w,
                       softmax_param<T>& g) const {
-      vec_type p = f(x);
-      p[label] -= T(1);
-      p *= -w;
+      dynamic_vector<T> p = gradient_delta(label, x, w);
       g.weight().noalias() += p * x.transpose();
       g.bias() += p;
     }
 
     /**
-     * Adds a gradient of the log-likelihood of the specified data
-     * point with weight w to the parameters g.
+     * Adds (expected) gradient of the log-likelihood to g for a datapoint
+     * specified as a label and a sparse Eigen feature vector.
+     * \tparam Label either size_t or a dense Eigen vector of probabilities
+     */
+    template <typename Label>
+    void add_gradient(const Label& label, const Eigen::SparseVector<T>& x, T w,
+                      softmax_param<T>& g) const {
+      dynamic_vector<T> p = gradient_delta(label, x, w);
+      for (typename Eigen::SparseVector<T>::InnerIterator it(x); it; ++it) {
+        g.weight().col(it.index()) += p * it.value();
+      }
+      g.bias() += p;
+    }
+
+    /**
+     * Adds (expected) gradient of the log-likelihood to g for a datapoint
+     * specified as a label and a sparse unit feature vector.
+     * \tparam Label either size_t or a dense Eigen vector of probabilities
+     */
+    template <typename Label>
+    void add_gradient(const Label& label, const std::vector<size_t>& x, T w,
+                      softmax_param<T>& g) const {
+      dynamic_vector<T> p = gradient_delta(label, x, w);
+      for (size_t i : x) { g.weight().col(i) += p; }
+      g.bias() += p;
+    }
+
+    /**
+     * Adds gradient of the log-likelihood to g for a datapoint
+     * specified as hybrid_index.
      */
     void add_gradient(const hybrid_index<T>& x, T w,
                      softmax_param<T>& g) const {
@@ -96,95 +109,77 @@ namespace sill {
     }
 
     /**
-     * Adds the gradient of the expected log-likelihood of the specified
-     * data point to the gradient table g.
-     *
-     * \param plabel the distribution over the labels
-     * \param x the featuers
-     * \param w the weight of the data point
+     * Adds the Hessian diagonal of log-likelihood to h for a datapoint
+     * specified as a dense Eigen feature vector.
      */
-    void add_gradient(const Eigen::Ref<const vec_type>& plabel,
-                      const vec_type& x, T w,
-                      softmax_param<T>& g) const {
-      vec_type p = f(x);
-      p -= plabel;
-      p *= -w;
-      g.weight().noalias() += p * x.transpose();
-      g.bias() += p;
-    }
-
-    /**
-     * Adds the diagonal of the Hessian of log-likelihood of the specified
-     * data point with features x and weight w to the Hessian diagonal h.
-     */
-    void add_hessian_diag(const vec_type& x, T w, softmax_param<T>& h) const {
-      vec_type v = f(x);
-      v -= v.cwiseProduct(v);
-      v *= -w;
+    void add_hessian_diag(const dynamic_vector<T>& x, T w,
+                          softmax_param<T>& h) const {
+      dynamic_vector<T> v = hessian_delta(x, w);
       h.weight().noalias() += v * x.cwiseProduct(x).transpose();
       h.bias() += v;
     }
 
     /**
-     * Adds the diagonal of the Hessian of log-likelihood of the specified
-     * data point with features x and weight w to the Hessian diagonal h.
+     * Adds the Hessian diagonal of log-likelihood to h for a datapoint
+     * specified as a sparse Eigen feature vector.
      */
-    void add_hessian_diag(const hybrid_index<T>& index, T w,
+    void add_hessian_diag(const Eigen::SparseVector<T>& x, T w,
                           softmax_param<T>& h) const {
-      add_hessian_diag(index.vector(), w, h);
-    }
-
-    /**
-     * Adds a gradient of the log-likelihood of the specified data
-     * point with weight w to the parameters g.
-     */
-    void add_gradient(size_t label, const sparse_index<T>& x, T w,
-                      softmax_param<T>& g) const {
-      vec_type p = f(x);
-      p[label] -= T(1);
-      p *= -w;
-      for (std::pair<size_t,T> value : x) {
-        g.weight().col(value.first) += p * value.second;
-      }
-      g.bias() += p;
-    }
-
-    /**
-     * Adds the gradient of the expected log-likelihood of the specified
-     * data point to the parameters g.
-     *
-     * \param plabel the distribution over the labels
-     * \param x the featuers
-     * \param w the weight of the data point
-     */
-    void add_gradient(const Eigen::Ref<const vec_type>& plabel,
-                      const sparse_index<T>& x, T w,
-                      softmax_param<T>& g) const {
-      vec_type p = f(x);
-      p -= plabel;
-      p *= -w;
-      for (std::pair<size_t,T> value : x) {
-        g.weight().col(value.first) += p * value.second;
-      }
-      g.bias() += p;
-    }
-
-    /**
-     * Adds the diagonal of the Hessian of log-likleihood of the specified
-     * data point with features x and weight w to the Hessian diagonal h.
-     */
-    void add_hessian_diag(const sparse_index<T>& x, T w,
-                          softmax_param<T>& h) const {
-      vec_type v = f(x);
-      v -= v.cwiseProduct(v);
-      v *= -w;
-      for (std::pair<size_t,T> value : x) {
-        h.weight().col(value.first) += v * (value.second * value.second);
+      dynamic_vector<T> v = hessian_delta(x, w);
+      for (typename Eigen::SparseVector<T>::InnerIterator it(x); it; ++it) {
+        h.weight().col(it.index()) += v * (it.value() * it.value());
       }
       h.bias() += v;
     }
 
+    /**
+     * Adds the Hessian diagonal of log-likelihood to h for a datapoint
+     * specified as a sparse feature vector with unit values.
+     */
+    void add_hessian_diag(const std::vector<size_t>& x, T w,
+                          softmax_param<T>& h) const {
+      dynamic_vector<T> v = hessian_delta(x, w);
+      for (size_t i : x) { h.weight().col(i) += v; }
+      h.bias() += v;
+    }
+
+    /**
+     * Adds the Hessian diagonal of log-likelihood to h for a datapoint
+     * specified as a hybrid index.
+     */
+    void add_hessian_diag(const hybrid_index<T>& x, T w,
+                          softmax_param<T>& h) const {
+      add_hessian_diag(x.vector(), w, h);
+    }
+
   private:
+    template <typename Features>
+    dynamic_vector<T>
+    gradient_delta(size_t label, const Features& x, T w) const {
+      dynamic_vector<T> p = f(x);
+      p[label] -= T(1);
+      p *= -w;
+      return p;
+    }
+
+    template <typename Features>
+    dynamic_vector<T>
+    gradient_delta(const Eigen::Ref<const dynamic_vector<T> >& plabel,
+                   const Features& x, T w) const {
+      dynamic_vector<T> p = f(x);
+      p -= plabel;
+      p *= -w;
+      return p;
+    }
+
+    template <typename Features>
+    dynamic_vector<T> hessian_delta(const Features& x, T w) const {
+      dynamic_vector<T> v = f(x);
+      v -= v.cwiseProduct(v);
+      v *= -w;
+      return v;
+    }
+
     //! The parameters at which we evaluate the log-likelihood derivatives.
     softmax_param<T> f;
 

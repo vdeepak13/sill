@@ -3,6 +3,7 @@
 
 #include <sill/optimization/gradient_objective.hpp>
 #include <sill/optimization/line_search/line_search_result.hpp>
+#include <sill/traits/vector_value.hpp>
 
 namespace sill {
 
@@ -17,7 +18,7 @@ namespace sill {
   template <typename Vec>
   class line_function {
   public:
-    typedef typename Vec::value_type real_type;
+    typedef typename vector_value<Vec>::type real_type;
     typedef line_search_result<real_type> result_type;
 
     /**
@@ -93,7 +94,7 @@ namespace sill {
         step_ = step;
         input_ = *origin_;
         if (step != 0.0) {
-          axpy(step, *direction_, input_);
+          update(input_, *direction_, step);
         }
         new_line_ = false;
       }

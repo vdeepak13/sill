@@ -17,7 +17,7 @@ dynamic_vector<double>
 sample(const softmax_distribution<double>& d,
        const dynamic_vector<double>& tail) {
   std::mt19937 rng;
-  dynamic_vector<double> result(d.param().num_labels());
+  dynamic_vector<double> result(d.param().labels());
   result.fill(0.0);
   for (size_t i = 0; i < nsamples; ++i) {
     ++result[d(rng, tail)];

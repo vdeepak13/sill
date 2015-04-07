@@ -3,10 +3,13 @@
 
 #include <sill/optimization/gradient_objective.hpp>
 
-#include <armadillo>
+#include <sill/math/eigen/dynamic.hpp>
+#include <sill/math/eigen/optimization.hpp>
 
-typedef arma::mat mat_type;
-typedef arma::vec vec_type;
+#include "../math/eigen/helpers.hpp"
+
+typedef sill::dynamic_matrix<double> mat_type;
+typedef sill::dynamic_vector<double> vec_type;
 
 // a quadratic objective 0.5 * (x-ctr)^T cov (x-ctr)
 struct quadratic_objective
@@ -22,7 +25,7 @@ struct quadratic_objective
   
   double value(const vec_type& x) {
     vec_type diff = x - ctr;
-    return 0.5 * dot(diff, cov * diff);
+    return 0.5 * diff.dot(cov * diff);
   }
 
   const vec_type& gradient(const vec_type& x) {
@@ -31,11 +34,10 @@ struct quadratic_objective
   }
 
   const vec_type& hessian_diag(const vec_type& x) {
-    h = diagvec(cov);
-    return p;
+    h = cov.diagonal();
+    return h;
   }
   
 }; // struct quadratic_objective
-
 
 #endif
