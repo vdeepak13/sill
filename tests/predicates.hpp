@@ -66,7 +66,7 @@ serialize_deserialize(const T& value, sill::universe& u) {
   std::ifstream fin(filename.c_str(), ios_base::binary | ios_base::in);
   assert(fin);
   sill::iarchive ia(fin);
-  ia.attach_universe(&u);
+  ia.universe(&u);
   T value2;
   ia >> value2;
   fin.close();

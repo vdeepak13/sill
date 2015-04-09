@@ -1,8 +1,7 @@
 #ifndef SILL_GRADIENT_METHOD_HPP
 #define SILL_GRADIENT_METHOD_HPP
 
-#include <sill/optimization/concepts.hpp>
-#include <sill/optimization/gradient_objective.hpp>
+#include <sill/optimization/gradient_objective/gradient_objective.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/traits/vector_value.hpp>
 

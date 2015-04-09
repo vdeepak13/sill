@@ -1,5 +1,5 @@
-#ifndef SILL_BRACKETING_LINE_SEARCH_HPP
-#define SILL_BRACKETING_LINE_SEARCH_HPP
+#ifndef SILL_BRACKETING_PARAMETERS_HPP
+#define SILL_BRACKETING_PARAMETERS_HPP
 
 #include <sill/serialization/serialize.hpp>
 
@@ -12,7 +12,7 @@ namespace sill {
    * \ingroup optimization_algorithms
    */
   template <typename RealType>
-  struct bracketing_line_search_parameters {
+  struct bracketing_parameters {
 
     /**
      * If the size of the bracket is less than this value (>=0),
@@ -39,10 +39,10 @@ namespace sill {
      */
     RealType max_step;
 
-    bracketing_line_search_parameters(RealType convergence = 1e-6,
-                                      RealType multiplier = 2.0,
-                                      RealType min_step = 1e-10,
-                                      RealType max_step = 1e+10)
+    bracketing_parameters(RealType convergence = 1e-6,
+                          RealType multiplier = 2.0,
+                          RealType min_step = 1e-10,
+                          RealType max_step = 1e+10)
       : convergence(convergence),
         multiplier(multiplier),
         min_step(min_step),
@@ -55,15 +55,15 @@ namespace sill {
     }
 
     void save(oarchive& ar) const {
-      ar << convergence << multiplier << min_step;
+      ar << convergence << multiplier << min_step << max_step;
     }
 
     void load(iarchive& ar) {
-      ar >> convergence >> multiplier >> min_step;
+      ar >> convergence >> multiplier >> min_step >> max_step;
     }
 
     friend std::ostream&
-    operator<<(std::ostream& out, const bracketing_line_search_parameters& p) {
+    operator<<(std::ostream& out, const bracketing_parameters& p) {
       out << p.convergence << ' '
           << p.multiplier << ' '
           << p.min_step << ' '
@@ -71,7 +71,7 @@ namespace sill {
       return out;
     }
 
-  }; // struct bracketing_line_search_parameters
+  }; // struct bracketing_parameters
 
 } // namespace sill
 

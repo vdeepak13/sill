@@ -1,7 +1,8 @@
 #ifndef SILL_TEST_QUADRATIC_OBJECTIVE_HPP
 #define SILL_TEST_QUADRATIC_OBJECTIVE_HPP
 
-#include <sill/optimization/gradient_objective.hpp>
+#include <sill/optimization/gradient_objective/gradient_objective.hpp>
+#include <sill/optimization/line_search/line_search_result.hpp>
 
 #include <sill/math/eigen/dynamic.hpp>
 #include <sill/math/eigen/optimization.hpp>
@@ -17,27 +18,41 @@ struct quadratic_objective
 
   vec_type ctr;
   mat_type cov;
-  vec_type g;
-  vec_type h;
 
   quadratic_objective(const vec_type& ctr, const mat_type& cov)
     : ctr(ctr), cov(cov) { }
   
-  double value(const vec_type& x) {
+  double value(const vec_type& x) override {
     vec_type diff = x - ctr;
     return 0.5 * diff.dot(cov * diff);
   }
 
-  const vec_type& gradient(const vec_type& x) {
-    g = cov * (x - ctr);
-    return g;
+  sill::real_pair<> value_slope(const vec_type& x, const vec_type& dir) override {
+    vec_type diff = x - ctr;
+    double value = 0.5 * diff.dot(cov * diff);
+    double slope = dir.dot(cov * diff);
+    return { value, slope };
   }
 
-  const vec_type& hessian_diag(const vec_type& x) {
-    h = cov.diagonal();
-    return h;
+  void add_gradient(const vec_type& x, vec_type& g) override {
+    g += cov * (x - ctr);
   }
-  
+
+  void add_hessian_diag(const vec_type& x, vec_type& h) override {
+    h += cov.diagonal();
+  }
+
+  sill::gradient_objective_calls calls() const override {
+    return sill::gradient_objective_calls();
+  }
+
+  sill::line_search_result<double> init(const vec_type& x, const vec_type& dir) {
+    sill::line_search_result<double> result(0);
+    std::tie(result.value, result.slope) = value_slope(x, dir);
+    return result;
+  }
+
+
 }; // struct quadratic_objective
 
 #endif

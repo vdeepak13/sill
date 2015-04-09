@@ -2,15 +2,26 @@
 #define SILL_IARCHIVE_HPP
 
 #include <cassert>
+#include <cstdint>
 #include <iostream>
-#include <stdint.h>
-#include <string>
-#include <utility>
 
 #include <boost/noncopyable.hpp>
 
+#define SILL_DESERIALIZE_CHAR(dest_type)            \
+  iarchive& operator>>(dest_type& x) {              \
+    x = static_cast<dest_type>(deserialize_char()); \
+    return *this;                                   \
+  }
+
+#define SILL_DESERIALIZE_INT(dest_type)             \
+  iarchive& operator>>(dest_type& x) {              \
+    x = static_cast<dest_type>(deserialize_int());  \
+    return *this;                                   \
+  }
+
 namespace sill {
 
+  // Forward declaration
   class universe;
 
   /**
@@ -20,100 +31,108 @@ namespace sill {
    */
   class iarchive : boost::noncopyable {
   public:
-    std::istream* i;
-    sill::universe* u;
-    size_t bytes_;
+    //! Constructs an input archive with the given stream.
+    iarchive(std::istream& in)
+      :in_(&in), u_(NULL), bytes_(0) { }
 
-    iarchive(std::istream& is)
-      :i(&is), u(NULL), bytes_() { }
-
-    void attach_universe(sill::universe* uni) {
-      u = uni;
+    //! Sets the universe associated with the archive.
+    void universe(sill::universe* u) {
+      u_ = u;
     }
 
+    //! Returns the universe associated with the archive.
     sill::universe* universe() {
-      return u;
+      return u_;
     }
 
+    //! Returns the number of bytes read.
     size_t bytes() const {
       return bytes_;
     }
 
+    //! Throws an exception if the input stream indicates failure.
     void check() {
-      if (i->fail()) {
+      if (in_->fail()) {
         throw std::runtime_error("iarchive: Stream operation failed!");
       }
     }
+
+    //! Deserializes a single character from one byte.
+    char deserialize_char() {
+      char c;
+      in_->get(c);
+      ++bytes_;
+      check();
+      return c;
+    }
+
+    //! Deserializes a 64-bit integer.
+    int64_t deserialize_int() {
+      int64_t x;
+      in_->read(reinterpret_cast<char*>(&x), sizeof(int64_t));
+      bytes_ += sizeof(int64_t);
+      check();
+      return x;
+    }
+
+    //! Deserializes a raw buffer with length bytes.
+    void deserialize_buf(void* const buf, const size_t length) {
+      if (length == 0) { return; }
+      in_->read(reinterpret_cast<char*>(buf), length);
+      bytes_ += length;
+      check();
+    }
+    
+    //! Deserializes a range elements of type T into an output iterator.
+    template <typename T, typename OutputIterator>
+    OutputIterator deserialize_range(OutputIterator it) {
+      size_t length = deserialize_int();
+      for (size_t i = 0; i < length; ++i) {
+        T value;
+        *this >> value;
+        *it = value;
+        ++it;
+      }
+      return it;
+    }
+
+    SILL_DESERIALIZE_CHAR(bool)
+    SILL_DESERIALIZE_CHAR(char)
+    SILL_DESERIALIZE_CHAR(unsigned char);
+    
+    SILL_DESERIALIZE_INT(int);
+    SILL_DESERIALIZE_INT(long);
+    SILL_DESERIALIZE_INT(long long);
+    SILL_DESERIALIZE_INT(unsigned long);
+    SILL_DESERIALIZE_INT(unsigned int);
+    SILL_DESERIALIZE_INT(unsigned long long);
+
+    iarchive& operator>>(float& x) {
+      in_->read(reinterpret_cast<char*>(&x), sizeof(float));
+      bytes_ += sizeof(float);
+      check();
+      return *this;
+    }
+
+    iarchive& operator>>(double& x) {
+      in_->read(reinterpret_cast<char*>(&x), sizeof(double));
+      bytes_ += sizeof(double);
+      check();
+      return *this;
+    }
+
+  private:
+    std::istream* in_;  //!< The stream from which we read data.
+    sill::universe* u_; //!< The attached universe.
+    size_t bytes_;      //!< The number of bytes read.
   };
-
-
-  //! Deserializes a single character. \relates iarchive
-  iarchive& operator>>(iarchive& a, char& c);
-
-  //! Deserializaes a single character. \relates iarchive
-  iarchive& operator>>(iarchive& a, unsigned char& c);
-
-  //! Deserializaes a primitive type. \relates iarchive
-  iarchive& operator>>(iarchive& a, bool& b);
- 
-  //! Deserializaes a primitive type. \relates iarchive
-  iarchive& operator>>(iarchive& a, int& x);
-
-  //! Deserializaes a primitive type. \relates iarchive
-  iarchive& operator>>(iarchive& a, long& x);
-
-  //! Deserializaes a primitive type. \relates iarchive
-  iarchive& operator>>(iarchive& a, long long& x);
-
-  //! Deserializaes a primitive type. \relates iarchive
-  iarchive& operator>>(iarchive& a, unsigned long& x);
-
-  //! Deserializaes a primitive type. \relates iarchive
-  iarchive& operator>>(iarchive& a, unsigned int& x);
-
-  //! Deserializaes a primitive type. \relates iarchive
-  iarchive& operator>>(iarchive& a, unsigned long long& x);
-
-  //! Deserializes a floating point number. \relates iarchive
-  iarchive& operator>>(iarchive& a, float& x);
-
-  //! Deserializes a floating point number. \relates iarchive
-  iarchive& operator>>(iarchive& a, double& x);
-
-  /** 
-   * Deserializes a generic pointer object of known length.
-   * This call must match the corresponding serialize call: 
-   * \see{serialize(std::ostream &o, const iarchive&* i,const int length)}
-   * The length of the object is read from the file and checked against the 
-   * length parameter. If they do not match, the function throws assertion.
-   * Otherwise, an additional (length) bytes will be read from the file stream
-   * into (*i). (*i) must contain at least (length) bytes of memory. Otherwise
-   * there will be a buffer overflow.
-   * \relates iarchive
-   */
-  iarchive& deserialize(iarchive& a, void* const x, const size_t length);
-
-  //! Deserializes a C string. If s is NULL, it will allocate it.
-  //! \relates iarchive
-  iarchive& operator>>(iarchive& a, char*& s);
-
-  //! Loads a string. \relates iarchive
-  iarchive& operator>>(iarchive& a, std::string& s);
-
-  //! Deserializes a pair. \relates iarchive
-  template <typename T,typename U>
-  inline iarchive& operator>>(iarchive& a, std::pair<T,U>& p){
-    a >> p.first;
-    a >> p.second;
-    return a;
-  }
 
   /**
    * Catch all deserializer that invokes a load() member of the class T.
    * \relates iarchive
    */
   template <typename T>
-  inline iarchive& operator>>(iarchive& a, T& t) {
+  iarchive& operator>>(iarchive& a, T& t) {
     t.load(a);
     return a;
   }

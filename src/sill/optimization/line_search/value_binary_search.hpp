@@ -2,7 +2,7 @@
 #define SILL_VALUE_BINARY_SEARCH_HPP
 
 #include <sill/global.hpp>
-#include <sill/optimization/line_search/bracketing_line_search.hpp>
+#include <sill/optimization/line_search/bracketing_parameters.hpp>
 #include <sill/optimization/line_search/line_function.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/optimization/line_search/line_search_failed.hpp>
@@ -32,7 +32,7 @@ namespace sill {
   public:
     typedef typename vector_value<Vec>::type real_type;
     typedef line_search_result<real_type> result_type;
-    typedef bracketing_line_search_parameters<real_type> param_type;
+    typedef bracketing_parameters<real_type> param_type;
 
     // Public functions
     //==========================================================================
@@ -41,52 +41,54 @@ namespace sill {
      * Constructs an object that performs line search with objective
      * function alone.
      */
-    explicit value_binary_search(const param_type& params = param_type())
-      : params_(params) {
-      assert(params.valid());
+    explicit value_binary_search(const param_type& param = param_type())
+      : param_(param) {
+      assert(param_.valid());
     }
 
     void objective(gradient_objective<Vec>* obj) override {
       f_.objective(obj);
     }
     
-    result_type step(const Vec& x, const Vec& direction) override {
+    result_type step(const Vec& x, const Vec& direction,
+                     const result_type& init) override {
       // set the line
       f_.line(&x, &direction);
-      result_type left  = f_.value_result(0.0);
-      result_type mid   = f_.value_result(1.0);
+      assert(init.step == real_type(0));
+      result_type left  = init;
+      result_type mid   = f_.value(1);
       result_type right = mid;
       
       // identify the initial bracket
       if (right.value > left.value) { // shrink mid until its objective is < left
-        mid = f_.value_result(1.0 / params_.multiplier);
+        mid = f_.value(1.0 / param_.multiplier);
         while (mid.value > left.value) {
           ++(this->bounding_steps_);
           right = mid;
-          mid = f_.value_result(mid.step / params_.multiplier);
-          if (right.step < params_.min_step) {
+          mid = f_.value(mid.step / param_.multiplier);
+          if (right.step < param_.min_step) {
             throw line_search_failed("Step size too small in bounding");
           }
         }
       } else { // increase right until its objective is > mid
-        right = f_.value_result(params_.multiplier);
+        right = f_.value(param_.multiplier);
         while (right.value < mid.value) {
           ++(this->bounding_steps_);
           left = mid;
           mid = right;
-          right = f_.value_result(right.step * params_.multiplier);
-          if (right.step > params_.max_step) {
+          right = f_.value(right.step * param_.multiplier);
+          if (right.step > param_.max_step) {
             throw line_search_failed("Step size too large in bounding");
           }
         }
       }
 
       // do binary search while maintaining the invariant
-      while (right.step - left.step > params_.convergence ||
-             left.step == 0.0) {
+      while (right.step - left.step > param_.convergence ||
+             left.step == real_type(0)) {
         ++(this->selection_steps_);
-        result_type mid_left = f_.value_result((left.step + mid.step) / 2);
-        result_type mid_right = f_.value_result((mid.step + right.step) / 2);
+        result_type mid_left = f_.value((left.step + mid.step) / 2);
+        result_type mid_right = f_.value((mid.step + right.step) / 2);
         if (mid_left.value > mid.value && mid_right.value > mid.value) {
           left = mid_left;
           right = mid_right;
@@ -97,7 +99,7 @@ namespace sill {
           left = mid;
           mid = mid_right;
         }
-        if (right.step < params_.min_step) {
+        if (right.step < param_.min_step) {
           throw line_search_failed("Step size too small in selection");
         }
       }
@@ -106,12 +108,12 @@ namespace sill {
     }
 
     void print(std::ostream& out) const override {
-      out << "value_binary_search(" << params_ << ")";
+      out << "value_binary_search(" << param_ << ")";
     }
 
   private:
     line_function<Vec> f_;
-    param_type params_;
+    param_type param_;
 
   }; // class value_binary_search
 

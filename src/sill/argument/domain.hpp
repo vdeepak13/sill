@@ -34,12 +34,13 @@ namespace sill {
 
     //! Saves the domain to an archive.
     void save(oarchive& ar) const {
-      serialize_range(ar, this->begin(), this->end());
+      ar.serialize_range(this->begin(), this->end());
     }
 
     //! Laods the domain from an archive.
     void load(iarchive& ar) {
-      deserialize_range<Arg>(ar, std::back_inserter(*this));
+      this->clear();
+      ar.deserialize_range<Arg>(std::back_inserter(*this));
     }
 
     //! Returns the number of times an argument is present in the domain.

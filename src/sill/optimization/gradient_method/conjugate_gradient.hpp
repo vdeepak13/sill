@@ -2,7 +2,6 @@
 #define SILL_CONJUGATE_GRADIENT_HPP
 
 #include <sill/math/constants.hpp>
-#include <sill/optimization/concepts.hpp>
 #include <sill/optimization/gradient_method/gradient_method.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/traits/vector_value.hpp>
@@ -98,22 +97,22 @@ namespace sill {
      * upon destruction.
      */
     explicit conjugate_gradient(line_search<Vec>* search,
-                                const param_type& params = param_type())
+                                const param_type& param = param_type())
       : search_(search),
-        params_(params),
+        param_(param),
         objective_(NULL),
-        value_(nan<real_type>()),
         converged_(false) { }
     
     void objective(gradient_objective<Vec>* obj) override {
       objective_ = obj;
       search_->objective(obj);
-      value_ = nan<real_type>();
+      result_ = result_type();
       converged_ = false;
     }
 
     void solution(const Vec& init) override {
       x_ = init;
+      result_ = result_type();
     }
 
     const Vec& solution() const override {
@@ -125,20 +124,23 @@ namespace sill {
     }
 
     result_type iterate() override {
-      if (params_.precondition) {
+      if (param_.precondition) {
         direction_preconditioned();
       } else {
         direction_standard();
       }
-      result_type result = search_->step(x_, dir_);
+      if (result_.empty()) {
+        result_.value = objective_->value(x_);
+      }
+      result_type result = search_->step(x_, dir_, result_.next(dot(g_, dir_)));
       update(x_, dir_, result.step);
-      converged_ = (value_ - result.value) < params_.convergence;
-      value_ = result.value;
+      converged_ = (result_.value - result.value) < param_.convergence;
+      result_ = result;
       return result;
     }
 
     void print(std::ostream& out) const override {
-      out << "conjugate_gradient(" << params_ << ")";
+      out << "conjugate_gradient(" << param_ << ")";
     }
 
   private:
@@ -147,7 +149,7 @@ namespace sill {
      * conjugate gradient descent.
      */
     void direction_standard() {
-      if (std::isnan(value_)) {
+      if (result_.empty()) {
         g_ = objective_->gradient(x_);
         dir_ = -g_;
       } else {
@@ -163,7 +165,7 @@ namespace sill {
      * descent.
      */
     void direction_preconditioned() {
-      if (std::isnan(value_)) {
+      if (result_.empty()) {
         g_ = objective_->gradient(x_);
         p_ = g_;
         p_ /= objective_->hessian_diag(x_);
@@ -185,7 +187,7 @@ namespace sill {
     real_type beta(const Vec& g, const Vec& p,
                    const Vec& g2, const Vec& p2) const {
       real_type value;
-      switch (params_.update) {
+      switch (param_.update) {
       case param_type::FLETCHER_REEVES:
         value = dot(p2, g2) / dot(p, g);
         break;
@@ -195,14 +197,14 @@ namespace sill {
       default:
         throw std::invalid_argument("Unsupported update type");
       }
-      return (params_.auto_reset && value < 0.0) ? 0.0 : value;
+      return (param_.auto_reset && value < 0.0) ? 0.0 : value;
     }
 
     //! The line search algorithm
     std::unique_ptr<line_search<Vec> > search_;
 
     //! The update and convergence parameters
-    param_type params_;
+    param_type param_;
 
     //! The objective
     gradient_objective<Vec>* objective_;
@@ -219,8 +221,8 @@ namespace sill {
     //! Last descent direction
     Vec dir_;
 
-    //! Last objective value
-    real_type value_;
+    //! Last line search result
+    result_type result_;
 
     //! True if the (last) iteration has converged
     bool converged_;

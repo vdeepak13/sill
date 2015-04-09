@@ -2,6 +2,9 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/math/likelihood/moment_gaussian_mle.hpp>
+
+#include <sill/math/likelihood/moment_gaussian_ll.hpp>
+#include <sill/math/likelihood/range_ll.hpp>
 #include <sill/math/random/gaussian_distribution.hpp>
 
 #include <random>
@@ -40,4 +43,12 @@ BOOST_AUTO_TEST_CASE(test_mle) {
   mle.estimate(samples, estim);
   BOOST_CHECK_SMALL((param.mean - estim.mean).cwiseAbs().maxCoeff(), tol);
   BOOST_CHECK_SMALL((param.cov - estim.cov).cwiseAbs().maxCoeff(), tol);
+
+  // check if the log-likelihoods are close
+  typedef range_ll<moment_gaussian_ll<double> > range_ll_type;
+  double ll_truth = range_ll_type(param).value(samples);
+  double ll_estim = range_ll_type(estim).value(samples);
+  std::cout << "Log-likelihood of the original: " << ll_truth << std::endl;
+  std::cout << "Log-likelihood of the estimate: " << ll_estim << std::endl;
+  BOOST_CHECK_CLOSE(ll_truth, ll_estim, 1.0);
 }

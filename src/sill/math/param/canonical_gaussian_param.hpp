@@ -279,6 +279,7 @@ namespace sill {
       return std::max(de, dl);
     }
 
+#if 0
     /**
      * Ensures that the information matrix is PSD, i.e., this factor represents
      * a valid likelihood.
@@ -287,6 +288,7 @@ namespace sill {
      *          it was not and was adjusted.
      */
     bool enforce_psd(const vec& mean);
+#endif
 
     // Vector operations
     //==========================================================================

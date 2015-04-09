@@ -5,59 +5,43 @@
 #include <sill/serialization/iarchive.hpp>
 #include <sill/serialization/oarchive.hpp>
 
-#include <Eigen/Core>
-
 namespace sill {
 
   //! Serializes a dynamic Eigen vector. \relates oarchive
   template <typename T>
   oarchive& operator<<(oarchive& ar, const dynamic_vector<T>& vec) {
-    ar << vec.rows();
-    for (size_t i = 0; i < vec.rows(); ++i) {
-      ar << vec[i];
-    }
+    ar.serialize_int(vec.rows());
+    ar.serialize_buf(vec.data(), vec.size() * sizeof(T));
     return ar;
   }
 
   //! Serializes a dynamic Eigen matrix. \relates oarchive
   template <typename T>
   oarchive& operator<<(oarchive& ar, const dynamic_matrix<T>& mat) {
-    ar << mat.rows();
-    ar << mat.cols();
-    const T* it = mat.data();
-    const T* end = it + mat.size();
-    for (; it != end; ++it) {
-      ar << *it;
-    }
+    ar.serialize_int(mat.rows());
+    ar.serialize_int(mat.cols());
+    ar.serialize_buf(mat.data(), mat.size() * sizeof(T));
     return ar;
   }
 
   //! Deserializes a dynamic Eigen vector. \relates oarchive
   template <typename T>
   iarchive& operator>>(iarchive& ar, dynamic_vector<T>& vec) {
-    size_t rows;
-    ar >> rows;
-    vec.resize(rows);
-    for (size_t i = 0; i < vec.rows(); ++i) {
-      ar >> vec[i];
-    }
+    vec.resize(ar.deserialize_int());
+    ar.deserialize_buf(vec.data(), vec.size() * sizeof(T));
     return ar;
   }
 
   //! Serializes a dynamic Eigen matrix. \relates oarchive
   template <typename T>
   iarchive& operator>>(iarchive& ar, dynamic_matrix<T>& mat) {
-    size_t rows, cols;
-    ar >> rows >> cols;
+    size_t rows = ar.deserialize_int();
+    size_t cols = ar.deserialize_int();
     mat.resize(rows, cols);
-    T* it = mat.data();
-    T* end = it + mat.size();
-    for (; it != end; ++it) {
-      ar >> *it;
-    }
+    ar.deserialize_buf(mat.data(), mat.size() * sizeof(T));
     return ar;
   }
   
-}
+} // namespace sill
 
 #endif

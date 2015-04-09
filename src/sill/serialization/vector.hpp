@@ -3,34 +3,34 @@
 
 #include <sill/serialization/iarchive.hpp>
 #include <sill/serialization/oarchive.hpp>
-#include <sill/serialization/range.hpp>
 
+#include <iterator>
 #include <vector>
 
 namespace sill {
 
   //! Serializes a vector. \relates oarchive
   template <typename T>
-  oarchive& operator<<(oarchive& a, const std::vector<T>& vec){
-    serialize_range(a, vec.begin(), vec.end());
-    return a;
+  oarchive& operator<<(oarchive& ar, const std::vector<T>& vec){
+    ar.serialize_range(vec.begin(), vec.end());
+    return ar;
   }
 
   //! Serializes a vector<bool>. \relates oarchive
-  inline oarchive& operator<<(oarchive& a, const std::vector<bool>& vec) {
-    a << vec.size();
+  inline oarchive& operator<<(oarchive& ar, const std::vector<bool>& vec) {
+    ar << vec.size();
     for (size_t i = 0; i < vec.size(); ++i) {
-      a << bool(vec[i]);
+      ar.serialize_char(vec[i]);
     }
-    return a;
+    return ar;
   }
 
   //! Deserializes a vector. \relates iarchive
   template <typename T>
-  iarchive& operator>>(iarchive& a, std::vector<T>& vec) {
+  iarchive& operator>>(iarchive& ar, std::vector<T>& vec) {
     vec.clear();
-    deserialize_range<T>(a, std::inserter(vec, vec.end()));
-    return a;
+    ar.deserialize_range<T>(std::back_inserter(vec));
+    return ar;
   }
 
 } // namespace sill

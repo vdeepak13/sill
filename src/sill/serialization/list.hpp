@@ -3,25 +3,25 @@
 
 #include <sill/serialization/iarchive.hpp>
 #include <sill/serialization/oarchive.hpp>
-#include <sill/serialization/range.hpp>
 
+#include <iterator>
 #include <list>
 
 namespace sill {
 
   //! Serializes a list. \relates oarchive
   template <typename T>
-  oarchive& operator<<(oarchive& a, const std::list<T>& list) {
-    serialize_range(a,list.begin(), list.end());
-    return a;
+  oarchive& operator<<(oarchive& ar, const std::list<T>& list) {
+    ar.serialize_range(list.begin(), list.end(), list.size());
+    return ar;
   }
 
   //! Deserializes a list. \relates iarchive
   template <typename T>
-  iarchive& operator>>(iarchive& a, std::list<T>& list) {
+  iarchive& operator>>(iarchive& ar, std::list<T>& list) {
     list.clear();
-    deserialize_range<T>(a, std::inserter(list, list.end()));
-    return a;
+    ar.deserialize_range<T>(std::back_inserter(list));
+    return ar;
   }
 
 } // namespace sill

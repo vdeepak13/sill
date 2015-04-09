@@ -3,6 +3,7 @@
 
 #include <sill/datastructure/hybrid_index.hpp>
 #include <sill/math/eigen/dynamic.hpp>
+#include <sill/serialization/eigen.hpp>
 
 #include <cmath>
 #include <iostream>
@@ -68,7 +69,7 @@ namespace sill {
      */
     softmax_param(const mat_type& weight, const vec_type& bias)
       : weight_(weight), bias_(bias) {
-      assert(weight.rows() == bias.rows());
+      assert(weight_.rows() == bias_.rows());
     }
 
     /**
@@ -77,7 +78,7 @@ namespace sill {
     softmax_param(mat_type&& weight, vec_type&& bias) {
       weight_.swap(weight);
       bias_.swap(bias);
-      assert(weight.rows() == bias.rows());
+      assert(weight_.rows() == bias_.rows());
     }
 
     //! Copy constructor.
@@ -107,6 +108,17 @@ namespace sill {
     friend void swap(softmax_param& f, softmax_param& g) {
       f.weight_.swap(g.weight_);
       f.bias_.swap(g.bias_);
+    }
+
+    //! Serializes the parameters to an archive.
+    void save(oarchive& ar) const {
+      ar << weight_ << bias_;
+    }
+
+    //! Deserializes the parameters from an archive.
+    void load(iarchive& ar) {
+      ar >> weight_ >> bias_;
+      assert(weight_.rows() == bias_.rows());
     }
 
     /**
@@ -310,6 +322,10 @@ namespace sill {
       return *this;
     }
 
+    friend void copy_shape(const softmax_param& src, softmax_param& dst) {
+      dst.resize(src.labels(), src.features());
+    }
+
     friend void update(softmax_param& f, const softmax_param& g, T a) {
       f.weight_ += a * g.weight_;
       f.bias_ += a * g.bias_;
@@ -337,7 +353,7 @@ namespace sill {
    */
   template <typename T>
   std::ostream& operator<<(std::ostream& out, const softmax_param<T>& f) {
-    typename softmax_param<T>::mat_type a(f.num_labels(), f.num_features() + 1);
+    typename softmax_param<T>::mat_type a(f.labels(), f.features() + 1);
     a << f.weight(), f.bias();
     out << a << std::endl;
     return out;

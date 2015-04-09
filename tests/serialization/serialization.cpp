@@ -43,9 +43,8 @@ BOOST_AUTO_TEST_CASE(basic_datatypes) {
   std::ofstream f;
   f.open("test.bin", std::fstream::binary);
   oarchive a(f);
-  a << t1 << t2 << t3 << t4 << t5 << t6 << t7 << t8;
-  a << t9;
-  sill::serialize(a, t10, strlen(t10) + 1);
+  a << t1 << t2 << t3 << t4 << t5 << t6 << t7 << t8 << t9;
+  a.serialize_buf(t10, strlen(t10) + 1);
   f.close();
   
   // deserialize into r1-10
@@ -54,7 +53,7 @@ BOOST_AUTO_TEST_CASE(basic_datatypes) {
   iarchive b(g);
   b >> r1 >> r2 >> r3 >> r4 >> r5 >> r6 >> r7 >> r8;
   b >> r9;
-  sill::deserialize(b, r10, strlen(t10) + 1);
+  b.deserialize_buf(r10, strlen(t10) + 1);
   g.close();
   
   BOOST_CHECK_EQUAL(t1, r1);

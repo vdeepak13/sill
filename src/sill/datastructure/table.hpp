@@ -7,8 +7,7 @@
 #include <sill/functional/operators.hpp>
 #include <sill/range/iterator_range.hpp>
 #include <sill/stl_concepts.hpp>
-#include <sill/serialization/serialize.hpp>
-#include <sill/serialization/range.hpp>
+#include <sill/serialization/vector.hpp>
 
 #include <algorithm>
 #include <functional>
@@ -313,7 +312,7 @@ namespace sill {
     //! Saves the table to an archive.
     void save(oarchive& ar) const {
       ar << shape_;
-      serialize_range(ar, begin(), end());
+      ar.serialize_range(begin(), end());
     }
 
     //! Loads the table from an archive.
@@ -321,7 +320,7 @@ namespace sill {
       finite_index shape;
       ar >> shape;
       reset(shape);
-      deserialize_range<T>(ar, data());
+      ar.deserialize_range<T>(data());
     }
 
     /**

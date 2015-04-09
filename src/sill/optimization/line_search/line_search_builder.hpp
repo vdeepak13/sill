@@ -8,7 +8,7 @@
 #include <sill/optimization/line_search/exponential_decay_search.hpp>
 #include <sill/optimization/line_search/slope_binary_search.hpp>
 #include <sill/optimization/line_search/value_binary_search.hpp>
-#include <sill/optimization/line_search/wolfe_conditions.hpp>
+#include <sill/optimization/line_search/wolfe.hpp>
 #include <sill/traits/vector_value.hpp>
 
 namespace sill {
@@ -68,9 +68,9 @@ namespace sill {
         ("c2",
          po::value<real_type>(&wolfe.c2),
          "The parameter controlling the curvature Wolfe condition")
-        ("strong",
-         po::value<bool>(&wolfe.strong),
-         "If true, use the strong Wolfe conditions");
+        ("wolfe",
+         po::value<std::string>(&wolfe_type)->default_value("none"),
+         "The type of wolfe conditions to use (none, weak, strong)");
       desc.add(sub_desc);
     }
 
@@ -90,6 +90,7 @@ namespace sill {
         return new value_binary_search<Vec>(bracketing);
       }
       if (algorithm == "slope_binary") {
+        wolfe.parse_type(wolfe_type);
         return new slope_binary_search<Vec>(bracketing, wolfe);
       }
       throw std::invalid_argument("Invalid line search algorithm");
@@ -99,8 +100,9 @@ namespace sill {
     std::string algorithm;
     exponential_decay_search_parameters<real_type> decay;
     backtracking_line_search_parameters<real_type> backtrack;
-    bracketing_line_search_parameters<real_type> bracketing;
-    typename wolfe_conditions<real_type>::param_type wolfe;
+    bracketing_parameters<real_type> bracketing;
+    sill::wolfe<real_type> wolfe;
+    std::string wolfe_type;
 
   }; // class line_search_builder
 
