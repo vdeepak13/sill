@@ -91,31 +91,32 @@ namespace sill {
     // Public functions
     //==========================================================================
   public:
-    explicit exponential_decay_search(const param_type& params = param_type())
-      : params_(params), step_(params.initial) {
-      assert(params.valid());
+    explicit exponential_decay_search(const param_type& param = param_type())
+      : param_(param), step_(param.initial) {
+      assert(param.valid());
     }
 
     void objective(gradient_objective<Vec>* obj) override {
       f_.objective(obj);
     }
 
-    result_type step(const Vec& x, const Vec& direction) override {
+    result_type step(const Vec& x, const Vec& direction,
+                     const result_type& init) override {
       f_.line(&x, &direction);
-      result_type result = f_.value_result(step_);
-      step_ *= params_.rate;
+      result_type result = f_.value(step_);
+      step_ *= param_.rate;
       return result;
     }
 
     void print(std::ostream& out) const override {
-      out << "exponential_decay_search(" << params_ << ")";
+      out << "exponential_decay_search(" << param_ << ")";
     }
 
     // Private data
     //==========================================================================
   private:
     line_function<Vec> f_;
-    param_type params_;
+    param_type param_;
     real_type step_;
 
   }; // class exponential_decay_search

@@ -44,10 +44,13 @@ BOOST_AUTO_TEST_CASE(test_mle) {
   softmax_mle<double> mle(0.01, 100, true);
   softmax_param<double> estim(3, 4);
   mle.estimate(samples, estim);
+  
+  std::cout << "Solution: " << estim << std::endl;
 
-  //double ll_truth = softmax_ll<double>(param).log(samples);
-  //double ll_estim = softmax_ll<double>(estim).log(samples);
-  //std::cout << "Log-likelihood of the original: " << ll_truth << std::endl;
-  //std::cout << "Log-likelihood of the estimate: " << ll_estim << std::endl;
-  //BOOST_CHECK_CLOSE(ll_truth, ll_estim, 1.0);
+  typedef range_ll<softmax_ll<double> > range_ll_type;
+  double ll_truth = range_ll_type(param).value(samples);
+  double ll_estim = range_ll_type(estim).value(samples);
+  std::cout << "Log-likelihood of the original: " << ll_truth << std::endl;
+  std::cout << "Log-likelihood of the estimate: " << ll_estim << std::endl;
+  BOOST_CHECK_CLOSE(ll_truth, ll_estim, 1.0);
 }

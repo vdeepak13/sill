@@ -1,6 +1,7 @@
 #ifndef SILL_PROBABILITY_TABLE_LL_HPP
 #define SILL_PROBABILITY_TABLE_LL_HPP
 
+#include <sill/datastructure/real_pair.hpp>
 #include <sill/datastructure/table.hpp>
 #include <sill/traits/is_sample_range.hpp>
 
@@ -36,22 +37,18 @@ namespace sill {
     /**
      * Returns the log-likelihood of the specified data point.
      */
-    T log(const finite_index& index) const {
+    T value(const finite_index& index) const {
       return std::log(f(index));
     }
 
     /**
-     * Returns the log-likelihood of a collection of weighted samples.
+     * Returns the log-likelihood of the specified datapoint
+     * and the slope along the given direction.
      */
-    template <typename Range>
-    typename std::enable_if<
-      is_sample_range<Range, finite_index, T>::value, T>::type
-    log(const Range& samples) const {
-      T result(0);
-      for (const auto& sample : samples) {
-        result += std::log(f(sample.first)) * sample.second;
-      }
-      return result;
+    real_pair<T> value_slope(const finite_index& index,
+                             const table<T>& dir) const {
+      T p = f(index);
+      return { std::log(p), dir(index) / p };
     }
 
     /**
@@ -105,7 +102,7 @@ namespace sill {
 
   private:
     //! The parameters at which we evaluate the log-likelihood derivatives.
-    table<T> f;
+    const table<T>& f;
 
   }; // class probability_table_ll
 

@@ -3,6 +3,7 @@
 
 #include <sill/global.hpp>
 #include <sill/datastructure/finite_index.hpp>
+#include <sill/datastructure/real_pair.hpp>
 #include <sill/traits/is_sample_range.hpp>
 
 #include <stdexcept>
@@ -42,62 +43,79 @@ namespace sill {
     /**
      * Returns the log-likelihood of the specified data point.
      */
-    T log(size_t i) const {
+    T value(size_t i) const {
+      assert(a.cols() == 1);
       return std::log(a(i));
     }
 
     /**
      * Returns the log-likelihood of the specified data point.
      */
-    T log(size_t i, size_t j) const {
+    T value(size_t i, size_t j) const {
       return std::log(a(i, j));
     }
 
     /**
-     * Returns the log-likelihood of a collection of weighted samples.
+     * Returns the log-likelihood of the specified data point.
      */
-    template <typename Range>
-    typename std::enable_if<
-      is_sample_range<Range, finite_index, T>::value, T>::type
-    log(const Range& samples) const {
-      T result(0);
-      for (const auto& sample : samples) {
-        result += std::log(a(linear(sample.first))) * sample.second;
-      }
-      return result;
+    T value(const finite_index& index) const {
+      return std::log(a(linear(index)));
     }
 
     /**
-     * Returns the log-likelihood of a collection of weighted samples.
+     * Returns the log-likelihood of the specified datapoint
+     * and the slope along the given direction.
      */
-    template <typename Range>
-    typename std::enable_if<
-      is_sample_range<Range, size_t, T>::value && (N == 1), T>::type
-    log(const Range& samples) const {
-      T result(0);
-      for (const auto& sample : samples) {
-        result += std::log(a[sample.first]) * sample.second;
-      }
-      return result;
+    real_pair<T> value_slope(size_t i, const param_type& dir) const {
+      assert(a.rows() == dir.rows() && a.cols() == 1 && dir.cols() == 1);
+      return { std::log(a(i)), dir(i) / a(i) };
+    }
+
+    /**
+     * Returns the log-likelihood of the specified datapoint
+     * and the slope along the given direction.
+     */
+    real_pair<T> value_slope(size_t i, size_t j, const param_type& dir) const {
+      assert(a.rows() == dir.rows() && a.cols() == dir.cols());
+      return { std::log(a(i, j)), dir(i, j) / a(i, j) };
+    }
+
+    /**
+     * Returns the log-likelihood of the specified datapoint
+     * and the slope along the given direction.
+     */
+    real_pair<T> value_slope(const finite_index& index, const param_type& dir) const {
+      assert(a.rows() == dir.rows() && a.cols() == dir.cols());
+      size_t i = linear(index);
+      return { std::log(a(i)), dir(i) / a(i) };
     }
 
     /**
      * Adds a gradient of the log-likelihood of the specified data
      * point with weight w to the gradient array g.
-     * \param i the row index
      */
     void add_gradient(size_t i, T w, param_type& g) const {
+      assert(a.rows() == g.rows() && a.cols() == 1 && g.cols() == 1);
       g(i) += w / a(i);
     }
 
     /**
      * Adds a gradient of the log-likelihood of the specified data
      * point with weight w to the gradient array g
-     * \param i the row index
-     * \param j the column index
      */
     void add_gradient(size_t i, size_t j, T w, param_type& g) const {
+      assert(a.rows() == g.rows() && a.cols() == g.cols());
       g(i, j) += w / a(i, j);
+    }
+
+    /**
+     * Adds a gradient of the log-likelihood of the specified data
+     * point with weight w to the gradient array g.
+     */
+    void add_gradient(const finite_index& index, T w, param_type& g) const {
+      assert(a.rows() == g.rows() && a.cols() == g.cols());
+      size_t i = linear(index);
+      g(i) += w / a(i);
     }
 
     /**
@@ -113,24 +131,33 @@ namespace sill {
 
       
     /**
-     * Adds the diagonal of the Hessian of log-likleihood of the specified
+     * Adds the diagonal of the Hessian of log-likelihood of the specified
      * data point with weight w to the Hessian diagonal h.
-     * \param i the row index
      */
     void add_hessian_diag(size_t i, T w, param_type& h) const {
+      assert(a.rows() == h.rows() && a.cols() == 1 && h.cols() == 1);
       h(i) -= w / (a(i) * a(i));
     }
 
     /**
-     * Adds the diagonal of the Hessian of log-likleihood of the specified
+     * Adds the diagonal of the Hessian of log-likelihood of the specified
      * data point with weight w to the Hessian diagonal h.
-     * \param i the row index
-     * \param j the column index
      */
     void add_hessian_diag(size_t i, size_t j, T w, param_type& h) {
+      assert(a.rows() == h.rows() && a.cols() == h.cols());
       h(i, j) -= w / (a(i, j) * a(i, j));
     }
     
+    /**
+     * Adds the diagonal of the Hessian of log-likelihood of the specified
+     * data point with weight w to the Hessian diagonal h.
+     */
+    void add_hessian_diag(const finite_index& index, T w, param_type& h) const {
+      assert(a.rows() == h.rows() && a.cols() == h.cols());
+      size_t i = linear(index);
+      h(i) -= w / (a(i) * a(i));
+    }
+
     /**
      * Adds the diagonal of the Hessian of the expected log-likelihoood of
      * the specified data point to the Hessian diagonal h.
@@ -158,7 +185,7 @@ namespace sill {
     }
 
     //! The parameters at which we evaluate the log-likelihood derivatives.
-    param_type a;
+    const param_type& a;
 
   }; // class probability_array_ll
 

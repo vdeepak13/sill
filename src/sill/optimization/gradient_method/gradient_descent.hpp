@@ -2,12 +2,12 @@
 #define SILL_GRADIENT_DESCENT_HPP
 
 #include <sill/math/constants.hpp>
-#include <sill/optimization/concepts.hpp>
 #include <sill/optimization/gradient_method/gradient_method.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/traits/vector_value.hpp>
 
 #include <memory>
+#include <tuple>
 
 namespace sill {
 
@@ -55,22 +55,22 @@ namespace sill {
      * gradient_descent and will be deleted upon destruction.
      */
     explicit gradient_descent(line_search<Vec>* search,
-                              const param_type& params = param_type())
+                              const param_type& param = param_type())
       : search_(search),
-        params_(params),
+        param_(param),
         objective_(NULL),
-        value_(nan<real_type>()),
         converged_(false) { }
 
     void objective(gradient_objective<Vec>* obj) override {
       objective_ = obj;
       search_->objective(obj);
-      value_ = nan<real_type>();
+      result_ = result_type();
       converged_ = false;
     }
 
     void solution(const Vec& init) override {
       x_ = init;
+      result_ = result_type();
     }
 
     const Vec& solution() const override {
@@ -82,41 +82,45 @@ namespace sill {
     }
 
     result_type iterate() override {
-      dir_ = -objective_->gradient(x_);
-      if (params_.precondition) {
+      const Vec& g = objective_->gradient(x_);
+      dir_ = -g;
+      if (param_.precondition) {
         dir_ /= objective_->hessian_diag(x_);
       }
-      result_type result = search_->step(x_, dir_);
+      if (result_.empty()) {
+        result_.value = objective_->value(x_);
+      }
+      result_type result = search_->step(x_, dir_, result_.next(dot(g, dir_)));
       update(x_, dir_, result.step);
-      converged_ = (value_ - result.value) < params_.convergence;
-      value_ = result.value;
+      converged_ = (result_.value - result.value) < param_.convergence;
+      result_ = result;
       return result;
     }
 
     void print(std::ostream& out) const override {
-      out << "gradient_descent(" << params_ << ")";
+      out << "gradient_descent(" << param_ << ")";
     }
 
   private:
-    //! The line search algorithm
+    //! The line search algorithm.
     std::unique_ptr<line_search<Vec> > search_;
 
-    //! The convergence parameters
-    param_type params_;
+    //! The convergence parameters.
+    param_type param_;
 
-    //! The objective
+    //! The objective.
     gradient_objective<Vec>* objective_;
 
-    //! Current solution
+    //! Current solution.
     Vec x_;
 
-    //! Last descent direction (-gradient)
+    //! Last descent direction.
     Vec dir_;
 
-    //! Last objective value
-    real_type value_;
+    //! The result of the last line search.
+    result_type result_;
 
-    //! True if the (last) iteration has converged
+    //! True if the (last) iteration has converged.
     bool converged_;
 
   }; // class gradient_descent

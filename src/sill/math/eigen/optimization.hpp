@@ -25,11 +25,10 @@ namespace Eigen {
     return x;
   }
 
-  //! Implements dot product as a free function.
+  //! Resizes dst according to src.
   template <typename Derived>
-  typename Derived::Scalar
-  dot(const MatrixBase<Derived>& x, const MatrixBase<Derived>& y) {
-    return x.dot(y);
+  void copy_shape(const MatrixBase<Derived>& src, MatrixBase<Derived>& dst) {
+    dst.derived().resize(src.rows(), src.cols());
   }
 
   //! Implements weighted update.
@@ -39,6 +38,13 @@ namespace Eigen {
     x += a * y;
   }
   
+  //! Implements dot product as a free function.
+  template <typename Derived>
+  typename Derived::Scalar
+  dot(const MatrixBase<Derived>& x, const MatrixBase<Derived>& y) {
+    return x.dot(y);
+  }
+
 } // namespace Eigen
 
 #endif

@@ -2,6 +2,8 @@
 #define SILL_SOFTMAX_LL_HPP
 
 #include <sill/datastructure/hybrid_index.hpp>
+#include <sill/datastructure/real_pair.hpp>
+#include <sill/functional/operators.hpp>
 #include <sill/math/param/softmax_param.hpp>
 #include <sill/traits/is_sample_range.hpp>
 
@@ -15,6 +17,13 @@ namespace sill {
   /**
    * A log-likelihood function of the softmax distribution and
    * its derivatives.
+   *
+   * The functions for computing slope and gradient accept a templated
+   * argument of type Label, which can be either a std::size_t or an
+   * expression that evaluates to an Eigen vector. In the former case,
+   * the argument represents a single observation with the given label
+   * index; in the latter case, the argument represents a distribution
+   * over labels.
    *
    * \tparam T the real type representing the coefficients
    */
@@ -44,24 +53,78 @@ namespace sill {
     
     //! Returns the log-likelihood of the label for dense/sparse features.
     template <typename Derived>
-    T log(size_t label, const Eigen::EigenBase<Derived>& x) const {
+    T value(size_t label, const Eigen::EigenBase<Derived>& x) const {
       return std::log(f(x)[label]);
     }
 
     //! Returns the log-likelihood of the label for sparse unit features.
-    T log(size_t label, const std::vector<size_t>& x) const {
+    T value(size_t label, const std::vector<size_t>& x) const {
       return std::log(f(x)[label]);
     }
      
     //! Returns the log-likelihood of the specified data point.
-    T log(const hybrid_index<T>& index) const {
+    T value(const hybrid_index<T>& index) const {
       return std::log(f(index.vector())[index.finite()[0]]);
+    }
+
+    /**
+     * Returns a pair consisting of the log-likelihood of a datapoint
+     * specified as a label and a dense Eigen feature vector, as well as
+     * the slope of the log-likelihood along the given direction.
+     */
+    template <typename Label>
+    real_pair<T> value_slope(const Label& label, const dynamic_vector<T>& x,
+                             const softmax_param<T>& dir) const {
+      std::pair<T, dynamic_vector<T> > d = slope_delta(label, x);
+      T wslope = dir.weight().cwiseProduct(d.second * x.transpose()).sum();
+      return {d.first, dir.bias().dot(d.second) + wslope};
+    }
+    
+    /**
+     * Returns a pair consisting of the log-likelihood of a datapoint
+     * specified as a label and a sparse Eigen feature vector, as well as
+     * the slope of the log-likelihood along the given direction.
+     */
+    template <typename Label>
+    real_pair<T> value_slope(const Label& label, const Eigen::SparseVector<T>& x,
+                             const softmax_param<T>& dir) const {
+      std::pair<T, dynamic_vector<T> > d = slope_delta(label, x);
+      real_pair<T> result(d.first, dir.bias().dot(d.second));
+      for (typename Eigen::SparseVector<T>::InnerIterator it(x); it; ++it) {
+        result.second += dir.weight().col(it.index()).dot(d.second) * it.value();
+      }
+      return result;
+    }
+
+    /**
+     * Returns a pair consisting of the log-likelihood of a datapoint
+     * specified as a label and a sparse unit feature vector, as well as
+     * the slope of the log-likelihood along the given direction.
+     */
+    template <typename Label>
+    real_pair<T> value_slope(const Label& label, const std::vector<size_t>& x,
+                             const softmax_param<T>& dir) const {
+      std::pair<T, dynamic_vector<T> > d = slope_delta(label, x);
+      real_pair<T> result(d.first, dir.bias().dot(d.second));
+      for (size_t i : x) {
+        d.result.second += dir.weight().col(i).dot(d.second);
+      }
+      return result;
+    }
+
+    /**
+     * Returns a pair consisting of the log-likelihood of a datapoint
+     * specified as a hybrid_index, as well as
+     * the slope of the log-likelihood along the given direction.
+     */
+    real_pair<T> value_slope(const hybrid_index<T>& index,
+                             const softmax_param<T>& dir) const {
+      return value_slope(index.finite()[0], index.vector(), dir);
     }
 
     /**
      * Adds (expected) gradient of the log-likelihood to g for a datapoint
      * specified as a label and a dense Eigen feature vector.
-     * \tparam Label either size_t or a dense Eigen vector of probabilities
      */
     template <typename Label>
     void add_gradient(const Label& label, const dynamic_vector<T>& x, T w,
@@ -74,7 +137,6 @@ namespace sill {
     /**
      * Adds (expected) gradient of the log-likelihood to g for a datapoint
      * specified as a label and a sparse Eigen feature vector.
-     * \tparam Label either size_t or a dense Eigen vector of probabilities
      */
     template <typename Label>
     void add_gradient(const Label& label, const Eigen::SparseVector<T>& x, T w,
@@ -89,7 +151,6 @@ namespace sill {
     /**
      * Adds (expected) gradient of the log-likelihood to g for a datapoint
      * specified as a label and a sparse unit feature vector.
-     * \tparam Label either size_t or a dense Eigen vector of probabilities
      */
     template <typename Label>
     void add_gradient(const Label& label, const std::vector<size_t>& x, T w,
@@ -103,9 +164,9 @@ namespace sill {
      * Adds gradient of the log-likelihood to g for a datapoint
      * specified as hybrid_index.
      */
-    void add_gradient(const hybrid_index<T>& x, T w,
+    void add_gradient(const hybrid_index<T>& index, T w,
                      softmax_param<T>& g) const {
-      add_gradient(x.finite()[0], x.vector(), w, g);
+      add_gradient(index.finite()[0], index.vector(), w, g);
     }
 
     /**
@@ -154,6 +215,27 @@ namespace sill {
 
   private:
     template <typename Features>
+    std::pair<T, dynamic_vector<T> >
+    slope_delta(size_t label, const Features& x) const {
+      dynamic_vector<T> p = f(x);
+      T value = std::log(p[label]);
+      p[label] -= T(1);
+      p = -p;
+      return {value, p};
+    }
+
+    template <typename Features>
+    std::pair<T, dynamic_vector<T> >
+    slope_delta(const Eigen::Ref<const dynamic_vector<T> >& plabel,
+                const Features& x) const {
+      dynamic_vector<T> p = f(x);
+      T value = p.unaryExpr(logarithm<T>()).dot(plabel);
+      p -= plabel;
+      p = -p;
+      return {value, p};
+    }
+
+    template <typename Features>
     dynamic_vector<T>
     gradient_delta(size_t label, const Features& x, T w) const {
       dynamic_vector<T> p = f(x);
@@ -181,7 +263,7 @@ namespace sill {
     }
 
     //! The parameters at which we evaluate the log-likelihood derivatives.
-    softmax_param<T> f;
+    const softmax_param<T>& f;
 
   }; // class softmax_ll
 

@@ -2,7 +2,7 @@
 #define SILL_LINE_SEARCH_HPP
 
 #include <sill/global.hpp>
-#include <sill/optimization/gradient_objective.hpp>
+#include <sill/optimization/gradient_objective/gradient_objective.hpp>
 #include <sill/optimization/line_search/line_search_result.hpp>
 #include <sill/traits/vector_value.hpp>
 
@@ -42,10 +42,16 @@ namespace sill {
     virtual void objective(gradient_objective<Vec>* objective) = 0;
 
     /**
-     * Computes the step in the given direction.
-     * Returns the step size and the corresponding objective value.
+     * Computes the step in the given direction and returns the step size
+     * along with the objective value (and optionally slope), encapsulated
+     * in a line_search_result object. The caller must provide the objective
+     * value and slope along the specified direction evaluated at x,
+     * encapsulated in a line_search_result object whose step field is 0.
+     * Typically, this information is already available to the caller using
+     * the previous objective value and the functino gradients.
      */
-    virtual result_type step(const Vec& x, const Vec& direction) = 0;
+    virtual result_type step(const Vec& x, const Vec& direction,
+                             const result_type& init) = 0;
 
     /**
      * Prints the line search algorithm and its parameters to a stream.

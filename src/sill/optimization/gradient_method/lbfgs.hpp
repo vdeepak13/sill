@@ -2,7 +2,6 @@
 #define SILL_LBFGS_HPP
 
 #include <sill/math/constants.hpp>
-#include <sill/optimization/concepts.hpp>
 #include <sill/optimization/gradient_method/gradient_method.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/traits/vector_value.hpp>
@@ -66,19 +65,19 @@ namespace sill {
         yhist_(params.history),
         rhist_(params.history),
         iteration_(0),
-        value_(nan()),
         converged_(false) { }
 
     void objective(gradient_objective<Vec>* obj) override {
       objective_ = obj;
       search_->objective(obj);
       iteration_ = 0;
-      value_ = nan();
+      result_ = result_type();
       converged_ = false;
     }
 
     void solution(const Vec& init) override {
       x_ = init;
+      result_ = result_type();
     }
 
     const Vec& solution() const override {
@@ -108,10 +107,11 @@ namespace sill {
         dir_ *= -1.0;
       } else {
         dir_ = -g;
+        result_.value = objective_->value(x_);
       }
 
       // update the solution and the historical values of s, y, and rho
-      result_type result = search_->step(x_, dir_);
+      result_type result = search_->step(x_, dir_, result_.next(dot(g, dir_)));
       size_t index = iteration_ % params_.history;
       shist_[index] = result.step * dir_;
       yhist_[index] = (iteration_ > 0) ? (g - g_) : g;
@@ -121,8 +121,8 @@ namespace sill {
       ++iteration_;
 
       // determine the convergence
-      converged_ = (value_ - result.value) < params_.convergence;
-      value_ = result.value;
+      converged_ = (result_.value - result.value) < params_.convergence;
+      result_ = result;
       return result;
     }
 
@@ -176,8 +176,8 @@ namespace sill {
     //! Last direction
     Vec dir_;
 
-    //! Last value
-    real_type value_;
+    //! Last line search result
+    result_type result_;
 
     //! True if the (last) iteration has converged
     bool converged_;

@@ -102,28 +102,29 @@ namespace sill {
     // Public functions
     //==========================================================================
   public:
-    explicit backtracking_line_search(const param_type& params = param_type())
-      : params_(params) {
-      assert(params.valid());
+    explicit backtracking_line_search(const param_type& param = param_type())
+      : param_(param) {
+      assert(param_.valid());
     }
 
     void objective(gradient_objective<Vec>* obj) override {
       f_.objective(obj);
     }
 
-    result_type step(const Vec& x, const Vec& direction) override {
+    result_type step(const Vec& x, const Vec& direction,
+                     const result_type& init) override {
       f_.line(&x, &direction);
-      real_type threshold = params_.acceptance * f_.slope(0.0);
-      real_type f0 = f_.value(0.0);
-      result_type r = f_.value_result(1.0);
-      while (r.step > params_.min_step &&
+      real_type threshold = param_.acceptance * init.slope;
+      real_type f0 = init.value;
+      result_type r = f_.value(1.0);
+      while (r.step > param_.min_step &&
              (std::isnan(r.value) || r.value > f0 + r.step * threshold)) {
         ++(this->selection_steps_);
-        r = f_.value_result(r.step * params_.discount);
+        r = f_.value(r.step * param_.discount);
       }
-      if (r.step <= params_.min_step) {
+      if (r.step <= param_.min_step) {
         throw line_search_failed(
-          "Reached the minimum step size " + to_string(params_.min_step)
+          "Reached the minimum step size " + to_string(param_.min_step)
         );
       } else {
         return r;
@@ -131,14 +132,14 @@ namespace sill {
     }
 
     void print(std::ostream& out) const override {
-      out << "backtracking_line_search(" << params_ << ")";
+      out << "backtracking_line_search(" << param_ << ")";
     }
 
     // Private data
     //==========================================================================
   private:
     line_function<Vec> f_;
-    param_type params_;
+    param_type param_;
 
   }; // class backtracking_line_search
 

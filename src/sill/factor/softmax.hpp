@@ -210,9 +210,12 @@ namespace sill {
         extract_features(a.vector(), features);
         return param_(features)[finite];
       } else {
+        assert(false);
+        /*
         sparse_index<T> features;
         extract_features(a.vector(), features);
         return param_(features)[finite];
+        */
       }
     }
 
@@ -260,7 +263,7 @@ namespace sill {
      */
     void extract_features(const vector_assignment<T>& a,
                           vec_type& result) const {
-      result.resize(num_features());
+      result.resize(features());
       size_t row = 0;
       for (vector_variable* v : tail()) {
         auto it = a.find(v);
@@ -275,6 +278,7 @@ namespace sill {
       }
     }
       
+#if 0
     /**
      * Extracts a sparse vector of features from an assignment. Tail variables
      * that are missing in the assignment are assumed to have a value of 0.
@@ -294,6 +298,7 @@ namespace sill {
         id += v->size();
       }
     }
+#endif
 
     /**
      * Checks if the dimensions of the parameters match this factor's arguments.
@@ -305,10 +310,10 @@ namespace sill {
           throw std::runtime_error("The factor is empty but the parameters are not!");
         }
       } else {
-        if (param_.num_labels() != head()->size()) {
+        if (param_.labels() != head()->size()) {
           throw std::runtime_error("Invalid number of labels");
         }
-        if (param_.num_features() != vector_size(tail())) {
+        if (param_.features() != vector_size(tail())) {
           throw std::runtime_error("Invalid number of features");
         }
       }
@@ -334,6 +339,7 @@ namespace sill {
       return probability_array<T, 1>({head()}, param_(index));
     }
 
+#if 0
     /**
      * Conditions the factor on the assignment to its tail variables.
      * \param strict if true, requires that all the tail arguments are present
@@ -352,7 +358,6 @@ namespace sill {
       }
     }
 
-#if 0
     /**
      * Returns the accuracy of predictions for this model.
      */

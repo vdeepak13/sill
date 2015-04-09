@@ -4,6 +4,7 @@
 #include <sill/math/likelihood/probability_table_mle.hpp>
 
 #include <sill/math/likelihood/probability_table_ll.hpp>
+#include <sill/math/likelihood/range_ll.hpp>
 #include <sill/math/random/table_distribution.hpp>
 
 #include <random>
@@ -40,8 +41,9 @@ BOOST_AUTO_TEST_CASE(test_mle) {
                        0.0, maximum<double>(), abs_difference<double>());
   BOOST_CHECK_SMALL(diff, tol);
 
-  double ll_truth = probability_table_ll<double>(param).log(samples);
-  double ll_estim = probability_table_ll<double>(estim).log(samples);
+  typedef range_ll<probability_table_ll<double> > range_ll_type;
+  double ll_truth = range_ll_type(param).value(samples);
+  double ll_estim = range_ll_type(estim).value(samples);
   std::cout << "Log-likelihood of the original: " << ll_truth << std::endl;
   std::cout << "Log-likelihood of the estimate: " << ll_estim << std::endl;
   BOOST_CHECK_CLOSE(ll_truth, ll_estim, 1.0);

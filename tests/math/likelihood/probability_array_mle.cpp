@@ -4,6 +4,7 @@
 #include <sill/math/likelihood/probability_array_mle.hpp>
 
 #include <sill/math/likelihood/probability_array_ll.hpp>
+#include <sill/math/likelihood/range_ll.hpp>
 #include <sill/math/random/array_distribution.hpp>
 
 #include <random>
@@ -38,8 +39,9 @@ double reconstruction_error(const Array& param) {
   Array estim(param.rows(), param.cols());
   mle.estimate(samples, estim);
 
-  double ll_truth = probability_array_ll<double, N>(param).log(samples);
-  double ll_estim = probability_array_ll<double, N>(estim).log(samples);
+  typedef range_ll<probability_array_ll<double, N> > range_ll_type;
+  double ll_truth = range_ll_type(param).value(samples);
+  double ll_estim = range_ll_type(estim).value(samples);
   std::cout << "Log-likelihood of the original: " << ll_truth << std::endl;
   std::cout << "Log-likelihood of the estimate: " << ll_estim << std::endl;
   BOOST_CHECK_CLOSE(ll_truth, ll_estim, 1.0);
