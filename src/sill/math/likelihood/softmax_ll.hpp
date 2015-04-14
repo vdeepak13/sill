@@ -107,7 +107,7 @@ namespace sill {
       std::pair<T, dynamic_vector<T> > d = slope_delta(label, x);
       real_pair<T> result(d.first, dir.bias().dot(d.second));
       for (size_t i : x) {
-        d.result.second += dir.weight().col(i).dot(d.second);
+        result.second += dir.weight().col(i).dot(d.second);
       }
       return result;
     }
