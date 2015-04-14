@@ -34,7 +34,7 @@ namespace sill {
     typedef typename vector_value<Vec>::type real_type;
     typedef line_search_result<real_type> result_type;
     typedef bracketing_parameters<real_type> param_type;
-    typedef wolfe<real_type> wolfe_type;
+    typedef sill::wolfe<real_type> wolfe_type;
 
     // Public functions
     //==========================================================================

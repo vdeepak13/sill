@@ -2,6 +2,7 @@
 #define SILL_LBFGS_HPP
 
 #include <sill/math/constants.hpp>
+#include <sill/math/numerical_error.hpp>
 #include <sill/optimization/gradient_method/gradient_method.hpp>
 #include <sill/optimization/line_search/line_search.hpp>
 #include <sill/traits/vector_value.hpp>
@@ -13,7 +14,8 @@ namespace sill {
 
   /**
    * Class for the Limited Memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS)
-   * algorithm for unconstrained convex minimization.
+   * algorithm for unconstrained convex minimization. This implementation
+   * assumes a diagonal initial Hessian H_0.
    *
    * For more information, see, e.g.,
    *   D. C. Liu and J. Nocedal. On the Limited Memory Method for Large Scale
@@ -57,13 +59,13 @@ namespace sill {
      * object and will be deleted upon its destruction.
      */
     explicit lbfgs(line_search<Vec>* search,
-                   const param_type& params = param_type())
+                   const param_type& param = param_type())
       : search_(search),
-        params_(params),
+        param_(param),
         objective_(NULL),
-        shist_(params.history),
-        yhist_(params.history),
-        rhist_(params.history),
+        shist_(param.history),
+        yhist_(param.history),
+        rhist_(param.history),
         iteration_(0),
         converged_(false) { }
 
@@ -89,68 +91,74 @@ namespace sill {
     }
 
     result_type iterate() override {
-      const Vec& g = objective_->gradient(x_);
-      
       // compute the direction
-      if (iteration_ > 0) {
-        dir_ = g;
-        size_t m = std::min(params_.history, iteration_);
-        std::vector<real_type> alpha(m + 1);
-        for (size_t i = 1; i <= m; ++i) {
-          alpha[i] = rho(i) * dot(s(i), dir_);
-          dir_ -= alpha[i] * y(i);
-        }
-        for (size_t i = m; i >= 1; --i) {
-          real_type beta = rho(i) * dot(y(i), dir_);
-          dir_ += s(i) * (alpha[i] - beta);
-        }
-        dir_ *= -1.0;
-      } else {
-        dir_ = -g;
+      if (iteration_ == 0) {
         result_.value = objective_->value(x_);
+        g_ = objective_->gradient(x_);
       }
+      Vec dir = g_;
+      size_t m = std::min(param_.history, iteration_);
+      std::vector<real_type> alpha(m + 1);
+      for (size_t i = 1; i <= m; ++i) {
+        alpha[i] = rho(i) * dot(s(i), dir);
+        update(dir, y(i), -alpha[i]);
+      }
+      for (size_t i = m; i >= 1; --i) {
+        real_type beta = rho(i) * dot(y(i), dir);
+        update(dir, s(i), alpha[i] - beta);
+      }
+      dir *= -1.0;
 
-      // update the solution and the historical values of s, y, and rho
-      result_type result = search_->step(x_, dir_, result_.next(dot(g, dir_)));
-      size_t index = iteration_ % params_.history;
-      shist_[index] = result.step * dir_;
-      yhist_[index] = (iteration_ > 0) ? (g - g_) : g;
-      rhist_[index] = real_type(1) / dot(shist_[index], yhist_[index]);
+      // compute a suitable step
+      result_type result = search_->step(x_, dir, result_.next(dot(g_, dir)));
+
+      // update the solution and compute the new values of s, y, and rho
+      size_t index = iteration_ % param_.history;
+      shist_[index] = std::move(dir);
+      shist_[index] *= result.step;
       x_ += shist_[index];
+      const Vec& g = objective_->gradient(x_);
+      yhist_[index] = g;
+      yhist_[index] -= g_;
       g_ = g;
+      real_type prod = dot(yhist_[index], shist_[index]);
+      if (prod <= real_type(0)) {
+        throw numerical_error("lbfgs: dot(y,s) <= 0");
+      }
+      rhist_[index] = real_type(1) / prod;
       ++iteration_;
 
       // determine the convergence
-      converged_ = (result_.value - result.value) < params_.convergence;
+      converged_ = (result_.value - result.value) < param_.convergence;
       result_ = result;
       return result;
     }
 
     void print(std::ostream& out) const override {
-      out << "lbfgs(" << params_ << ")";
+      out << "lbfgs(" << param_ << ")";
     }
 
   private:
     //! Returns the i-th historical value of s, where i <= min(m, iteration_)
     const Vec& s(size_t i) const {
-      return shist_[(iteration_ - i) % params_.history];
+      return shist_[(iteration_ - i) % param_.history];
     }
 
     //! Returns the i-th historical value of y, where i <= min(m, iteration_)
     const Vec& y(size_t i) const {
-      return yhist_[(iteration_ - i) % params_.history];
+      return yhist_[(iteration_ - i) % param_.history];
     }
 
     //! Returns the i-th historical value of rho, where i <= min(m, iteration_)
     real_type rho(size_t i) const {
-      return rhist_[(iteration_ - i) % params_.history];
+      return rhist_[(iteration_ - i) % param_.history];
     }
     
     //! The line search algorithm
     std::unique_ptr<line_search<Vec> > search_;
 
     //! Convergence and history parameters
-    param_type params_;
+    param_type param_;
 
     //! The objective function
     gradient_objective<Vec>* objective_;
@@ -172,9 +180,6 @@ namespace sill {
 
     //! Last gradient
     Vec g_;
-
-    //! Last direction
-    Vec dir_;
 
     //! Last line search result
     result_type result_;
