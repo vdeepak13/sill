@@ -1,18 +1,18 @@
 Planned changes:
 
 Optimization:
-* finish up the gradient methods
-* optimize away function evaluations
+D finish up the gradient methods
+D optimize away function evaluations
 * port the CRF learning to the the new optimzation framework
 
 CRFs:
-* Update the "marginal" factor concepts to work with CRFs as well
+D Update the "marginal" factor concepts to work with CRFs as well
 * Update the table_factor class to work with CRFs
 * Implement John Lafferty's original paper
 * Update the CRF factor graph to use bipartite_graph
 * Update the CRF parameter learning
 * Update the CRF structure learning
-* Update other factor classes to CRF: softmax, Gaussian, hybrid
+D Update other factor classes to CRF: softmax, Gaussian, hybrid
 
 Loopy inference:
 * Use the updated factor_graph in standard methods
@@ -20,25 +20,25 @@ Loopy inference:
 * Update the serial splash BP to the new factor_graph
 * Update the parallel splash BP to the new factor_graph
 
-C++11 port:
-* iterator pairs
+C++11 port (in progress):
+D iterator pairs
 * foreach
-* smart pointers
+D smart pointers
 * bind, function
 * iterators?
 * threads
 
 Cruft removal:
 * forward_range
-* range algorithms
+D range algorithms
 * operator std::string
-* parallel unfriendly optimizations
+D parallel unfriendly optimizations
 * clean up logarithmic - change constructor to explicit
 
 Other pre-release cleanups:
-* templatize and cleanup factors (is_marginal, arg_vetor, etc.)
-* convert to Eigen
-* domain template, assignments
+D templatize and cleanup factors (is_marginal, arg_vetor, etc.)
+D convert to Eigen
+D domain template, assignments
 * variables by value
 * trailing underscores for member vars
 * rename hugin and shafer_shenoy
@@ -53,12 +53,12 @@ Post-release:
    - make sure triangulation does not construct properties
 * consider expression templates
 * d-separation tests
-* standardize vertex vs node in graphical models
-* bayesian_network modifiers - check add_factor
+D standardize vertex vs node in graphical models
+D bayesian_network modifiers - check add_factor
 * flatten, relative entropy for decomposable
 * cleanups throughout
-* simplify the storage format of vector datasets
-* strengthen the ordering of combine operations
+D simplify the storage format of vector datasets
+D strengthen the ordering of combine operations
 * is_marginal trait
 * more examples: viterbi algorithm
 * test on all major platforms and compilers

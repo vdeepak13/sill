@@ -1,14 +1,12 @@
 #ifndef SILL_DYNAMIC_BAYESIAN_NETWORK_HPP
 #define SILL_DYNAMIC_BAYESIAN_NETWORK_HPP
 
-#include <iosfwd>
-
 #include <sill/global.hpp>
 #include <sill/base/discrete_process.hpp>
 #include <sill/graph/directed_graph.hpp>
 #include <sill/model/bayesian_network.hpp>
 
-#include <sill/macros_def.hpp>
+#include <iosfwd>
 
 namespace sill {
 
@@ -20,7 +18,6 @@ namespace sill {
    */
   template <typename F>
   class dynamic_bayesian_network {
-    concept_assert((DistributionFactor<F>));
 
     // Public type declarations
     // =========================================================================
@@ -33,11 +30,6 @@ namespace sill {
     //! The type of processes used in this network
     typedef discrete_process<variable_type> process_type;
    
-    /*
-    typedef typename base::edge edge;
-    typedef typename base::vertex vertex;
-    */
-
     // Private data members
     // =========================================================================
   private:
@@ -110,7 +102,7 @@ namespace sill {
       std::map<variable_type*, variable_type*> prior_var_map
         = make_process_var_map(processes(), current_step, 0);
       bayesian_network<F> bn;
-      foreach(process_type* p, processes()) {
+      for (process_type* p : processes()) {
         F factor = prior.factor(p->current());
         factor.subst_args(prior_var_map);
         bn.add_factor(p->at(0), factor);
@@ -121,7 +113,7 @@ namespace sill {
         std::map<variable_type*, variable_type*> var_map
           = map_union(make_process_var_map(processes(), current_step, t),
                       make_process_var_map(processes(), next_step, t+1));
-        foreach(process_type* p, processes()) {
+        for (process_type* p : processes()) {
           F cpd = transition[p->next()];
           cpd.subst_args(var_map);
           bn.add_factor(p->at(t+1), cpd);
@@ -129,13 +121,6 @@ namespace sill {
       }
       return bn;
     }
-
-    /*
-    //! d-separation query (do we ever need this?)
-    bayesian_network<F> d_separated(size_t nsteps,
-                                    const domain& x, const domain& y,
-                                    const domain& z = domain::empty_set) const;
-    */
 
     //! Throws an assertion violation if the DBN is not valid
     void check_valid() const {
@@ -163,7 +148,7 @@ namespace sill {
      */
     void add_factor(process_type* p, const F& factor) {
       assert(factor.arguments().count(p->next()) > 0);
-      foreach(variable_type* v, factor.arguments()) {
+      for (variable_type* v : factor.arguments()) {
         int t = boost::any_cast<int>(v->index());
         assert(t == current_step || t == next_step);
       }
@@ -212,7 +197,5 @@ namespace sill {
   }
   
 }
-
-#include <sill/macros_undef.hpp>
 
 #endif

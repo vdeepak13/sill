@@ -1,289 +1,214 @@
 #ifndef SILL_SET_INDEX_HPP
 #define SILL_SET_INDEX_HPP
 
-#include <list>
-#include <map>
-#include <set>
-#include <stdexcept>
-
 #include <sill/global.hpp>
-#include <sill/stl_concepts.hpp>
 #include <sill/iterator/counting_output_iterator.hpp>
-#include <sill/base/stl_util.hpp>
-#include <sill/serialization/list.hpp>
-#include <sill/serialization/map.hpp>
+#include <sill/iterator/map_key_iterator.hpp>
+#include <sill/range/iterator_range.hpp>
 
-#include <sill/macros_def.hpp>
+#include <algorithm>
+#include <iosfwd>
+#include <stdexcept>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace sill {
 
   /**
    * An index over sets that efficiently processes intersection and
    * superset queries and which supports efficient insertion and
-   * deletion of sets.  Each set can be associated with a handle
+   * deletion of sets. Each set is associated with a handle
    * that is returned during the superset and intersection queries.
    *
-   * @param Set
-   *        The type of stored in the index.
-   *        TODO: fix the concepts or parameterize by the element type.
-   * @param Handle
-   *        Handle associated with each set in the index.
-   *        Must be DefaultConstructible, CopyConstructible, and Assignable.
+   * \tparam Handle
+   *         Handle associated with each set in the index.
+   *         Must be DefaultConstructible, CopyConstructible, and Assignable.
+   * \tparam Range
+   *         A container accepted by the lookup methods.
    *
    * \ingroup datastructure
    */
-  template <typename Set, typename Handle = void_>
+  template <typename Handle, typename Range>
   class set_index {
-    concept_assert((DefaultConstructible<Handle>));
-    concept_assert((CopyConstructible<Handle>));
-    concept_assert((Assignable<Handle>));
 
-    // Private type declarations and members
-    //==========================================================================
-  private:
-    //! The type of elements stored in each set
-    typedef typename Set::value_type element_type;
+    //! The vector type that stores elements in a sorted order.
+    typedef std::vector<typename Range::value_type> vector_type;
 
-    //! The set paired eith the handle
-    typedef std::pair<Set, Handle> set_handle_pair;
-
-    //! The type that maps each element to the sets that contain that element.
-    typedef std::map<element_type, std::list<set_handle_pair> > element_set_map;
-
-    //! The primary index structure. 
-    //! The lists pointed to by this structure are guaranteed to be not empty.
-    element_set_map element_sets;
-
-    //! The list of indexed sets that are empty.
-    std::list<set_handle_pair> empty_sets;
-
-
-    // Public type declarations (copy the template argument types)
-    //==========================================================================
-  public:
-    //! The set type
-    typedef Set set_type;
-
-    //! The handle type
-    typedef Handle handle_type;
-
-
-  private:
-    template<typename T>
-    static bool is_lce(const T& e, const std::set<T>& r, const std::set<T>& s) {
-      typename std::set<T>::const_iterator r_it = r.begin(), 
-                                          r_end = r.end(), 
-                                          s_it = s.begin(), 
-                                          s_end = s.end();
-      while ((r_it != r_end) && (s_it != s_end)) {
-        if (*r_it == *s_it) {
-          return (*r_it == e);
-        } else if (e < *r_it) {
-          return false;
-        } else if (e < *s_it) {
-          return false;
-        } else if (*r_it < *s_it) {
-          ++r_it;
-        } else {
-          ++s_it;
-        }
-      }
-      return false;
-    }
+    //! Maps each element to the vectors containing the element.
+    typedef std::unordered_map<
+      typename Range::value_type, std::unordered_map<Handle, vector_type*>
+    > adjacency_map;
 
     // Constructors and destructors
     //==========================================================================
   public:
-    //! Default constructor; the index has no sets in it.
+    //! The type of values stored in the container.
+    typedef typename Range::value_type value_type;
+
+    //! An iterator over the values stored in the index.
+    typedef map_key_iterator<adjacency_map> value_iterator;
+
+    // Constructors and destructors
+    //==========================================================================
+  public:
+    //! Default constructor. Creates an empty set index.
     set_index() { }
 
-    //! Swaps the content of two index sets (in constant time).
-    void swap(set_index& other) {
-      element_sets.swap(other.element_sets);
-      empty_sets.swap(other.empty_sets);
+    //! Copy constructor.
+    set_index(const set_index& other) {
+      *this = other;
     }
 
-    //! Serialize members
-    void save(oarchive & ar) const {
-      ar << element_sets << empty_sets;
+    //! Move constructor.
+    set_index(set_index&& other) {
+      swap(*this, other);
     }
 
-    //! Deserialize members
-    void load(iarchive & ar) {
-      ar >> element_sets >> empty_sets;
+    //! Assignment operator.
+    set_index& operator=(const set_index& other) {
+      clear();
+      for (const auto& vec : other.sets_) {
+        auto ptr = new std::vector<value_type>(*vec.second);
+        sets_.emplace(vec.first, std::unique_ptr<vector_type>(ptr));
+        for (value_type value : *vec.second) {
+          adjacency_[value].emplace(vec.first, ptr);
+        }
+      }
+      return *this;
+    }
+
+    //! Move assignment operator.
+    set_index& operator=(set_index&& other) {
+      swap(*this, other);
+      return *this;
+    }
+
+    //! Swaps the content of two index sets in constant time.
+    friend void swap(set_index& a, set_index& b) {
+      swap(a.sets_, b.sets_);
+      swap(a.adjacency_, b.adjacency_);
     }
 
     // Queries
     //==========================================================================
-    
-    //! Returns true if the index contains no sets
+
+    //! Returns true if the index contains no sets.
     bool empty() const {
-      return empty_sets.empty() && element_sets.empty();
+      return sets_.empty();
     }
 
-    //! Returns the handle of the first stored element
-    const Handle& front() const {
-      if (!empty_sets.empty())
-        return empty_sets.front().second;
-      else if (!element_sets.empty())
-        return element_sets.begin()->second.front().second;
-      else
-        assert(false);
+    //! Returns the handle of the first stored element.
+    Handle front() const {
+      assert(!empty());
+      return sets_.begin()->first;
+    }
+
+    //! Returns the values stored in this index.
+    iterator_range<value_iterator> values() const {
+      return make_iterator_range(value_iterator(adjacency_.begin()),
+                                 value_iterator(adjacency_.end()));
+    }
+
+    //! Returns the number of values stored in this index.
+    size_t num_values() const {
+      return adjacency_.size();
     }
 
     /**
-     * Returns a handle for any set that contains the specified element.
-     * \throw std::invalid_argument if no there is no set containing the element
+     * Returns a handle for any set that contains the specified value.
+     * \throw std::out_of_range if no there is no set containing the value
      */
-    const Handle& operator[](element_type elt) const {
-      return safe_get(element_sets, elt).begin()->second;
+    Handle operator[](value_type value) const {
+      return adjacency_.at(value).begin()->first;
     }
 
     /**
-     * Returns the number of sets that contain an element.
+     * Returns the number of sets that contain a value.
      */
-    size_t count(element_type elt) const {
-      if (element_sets.count(elt))
-        return safe_get(element_sets, elt).size();
-      else
-        return 0;
+    size_t count(value_type value) const {
+      auto it = adjacency_.find(value);
+      return it != adjacency_.end() ? it->second.size() : 0;
+    }
+
+    /**
+     * Returns the size of the intersection of two sets with given handles.
+     */
+    size_t intersection_size(Handle a, Handle b) {
+      counting_output_iterator out;
+      const vector_type& veca = *sets_.at(a);
+      const vector_type& vecb = *sets_.at(b);
+      return std::set_intersection(veca.begin(), veca.end(),
+                                   vecb.begin(), vecb.end(),
+                                   out).count();
     }
     
     /**
      * Intersection query.  The handle for each set in this index that
-     * intersects the supplied set is written to the output iterator.
-     *
-     * @param set the set whose intersecting sets are desired
-     * @param output the output iterator to which handles for all
-     *               intersecting sets in this index are written
+     * intersects the supplied range is written to the output iterator.
      */
     template <typename OutIt>
-    OutIt find_intersecting_sets(const Set& set, OutIt out) const {
-      concept_assert((boost::OutputIterator<OutIt, Handle>));
-      foreach(element_type elt, set) {
-        if (element_sets.count(elt)) {
-          foreach(const set_handle_pair& set_handle, safe_get(element_sets,elt)) {
-            // To avoid writing sets multiple times, check to see if
-            // the least common element of the two sets is elt.
-            if (is_lce(elt, set, set_handle.first)) {
-              *out = set_handle.second;
-              ++out;
-            }
-          }
+    OutIt find_intersecting_sets(const Range& range, OutIt out) const {
+      // reserve enough elements in the result to avoid reallocation
+      std::unordered_set<Handle> visited;
+      std::size_t nelems = 0;
+      for (value_type value : range) {
+        nelems += adjacency(value).size();
+      }
+      visited.reserve(nelems);
+      
+      // compute the union of all neighbors
+      for (value_type value : range) {
+        for (const auto& p : adjacency(value)) {
+          visited.insert(p.first);
         }
       }
+
+      // save the result
+      std::copy(visited.begin(), visited.end(), out);
       return out;
-    }
-
-    /**
-     * Superset query.  The handle for each set in this index that
-     * contains the supplied set is written to the output iterator.
-     *
-     * @param set the set whose supersets are desired
-     * @param output the output iterator to which handles for all
-     *               supersets in this index are written
-     */
-    template <typename OutIt>
-    OutIt find_supersets(const Set& set, OutIt out) const {
-      concept_assert((boost::OutputIterator<OutIt, Handle>));
-
-      if (set.empty()) { 
-        // Every set in the index is a superset of an empty set
-        foreach(const set_handle_pair& set_handle, empty_sets) {
-          *out = set_handle.second;
-          ++out;
-        }
-        foreach(typename element_set_map::const_reference ref, element_sets) {
-          foreach(const set_handle_pair& set_handle, ref.second) {
-            // make sure that each set is included only once
-            if(*(set_handle.first.begin()) == ref.first) {
-              *out = set_handle.second;
-              ++out;
-            }
-          }
-        }
-      } else {
-        // Pick one element and iterate over all sets that contain that element
-        element_type elt = *(set.begin());
-        if (element_sets.count(elt)) {
-          foreach(const set_handle_pair& set_handle, safe_get(element_sets, elt)) {
-            if(includes(set_handle.first, set)) {
-              *out = set_handle.second;
-              ++out;
-            }
-          }
-        }
-      }
-
-      return out;
-    }
-
-    /**
-     * Minimal superset query: find a minimal set which is a superset of the
-     * supplied set. If the set supplied set is empty, this operation 
-     * may return any set.
-     * 
-     * @param  set the set whose supersets are desired
-     * @return the handle for a minimal superset if a superset exists.
-     *         Returns Handle() if no superset exists.
-     */
-    Handle find_min_cover(const Set& set) const {
-      if (set.empty()) {
-        if (!empty_sets.empty()) 
-          return empty_sets.begin()->second;
-        if (!element_sets.empty())
-          return element_sets.begin()->second.begin()->second;
-        return Handle();
-      }
-
-      element_type elt = *(set.begin());
-      size_t min_size = std::numeric_limits<size_t>::max();
-      Handle result   = Handle();
-      if (element_sets.count(elt)) {
-        foreach(const set_handle_pair& set_handle, safe_get(element_sets, elt)) {
-          if (set_handle.first.size() < min_size
-              && includes(set_handle.first, set)) {
-            min_size = set_handle.first.size();
-            result   = set_handle.second;
-          }
-        }
-      }
-
-      return result;
     }
 
     /**
      * Maximal intersection query: find a set whose intersection with
-     * the supplied set is maximal and non-zero.
+     * the supplied range is maximal and non-zero.
      * 
-     * @param set the set intersection with which are desired
-     * @return the handle for a set with a non-zero maximal intersection
+     * \return the handle for a set with a non-zero maximal intersection
      *         with the supplied set. Of the sets with the same 
      *         intersection size, returns the smallest one.
-     *         Otherwise, returns Handle().
+     *         Otherwise, returns front().
      */
-    Handle find_max_intersection(const Set& set) const {
-      if (set.empty()) return Handle();
+    Handle find_max_intersection(const Range& range) const {
+      if (range.begin() == range.end()) { return front(); }
+
+      // reserve enough elements in the result to avoid reallocation
+      std::unordered_set<Handle> visited;
+      std::size_t nelems = 0;
+      for (value_type value : range) {
+        nelems += adjacency(value).size();
+      }
+      visited.reserve(nelems);
       
+      // determine the maximum intersection
+      std::vector<value_type> vec = sorted(range);
       Handle result = Handle();
-      size_t max_intersection = 0;
+      size_t max_inter = 0;
       size_t min_size = std::numeric_limits<size_t>::max();
-      foreach(element_type elt, set) {
-        if (element_sets.count(elt)) {
-           foreach(const set_handle_pair& set_handle, safe_get(element_sets, elt)) {
-             // To avoid checking sets multiple times, check to see if
-             // the least common element of the two sets is elt.
-             if (is_lce(elt, set, set_handle.first)) {
-               size_t intersection = set_intersect(set, set_handle.first).size();
-               if ((intersection > max_intersection) ||
-                   (intersection == max_intersection && 
-                    set_handle.first.size() < min_size)) {
-                 max_intersection = intersection;
-                 min_size = set_handle.first.size();
-                 result   = set_handle.second;
-               }
-             }
-           }
+      for (value_type value : range) {
+        for (const auto& p : adjacency(value)) {
+          if (!visited.count(p.first)) {
+            visited.insert(p.first);
+            counting_output_iterator out;
+            size_t intersection =
+              std::set_intersection(p.second->begin(), p.second->end(),
+                                    vec.begin(), vec.end(), out).count();
+            if ((intersection > max_inter) ||
+                (intersection == max_inter && p.second->size() < min_size)) {
+              max_inter = intersection;
+              min_size = p.second->size();
+              result = p.first;
+            }
+          }
         }
       }
 
@@ -291,81 +216,157 @@ namespace sill {
     }
 
     /**
-     * Returns true if there are no supersets of the supplied set in
-     * this index.
-     *
-     * @param  set the set whose maximality is tested
-     * @return true iff the set is maximal w.r.t. the sets in this
-     *         index
+     * Superset query. The handle for each set in this index that
+     * contains all the elements of the supplied range is written
+     * to the output iterator.
      */
-    bool is_maximal(const Set& set) const {
+    template <typename OutIt>
+    OutIt find_supersets(const Range& range, OutIt out) const {
+      if (range.begin() == range.end()) {
+        // every set in the index is a superset of an empty range
+        for (const auto& p : sets_) {
+          *out = p.first;
+          ++out;
+        }
+      } else {
+        // pick one value and iterate over all sets that contain that value
+        std::vector<value_type> vec = sorted(range);
+        for (const auto& p : adjacency(vec.front())) {
+          if (std::includes(p.second->begin(), p.second->end(),
+                            vec.begin(), vec.end())) {
+            *out = p.first;
+            ++out;
+          }
+        }
+      }
+
+      return out;
+    }
+
+    /**
+     * Minimal superset query: find the hanlde of a minimal set which is
+     * a superset of the supplied range. If the supplied range is empty,
+     * this operation may return any set.
+     * 
+     * \return the handle for a minimal superset if a superset exists.
+     *         Handle() if no superset exists.
+     */
+    Handle find_min_cover(const Range& range) const {
+      if (empty()) {
+        return Handle();
+      } else if (range.begin() == range.end()) {
+        return front();
+      } else {
+        std::vector<value_type> vec = sorted(range);
+        size_t min_size = std::numeric_limits<size_t>::max(); 
+        Handle result = Handle();
+        for (const auto& p : adjacency(vec.front())) {
+          if (p.second->size() < min_size &&
+              std::includes(p.second->begin(), p.second->end(),
+                            vec.begin(), vec.end())) {
+            min_size = p.second->size();
+            result = p.first;
+          }
+        }
+        return result;
+      }
+    }
+
+
+    /**
+     * Returns true if there are no (non-strict) supersets of the supplied
+     * set in this index.
+     */
+    bool is_maximal(const Range& set) const {
       counting_output_iterator it;
       return find_supersets(set, it).count() == 0;
     }
 
-    //! Prints *this to an output stream
-    template <typename OutputStream>
-    void print(OutputStream& out) const {
-      out << "[";
-      foreach(typename element_set_map::const_reference ref, element_sets)
-        out << ref.first << "-->" << ref.second << std::endl;
-      out << empty_sets << "]" << std::endl;
+    /**
+     * Prints the index to an output stream.
+     */
+    friend std::ostream& operator<<(std::ostream& out, const set_index& index) {
+      for (const auto& sets : index.adjacency_) {
+        out << sets.first << " -->";
+        for (const auto& p : sets.second) {
+          out << ' ' << p.first;
+        }
+        out << std::endl;
+      }
+      return out;
     }
 
     // Mutating operations
     //==========================================================================
 
     /**
-     * Inserts a new set in the index.  This function runs in
-     * \f$O(k)\f$ time, where \f$k\f$ is the number of elements in the
-     * supplied set.
-     *
-     * @param  set the set to be inserted
-     * @param  handle the handle associated with the set
+     * Inserts a new set in the index. This function is linear in the
+     * number of elements of the range. The range must not be empty, and
+     * the handle must not be yet present in the index.
      */
-    void insert(const Set& set, const Handle& handle = Handle()) {
-      set_handle_pair set_handle(set, handle);
-      if (set.empty())
-        empty_sets.push_front(set_handle);
-      else {
-        foreach(element_type elt, set)
-          element_sets[elt].push_front(set_handle);
+    void insert(Handle handle, const Range& range) {
+      if (sets_.count(handle)) {
+        throw std::invalid_argument("Handle already present");
+      }
+      auto ptr = new std::vector<value_type>(sorted(range));
+      sets_.emplace(handle, std::unique_ptr<vector_type>(ptr));
+      for (value_type value : range) {
+        adjacency_[value].emplace(handle, ptr);
       }
     }
 
-    //! Removes all pairs (set, handle) from the index.
-    void remove(const Set& set, const Handle& handle = Handle()) {
-      set_handle_pair set_handle(set, handle);
-      if (set.empty())
-        empty_sets.remove(set_handle);
-      else {
-        foreach(element_type elt, set) {
-          typename element_set_map::iterator it = element_sets.find(elt);
-          assert(it != element_sets.end());
-          it->second.remove(set_handle);
-          if (it->second.empty())
-            element_sets.erase(it);
+    //! Removes the set with the given handle from the index.
+    void erase(Handle handle) {
+      auto it = sets_.find(handle);
+      if (it != sets_.end()) {
+        for (value_type value : *it->second) {
+          adjacency_[value].erase(handle);
+          if (adjacency_[value].empty()) {
+            adjacency_.erase(value);
+          }
         }
+        sets_.erase(it); // automatically frees memory
       }
     }
     
-    //! Removes all sets from this index
+    //! Removes all sets from this index.
     void clear() {
-      element_sets.clear();
-      empty_sets.clear();
+      sets_.clear();
+      adjacency_.clear();
     }
+
+    // Private members
+    //==========================================================================
+  private:
+
+    //! Converts a range to a vector with sorted elements.
+    vector_type sorted(const Range& range) const {
+      vector_type vec(range.begin(), range.end());
+      std::sort(vec.begin(), vec.end());
+      vec.erase(std::unique(vec.begin(), vec.end()), vec.end());
+      return vec;
+    }
+
+    //! Returns the edges from a single value to the sets it is contained in/
+    const std::unordered_map<Handle, vector_type*>&
+    adjacency(value_type value) const {
+      static std::unordered_map<Handle, vector_type*> empty;
+      auto it = adjacency_.find(value);
+      if (it == adjacency_.end()) {
+        return empty;
+      } else {
+        return it->second;
+      }
+    }
+    
+    //! Stores the mapping from handles to sets.
+    std::unordered_map<Handle, std::unique_ptr<vector_type> > sets_;
+
+    //! Stores the mapping from values to sets.
+    adjacency_map adjacency_;
 
   }; // class set_index
 
-  template <typename Set, typename Handle>
-  std::ostream& operator<<(std::ostream& out, 
-                           const set_index<Set, Handle>& index) {
-    index.print(out); 
-    return out;
-  }
-
 } // namespace sill
 
-#include <sill/macros_undef.hpp>
-
-#endif // #ifndef SILL_SET_INDEX_HPP
+#endif

@@ -1,72 +1,57 @@
 #ifndef SILL_MIN_FILL_STRATEGY_HPP
 #define SILL_MIN_FILL_STRATEGY_HPP
 
-#include <set>
-
-#include <boost/range/algorithm.hpp>
-#include <boost/range/metafunctions.hpp>
-
 #include <sill/global.hpp>
+
+#include <unordered_set>
 
 namespace sill {
 
   /**
-   * Represents a min-fill elimination strategy.
+   * A class that represents a min-fill elimination strategy.
+   * A min-fill elimination strategy gives higher priority that cause
+   * smaller number of edges to be introduced as a result of elimination.
+   * Whenever a vertex is eliminated, the priority needs to be recomputed
+   * for all the vertices within distance 2 of this vertex.
+   *
    * This type models the EliminationStrategy concept.
    * \ingroup graph_types
    */
   struct min_fill_strategy {
 
     //! The priority type associated with each vertex.
-    typedef int priority_type;
+    typedef ptrdiff_t priority_type;
 
-    /**
-     * Computes the priority of a vertex, which is the negative of the
-     * number of fill edges caused by its elimination.
-     * This makes nodes with smaller fill-in have higher priority.
-     */
+    //! Computes the priority of a vertex, which is the negative of the fill-in.
     template <typename Graph>
-    int priority(typename Graph::vertex v, const Graph& g) {
-      //concept_assert((IncidenceGraph<G>));
-
-      int n = 0;
-      typename Graph::neighbor_iterator begin, end;
-      for (boost::tie(begin, end) = g.neighbors(v); begin != end; ++begin) {
-        typename Graph::neighbor_iterator cur = begin;
-        while (++cur != end) {
-          //if (!g.edge(*cur, *begin).second) ++n;
-          if (!g.contains(*begin, *cur)) ++n;
+    ptrdiff_t priority(typename Graph::vertex_type u, const Graph& g) {
+      typedef typename Graph::neighbor_iterator neighbor_iterator;
+      ptrdiff_t new_edges = 0;
+      neighbor_iterator it1, end;
+      for (std::tie(it1, end) = g.neighbors(u); it1 != end; ++it1) {
+        neighbor_iterator it2 = it1;
+        while (++it2 != end) {
+          if (!g.contains(*it1, *it2)) {
+            ++new_edges;
+          }
         }
       }
-      return -n;
+      return -new_edges;
     }
 
-    /**
-     * Computes the set of vertices whose priority may change if a
-     * designated vertex is eliminated.
-     * For the min-fill strategy, this is the neighbors of the eliminated
-     * vertex, as well as the neighbors' neighbors.
-     */
+    //! Stores the vertices whose priority needs to be recomputed to out.
     template <typename Graph, typename OutIt>
-    void updated(typename Graph::vertex v, const Graph& g, OutIt updated) {
-      //concept_assert((IncidenceGraph<Graph>));
-      //concept_assert((OutputIterator<OutIt, typename Graph::vertex>));
-      std::set<typename Graph::vertex> update_set;
+    void updated(typename Graph::vertex_type u, const Graph& g, OutIt out) {
+      typedef typename Graph::vertex_type vertex_type;
+
       // It is faster to store the values in a set than to output them 
       // multiple times (which causes further priority updates)
-
-      typename Graph::neighbor_iterator begin, end;
-      typename Graph::neighbor_iterator n_begin, n_end;
-      for (boost::tie(begin, end) = g.neighbors(v); begin != end; ++begin) {
-        typename Graph::vertex nbr = *begin;
-        update_set.insert(nbr);
-        for (boost::tie(n_begin, n_end) = g.neighbors(nbr);
-             n_begin != n_end; ++n_begin) {
-          if (*n_begin == v) continue;
-          update_set.insert(*n_begin);
-        }
+      std::unordered_set<vertex_type> update_set;
+      for (vertex_type v : g.neighbors(u)) {
+        update_set.insert(v);
+        update_set.insert(g.neighbors(v).begin(), g.neighbors(v).end());
       }
-      boost::copy(update_set, updated);
+      std::copy(update_set.begin(), update_set.end(), out);
     }
 
   }; // struct min_fill_strategy

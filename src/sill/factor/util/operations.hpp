@@ -69,7 +69,6 @@ namespace sill {
   typename Range::value_type
   combine_all(const Range& factors,
               const commutative_semiring<typename Range::value_type>& csr) {
-    concept_assert((InputRange<Range>));
     typedef typename Range::value_type factor_type;
     factor_type result = csr.combine_init();
     for (const factor_type& f : factors) {
@@ -77,18 +76,6 @@ namespace sill {
     }
     return result;
   }
-
-  //! Returns the union of arguments of a collection of factors
-  template <typename Range>
-  typename Range::value_type::domain_type 
-  arguments(const Range& factors) {
-    concept_assert((InputRange<Range>));
-    typename Range::value_type::domain_type args;
-    for (const typename Range::value_type& f : factors) {
-      args.insert(f.arguments().begin(), f.arguments().end());
-    }
-    return args;
-  }  
 
   //! @} group factor_operations
 

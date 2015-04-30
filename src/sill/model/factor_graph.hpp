@@ -2,101 +2,137 @@
 #define SILL_FACTOR_GRAPH_HPP
 
 #include <sill/global.hpp>
-#include <sill/factor/concepts.hpp>
 #include <sill/graph/bipartite_graph.hpp>
+#include <sill/graph/property_functors.hpp>
+#include <sill/math/logarithmic.hpp>
+
+#include <boost/iterator/transform_iterator.hpp>
 
 #include <vector>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
   /**
    * This class represents a factor graph model. A factor graph is a bipartite
-   * graph, where type-1 vertices correspond to variables, and type-2 vertices
-   * correspond to factors, indexed by size_t. There is an undirected edge
-   * between a variable and a factor if the variable is in the domain of the
-   * factor. This model represents (an unnormalized) distribution over the
+   * graph, where type-1 vertices correspond to factors, and type-2 vertices
+   * correspond to variables. There is an undirected edge between a factor
+   * and a variable if the variable is in the domain of the factor.
+   * This model represents (an unnormalized) distribution over the
    * variables as a product of all the contained factors.
    *
-   * \ingroup model
    * \tparam F the factor type stored in this model
+   * \ingroup model
    */
   template <typename F>
   class factor_graph
-    : public bipartite_graph<typename F::variable_type*, size_t, F> {
-    concept_assert((Factor<F>));
+    : public bipartite_graph<size_t, typename F::variable_type*, F> {
+
+    typedef bipartite_graph<size_t, typename F::variable_type*, F> base;
 
     // Public type declarations
     // =========================================================================
   public:
+    // FactorizedModel types
+    typedef typename F::real_type       real_type;
+    typedef logarithmic<real_type>      result_type;
     typedef typename F::variable_type   variable_type;
     typedef typename F::domain_type     domain_type;
     typedef typename F::assignment_type assignment_type;
-    typedef typename F::record_type     record_type;
+    typedef F                           value_type;
 
-    // bring the inherited types up
-    typedef bipartite_graph<variable_type*, size_t, F> base;
+    typedef boost::transform_iterator<
+      vertex1_property_fn<base>, typename base::vertex1_iterator
+    > iterator;
+
+    typedef boost::transform_iterator<
+      vertex1_property_fn<const base>, typename base::vertex1_iterator
+    > const_iterator;
+
+    // Shortcuts
     typedef typename base::vertex1_iterator vertex1_iterator;
     typedef typename base::vertex2_iterator vertex2_iterator;
 
     // bring functions from base
     using base::print_degree_distribution;
     
-    // Public functions
+    // Constructors
     //==========================================================================
   public:
     //! Creates an empty factor graph
     factor_graph() : next_id_(1) { }
 
     //! Swaps two factor graphs in constant time
-    void swap(factor_graph& other) {
-      base::swap(other);
-      std::swap(next_id_, other.next_id_);
+    friend void swap(factor_graph& a, factor_graph& b) {
+      swap(static_cast<base&>(a), static_cast<base&>(b));
+      std::swap(a.next_id_, b.next_id_);
     }
 
-    //! Returns the range of all variables in the graph (alias for vertices1)
-    std::pair<vertex1_iterator, vertex1_iterator>
-    variables() const {
-      return this->vertices1();
-    }
+    // Accessors
+    //==========================================================================
 
-    //! Returns the range of all factor ids in the graph (alias for vertices2)
-    std::pair<vertex2_iterator, vertex2_iterator>
-    factor_ids() const {
+    //! Returns the arguments of the model (the range of all type-2 vertices).
+    iterator_range<vertex2_iterator> arguments() const {
       return this->vertices2();
     }
 
-    //! Returns the number of variables in the graph (alias for num_vertices1)
-    size_t num_variables() const {
-      return this->num_vertices1();
+    //! Returns the arguments of the factor with the given id.
+    const domain_type& arguments(size_t id) const {
+      return (*this)[id].arguments();
     }
 
-    //! Returns the number of factors in the graph (alias for num_vertices2)
-    size_t num_factors() const {
+    //! Returns the range of ids of all factors in the graph.
+    iterator_range<vertex1_iterator>
+    factor_ids() const {
+      return this->vertices1();
+    }
+
+    //! Returns the number of variables in the graph (alias for num_vertices2).
+    size_t num_arguments() const {
       return this->num_vertices2();
     }
 
-    //! Returns the factor with the given id. The vertex id must be present.
-    const F& factor(size_t id) const {
-      return (*this)[id];
+    //! Returns the number of factors in the graph (alias for num_vertices1).
+    size_t num_factors() const {
+      return this->num_vertices1();
     }
 
-    //! Returns the arguments of the factor with the given id
-    const domain_type& cluster(size_t id) const {
-      return (*this)[id].arguments();
+    //! Returns the iterator to the first factor.
+    iterator begin() {
+      return iterator(this->vertices1().begin(),
+                      vertex1_property_fn<base>(this));
+    }
+
+    //! Returns the iterator to the first factor.
+    const_iterator begin() const {
+      return const_iterator(this->vertices1().begin(),
+                            vertex1_property_fn<const base>(this));
+    }
+
+    //! Returns the iterator past the last factor.
+    iterator end() {
+      return iterator(this->vertices1().end(),
+                      vertex1_property_fn<base>(this));
+    }
+
+    //! Returns the iterator past the last factor.
+    const_iterator end() const {
+      return const_iterator(this->vertices1().end(),
+                            vertex1_property_fn<const base>(this));
     }
 
     //! Prints the degree distribution to the given stream
     void print_degree_distribution(std::ostream& out) const {
       out << "Degree distribution of variables:" << std::endl;
-      print_degree_distribution(out, variables());
+      print_degree_distribution(out, arguments());
       out << "Degree distribution of factors:" << std::endl;
       print_degree_distribution(out, factor_ids());
     }
 
+    // Modifiers
+    //==========================================================================
+
     /**
-     * Adds a factor to the factor graph.
+     * Adds a non-empty factor to the factor graph.
      * \returns the corresponding id or 0 if the factor has no arguments
      */
     size_t add_factor(const F& f) {
@@ -108,8 +144,8 @@ namespace sill {
       }
       size_t id = next_id_++;
       this->add_vertex(id, f);
-      foreach (variable_type* var, f.arguments()) {
-        this->add_edge(var, id);
+      for (variable_type* var : f.arguments()) {
+        this->add_edge(id, var);
       }
       return id;
     }
@@ -124,44 +160,38 @@ namespace sill {
         this->remove_vertex(id);
         return;
       }
-      const domain_type& cluster = this->cluster(id);
-      // remove the edges to the dropped variables
-      foreach (variable_type* var, cluster) {
-        if (!f.arguments().count(var)) {
-          this->remove_edge(var, id);
-        }
+      // remove all the old edges
+      this->remove_edges(id);
+      // add all the new edges
+      for (variable_type* v : f.arguments()) {
+        this->add_edge(id, v);
       }
-      // add edges to the new variables
-      foreach (variable_type* var, f.arguments()) {
-        if (!cluster.count(var)) {
-          this->add_edge(var, id);
-        }
-      }
-      // set the factor
-      factor(id) = f;
+      (*this)[id] = f;
     }
 
     /**
      * Normalize all factors
      */
     void normalize() {
-      foreach (size_t id, factor_ids()) {
-        factor(id).normalize();
+      for (F& factor : *this) {
+        factor.normalize();
       }
     }
 
     /**
-     * Condition on an assignment
+     * Condition on an assignment.
+     * \todo This does not work yet.
      */
     void condition(const assignment_type& a) {
-      foreach (typename assignment_type::const_reference p, a) {
+      assert(false); // not working yet
+      for (const auto& p : a) {
         variable_type* var = p.first;
         if (!this->contains(var)) {
           continue;
         }
-        foreach (size_t id, this->neighbors(var)) {
-          if (cluster(id).count(var)) { // not processed yet
-            update_factor(id, factor(id).restrict(a));
+        for (size_t id : this->neighbors(var)) {
+          if (arguments(id).count(var)) { // not processed yet
+            update_factor(id, (*this)[id].restrict(a));
           }
         }
         this->remove_vertex(var);
@@ -174,22 +204,22 @@ namespace sill {
      * g is multiplied by f, and f is removed from the model.
      */
     void simplify() {
-      std::vector<size_t> ids(factor_ids().first, factor_ids().second);
-      foreach(size_t f_id, ids) {
-        const domain_type& f_args = cluster(f_id);
+      std::vector<size_t> ids(factor_ids().begin(), factor_ids().end());
+      for (size_t f_id : ids) {
+        const domain_type& f_args = arguments(f_id);
         // identify the variable with the fewest connected factors
         size_t min_degree = std::numeric_limits<size_t>::max();
         variable_type* var = NULL;
-        foreach(variable_type* v, f_args) {
+        for (variable_type* v : f_args) {
           if (this->degree(v) < min_degree) {
             min_degree = this->degree(v);
             var = v;
           }
         }
         // identify a subsuming factor among the new neighbors of var
-        foreach(size_t g_id, this->neighbors(var)) {
-          if (f_id != g_id && includes(cluster(g_id), f_args)) {
-            factor(g_id) *= factor(f_id);
+        for (size_t g_id : this->neighbors(var)) {
+          if (f_id != g_id && subset(f_args, arguments(g_id))) {
+            (*this)[g_id] *= (*this)[f_id];
             this->remove_vertex(f_id);
             break;
           }
@@ -198,18 +228,11 @@ namespace sill {
     }
 
   private:
-    //! Returns the factor with the given id. The factor must be present.
-    F& factor(size_t id) {
-      return (*this)[id];
-    }
-
     //! The next id that will be used when inserting new factors
     size_t next_id_;
 
   }; // class factor_graph
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
-
+ 
 #endif

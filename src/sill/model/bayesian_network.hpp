@@ -1,288 +1,218 @@
 #ifndef SILL_BAYESIAN_NETWORK_HPP
 #define SILL_BAYESIAN_NETWORK_HPP
-#include <map>
-
-#include <boost/random/uniform_real.hpp>
 
 #include <sill/global.hpp>
-#include <sill/factor/concepts.hpp>
-#include <sill/learning/dataset_old/dataset.hpp>
-#include <sill/model/bayesian_graph.hpp>
-#include <sill/model/markov_network.hpp>
-#include <sill/model/model_functors.hpp>
 #include <sill/graph/algorithm/graph_traversal.hpp>
+#include <sill/graph/algorithm/make_clique.hpp>
+#include <sill/graph/directed_graph.hpp>
 #include <sill/graph/property_functors.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/math/logarithmic.hpp>
 
-#include <sill/range/transformed.hpp>
+#include <boost/iterator/transform_iterator.hpp>
 
-#include <sill/macros_def.hpp>
+#include <random>
 
 namespace sill {
 
   /**
    * A Bayesian network with CPDs for each variable.
    * 
-   * Note: The user must ensure that the arguments of edge and node factors
-   * remain valid.
-   *
    * \ingroup model
    */
   template <typename F>
-  class bayesian_network : 
-    public bayesian_graph<typename F::variable_type*, F>,
-    public graphical_model<F>  {
+  class bayesian_network
+    : public directed_graph<typename F::variable_type*, F> {
 
-    concept_assert((Factor<F>));
+    typedef directed_graph<typename F::variable_type*, F> base;
 
     // Public type declarations
-    // =========================================================================
+    //==========================================================================
   public:
+    // FactorizedModel types
+    typedef typename F::real_type       real_type;
+    typedef logarithmic<real_type>      result_type;
+    typedef typename F::variable_type   variable_type;
+    typedef typename F::domain_type     domain_type;
+    typedef typename F::assignment_type assignment_type;
+    typedef F                           value_type;
 
-    //! The types of variables, etc. used by the factor.
-    typedef typename F::variable_type    variable_type;
-    typedef typename F::domain_type      domain_type;
-    typedef typename F::assignment_type  assignment_type;
-    typedef typename F::record_type      record_type;
+    typedef boost::transform_iterator<
+      vertex_property_fn<base>, typename base::vertex_iterator
+    > iterator;
 
-    //! The primary base class
-    typedef bayesian_graph<variable_type*, F> base;
+    typedef boost::transform_iterator<
+      vertex_property_fn<const base>, typename base::vertex_iterator
+    > const_iterator;
 
     // Shortcuts
-    typedef typename base::edge edge;
-    typedef typename base::vertex vertex;
-    using base::vertices;
+    typedef typename base::vertex_type vertex_type;
 
     // Constructors
-    // =========================================================================
+    //==========================================================================
   public:
-
-    //! Default constructor; creates an empty Bayes net.
+    //! Default constructor. Creates an empty Bayesian network.
     bayesian_network() { }
 
-    /**
-     * Constructor:
-     * Creates a Bayes net with the given set of nodes and no edges.
-     * (The factors must be added later.)
-     */
-    bayesian_network(const domain_type& variables) : base(variables) { }
+    //! Constructs a Bayesian network with the given variables and no edges.
+    explicit bayesian_network(const domain_type& variables) {
+      for (variable_type* v : variables) {
+        this->add_vertex(v);
+      }
+    }
 
-    //! Constructs a Bayes net with the given graph structure.
-    bayesian_network(const bayesian_graph<variable_type*>& g) : base(g) { }
+    // Accessors
+    //==========================================================================
 
-    operator std::string() const {
-      assert(false);
-      //std::ostringstream out; out << *this; return out.str(); 
-      return std::string();
+    //! Returns the arguments of this model (the range of all the vertices).
+    iterator_range<typename base::vertex_iterator> arguments() const {
+      return this->vertices();
+    }
+
+    //! Returns the arguments of the factor associated with a variable.
+    const domain_type& arguments(variable_type* v) const {
+      return (*this)[v].arguments();
+    }
+
+    //! Returns the iterator to the first factor.
+    iterator begin() {
+      return iterator(this->vertices().begin(),
+                      vertex_property_fn<base>(this));
+    }
+
+    //! Returns the iterator to the first factor.
+    const_iterator begin() const {
+      return const_iterator(this->vertices().begin(),
+                            vertex_property_fn<const base>(this));
+    }
+
+    //! Returns the iterator past the last factor.
+    iterator end() {
+      return iterator(this->vertices().end(),
+                      vertex_property_fn<base>(this));
+    }
+
+    //! Returns the iterator past the last factor.
+    const_iterator end() const {
+      return const_iterator(this->vertices().end(),
+                            vertex_property_fn<const base>(this));
     }
 
     // Queries
-    // =========================================================================
+    //==========================================================================
 
-    domain_type arguments() const {
-      return base::nodes();
-    }
-
-    //! Returns the factor associated with a variable
-    const F& factor(vertex v) const {
-      return this->operator[](v);
-    }
-
-    //! Returns the factor associated with a variable
-    F& factor(vertex v) {
-      return this->operator[](v);
-    }
-
-    forward_range<F&> factors() {
-      return make_transformed(vertices(), vertex_property_functor(*this));
-    }
-
-    forward_range<const F&> factors() const {
-      return make_transformed(vertices(), vertex_property_functor(*this));
-    }
-
-    bool d_separated(const domain_type& x, const domain_type& y,
-                     const domain_type& z = domain_type::empty_set) const {
-      return base::d_separated(x, y, z);
-    }
-
-    sill::markov_graph<variable_type*> markov_graph() const {
-      sill::markov_graph<variable_type*> mg;
-      foreach(vertex v, vertices())
-        mg.add_clique(factor(v).arguments());
-      return mg;
+    /**
+     * Returns the likelihood of the given assignment.
+     * The assignment must include all the arguments of this Bayesian network.
+     */
+    result_type operator()(const assignment_type& a) const {
+      return result_type(log(a), log_tag());
     }
 
     /**
-     * Throws an assertion violation if the following do not hold:
-     * 1) The arguments of the factors correspond to vertices.
-     * 2) The CPTs represent valid conditional probability distributions.
+     * Returns the log-likelihood of the given assignment.
+     * The assignment must include all the arguments of this Bayesian network.
      */
-    void check() const {
-      foreach(vertex v, vertices()) {
-        domain_type parents(boost::begin(this->parents(v)),
-                            boost::end(this->parents(v)));
-        assert(factor(v).arguments() == set_union(parents, v));
-        assert(factor(v).is_conditional(parents));
+    real_type log(const assignment_type& a) const {
+      real_type result(0);
+      for (const F& f : *this) { result += f.log(a);  }
+      return result;
+    }
+
+    /**
+     * Draws a single sample from a Bayesian network.
+     * \tparam Generator a type that models UniformRandomNumberGenerator
+     */
+    template <typename Generator>
+    void sample(Generator& rng, assignment_type& a) const {
+      partial_order_traversal(*this, [&](vertex_type v) {
+          (*this)[v].sample(rng, this->parents(v), a);
+        });
+    }
+
+    /**
+     * Computes a minimal Markov graph capturing dependencies in this model.
+     */
+    void markov_graph(undirected_graph<variable_type*>& mg) const {
+      for (vertex_type v : this->vertices()) {
+        mg.add_vertex(v);
+        make_clique(mg, arguments(v));
       }
     }
 
-    // Probabilistic model queries
-    //==========================================================================
-
-    //! Log likelihood (using the given base)
-    double log_likelihood(const assignment_type& a, double base) const {
-      assert(base > 0);
-      double ll = 0;
-      foreach(const F& f, factors())
-        ll += f.logv(a);
-      return ll / std::log(base);
-    }
-
-    //! Log (base e) likelihood
-    double log_likelihood(const assignment_type& a) const {
-      return log_likelihood(a, std::exp(1.0));
-    }
-
-    //! Log likelihood (using the given base)
-    double log_likelihood(const record_type& r, double base) const {
-      assert(base > 0);
-      double ll = 0;
-      foreach(const F& f, factors())
-        ll += f.logv(r);
-      return ll / std::log(base);
-    }
-
-    //! Log (base e) likelihood
-    double log_likelihood(const record_type& r) const {
-      return log_likelihood(r, std::exp(1.0));
-    }
-
-    logarithmic<double> operator()(const assignment_type& a) const {
-      return logarithmic<double>(log_likelihood(a), log_tag());
-    }
-
-    logarithmic<double> operator()(const record_type& r) const {
-      return logarithmic<double>(log_likelihood(r), log_tag());
-    }
-
-    //! Returns a sample from a Bayes net over discrete variables.
-    template <typename RandomNumberGenerator>
-    assignment_type sample(RandomNumberGenerator& rng) const {
-      assignment_type a;
-      foreach(vertex v, directed_partial_vertex_order(*this)) {
-        F f(factor(v));
-        f = f.restrict(a);
-        f.normalize();
-        assignment_type tmpa(f.sample(rng));
-        a[v] = tmpa[v];
+    /**
+     * Returns true if the domain of the factor at each vertex includes the
+     * vertex itself and its parents.
+     */
+    bool valid() const {
+      for (vertex_type v : this->vertices()) {
+        domain_type args(this->parents(v).begin(), this->parents(v).end());
+        args.push_back(v);
+        if (!equivalent(args, arguments(v))) { return false; }
       }
-      return a;
+      return true;
     }
 
     // Modifiers
-    // =========================================================================
+    //==========================================================================
 
     /**
-     * Adds a factor P(v | other variables) to the graphical model
-     * and creates the necessary vertices and edges.
-     * If another factor P(v | some vars) exists in the model, then
-     * this factor is multiplied with the current factor to create a new
-     * factor P(v | other variables union some vars).
+     * Adds a factor representing the conditional distribution p(v | rest) to
+     * the graphical model and creates the necessary vertices and edges.
+     * If another factor for this vertex already exists, it is overwritten.
      * 
      * Note: It is the responsibility of the caller to ensure that the
      * graph remains a DAG.
      */
     void add_factor(variable_type* v, const F& f) {
-      domain_type vars = f.arguments();
-      assert(vars.count(v));
-      vars = set_difference(vars, make_domain(v));
-      base::add_family(v, vars);
-      if (factor(vertex(v)).arguments().empty())
-        factor(vertex(v)) = f;
-      else
-        factor(vertex(v)) *= f;
-    }
-
-    /**
-     * Condition this model on the values in the given assignment
-     * for the variables in restrict_vars.
-     * This renormalizes the factors.
-     *
-     * @todo Make this more efficient.
-     *
-     * @bug Gaussian and table factors do not handle normalization in the same
-     *      way since table factors do not have the concept of head/tail vars.
-     *      Fix that!
-     */
-    bayesian_network&
-    condition(const assignment_type& a_, const domain_type& restrict_vars) {
-      assignment_type a;
-      foreach(variable_type* v, restrict_vars)
-        a[v] = safe_get(a_, v);
-
-      bayesian_network tmp_bn;
-      foreach(variable_type* v, vertices()) {
-        if (includes(restrict_vars, factor(v).arguments())) {
-          // Do nothing.
-        } else if (restrict_vars.count(v)) {
-          // Some parents of v remain.
-          assert(false); // Not yet implemented.
-        } else {
-          // v and maybe some parents remain.
-          F tmpf(factor(v).restrict(a));
-          // BUG: See bug comment above in the comments for this method!
-          tmp_bn.add_factor(v, tmpf);
+      if (this->contains(v)) {
+        this->remove_vertex(v);
+      }
+      assert(f.arguments().count(v));
+      this->add_vertex(v, f);
+      for (variable_type* u : f.arguments()) {
+        if (u != v) {
+          this->add_edge(u, v);
         }
       }
-      *this = tmp_bn;
-      return *this;
-    } // condition(a, restrict_vars)
-
-    /**
-     * Computes the conditional log likelihood: log P(y|x),
-     * where this model represents P(Y,X).
-     *
-     * @param X    Variables (which MUST be a subset of this model's arguments)
-     *             to condition on.
-     * @param base base of the log (default = e)
-     */
-    double conditional_log_likelihood(const record_type& r,
-                                      const domain_type& X,
-                                      double base = exp(1.)) const {
-      domain_type YX(arguments());
-      assert(includes(r.variables(), YX));
-      assert(includes(YX, X));
-      bayesian_network tmpbn(*this);
-      tmpbn.condition(r, X);
-      return tmpbn.log_likelihood(r, base);
     }
 
     /**
-     * Returns a functor usable with dataset::expected_value() for computing
-     * expected conditional log likelihood E[log P(Y|X)].
+     * Conditions this model on the values in the given assignment and
+     * returns the likelihood of the evidence. If the head of the factor
+     * is restricted, its tail must be, too.
      */
-    model_conditional_log_likelihood_functor<bayesian_network>
-    conditional_log_likelihood(const domain_type& X,
-                               double base = exp(1.)) const {
-      return
-        model_conditional_log_likelihood_functor<bayesian_network>
-        (*this, X, base);
+    result_type condition(const assignment_type& a) {
+      // condition each factor, collecting the vertices from the assignment
+      real_type ll = 0;
+      std::vector<variable_type*> removed;
+      for (variable_type* v : this->vertices()) {
+        F& factor = (*this)[v];
+        // count the number of arguments restricted
+        std::size_t n = 0;
+        for (variable_type* u : factor.arguments()) {
+          n += a.count(u);
+        }
+        if (n == 0) { // nothing to do
+          continue;
+        } else if (n == factor.arguments().size()) { // restricted all
+          ll += factor.log(a);
+          removed.push_back(v);
+        } else if (!a.count(v)) { // partial restrict
+          factor = factor.restrict(a);
+        } else {
+          throw std::runtime_error("Unsupported operation");
+        }
+      }
+
+      // remove the vertices (this will drop the edges as well)
+      for (variable_type* v : removed) {
+        this->remove_vertex(v);
+      }
+      return result_type(ll, log_tag());
     }
 
   }; // class bayesian_network
-
-  /**
-   * Create a Markov network from a Bayes net.
-   * \todo Make this a conversion constructor
-   */
-  template <typename F>
-  markov_network<F>
-  bayes2markov_network(const bayesian_network<F>& bn) {
-    markov_network<F> mn;
-    foreach(typename F::variable_type* v, bn.vertices())
-      mn.add_factor(bn.factor(v));
-    return mn;
-  }
 
 } // namespace sill
 
@@ -291,12 +221,9 @@ namespace boost {
   //! A traits class that lets bayesian_network work in BGL algorithms
   template <typename F>
   struct graph_traits< sill::bayesian_network<F> >
-    : public graph_traits< sill::bayesian_graph<typename F::variable_type*, F> >
+    : public graph_traits<sill::directed_graph<typename F::variable_type*, F> >
   { };
 
 } // namespace boost
 
-
-#include <sill/macros_undef.hpp>
-
-#endif // #ifndef SILL_BAYESIAN_NETWORK_HPP
+#endif

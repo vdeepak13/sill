@@ -1,50 +1,50 @@
 #ifndef SILL_DESCENDANTS_HPP
 #define SILL_DESCENDANTS_HPP
-#include <set>
+
 #include <queue>
-
-#include <sill/graph/concepts.hpp>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
   /**
-   * Returns the descendants for a set of vertices.
+   * Computes the descendants for a set of vertices.
+   *
+   * \tparam Graph an undirected graph type
+   * \tparam Set a set type with elements of type Graph::vertex_type
    * \ingroup graph_algorithms
    */
-  template <typename Graph>
-  std::set<typename Graph::vertex>
-  descendants(const std::set<typename Graph::vertex>& vertices, const Graph& graph) {
-    typedef typename Graph::vertex vertex;
-    std::set<vertex> result;
-    std::queue<vertex> q;
-    foreach(vertex v, vertices) q.push(v);
-    while(!q.empty()) {
-      vertex u = q.front(); q.pop();
-      foreach(vertex v, graph.children(u))
-        if(!result.count(v)) {
+  template <typename Graph, typename Set>
+  void descendants(const Graph& graph, const Set& vertices, Set& result) {
+    typedef typename Graph::vertex_type vertex_type;
+    std::queue<vertex_type> q;
+    for (vertex_type v : vertices) {
+      q.push(v);
+    }
+    while (!q.empty()) {
+      vertex_type u = q.front();
+      q.pop();
+      for (vertex_type v : graph.children(u)) {
+        if (!result.count(v)) {
           result.insert(v);
           q.push(v);
         }
+      }
     }
-    return result;
   }
 
   /**
-   * Returns the descendants for a vertex.
+   * Computes the descendants for a single vertex.
+   *
+   * \tparam Graph an undirected graph type
+   * \tparam Set a set type with elements of type Graph::vertex_type
    * \ingroup graph_algorithms
    */
-  template <typename Graph>
-  std::set<typename Graph::vertex>
-  descendants(const typename Graph::vertex& v, const Graph& graph) {
-    std::set<typename Graph::vertex> vset;
-    vset.insert(v);
-    return descendants(vset, graph);
+  template <typename Graph, typename Set>
+  void descendants(const Graph& graph, typename Graph::vertex_type v, Set& result) {
+    Set vertices;
+    vertices.insert(v);
+    descendants(graph, vertices, result);
   }
 
-}
-
-#include <sill/macros_undef.hpp>
+} // namespace sill
 
 #endif

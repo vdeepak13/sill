@@ -1,19 +1,13 @@
 #ifndef SILL_TEST_MODEL_PREDICATES_HPP
 #define SILL_TEST_MODEL_PREDICATES_HPP
 
-#include <sill/base/finite_assignment_iterator.hpp>
-#include <sill/factor/table_factor.hpp>
-#include <sill/model/interfaces.hpp>
-
+#include <sill/argument/finite_assignment_iterator.hpp>
 #include <algorithm>
 #include <vector>
 
 #include <boost/range/algorithm.hpp>
 
 #include "../predicates.hpp"
-
-using sill::factorized_model;
-using sill::table_factor;
 
 struct factor_arg_less {
   template <typename F>
@@ -22,12 +16,12 @@ struct factor_arg_less {
   }
 };
 
-template <typename F>
+template <typename Model>
 boost::test_tools::predicate_result
-model_equal_factors(const factorized_model<F>& a,
-                    const factorized_model<F>& b) {
-  std::vector<F> a_factors(a.factors().begin(), a.factors().end());
-  std::vector<F> b_factors(b.factors().begin(), b.factors().end());
+model_equal_factors(const Model& a, const Model& b) {
+  typedef typename Model::value_type factor_type;
+  std::vector<factor_type> a_factors(a.factors().begin(), a.factors().end());
+  std::vector<factor_type> b_factors(b.factors().begin(), b.factors().end());
   std::sort(a_factors.begin(), a_factors.end(), factor_arg_less());
   std::sort(b_factors.begin(), b_factors.end(), factor_arg_less());
   if (a_factors != b_factors) {
@@ -39,31 +33,30 @@ model_equal_factors(const factorized_model<F>& a,
   return true;
 }
 
+template <typename Model>
 boost::test_tools::predicate_result
-model_close_log_likelihoods(const factorized_model<table_factor>& a,
-                            const factorized_model<table_factor>& b,
-                            double eps) {
-  if (a.arguments() != b.arguments()) {
+model_close_log_likelihoods(const Model& a, const Model& b, double eps) {
+  sill::domain<sill::finite_variable*> arga(a.arguments()), argb(b.arguments());
+  if (!equivalent(arga, argb)) {
     boost::test_tools::predicate_result result(false);
     result.message() << "The two models do not have identical argument sets: "
-                     << a.arguments() << " != " << b.arguments();
+                     << arga.unique() << " != " << argb.unique();
     return result;
   }
-  sill::finite_assignment_iterator it(a.arguments()), end;
+  sill::finite_assignment_iterator it(arga), end;
   for(; it != end; ++it) {
-    if (std::abs(a.log_likelihood(*it) - b.log_likelihood(*it)) > eps) {
+    if (std::abs(a.log(*it) - b.log(*it)) > eps) {
       boost::test_tools::predicate_result result(false);
-      result.message() << "The two models differ on the assignment\n"
-                       << (*it)
-                       << "[" << a.log_likelihood(*it) 
-                       << "," << b.log_likelihood(*it)
-                       << "]";
+      result.message() << "The two models differ on the assignment";
+      for (const auto& p : *it) {
+        result.message() << ' ' << p.first << "=>" << p.second;
+      }
+      result.message() << '[' << a.log(*it) << ',' << b.log(*it) << ']';
       return result;
     }
   }
   return true;
 }
-
 
 #endif
 

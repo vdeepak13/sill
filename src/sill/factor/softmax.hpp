@@ -250,7 +250,7 @@ namespace sill {
      * Returns true if the two factors do not have the same argument vectors
      * or parameters.
      */
-    friend bool operator==(const softmax& f, const softmax& g) {
+    friend bool operator!=(const softmax& f, const softmax& g) {
       return !(f == g);
     }
 

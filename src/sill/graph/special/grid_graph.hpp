@@ -5,8 +5,6 @@
 
 #include <sill/graph/undirected_graph.hpp>
 
-#include <sill/macros_def.hpp>
-
 namespace sill {
   
   //! Creates a grid graph for a sequence of vertices {1, ..., m*n}
@@ -18,15 +16,15 @@ namespace sill {
     
     // create the vertices
     arma::umat vertex(m, n);
-    for(size_t j = 0; j < n; j++) {
-      for(size_t i = 0; i < m; i++) {
+    for (size_t j = 0; j < n; j++) {
+      for (size_t i = 0; i < m; i++) {
         vertex(i,j) = ind; g.add_vertex(ind++);
       }
     }
     
     // create the edges
-    for(size_t i = 0; i < m; i++) {
-      for(size_t j = 0; j < n; j++) {
+    for (size_t i = 0; i < m; i++) {
+      for (size_t j = 0; j < n; j++) {
         if (j < n-1) g.add_edge(vertex(i,j), vertex(i,j+1)); 
         if (i < m-1) g.add_edge(vertex(i,j), vertex(i+1,j));
       }
@@ -46,8 +44,8 @@ namespace sill {
     // create the vertices
     size_t k = 0;
     arma::field<Vertex> vertex(m, n);
-    for(size_t j = 0; j < n; j++) {
-      for(size_t i = 0; i < m; i++) {
+    for (size_t j = 0; j < n; j++) {
+      for (size_t i = 0; i < m; i++) {
         g.add_vertex(vertices[k]);
         vertex(i,j) = vertices[k];
         ++k;
@@ -55,7 +53,7 @@ namespace sill {
     }
     
     // create the edges
-    for(size_t i = 0; i < m; i++) {
+    for (size_t i = 0; i < m; i++) {
       for(size_t j = 0; j < n; j++) {
         if (j < n-1) g.add_edge(vertex(i,j), vertex(i,j+1)); 
         if (i < m-1) g.add_edge(vertex(i,j), vertex(i+1,j));
@@ -66,7 +64,5 @@ namespace sill {
   }
   
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

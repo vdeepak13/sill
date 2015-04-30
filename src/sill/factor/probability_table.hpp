@@ -122,7 +122,7 @@ namespace sill {
     // Accessors and comparison operators
     //==========================================================================
 
-    //! Returns the argument set of this factor.
+    //! Returns the arguments of this factor.
     const domain_type& arguments() const {
       return this->finite_args_;
     }
