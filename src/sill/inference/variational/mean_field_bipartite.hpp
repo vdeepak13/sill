@@ -40,9 +40,9 @@ namespace sill {
     typedef typename NodeF::probability_factor_type belief_type;
 
     // graph-related typedefs
-    typedef bipartite_graph<Vertex1, Vertex2, NodeF, EdgeF> model_type;
-    typedef typename model_type::vertex                     vertex_type;
-    typedef typename model_type::edge                       edge_type;
+    typedef bipartite_graph<Vertex1, Vertex2, NodeF, NodeF, EdgeF> model_type;
+    typedef typename graph_type::vertex_type vertex_type;
+    typedef typename graph_type::edge_type   edge_type;
     
     /**
      * Creates a mean field engine for the given graph.

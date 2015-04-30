@@ -1,6 +1,7 @@
 #ifndef SILL_DOMAIN_HPP
 #define SILL_DOMAIN_HPP
 
+#include <sill/range/iterator_range.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <algorithm>
@@ -28,9 +29,19 @@ namespace sill {
     domain(std::initializer_list<Arg> init)
       : std::vector<Arg>(init) { }
 
-    //! Creates a from the given argument vector.
+    //! Creates a domain from the given argument vector.
     domain(const std::vector<Arg>& elems)
       : std::vector<Arg>(elems) { }
+
+    //! Creates a domain from the given iterator range.
+    template <typename Iterator>
+    domain(Iterator begin, Iterator end)
+      : std::vector<Arg>(begin, end) { }
+
+    //! Creates a domain from the given iterator range.
+    template <typename Iterator>
+    explicit domain(const iterator_range<Iterator>& range)
+      : std::vector<Arg>(range.begin(), range.end()) { }
 
     //! Saves the domain to an archive.
     void save(oarchive& ar) const {
@@ -72,6 +83,12 @@ namespace sill {
       }
     }
 
+    //! Sorts the elements of the domain in place.
+    domain& sort() {
+      std::sort(this->begin(), this->end());
+      return *this;
+    }
+
     /**
      * Removes the duplicate elements from the domain in place.
      * Does not preserve the relative ordere of elements in the domain.
@@ -91,7 +108,12 @@ namespace sill {
    */
   template <typename Arg>
   std::ostream& operator<<(std::ostream& out, const domain<Arg>& dom) {
-    print_range(out, dom, '[', ',', ']');
+    out << '[';
+    for (std::size_t i = 0; i < dom.size(); ++i) {
+      if (i > 0) { out << ','; }
+      out << dom[i];
+    }
+    out << ']';
     return out;
   }
 

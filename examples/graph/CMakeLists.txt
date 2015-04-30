@@ -1,1 +1,0 @@
-add_executable(tree_traversal tree_traversal.cpp)

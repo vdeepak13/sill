@@ -1,36 +1,29 @@
 #define BOOST_TEST_MODULE undirected_graph
 #include <boost/test/unit_test.hpp>
 
-#include <set>
-#include <map>
-
-#include <boost/array.hpp> 
-#include <boost/mpl/list.hpp>
-
 #include <sill/graph/undirected_graph.hpp>
 
-#include "predicates.hpp"
+#include <boost/mpl/list.hpp>
 
-#include <sill/macros_def.hpp>
+#include <map>
+#include <set>
+#include <vector>
+
+#include "../predicates.hpp"
 
 namespace sill {
   template class undirected_graph<size_t>;
-  template class undirected_graph<size_t, double, double>;
+  template class undirected_graph<size_t, std::string, double>;
 }
 
 using namespace sill;
-using std::make_pair;
 
-typedef size_t V;
-typedef undirected_graph<V, size_t, size_t> graph;
-typedef std::pair<V, V> E;
-
-BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::edge_iterator);
-BOOST_TEST_DONT_PRINT_LOG_VALUE(::graph::vertex_iterator);
-// see http://www.boost.org/doc/libs/1_53_0/libs/test/doc/html/utf/user-guide/test-output/test-log.html
+typedef undirected_graph<size_t, size_t, size_t> graph_type;
+typedef undirected_edge<size_t> edge_type;
+typedef std::pair<size_t, size_t> vpair;
 
 BOOST_AUTO_TEST_CASE(test_undirected_edge) {
-  undirected_edge<V> e1, e2;
+  edge_type e1, e2;
   BOOST_CHECK_EQUAL(e1, e2);
   BOOST_CHECK_EQUAL(e1.source(), e2.source());
   BOOST_CHECK_EQUAL(e1.source(), e1.target());
@@ -39,33 +32,32 @@ BOOST_AUTO_TEST_CASE(test_undirected_edge) {
 
 BOOST_AUTO_TEST_CASE(test_constructors) {
   // default constructor
-  graph g1;
+  graph_type g1;
   BOOST_CHECK(g1.empty());
-  BOOST_CHECK_EQUAL(g1.edges().first, g1.edges().second); 
-  BOOST_CHECK_EQUAL(g1.vertices().first, g1.vertices().second);
-  // iterators cannot be printed, so we do not use BOOST_CHECK_EQUAL here
-  // for an alternative
+  BOOST_CHECK(g1.vertices().empty());
+  BOOST_CHECK(g1.edges().empty());
   
   // edge list constructor
-  boost::array<E, 8> edges = 
-    {{E(0, 2), E(1, 2), E(1, 3), E(1, 7), E(2, 3), E(3, 4), E(4, 0), E(4, 1)}};
-  graph g2(edges);
-  foreach(E e, edges) {
-    BOOST_CHECK(g2.contains(e.first));
-    BOOST_CHECK(g2.contains(e.second));
-    BOOST_CHECK(g2.contains(e.first, e.second));
-    BOOST_CHECK(g2.contains(e.second, e.first));
+  std::vector<vpair> vpairs = 
+    {vpair(9, 2), vpair(1, 2), vpair(1, 3), vpair(1, 7),
+     vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1)};
+  graph_type g2(vpairs);
+  for (vpair vp : vpairs) {
+    BOOST_CHECK(g2.contains(vp.first));
+    BOOST_CHECK(g2.contains(vp.second));
+    BOOST_CHECK(g2.contains(vp.first, vp.second));
+    BOOST_CHECK(g2.contains(vp.second, vp.first));
   }
   BOOST_CHECK(!g2.contains(8, 2));
   BOOST_CHECK(!g2.contains(8));
 
   //copy constructor
-  graph g3(g2);
-  foreach(E e, edges) {
-    BOOST_CHECK(g3.contains(e.first));
-    BOOST_CHECK(g3.contains(e.second));
-    BOOST_CHECK(g3.contains(e.first, e.second));
-    BOOST_CHECK(g3.contains(e.second, e.first));
+  graph_type g3(g2);
+  for (vpair vp : vpairs) {
+    BOOST_CHECK(g3.contains(vp.first));
+    BOOST_CHECK(g3.contains(vp.second));
+    BOOST_CHECK(g3.contains(vp.first, vp.second));
+    BOOST_CHECK(g3.contains(vp.second, vp.first));
   }
   BOOST_CHECK(!g3.contains(8,2));
   BOOST_CHECK(!g3.contains(8));
@@ -73,14 +65,14 @@ BOOST_AUTO_TEST_CASE(test_constructors) {
 
 
 BOOST_AUTO_TEST_CASE(test_vertices) {
-  graph g;
-  boost::array<V, 11> verts = {{0,1,2,3,4,5,6,7,8,9,10}};
-  std::map<V,V> vert_map;
-  foreach(V v, verts) {
-    vert_map[v] = v;
-    g.add_vertex(v,v);
+  graph_type g;
+  std::vector<size_t> verts = {1, 2, 3, 4, 5, 6, 7, 8, 10};
+  std::map<size_t, size_t> vert_map;
+  for (size_t v : verts) {
+    vert_map[v] = v+2;
+    g.add_vertex(v, v+2);
   }
-  foreach(V v, g.vertices()) {
+  for (size_t v : g.vertices()) {
     BOOST_CHECK(vert_map.count(v) == 1);
     BOOST_CHECK_EQUAL(g[v], vert_map[v]);
     vert_map.erase(v);
@@ -90,149 +82,153 @@ BOOST_AUTO_TEST_CASE(test_vertices) {
 
 
 BOOST_AUTO_TEST_CASE(test_edges) {
-  boost::array<E, 12> edges = 
-    {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
-      E(2, 3), E(3, 4), E(4, 0), E(4, 1),
-      E(2, 6), E(3, 5), E(1, 7), E(5, 8)}};
-  std::map<E,size_t> data;
-  graph g;
-  size_t i = 0; 
-  foreach(E e, edges) {
-    g.add_edge(e.first, e.second, i);
-    data[e] = i; 
+  std::vector<vpair> vpairs = 
+    {{vpair(9, 2), vpair(1, 9), vpair(1, 3), vpair(1, 10), 
+      vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1),
+      vpair(2, 6), vpair(3, 5), vpair(1, 7), vpair(5, 8)}};
+  std::map<vpair, size_t> data;
+  graph_type g;
+  size_t i = 0;
+  for (vpair vp : vpairs) {
+    g.add_edge(vp.first, vp.second, i);
+    data[vp] = i; 
     ++i;
   }
-  foreach(graph::edge edge, g.edges()) {
-    E e = make_pair(edge.source(), edge.target());
-    E erev = make_pair(edge.target(), edge.source());
-    BOOST_CHECK((data.count(e) == 1) ^ (data.count(erev) == 1));
-    if(data.count(erev) == 1) e = erev;
-    BOOST_CHECK_EQUAL(data[e], g[edge]);
-    data.erase(e);
+  for (edge_type e : g.edges()) {
+    vpair vp(e.source(), e.target());
+    vpair vr(e.target(), e.source());
+    BOOST_CHECK((data.count(vp) == 1) ^ (data.count(vr) == 1));
+    if (data.count(vr) == 1) { vp = vr; }
+    BOOST_CHECK_EQUAL(data[vp], g[e]);
+    data.erase(vp);
   }
   BOOST_CHECK(data.empty());
 }
 
 
 BOOST_AUTO_TEST_CASE(test_neighbors) {
-  boost::array<E, 12> edges = 
-    {{E(0, 2), E(4, 9), E(1, 3), E(1, 10), 
-      E(2, 3), E(3, 4), E(4, 0), E(4, 1),
-      E(2, 6), E(3, 5), E(4, 7), E(5, 8)}};
-  graph g(edges);
-  boost::array<V, 5> verts = {{0,1,3,7,9}};
-  std::set<V> neighbors;
-  neighbors.insert(verts.begin(), verts.end());
-  foreach(V v, g.neighbors(4))  {
+  std::vector<vpair> vpairs = 
+    {{vpair(9, 2), vpair(4, 9), vpair(1, 3), vpair(1, 10), 
+      vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1),
+      vpair(2, 6), vpair(3, 5), vpair(4, 7), vpair(5, 8)}};
+  graph_type g(vpairs);
+  std::set<size_t> neighbors = {1, 3, 7, 9};
+  for (size_t v : g.neighbors(4)) {
     BOOST_CHECK(neighbors.count(v));
     neighbors.erase(v);
   }
+  BOOST_CHECK(neighbors.empty());
 }
 
 
 BOOST_AUTO_TEST_CASE(test_in_edges) {
-  boost::array<E, 12> edges = 
-    {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
-      E(2, 3), E(3, 4), E(4, 0), E(4, 1),
-      E(2, 6), E(3, 5), E(7, 3), E(3, 8)}};
-  graph g;
-  std::map<E,size_t> edge_values;
-  V u = 3;
+  std::vector<vpair> vpairs = 
+    {vpair(9, 2), vpair(1, 9), vpair(1, 3), vpair(1, 10), 
+     vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1),
+     vpair(2, 6), vpair(3, 5), vpair(7, 3), vpair(3, 8)};
+  graph_type g;
+  std::map<vpair, size_t> data;
   size_t i = 0;
-  foreach(E e, edges) { 
-    if(e.first == u || e.second == u) {
-      g.add_edge(e.first, e.second, i);
-      if(e.first == u) e = make_pair(e.second, e.first);
-      edge_values[e] = i;
+  for (vpair vp : vpairs) { 
+    if(vp.first == 3 || vp.second == 3) {
+      g.add_edge(vp.first, vp.second, i);
+      if (vp.first == 3) {
+        data[vpair(vp.second, vp.first)] = i;
+      } else {
+        data[vp] = i;
+      }
       ++i;
     }
   }
-  foreach(graph::edge edge, g.in_edges(3)) { 
-    E e = make_pair(edge.source(), edge.target());
-    BOOST_CHECK(edge_values.count(e));
-    BOOST_CHECK_EQUAL(g[edge], edge_values[e]);
-    edge_values.erase(e);
+
+  for (edge_type e : g.in_edges(3)) { 
+    vpair vp(e.source(), e.target());
+    BOOST_CHECK(data.count(vp));
+    BOOST_CHECK_EQUAL(g[e], data[vp]);
+    data.erase(vp);
   }
-  BOOST_CHECK(edge_values.empty());
+  BOOST_CHECK(data.empty());
 }
 
 
 BOOST_AUTO_TEST_CASE(test_out_edges) {
-  boost::array<E, 12> edges = 
-    {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
-      E(2, 3), E(3, 4), E(4, 0), E(4, 1),
-      E(6, 3), E(3, 5), E(7, 3), E(3, 8)}};
-  graph g;
-  std::map<E,size_t> edge_values;
-  V u = 3;
+  std::vector<vpair> vpairs = 
+    {vpair(9, 2), vpair(1, 9), vpair(1, 3), vpair(1, 10), 
+     vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1),
+     vpair(6, 3), vpair(3, 5), vpair(7, 3), vpair(3, 8)};
+  graph_type g;
+  std::map<vpair, size_t> data;
   size_t i = 0;
-  foreach(E e, edges) { 
-    if(e.first == u  || e.second == u) {
-      g.add_edge(e.first, e.second, i);
-      if(e.second == u) e = make_pair(e.second, e.first);
-      edge_values[e] = i;
+  for (vpair vp : vpairs) { 
+    if(vp.first == 3  || vp.second == 3) {
+      g.add_edge(vp.first, vp.second, i);
+      if (vp.second == 3) {
+        data[vpair(vp.second, vp.first)] = i;
+      } else {
+        data[vp] = i;
+      }
       ++i;
     }
   }
-  foreach(graph::edge edge, g.out_edges(3)) { 
-    E e = make_pair(edge.source(), edge.target());
-    BOOST_CHECK(edge_values.count(e));
-    BOOST_CHECK_EQUAL(g[edge], edge_values[e]);
-    edge_values.erase(e);
+  for (edge_type e : g.out_edges(3)) { 
+    vpair vp(e.source(), e.target());
+    BOOST_CHECK(data.count(vp));
+    BOOST_CHECK_EQUAL(g[e], data[vp]);
+    data.erase(vp);
   }
-  BOOST_CHECK(edge_values.empty());
+  BOOST_CHECK(data.empty());
 }
 
 
 BOOST_AUTO_TEST_CASE(test_contains) {
-  boost::array<E, 12> edges = 
-    {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
-      E(2, 3), E(3, 4), E(4, 0), E(4, 1),
-      E(2, 6), E(3, 5), E(7, 3), E(3, 8)}};
-  graph g(edges);
-  for (size_t i = 0; i <= 10; ++i) {
+  std::vector<vpair> vpairs = 
+    {vpair(9, 2), vpair(1, 9), vpair(1, 3), vpair(1, 10), 
+     vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1),
+     vpair(2, 6), vpair(3, 5), vpair(7, 3), vpair(3, 8)};
+  graph_type g(vpairs);
+  for (size_t i = 1; i <= 10; ++i) {
     BOOST_CHECK(g.contains(i));
   }
   BOOST_CHECK(!g.contains(11));
-  foreach(E e, edges) {
-    BOOST_CHECK(g.contains(e.first, e.second));
-    BOOST_CHECK(g.contains(e.second, e.first));
-    BOOST_CHECK(g.contains(g.get_edge(e.first, e.second)));
-    BOOST_CHECK(g.contains(g.get_edge(e.second, e.first)));
+  for (vpair vp : vpairs) {
+    BOOST_CHECK(g.contains(vp.first, vp.second));
+    BOOST_CHECK(g.contains(vp.second, vp.first));
+    BOOST_CHECK(g.contains(g.edge(vp.first, vp.second)));
+    BOOST_CHECK(g.contains(g.edge(vp.second, vp.first)));
   }
   BOOST_CHECK(!g.contains(0, 3));
   BOOST_CHECK(!g.contains(2, 10));
 }
 
 
-BOOST_AUTO_TEST_CASE(test_get_edge) {
-  boost::array<E, 12> edges = 
-    {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
-      E(2, 3), E(3, 4), E(4, 0), E(4, 1),
-      E(2, 6), E(3, 5), E(1, 7), E(5, 8)}};
-  std::map<E,size_t> data;
-  graph g;
+BOOST_AUTO_TEST_CASE(test_edge) {
+  std::vector<vpair> vpairs = 
+    {vpair(9, 2), vpair(1, 9), vpair(1, 3), vpair(1, 10), 
+     vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1),
+     vpair(2, 6), vpair(3, 5), vpair(1, 7), vpair(5, 8)};
+  std::map<vpair, size_t> data;
+  graph_type g;
   size_t i = 0; 
-  foreach(E e, edges) {
-    g.add_edge(e.first, e.second, i);
-    data[e] = i; 
-    data[make_pair(e.second, e.first)] = i; 
+  for (vpair vp : vpairs) {
+    g.add_edge(vp.first, vp.second, i);
+    data[vp] = i; 
+    data[vpair(vp.second, vp.first)] = i; 
     ++i;
   }
-  foreach(E e, edges) {
-    BOOST_CHECK_EQUAL(g.get_edge(e.first, e.second).source(), e.first);
-    BOOST_CHECK_EQUAL(g.get_edge(e.first, e.second).target(), e.second);
-    BOOST_CHECK_EQUAL(g[g.get_edge(e.first, e.second)], data[e]);
+  for (vpair vp : vpairs) {
+    BOOST_CHECK_EQUAL(g.edge(vp.first, vp.second).source(), vp.first);
+    BOOST_CHECK_EQUAL(g.edge(vp.first, vp.second).target(), vp.second);
+    BOOST_CHECK_EQUAL(g[g.edge(vp.first, vp.second)], data[vp]);
   }
 }
 
 
 BOOST_AUTO_TEST_CASE(test_degree) {
-  boost::array<E, 12> edges = 
-    {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
-      E(2, 3), E(3, 4), E(4, 0), E(4, 1),
-      E(2, 6), E(3, 5), E(7, 3), E(3, 8)}};
-  graph g(edges);
+  std::vector<vpair> vpairs = 
+    {vpair(9, 2), vpair(1, 9), vpair(1, 3), vpair(1, 10), 
+     vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1),
+     vpair(2, 6), vpair(3, 5), vpair(7, 3), vpair(3, 8)};
+  graph_type g(vpairs);
   BOOST_CHECK_EQUAL(g.in_degree(3), g.out_degree(3));
   BOOST_CHECK_EQUAL(g.out_degree(3), g.degree(3));
   BOOST_CHECK_EQUAL(g.degree(3), 6);
@@ -240,22 +236,22 @@ BOOST_AUTO_TEST_CASE(test_degree) {
 
 
 BOOST_AUTO_TEST_CASE(test_num) {
-  boost::array<E, 12> edges = 
-    {{E(0, 2), E(1, 9), E(1, 3), E(1, 10), 
-      E(2, 3), E(3, 4), E(4, 0), E(4, 1),
-      E(2, 6), E(3, 5), E(7, 3), E(3, 8)}};
-  graph g(edges);
-  BOOST_CHECK_EQUAL(g.num_vertices(), 11);
+  std::vector<vpair> vpairs = 
+    {vpair(9, 2), vpair(1, 9), vpair(1, 3), vpair(1, 10), 
+     vpair(2, 3), vpair(3, 4), vpair(4, 9), vpair(4, 1),
+     vpair(2, 6), vpair(3, 5), vpair(7, 3), vpair(3, 8)};
+  graph_type g(vpairs);
+  BOOST_CHECK_EQUAL(g.num_vertices(), 10);
   BOOST_CHECK_EQUAL(g.num_edges(), 12);
-  g.clear_edges(3);
-  BOOST_CHECK_EQUAL(g.num_vertices(), 11);
-  BOOST_CHECK_EQUAL(g.num_edges(), 6);
-  g.remove_vertex(3);
+  g.remove_edges(3);
   BOOST_CHECK_EQUAL(g.num_vertices(), 10);
   BOOST_CHECK_EQUAL(g.num_edges(), 6);
-  g.remove_vertex(0);
+  g.remove_vertex(3);
   BOOST_CHECK_EQUAL(g.num_vertices(), 9);
-  BOOST_CHECK_EQUAL(g.num_edges(), 4);
+  BOOST_CHECK_EQUAL(g.num_edges(), 6);
+  g.remove_vertex(9);
+  BOOST_CHECK_EQUAL(g.num_vertices(), 8);
+  BOOST_CHECK_EQUAL(g.num_edges(), 3);
 }
 
 

@@ -2,7 +2,6 @@
 #define SILL_PROBABILITY_ARRAY_HPP
 
 #include <sill/global.hpp>
-#include <sill/functional.hpp>
 #include <sill/argument/finite_assignment.hpp>
 #include <sill/base/finite_variable.hpp>
 #include <sill/factor/base/array_factor.hpp>

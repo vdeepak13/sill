@@ -288,6 +288,25 @@ namespace sill {
       }
     }
 
+    //! Removes the element at the given position.
+    iterator erase(const_iterator pos) {
+      return elems_.erase(pos);
+    }
+
+    //! Removes the elements in the given range.
+    iterator erase(const_iterator first, const_iterator last) {
+      return elems_.erase(first, last);
+    }
+
+    //! Removes all elements with the key value key.
+    size_t erase(const Key& key) {
+      iterator first, last;
+      std::tie(first, last) = equal_range(key);
+      size_t n = std::distance(first, last);
+      elems_.erase(first, last);
+      return n;
+    }
+
     //! Substitutes keys in place according to the given map.
     template <typename Map>
     void subst_keys(const Map& map) {

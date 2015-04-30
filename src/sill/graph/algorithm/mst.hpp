@@ -1,57 +1,32 @@
-#ifndef SILL_GRAPH_MST_HPP
-#define SILL_GRAPH_MST_HPP
+#ifndef SILL_MIN_SPANNING_TREE_HPP
+#define SILL_MIN_SPANNING_TREE_HPP
+
+#include <sill/graph/algorithm/functor_property_map.hpp>
+#include <sill/graph/algorithm/vertex_index_map.hpp>
+#include <sill/graph/boost_graph_helpers.hpp>
 
 #include <boost/graph/kruskal_min_spanning_tree.hpp>
-#include <boost/property_map/property_map.hpp>
-
-#include <sill/graph/algorithm/index_map.hpp>
-#include <sill/graph/algorithm/functor_property_map.hpp>
-#include <sill/graph/algorithm/vertex_index.hpp>
-#include <sill/stl_concepts.hpp>
-
-#include <sill/macros_def.hpp>
 
 namespace sill {
 
   /**
    * Kruskal Minimum Spanning Tree (MST) algorithm.
    * 
-   * @param g  graph
-   * @param spanning_tree_edges  iterator into which the edges of the MST
-   *                             are inserted
+   * \param graph the underlying undirected graph
+   * \param weightfn a function object that maps edges to weights
+   * \param out an output iterator to which the edges are stored
    * \ingroup graph_algorithms
    */
-  template <typename Graph, typename OutIt>
-  void kruskal_minimum_spanning_tree(const Graph& g, OutIt spanning_tree_edges){
-    concept_assert((OutputIterator<OutIt, typename Graph::edge>));
-    boost::unordered_map<typename Graph::vertex, size_t> map;
-    sill::vertex_index(g, map);
-    boost::kruskal_minimum_spanning_tree
-      (g,
-       spanning_tree_edges,
-       boost::vertex_index_map(boost::make_assoc_property_map(map)));
-  }
-
-  /**
-   * Kruskal Minimum Spanning Tree (MST) algorithm.
-   * 
-   * @param g  graph
-   * @param spanning_tree_edges  iterator into which the edges of the MST
-   *                             are inserted
-   * @param f  functor which returns the weight of each edge
-   * \ingroup graph_algorithms
-   */
-  template <typename Graph, typename OutIt, typename F>
-  void kruskal_minimum_spanning_tree(const Graph& g, 
-                                     OutIt spanning_tree_edges, F f) {
-    concept_assert((OutputIterator<OutIt, typename Graph::edge>));
-    boost::unordered_map<typename Graph::vertex, size_t> map;
-    sill::vertex_index(g, map);
-    boost::kruskal_minimum_spanning_tree
-      (g,
-       spanning_tree_edges,
-       boost::vertex_index_map(boost::make_assoc_property_map(map)).
-       weight_map(make_functor_property_map(f)));
+  template <typename Graph, typename UnaryFn, typename OutIt>
+  void kruskal_minimum_spanning_tree(const Graph& graph,
+                                     UnaryFn weightfn,
+                                     OutIt out) {
+    typedef typename Graph::edge_type edge_type;
+    boost::kruskal_minimum_spanning_tree(
+      graph,
+      out,
+      boost::vertex_index_map(vertex_index_map<Graph>(graph)).
+      weight_map(make_functor_property_map<edge_type>(weightfn)));
   }
 
 } // namespace sill

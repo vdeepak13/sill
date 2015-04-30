@@ -1,17 +1,10 @@
-
 #ifndef SILL_GRAPH_TRAVERSAL_HPP
 #define SILL_GRAPH_TRAVERSAL_HPP
 
-#include <deque>
-#include <vector>
-#include <iterator>
-#include <map>
-
 #include <sill/global.hpp>
-#include <sill/graph/algorithm/output_edge_visitor.hpp>
-#include <sill/range/reversed.hpp>
 
-#include <sill/macros_def.hpp>
+#include <queue>
+#include <unordered_map>
 
 namespace sill {
 
@@ -20,60 +13,47 @@ namespace sill {
    * such that each \f$v\f$ is visited after all nodes \f$u\f$ with
    * \f$u \rightarrow v\f$ are visited.
    *
+   * \tparam Graph a directed graph type
    * \ingroup graph_algorithms
    */
   template <typename Graph>
-  std::vector<typename Graph::vertex>
-  directed_partial_vertex_order(const Graph& g) {
-    typedef typename Graph::edge edge;
-    typedef typename Graph::vertex vertex;
+  void partial_order_traversal(
+      const Graph& graph,
+      std::function<void(typename Graph::vertex_type)> visitor) {
+    typedef typename Graph::vertex_type vertex_type;
+    typedef typename Graph::edge_type edge_type;
 
-    if (g.num_vertices() == 0)
-      return std::vector<vertex>();
-
-    // Find all vertices without parents
-    //   Maintain a set of 'remaining_edges' which still need to be traversed,
-    //   the sources of which are in 'vertices' and the targets of which
-    //   may be in 'vertices' or 'remaining_vertices.'
-    std::list<edge> remaining_edges;
-    std::vector<vertex> vertices;
-    // Contains remaining vertices, plus a count of the number of in-edges
-    // in remaining_edges.
-    std::map<vertex, size_t> remaining_vertices;
-    foreach(vertex v, g.vertices()) {
-      typename Graph::neighbor_iterator parents_it, parents_end;
-      boost::tie(parents_it, parents_end) = g.parents(v);
-      if (parents_it == parents_end) {
-        vertices.push_back(v);
-        foreach(edge e, g.out_edges(v))
-          remaining_edges.push_back(e);
-      } else
-        remaining_vertices[v] = g.in_degree(v);
-    }
-    assert(vertices.size() > 0);
-
-    // Add in the remaining vertices in partial order
-    while(remaining_edges.size() > 0) {
-      edge e(remaining_edges.front());
-      remaining_edges.pop_front();
-      vertex v(e.target());
-      if (remaining_vertices.count(v)) {
-        size_t in_d(remaining_vertices[v]);
-        if (in_d == 1) {
-          remaining_vertices.erase(v);
-          vertices.push_back(v);
-          foreach(edge e2, g.out_edges(v))
-            remaining_edges.push_back(e2);
-        } else
-          remaining_vertices[v] = in_d - 1;
+    // Split the vertices to those without and with parents
+    std::queue<vertex_type> q;
+    std::unordered_map<vertex_type, size_t> in_degree;
+    in_degree.reserve(graph.num_vertices());
+    for (vertex_type v : graph.vertices()) {
+      if (graph.in_degree(v) == 0) {
+        q.push(v);
+      } else {
+        in_degree[v] = graph.in_degree(v);
       }
     }
 
-    return vertices;
+    // Process the remaining vertices in partial order
+    while (!q.empty()) {
+      vertex_type u = q.front();
+      visitor(u);
+      q.pop();
+      for (vertex_type v : graph.children(u)) {
+        if (--in_degree[v] == 0) {
+          in_degree.erase(v);
+          q.push(v);
+        }
+      }
+    }
+
+    // Check if there were any loops
+    if (!in_degree.empty()) {
+      throw std::invalid_argument("The graph contains directed loops");
+    }
   }
 
 } // namespace sill
 
-#include <sill/macros_undef.hpp>
-
-#endif // #ifndef SILL_GRAPH_TRAVERSAL_HPP
+#endif

@@ -5,68 +5,71 @@
 
 #include <sill/base/universe.hpp>
 #include <sill/base/finite_variable.hpp>
-#include <sill/factor/table_factor.hpp>
+#include <sill/factor/probability_table.hpp>
 
 using namespace sill;
 
 struct basic_fixture {
+
+  typedef domain<finite_variable*> domain_type;
+
   basic_fixture() {
-    history = u.new_finite_variable(history_arity);
-    cvp = u.new_finite_variable(cvp_arity);
-    pcwp = u.new_finite_variable(pcwp_arity);
-    hypovolemia = u.new_finite_variable(hypovolemia_arity);
-    lvedvolume = u.new_finite_variable(lvedvolume_arity);
-    lvfailure = u.new_finite_variable(lvfailure_arity);
-    strokevolume = u.new_finite_variable(strokevolume_arity);
-    errlowoutput = u.new_finite_variable(errlowoutput_arity);
-    hrbp = u.new_finite_variable(hrbp_arity);
-    hrekg = u.new_finite_variable(hrekg_arity);
-    errcauter = u.new_finite_variable(errcauter_arity);
-    hrsat = u.new_finite_variable(hrsat_arity);
-    insuffanesth = u.new_finite_variable(insuffanesth_arity);
-    anaphylaxis = u.new_finite_variable(anaphylaxis_arity);
-    tpr = u.new_finite_variable(tpr_arity);
-    expco2 = u.new_finite_variable(expco2_arity);
-    kinkedtube = u.new_finite_variable(kinkedtube_arity);
-    minvol = u.new_finite_variable(minvol_arity);
-    fio2 = u.new_finite_variable(fio2_arity);
-    pvsat = u.new_finite_variable(pvsat_arity);
-    sao2 = u.new_finite_variable(sao2_arity);
-    pap = u.new_finite_variable(pap_arity);
-    pulmembolus = u.new_finite_variable(pulmembolus_arity);
-    shunt = u.new_finite_variable(shunt_arity);
-    intubation = u.new_finite_variable(intubation_arity);
-    press = u.new_finite_variable(press_arity);
-    disconnect = u.new_finite_variable(disconnect_arity);
-    minvolset = u.new_finite_variable(minvolset_arity);
-    ventmach = u.new_finite_variable(ventmach_arity);
-    venttube = u.new_finite_variable(venttube_arity);
-    ventlung = u.new_finite_variable(ventlung_arity);
-    ventalv = u.new_finite_variable(ventalv_arity);
-    artco2 = u.new_finite_variable(artco2_arity);
-    catechol = u.new_finite_variable(catechol_arity);
-    hr = u.new_finite_variable(hr_arity);
-    co = u.new_finite_variable(co_arity);
-    bp = u.new_finite_variable(bp_arity);
+    history = u.new_finite_variable("history", history_arity);
+    cvp = u.new_finite_variable("cvp", cvp_arity);
+    pcwp = u.new_finite_variable("pcwp", pcwp_arity);
+    hypovolemia = u.new_finite_variable("hypovolemia", hypovolemia_arity);
+    lvedvolume = u.new_finite_variable("lvedvolume", lvedvolume_arity);
+    lvfailure = u.new_finite_variable("lvfailure", lvfailure_arity);
+    strokevolume = u.new_finite_variable("strokevolume", strokevolume_arity);
+    errlowoutput = u.new_finite_variable("errlowoutput", errlowoutput_arity);
+    hrbp = u.new_finite_variable("hrbp", hrbp_arity);
+    hrekg = u.new_finite_variable("hrekg", hrekg_arity);
+    errcauter = u.new_finite_variable("errcauter", errcauter_arity);
+    hrsat = u.new_finite_variable("hrsat", hrsat_arity);
+    insuffanesth = u.new_finite_variable("insuffanesth", insuffanesth_arity);
+    anaphylaxis = u.new_finite_variable("anaphylaxis", anaphylaxis_arity);
+    tpr = u.new_finite_variable("tpr", tpr_arity);
+    expco2 = u.new_finite_variable("expco2", expco2_arity);
+    kinkedtube = u.new_finite_variable("kinkedtube", kinkedtube_arity);
+    minvol = u.new_finite_variable("minvol", minvol_arity);
+    fio2 = u.new_finite_variable("fio2", fio2_arity);
+    pvsat = u.new_finite_variable("pvsat", pvsat_arity);
+    sao2 = u.new_finite_variable("sao2", sao2_arity);
+    pap = u.new_finite_variable("pap", pap_arity);
+    pulmembolus = u.new_finite_variable("pulmebolus", pulmembolus_arity);
+    shunt = u.new_finite_variable("shunt", shunt_arity);
+    intubation = u.new_finite_variable("intubation", intubation_arity);
+    press = u.new_finite_variable("press", press_arity);
+    disconnect = u.new_finite_variable("disconnect", disconnect_arity);
+    minvolset = u.new_finite_variable("minvolset", minvolset_arity);
+    ventmach = u.new_finite_variable("ventmach", ventmach_arity);
+    venttube = u.new_finite_variable("venttube", venttube_arity);
+    ventlung = u.new_finite_variable("ventlung", ventlung_arity);
+    ventalv = u.new_finite_variable("ventalv", ventalv_arity);
+    artco2 = u.new_finite_variable("artco2", artco2_arity);
+    catechol = u.new_finite_variable("catechol", catechol_arity);
+    hr = u.new_finite_variable("hr", hr_arity);
+    co = u.new_finite_variable("co", co_arity);
+    bp = u.new_finite_variable("bp", bp_arity);
 
     // P(HISTORY | LVFAILURE)
-    factors.push_back(table_factor(make_domain(lvfailure, history), 1.0));
+    factors.push_back(ptable({lvfailure, history}, 1.0));
     // P(CVP | LVEDVOLUME)
-    factors.push_back(table_factor(make_domain(lvedvolume, cvp), 1.0));
+    factors.push_back(ptable({lvedvolume, cvp}, 1.0));
     // P(PCWP | LVEDVOLUME)
-    factors.push_back(table_factor(make_domain(lvedvolume, pcwp), 1.0));
+    factors.push_back(ptable({lvedvolume, pcwp}, 1.0));
     // P(HYPOVOLEMIA)
-    factors.push_back(table_factor(make_domain(hypovolemia), 1.0));
+    factors.push_back(ptable({hypovolemia}, 1.0));
     // P(LVEDVOLUME | HYPOVOLEMIA, LVFAILURE)
-    factors.push_back(table_factor(make_domain(hypovolemia, lvfailure, lvedvolume), 1.0));
+    factors.push_back(ptable({hypovolemia, lvfailure, lvedvolume}, 1.0));
     // P(LVFAILURE)
-    factors.push_back(table_factor(make_domain(lvfailure), 1.0));
+    factors.push_back(ptable({lvfailure}, 1.0));
     // P(STROKEVOLUME | HYPOVOLEMIA, LVFAILURE)
-    factors.push_back(table_factor(make_domain(hypovolemia, lvfailure, strokevolume), 1.0));
+    factors.push_back(ptable({hypovolemia, lvfailure, strokevolume}, 1.0));
     // P(ERRLOWOUTPUT)
-    factors.push_back(table_factor(make_domain(errlowoutput), 1.0));
+    factors.push_back(ptable({errlowoutput}, 1.0));
     // P(HRBP | ERRLOWOUTPUT, HR)
-    factors.push_back(table_factor(make_domain(errlowoutput, hr, hrbp), 1.0));
+    factors.push_back(ptable({errlowoutput, hr, hrbp}, 1.0));
   }
 
   // Variables
@@ -368,7 +371,7 @@ struct basic_fixture {
 
   // Factors
   // =========================================================================
-  std::vector<table_factor> factors;
+  std::vector<ptable> factors;
 };
 
 

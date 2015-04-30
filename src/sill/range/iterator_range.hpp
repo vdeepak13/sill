@@ -20,19 +20,31 @@ namespace sill {
     //! The underlying iterator type.
     typedef Iterator iterator;
 
+    //! The underlying iterator type (necessary for Boost.Range).
+    typedef Iterator const_iterator;
+
     //! The value being iterated over
     typedef typename std::iterator_traits<Iterator>::value_type value_type;
 
     //! Constructs a null range.
     iterator_range() { }
 
-    //! Constructs a range with given start and end.
-    iterator_range(Iterator begin, Iterator end)
+    //! Constructs a range with the given start and end.
+    iterator_range(const Iterator& begin, const Iterator& end)
       : begin_(begin), end_(end) { }
 
-    //! Converts the range to a tuple
+    //! Constructs a range with the given strt and end.
+    iterator_range(Iterator&& begin, Iterator&& end)
+      : begin_(std::move(begin)), end_(std::move(end)) { }
+
+    //! Converts the range to a tuple.
     operator std::tuple<Iterator&, Iterator&>() {
       return std::tuple<Iterator&, Iterator&>(begin_, end_);
+    }
+
+    //! Converts the range to a pair.
+    operator std::pair<Iterator, Iterator>() {
+      return { begin_, end_ };
     }
 
     //! Returns the beginning of the range.
@@ -67,6 +79,17 @@ namespace sill {
     //! The end of the range.
     Iterator end_;
   };
+
+  /**
+   * A utility function that creates an iterator range from a pair
+   * of iterators.
+   * \relates iterator_range
+   */
+  template <typename Iterator>
+  iterator_range<Iterator> make_iterator_range(Iterator begin, Iterator end) {
+    return iterator_range<Iterator>(begin, end);
+  }
+
 } // namespace sill
 
 #endif

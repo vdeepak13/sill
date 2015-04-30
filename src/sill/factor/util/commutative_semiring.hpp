@@ -23,100 +23,94 @@ namespace sill {
 
     //! the initial value for the dot operation (e.g., 1 in sum-product)
     virtual F combine_init() const = 0;
+
+    //! eliminates a variable from the factor
+    F collapse_out(const F& x, const typename F::domain_type& eliminate) const {
+      return collapse(x, x.arguments() - eliminate);
+    }
   };
   
-  //! An object representing the sum product commutative semiring \f$([0,
-  //! \infty), +, \times, 0, 1)\f$.
-  //! \relates commutative_semiring
+  /**
+   * An object representing the sum product commutative semiring
+   * \f$([0, \infty), +, \times, 0, 1)\f$.
+   * \relates commutative_semiring
+   */
   template <typename F>
   struct sum_product : public commutative_semiring<F> {
-    F collapse(const F& x, const typename F::domain_type& retain) const {
+    F collapse(const F& x, const typename F::domain_type& retain) const override {
       return x.marginal(retain);
     }
-    F combine(const F& x, const F& y) const {
+    F combine(const F& x, const F& y) const override {
       return x * y;
     }
-    void combine_in(F& x, const F& y) const {
+    void combine_in(F& x, const F& y) const override {
       x *= y;
     }
-    F combine_init() const {
-      return F(1);
+    F combine_init() const override {
+      return F(typename F::result_type(1));
     }
   };
 
-  //! An object representing the max product commutative semiring \f$([0,
-  //! \infty), \max, \times, 0, 1)\f$.
-  //! \relates commutative_semiring
+  /**
+   * An object representing the max product commutative semiring
+   * \f$([0, \infty), \max, \times, 0, 1)\f$.
+   * \relates commutative_semiring
+   */
   template <typename F>
   struct max_product : public commutative_semiring<F> {
-    F collapse(const F& x, const typename F::domain_type& retain) const {
+    F collapse(const F& x, const typename F::domain_type& retain) const override {
       return x.maximum(retain);
     }
-    F combine(const F& x, const F& y) const {
+    F combine(const F& x, const F& y) const override {
       return x * y;
     }
-    void combine_in(F& x, const F& y) const {
+    void combine_in(F& x, const F& y) const override {
       x *= y;
     }
-    F combine_init() const {
-      return F(1);
+    F combine_init() const override {
+      return F(typename F::result_type(1));
     }
   };
 
-  //! An object representing the min-sum commutative semiring \f$((-\infty,
-  //! \infty], \min, +, \infty, 0)\f$.
-  //! \relates commutative_semiring
+  /**
+   * An object representing the min-sum commutative semiring
+   * \f$((-\infty, \infty], \min, +, \infty, 0)\f$.
+   * \relates commutative_semiring
+   */
   template <typename F>
   struct min_sum : public commutative_semiring<F> {
-    F collapse(const F& x, const typename F::domain_type& retain) const {
+    F collapse(const F& x, const typename F::domain_type& retain) const override {
       return x.minimum(retain);
     }
-    F combine(const F& x, const F& y) const {
+    F combine(const F& x, const F& y) const override {
       return x + y;
     }
-    void combine_in(F& x, const F& y) const {
+    void combine_in(F& x, const F& y) const override {
       x += y;
     }
-    F combine_init() const {
+    F combine_init() const override {
       return F(0);
     }
   };
 
-  //! An object representing the max-sum commutative semiring \f$([-\infty,
-  //! \infty), \max, +, -\infty, 0)\f$.
-  //! \relates commutative_semiring
+  /**
+   * An object representing the max-sum commutative semiring
+   * \f$([-\infty, \infty), \max, +, -\infty, 0)\f$.
+   * \relates commutative_semiring
+   */
   template <typename F>
   struct max_sum : public commutative_semiring<F> {
-    F collapse(const F& x, const typename F::domain_type& retain) const {
+    F collapse(const F& x, const typename F::domain_type& retain) const override {
       return x.maximum(retain);
     }
-    F combine(const F& x, const F& y) const {
+    F combine(const F& x, const F& y) const override {
       return x + y;
     }
-    void combine_in(F& x, const F& y) const {
+    void combine_in(F& x, const F& y) const override {
       x += y;
     }
-    F combine_init() const {
+    F combine_init() const override {
       return F(0);
-    }
-  };
-
-  //! An object representing the Boolean commutative semiring \f$(\{0, 1\},
-  //! \lor, \land, 0, 1)\f$.
-  //! \relates commutative_semiring
-  template <typename F>
-  struct boolean : public commutative_semiring<F> {
-    F collapse(const F& x, const typename F::domain_type& retain) const {
-      return x.logical_or(retain);
-    }
-    F combine(const F& x, const F& y) const {
-      return x & y;
-    }
-    void combine_in(F& x, const F& y) const {
-      x &= y;
-    }
-    F combine_init() const {
-      return F(1);
     }
   };
 

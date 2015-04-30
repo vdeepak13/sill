@@ -29,6 +29,3 @@ subdirs(
   threading
   serialization
   )
-
-add_executable(copy_ptr copy_ptr.cpp)
-
