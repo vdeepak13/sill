@@ -19,6 +19,8 @@ namespace sill {
 
   // Forward declaration
   template <typename T> class canonical_table;
+  template <typename T, size_t N> class probability_array;
+  template <typename T, size_t N> class canonical_array;
 
   /**
    * A factor of a categorical probability distribution in the probability
@@ -99,6 +101,22 @@ namespace sill {
     explicit probability_table(const canonical_table<T>& f) {
       *this = f;
     }
+
+    //! Conversion from a probability_array factor.
+    template <size_t N>
+    explicit probability_table(const probability_array<T, N>& f) {
+      this->reset(f.arguments());
+      std::copy(f.begin(), f.end(), this->begin());
+    }
+
+    //! Conversion from a canonical_array factor.
+    template <size_t N>
+    explicit probability_table(const canonical_array<T, N>& f) {
+      this->reset(f.arguments());
+      std::transform(f.begin(), f.end(), this->begin(), exponent<T>());
+    }
+
+
 
     //! Assigns a constant to this factor.
     probability_table& operator=(T value) {
@@ -433,10 +451,10 @@ namespace sill {
      * \param ntail the tail variables (must be a suffix of the domain).
      */
     template <typename Generator>
-    void sample(Generator& rng, const domain_type& tail,
+    void sample(Generator& rng, const domain_type& head,
                 finite_assignment& a) const {
-      assert(suffix(tail, arguments()));
-      this->assignment(sample(rng, extract(a, tail)), a);
+      assert(prefix(head, arguments()));
+      this->assignment(sample(rng, extract(a, arguments(), head.size())), a);
     }
 
     // Entropy and divergences
@@ -504,10 +522,6 @@ namespace sill {
     out << f.param();
     return out;
   }
-
-  // Utilities
-  //============================================================================
-  
 
   // Traits
   //============================================================================

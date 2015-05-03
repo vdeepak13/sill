@@ -49,41 +49,37 @@ struct fixture {
 BOOST_FIXTURE_TEST_CASE(test_superset, fixture) {
   for (size_t i = 0; i < n; ++i) {
     std::vector<int> results;
-    index.find_supersets(lists[i], std::back_inserter(results));
-
-    // check the answers are sound
-    for (size_t j = 0; j < results.size(); ++j) {
-      BOOST_CHECK(boost::includes(sets[results[j]], sets[i]));
-    }
+    int found = 0;
+    index.supersets(lists[i], [&](int j) {
+        BOOST_CHECK(boost::includes(sets[j], sets[i]));
+        ++found;
+      });
 
     // check the answers are complete
-    size_t num_supersets = 0;
     for (int j = 0; j < n; ++j) {
       if (boost::includes(sets[j], sets[i])) {
-        ++num_supersets;
+        --found;
       }
     }
-    BOOST_CHECK_EQUAL(num_supersets, results.size());
+    BOOST_CHECK_EQUAL(found, 0);
   }
 }
 
 BOOST_FIXTURE_TEST_CASE(test_intersection, fixture) {
   for (int i = 0; i < n; ++i) {
     std::vector<int> results;
-    index.find_intersecting_sets(lists[i], std::back_inserter(results));
-
-    // Check the answers are sound.
-    for (size_t j = 0; j < results.size(); ++j) {
-      BOOST_CHECK(!disjoint(sets[results[j]], sets[i]));
-    }
+    int found = 0;
+    index.intersecting_sets(lists[i], [&](int j) {
+        BOOST_CHECK(!disjoint(sets[j], sets[i]));
+        ++found;
+      });
 
     // Check the answers are complete.
-    size_t num_intersecting_sets = 0;
     for (size_t j = 0; j < n; j++) {
       if (!disjoint(sets[j], sets[i])) {
-        ++num_intersecting_sets;
+        --found;
       }
     }
-    BOOST_CHECK_EQUAL(num_intersecting_sets, results.size());
+    BOOST_CHECK_EQUAL(found, 0);
   }
 }

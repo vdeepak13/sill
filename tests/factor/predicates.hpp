@@ -45,10 +45,10 @@ table_properties(const F& f, const typename F::domain_type& vars) {
 template <typename F>
 boost::test_tools::predicate_result
 are_close(const F& a, const F& b, typename F::result_type eps) {
-  typename F::result_type norma = a.norm_constant();
-  typename F::result_type normb = b.norm_constant();
+  typename F::result_type norma = a.marginal();
+  typename F::result_type normb = b.marginal();
   if (a.arguments() == b.arguments() &&
-      norm_inf(a, b) < eps &&
+      max_diff(a, b) < eps &&
       (norma > normb ? norma - normb : normb - norma) < eps) {
      return true;
   } else {

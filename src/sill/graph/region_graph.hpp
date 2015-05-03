@@ -3,11 +3,12 @@
 
 #include <sill/global.hpp>
 #include <sill/datastructure/set_index.hpp>
+#include <sill/functional/output_iterator_assign.hpp>
 #include <sill/graph/algorithm/ancestors.hpp>
 #include <sill/graph/algorithm/descendants.hpp>
 #include <sill/graph/algorithm/graph_traversal.hpp>
 #include <sill/graph/directed_graph.hpp>
-#include <sill/graph/property_functors.hpp>
+#include <sill/graph/property_fn.hpp>
 
 #include <algorithm>
 
@@ -183,9 +184,14 @@ namespace sill {
       return graph_[e].separator;
     }
 
+    //! Returns the separator associated with an edge.
+    const Domain& separator(size_t u, size_t v) const {
+      return graph_(u, v).separator;
+    }
+
     //! Returns the counting number of a region.
-    int counting_number(size_t v) const {
-      return graph_[v].counting_number;
+    int counting(size_t v) const {
+      return graph_[v].counting;
     }
 
     //! Returns the property associated with a vertex
@@ -343,20 +349,126 @@ namespace sill {
      * Assigns each root a counting number 1, and sets the remaining
      * clusters to satisfy the running intersection property.
      */
-    void update_counting_numbers() {
+    void update_counting() {
       partial_order_traversal(graph_, [&](size_t v) {
           if(in_degree(v) == 0) {
-            graph_[v].counting_number = 1;
+            graph_[v].counting = 1;
           } else {
             int sum = 0;
             for (size_t u : ancestors(v)) {
-              sum += graph_[u].counting_number;
+              sum += graph_[u].counting;
             }
-            graph_[v].counting_number = 1 - sum;
+            graph_[v].counting = 1 - sum;
           }
         });
     }
     
+    // Region graph constructions
+    //==========================================================================
+
+    /**
+     * Copies the structure of a region graph to this one.
+     */
+    template <typename VP, typename EP>
+    void structure_from(const region_graph<Domain, VP, EP>& other) {
+      clear();
+      for (size_t v : other.vertices()) {
+        bool added = add_region(v, other.cluster(v));
+        assert(added);
+        graph_[v].counting = other.counting(v);
+      }
+      for (edge_type e : other.edges()) {
+        add_edge(e.source(), e.target());
+      }
+    }
+
+    /**
+     * Initializes this region graph to the Bethe free energey approximation.
+     * This construction places the root clusters as roots, and creates
+     * singleton clusters as children.
+     *
+     * \tparam Range a range of domain objects.
+     */
+    template <typename Range>
+    void bethe(const Range& root_clusters) {
+      std::unordered_map<value_type, size_t> var_region; // singleton regions
+      clear();
+
+      for (const Domain& cluster : root_clusters) {
+        size_t r = add_region(cluster);
+        for (value_type var : cluster) {
+          size_t& s = var_region[var];
+          if (!s) { s = var_region[var] = add_region({var}); }
+          add_edge(r, s);
+        }
+
+        update_counting();
+      }
+    }
+
+    /**
+     * Given a collection of initial regions, initializes this region graph
+     * using Kikuchi construction. This method computes regions closed under
+     * the intersection. The edges are initialized based on the rule that
+     * two regions u and v s.t. C_u \superset C_v are connected, provided
+     * that there is no region w s.t. C_u \superset C_w \superset C_v.
+     *
+     * \tparam Range a range of domain objects.
+     */
+    template <typename Range>
+    void saturated(const Range& root_clusters) {
+      std::unordered_set<Domain> clusters;
+      set_index<size_t, Domain> index;
+      clear();
+
+      // add the root clusters
+      for (const Domain& cluster : root_clusters) {
+        if (!cluster.empty() && !clusters.count(cluster)) {
+          size_t r = add_region(cluster);
+          index.insert(r, cluster);
+          clusters.insert(cluster);
+        }
+      }
+
+      // compute closure under intersections
+      while (!index.empty()) {
+        size_t r = index.front();
+        index.intersecting_sets(cluster(r), [&](size_t s) {
+            if (r != s) {
+              Domain cluster = index.intersection(r, s);
+              if (!clusters.count(cluster)) {
+                clusters.insert(cluster);
+                index.insert(add_region(cluster), cluster);
+              }
+            }
+          });
+        index.erase(r);
+      }
+
+      // add the edges in the decreasing size of the cluster
+      std::vector<size_t> regions(vertices().begin(), vertices().end());
+      std::sort(regions.begin(), regions.end(), [&](size_t r, size_t s) {
+          return cluster(r).size() > cluster(s).size();
+        });
+      std::unordered_set<size_t> supersets;
+      for (size_t r : regions) {
+        supersets.clear();
+        auto out = std::inserter(supersets, supersets.end());
+        cluster_index_.supersets(cluster(r), make_output_iterator_assign(out));
+        supersets.erase(r);
+        for (size_t s : supersets) {
+          bool valid = true;
+          for (size_t t : children(s)) {
+            if (supersets.count(t)) { valid = false; break; }
+          }
+          if (valid) { add_edge(s, r); }
+        }
+      }
+
+      // compute the counting numbers
+      update_counting();
+    }
+
     // Private classes
     //==========================================================================
   private:
@@ -368,25 +480,25 @@ namespace sill {
       Domain cluster;
 
       //! The counting number.
-      int counting_number;
+      int counting;
 
       //! The property associated with this vertex.
       VertexProperty property;
 
       //! Default constructor. Default-initializes the property.
       vertex_info()
-        : counting_number(), property() { }
+        : counting(), property() { }
 
       //! Construct sthe vertex info with teh given cluster and property.
       vertex_info(const Domain& cluster,
                   const VertexProperty& property = VertexProperty())
-        : cluster(cluster), counting_number(), property(property) { }
+        : cluster(cluster), counting(), property(property) { }
       
       //! Outputs the vertex_info to an output stream.
       friend std::ostream&
       operator<<(std::ostream& out, const vertex_info& info) {
         out << '(' << info.cluster 
-            << ' ' << info.counting_number
+            << ' ' << info.counting
             << ' ' << info.property
             << ')';
         return out;

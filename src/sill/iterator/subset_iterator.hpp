@@ -11,8 +11,6 @@
 
 #include <sill/base/stl_util.hpp>
 
-#include <sill/macros_def.hpp>
-
 namespace sill {
 
   /**
@@ -197,8 +195,9 @@ namespace sill {
         return;
       }
 
-      foreach(const value_type& val, init_set)
+      for (const value_type& val : init_set) {
         set_vec.push_back(val);
+      }
       /*
       typename Set::const_iterator it, end;
       for (boost::tie(it, end) = init_set.values(); it != end; ++it)
@@ -384,7 +383,5 @@ namespace sill {
   }; // class subset_iterator
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif // #ifndef SILL_SUBSET_ITERATOR_HPP

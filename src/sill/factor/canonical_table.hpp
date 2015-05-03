@@ -384,10 +384,10 @@ namespace sill {
      * \param ntail the tail variables (must be a suffix of the domain).
      */
     template <typename Generator>
-    void sample(Generator& rng, const domain_type& tail,
+    void sample(Generator& rng, const domain_type& head,
                 finite_assignment& a) const {
-      assert(suffix(tail, arguments()));
-      this->assignment(sample(rng, extract(a, tail)), a);
+      assert(prefix(head, arguments()));
+      this->assignment(sample(rng, extract(a, arguments(), head.size())), a);
     }
 
     // Entropy and divergences
@@ -455,10 +455,6 @@ namespace sill {
     out << f.param();
     return out;
   }
-
-  // Utilities - TODO
-  //============================================================================
-
 
   // Traits
   //============================================================================

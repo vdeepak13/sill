@@ -60,7 +60,7 @@ namespace sill {
     //! Generate a marginal distribution p(args) using the stored parameters
     template <typename RandomNumberGenerator>
     mixture<elem_type> operator()(const domain_type& args,
-                                  RandomNumberGenerator& rng) {
+                                  RandomNumberGenerator& rng) const {
       mixture<elem_type> mix(k, args);
       for (size_t i = 0; i < k; ++i) {
         mix[i] = gen(args, rng);
@@ -73,7 +73,7 @@ namespace sill {
     template <typename RandomNumberGenerator>
     mixture<elem_type> operator()(const domain_type& head,
                                   const domain_type& tail,
-                                  RandomNumberGenerator& rng) {
+                                  RandomNumberGenerator& rng) const {
       mixture<elem_type> mix(k, set_union(head, tail));
       for (size_t i = 0; i < k; ++i) {
         mix[i] = gen(head, tail, rng);

@@ -64,7 +64,7 @@ namespace sill {
     typedef canonical_array_ll<T, N> ll_type;
 
     // ExponentialFamilyFactor member types
-    typedef probability_array<T, N> probability_factor_type;
+    typedef probability_array<T, N> probability_type;
     
     // Constructors and conversion operators
     //==========================================================================

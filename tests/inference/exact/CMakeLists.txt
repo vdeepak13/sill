@@ -1,5 +1,7 @@
-add_executable(junction_tree_inference junction_tree_inference.cpp)
+add_executable(belief_update_calibrate belief_update_calibrate.cpp)
+add_executable(sum_product_calibrate sum_product_calibrate.cpp)
 add_executable(variable_elimination variable_elimination.cpp)
 
-add_test(junction_tree_inference junction_tree_inference)
+add_test(belief_update_calibrate belief_update_calibrate)
+add_test(sum_product_calibrate sum_product_calibrate)
 add_test(variable_elimination variable_elimination)

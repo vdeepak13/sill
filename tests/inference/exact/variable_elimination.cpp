@@ -1,43 +1,46 @@
 #define BOOST_TEST_MODULE variable_elimination
 #include <boost/test/unit_test.hpp>
 
+#include <sill/inference/exact/variable_elimination.hpp>
+
+#include <sill/base/universe.hpp>
+#include <sill/factor/probability_table.hpp>
+#include <sill/factor/random/diagonal_table_generator.hpp>
+#include <sill/factor/random/uniform_table_generator.hpp>
 #include <sill/factor/random/functional.hpp>
-#include <sill/factor/random/ising_factor_generator.hpp>
-#include <sill/factor/table_factor.hpp>
+#include <sill/factor/util/operations.hpp>
 #include <sill/graph/special/grid_graph.hpp>
-#include <sill/graph/algorithm/min_degree_strategy.hpp>
-#include <sill/model/markov_network.hpp>
-#include <sill/model/random.hpp>
+#include <sill/model/pairwise_markov_network.hpp>
 
 #include "../../factor/predicates.hpp"
 
-#include <sill/macros_def.hpp>
+#include <random>
 
 BOOST_AUTO_TEST_CASE(test_grid) {
   using namespace sill;
 
+  // create the variables
+  universe u;                      
   size_t m = 4;
   size_t n = 3;
-
-  universe u;                      
-  finite_var_vector variables = u.new_finite_variables(m*n, 2);
-
-  boost::mt19937 rng;
-  ising_factor_generator gen(0.0, 0.5, 0.0, 1.0);
-  pairwise_markov_network<table_factor> mn;
+  finite_var_vector variables = u.new_finite_variables(m * n, 2);
+  
+  // generate a random Markov network
+  pairwise_markov_network<ptable> mn;
   make_grid_graph(variables, m, n, mn);
-  mn.initialize(marginal_fn(gen, rng));
+  std::mt19937 rng;
+  mn.initialize(marginal_fn(uniform_table_generator<ptable>(), rng),
+                marginal_fn(diagonal_table_generator<ptable>(), rng));
 
-  std::vector<table_factor> factors(mn.factors().begin(), mn.factors().end());
-  table_factor product = prod_all(factors);
-
-  typedef undirected_edge<finite_variable*> edge_type;
-  foreach (edge_type e, mn.edges()) {
-    sum_product<table_factor> sp;
-    finite_domain retain = mn.nodes(e);
-    table_factor elim_result = 
-      variable_elimination(factors, retain, sp, min_degree_strategy());
-    table_factor direct_result = product.marginal(retain);
+  // for each edge, verify that the marginal over this edge
+  // computed directly matches the one computed by variable elimination
+  ptable product = prod_all(mn);
+  for (auto e : mn.edges()) {
+    domain<finite_variable*> retain({e.source(), e.target()});
+    std::list<ptable> factors(mn.begin(), mn.end());
+    variable_elimination(factors, retain, sum_product<ptable>());
+    ptable elim_result = ptable(retain, 1.0) * prod_all(factors);
+    ptable direct_result = product.marginal(retain);
     BOOST_CHECK(are_close(elim_result, direct_result, 1e-3));
   }
 }

@@ -1,7 +1,7 @@
 #ifndef SILL_BASIC_DATASET_HPP
 #define SILL_BASIC_DATASET_HPP
 
-#include <sill/math/permutations.hpp>
+#include <sill/math/random/permutations.hpp>
 #include <sill/range/iterator_range.hpp>
 
 #include <iostream>

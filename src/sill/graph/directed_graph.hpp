@@ -127,47 +127,47 @@ namespace sill {
     //! Returns the range of all vertices.
     iterator_range<vertex_iterator>
     vertices() const {
-      return make_iterator_range(vertex_iterator(data_.begin()),
-                                 vertex_iterator(data_.end()));
+      return { vertex_iterator(data_.begin()),
+               vertex_iterator(data_.end()) };
     }
     
     //! Returns the parents of u.
     iterator_range<neighbor_iterator>
     parents(Vertex u) const {
       const vertex_data& data = find_vertex_data(u);
-      return make_iterator_range(neighbor_iterator(data.parents.begin()),
-                                 neighbor_iterator(data.parents.end()));
+      return { neighbor_iterator(data.parents.begin()),
+               neighbor_iterator(data.parents.end()) };
     }
 
     //! Returns the children of u.
     iterator_range<neighbor_iterator>
     children(Vertex u) const {
       const vertex_data& data = find_vertex_data(u);
-      return make_iterator_range(neighbor_iterator(data.children.begin()),
-                                 neighbor_iterator(data.children.end()));
+      return { neighbor_iterator(data.children.begin()),
+               neighbor_iterator(data.children.end()) };
     }
 
     //! Returns all edges in the graph.
     iterator_range<edge_iterator>
     edges() const {
-      return make_iterator_range(edge_iterator(data_.begin(), data_.end()),
-                                 edge_iterator(data_.end(), data_.end()));
+      return { edge_iterator(data_.begin(), data_.end()),
+               edge_iterator(data_.end(), data_.end()) };
     }
 
     //! Returns the edges incoming to a vertex.
     iterator_range<in_edge_iterator>
     in_edges(Vertex u) const {
       const vertex_data& data = find_vertex_data(u);
-      return make_iterator_range(in_edge_iterator(u, data.parents.begin()),
-                                 in_edge_iterator(u, data.parents.end()));
+      return { in_edge_iterator(u, data.parents.begin()),
+               in_edge_iterator(u, data.parents.end()) };
     }
 
     //! Returns the outgoing edges from a vertex.
     iterator_range<out_edge_iterator>
     out_edges(Vertex u) const {
       const vertex_data& data = find_vertex_data(u);
-      return make_iterator_range(out_edge_iterator(u, data.children.begin()),
-                                 out_edge_iterator(u, data.children.end()));
+      return { out_edge_iterator(u, data.children.begin()),
+               out_edge_iterator(u, data.children.end()) };
     }
 
     //! Returns true if the graph contains the given vertex.

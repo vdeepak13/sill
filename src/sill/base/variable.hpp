@@ -13,7 +13,6 @@
 #include <sill/base/concepts.hpp>
 #include <sill/base/stl_util.hpp>
 #include <sill/serialization/serialize.hpp>
-#include <sill/range/forward_range.hpp>
 
 #include <sill/macros_def.hpp>
 
@@ -213,15 +212,6 @@ namespace sill {
    */
   template <class V>
   std::set<V*> make_domain(const std::vector<V*>& vars) {
-    return std::set<V*>(vars.begin(), vars.end());
-  }
-
-  /**
-   * A function that converts a vector of variables to a set.
-   * \relates variable
-   */
-  template <class V>
-  std::set<V*> make_domain(const forward_range<V*>& vars) {
     return std::set<V*>(vars.begin(), vars.end());
   }
 

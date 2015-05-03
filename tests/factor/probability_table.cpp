@@ -303,7 +303,7 @@ BOOST_AUTO_TEST_CASE(test_sample) {
     for (size_t i = 0; i < 20; ++i) {
       finite_index sample = gd(rng1, tail);
       BOOST_CHECK_EQUAL(g.sample(rng2, tail), sample);
-      g.sample(rng3, {y}, a);
+      g.sample(rng3, {x}, a);
       BOOST_CHECK_EQUAL(a[x], sample[0]);
       BOOST_CHECK_EQUAL(a[y], yv);
     }

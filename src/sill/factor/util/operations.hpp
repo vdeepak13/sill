@@ -40,7 +40,7 @@ namespace sill {
   typename Range::value_type
   prod_all(const Range& factors) {
     typedef typename Range::value_type factor_type;
-    factor_type result(1);
+    factor_type result(typename factor_type::result_type(1));
     for (const factor_type& f : factors) {
       // this is not quite right for moment_gaussian factors
       if (superset(result.arguments(), f.arguments())) {

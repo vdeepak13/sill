@@ -41,11 +41,12 @@ namespace sill {
    */
   inline finite_index
   extract(const finite_assignment& a,
-          const domain<finite_variable*>& dom) {
-    finite_index result;
-    result.reserve(dom.size());
-    for (finite_variable* v : dom) {
-      result.push_back(a.at(v));
+          const domain<finite_variable*>& dom,
+          size_t start = 0) {
+    assert(start <= dom.size());
+    finite_index result(dom.size() - start);
+    for (size_t i = start; i < dom.size(); ++i) {
+      result[i - start] = a.at(dom[i]);
     }
     return result;
   }

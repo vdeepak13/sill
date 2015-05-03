@@ -12,6 +12,7 @@
 
 #include <stdexcept>
 #include <initializer_list>
+#include <numeric>
 
 namespace sill {
 

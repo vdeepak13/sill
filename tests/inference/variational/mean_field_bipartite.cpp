@@ -1,19 +1,112 @@
 #define BOOST_TEST_MODULE mean_field_bipartite
 #include <boost/test/unit_test.hpp>
 
+#include <sill/inference/variational/mean_field_bipartite.hpp>
+
 #include <sill/base/universe.hpp>
 #include <sill/factor/canonical_array.hpp>
 #include <sill/factor/probability_array.hpp>
-#include <sill/factor/random/uniform_factor_generator.hpp>
-#include <sill/factor/table_factor.hpp>
+#include <sill/factor/probability_table.hpp>
+#include <sill/factor/random/uniform_table_generator.hpp>
 #include <sill/graph/bipartite_graph.hpp>
-#include <sill/inference/exact/junction_tree_inference.hpp>
-#include <sill/inference/variational/mean_field_bipartite.hpp>
+#include <sill/inference/exact/sum_product_calibrate.hpp>
 
-#include <boost/random/uniform_int_distribution.hpp>
+#include <boost/strong_typedef.hpp>
+
+#include <random>
 
 using namespace sill;
 
+typedef finite_variable* vertex_type;
+BOOST_STRONG_TYPEDEF(vertex_type, vertex1);
+BOOST_STRONG_TYPEDEF(vertex_type, vertex2);
+
+namespace std {
+  template<>
+  struct hash<::vertex1> {
+    typedef ::vertex1 argument_type;
+    typedef size_t result_type;
+    size_t operator()(::vertex1 v) const { return size_t(v.t); }
+  };
+
+  template<>
+  struct hash<::vertex2> {
+    typedef ::vertex2 argument_type;
+    typedef size_t result_type;
+    size_t operator()(::vertex2 v) const { return size_t(v.t); }
+  };
+}
+
+BOOST_AUTO_TEST_CASE(test_convergence) {
+  size_t nvertices = 20;
+  size_t nedges = 50;
+  size_t niters = 20;
+
+  // Create a random bipartite graph
+  universe u;
+  bipartite_graph<vertex1, vertex2, carray1, carray1, carray2> model;
+  std::vector<vertex1> v1;
+  uniform_table_generator<carray1> node_gen;
+  uniform_table_generator<carray2> edge_gen;
+  std::mt19937 rng;
+  std::vector<ptable> factors;
+
+  // node potentials
+  for (size_t i = 0; i < nvertices; ++i) {
+    vertex1 v1(u.new_finite_variable("x" + std::to_string(i), 2));
+    vertex2 v2(u.new_finite_variable("y" + std::to_string(i), 2));
+    model.add_vertex(v1, node_gen({v1.t}, rng));
+    model.add_vertex(v2, node_gen({v2.t}, rng));
+    factors.emplace_back(model[v1]);
+    factors.emplace_back(model[v2]);
+  }
+
+  // edge potentials
+  for (size_t i = 0; i < nedges; /* advanced on success */) {
+    vertex1 v1 = model.sample_vertex1(rng);
+    vertex2 v2 = model.sample_vertex2(rng);
+    auto result = model.add_edge(v1, v2, edge_gen({v1.t, v2.t}, rng));
+    if (result.second) {
+      factors.emplace_back(model[result.first]);
+      ++i;
+    }
+  }
+
+  // run exact inference
+  sum_product_calibrate<ptable> sp(factors);
+  std::cout << "Tree width of the model: " << sp.jt().tree_width() << std::endl;
+  sp.calibrate();
+  sp.normalize();
+  std::cout << "Finished exact inference" << std::endl;
+
+  // run mean field inference
+  mean_field_bipartite<vertex1, vertex2, carray1, carray2> mf(&model, 4);
+  double diff;
+  for (size_t it = 0; it < niters; ++it) {
+    diff = mf.iterate();
+    std::cout << "Iteration " << it << ": " << diff << std::endl;
+  }
+  BOOST_CHECK_LT(diff, 1e-4);
+  
+  // compute the KL divergence from exact to mean field
+  double kl1 = 0.0;
+  double kl2 = 0.0;
+  for (vertex1 v : model.vertices1()) {
+    kl1 += kl_divergence(parray1(sp.belief({v.t})), mf.belief(v));
+  }
+  for (vertex2 v : model.vertices2()) {
+    kl2 += kl_divergence(parray1(sp.belief({v.t})), mf.belief(v));
+  }
+  kl1 /= nvertices;
+  kl2 /= nvertices;
+  std::cout << "Average kl1 = " << kl1 << std::endl;
+  std::cout << "Average kl2 = " << kl2 << std::endl;
+  BOOST_CHECK_LT(kl1, 0.02);
+  BOOST_CHECK_LT(kl2, 0.02);
+}
+
+
+#if 0
 // consider boost strong typedef
 template <int index>
 struct vertex { 
@@ -26,99 +119,15 @@ struct vertex {
   bool operator!=(vertex u) const { return id() != u.id(); }
 };
 
+namespace 
 template <int index>
 size_t hash_value(vertex<index> v) {
   return v.id();
 }
 
+
 typedef vertex<1> vertex1;
 typedef vertex<2> vertex2;
-typedef canonical_array<double, 1> ca1_type;
-typedef canonical_array<double, 2> ca2_type;
-typedef probability_array<double, 1> pa1_type;
-typedef probability_array<double, 2> pa2_type;
 
-template <typename Result>
-Result convert(const table_factor& f) {
-  Result g(f.arg_vector());
-  std::transform(f.begin(), f.end(), g.begin(), logarithm<double>());
-  return g;
-}
 
-pa1_type convert_belief(const table_factor& f) {
-  pa1_type g(f.arg_vector());
-  std::copy(f.begin(), f.end(), g.begin());
-  return g;
-}
-
-BOOST_AUTO_TEST_CASE(test_convergence) {
-  size_t nvertices = 20;
-  size_t nedges = 50;
-  size_t niters = 20;
-
-  // Create a random model
-  universe u;
-  uniform_factor_generator gen;
-  boost::mt19937 rng;
-  bipartite_graph<vertex1, vertex2, ca1_type, ca2_type> model;
-  std::vector<table_factor> factors;
-  finite_var_vector vars1;
-  finite_var_vector vars2;
-
-  // node potentials
-  for (size_t i = 0; i < nvertices; ++i) {
-    finite_variable* v1 = u.new_finite_variable("x", 2);
-    finite_variable* v2 = u.new_finite_variable("y", 2);
-    vars1.push_back(v1);
-    vars2.push_back(v2); 
-    table_factor f1 = gen(make_domain(v1), rng);
-    table_factor f2 = gen(make_domain(v2), rng);
-    factors.push_back(f1);
-    factors.push_back(f2);
-    model.add_vertex(vertex1(v1), convert<ca1_type>(f1));
-    model.add_vertex(vertex2(v2), convert<ca1_type>(f2));
-  }
-
-  // edge potentials
-  boost::random::uniform_int_distribution<size_t> unif(0, nvertices - 1);
-  for (size_t i = 0; i < nedges; ++i) {
-    finite_variable* v1 = vars1[unif(rng)];
-    finite_variable* v2 = vars2[unif(rng)];
-    table_factor f = gen(make_domain(v1, v2), rng);
-    factors.push_back(f);
-    model.add_edge(vertex1(v1), vertex2(v2), convert<ca2_type>(f));
-  }
-
-  // run exact inference
-  shafer_shenoy<table_factor> exact(factors);
-  std::cout << "Tree width of the model: " << exact.tree_width() << std::endl;
-  exact.calibrate();
-  exact.normalize();
-  std::cout << "Finished exact inference" << std::endl;
-
-  // run mean field inference
-  mean_field_bipartite<vertex1, vertex2, ca1_type, ca2_type> mf(&model, 4);
-  double diff;
-  for (size_t it = 0; it < niters; ++it) {
-    diff = mf.iterate();
-    std::cout << "Iteration " << it << ": " << diff << std::endl;
-  }
-  BOOST_CHECK_LT(diff, 1e-4);
-  
-  // compute the KL divergence from exact to mean field
-  double kl1 = 0.0;
-  double kl2 = 0.0;
-  for (size_t i = 0; i < nvertices; ++i) {
-    pa1_type exact1 = convert_belief(exact.belief(make_domain(vars1[i])));
-    pa1_type exact2 = convert_belief(exact.belief(make_domain(vars2[i])));
-    kl1 += kl_divergence(exact1, mf.belief(vertex1(vars1[i])));
-    kl2 += kl_divergence(exact2, mf.belief(vertex2(vars2[i])));
-  }
-  kl1 /= nvertices;
-  kl2 /= nvertices;
-  std::cout << "Average kl1 = " << kl1 << std::endl;
-  std::cout << "Average kl2 = " << kl2 << std::endl;
-  BOOST_CHECK_LT(kl1, 0.02);
-  BOOST_CHECK_LT(kl2, 0.02);
-}
-
+#endif

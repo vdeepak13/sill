@@ -23,9 +23,9 @@ subdirs(
   model
   math
   optimization
-  parsers
+#  parsers
   range
 #  synthetic_data
-  threading
+#  threading
   serialization
   )

@@ -4,7 +4,7 @@
 #include <sill/argument/hybrid_assignment.hpp>
 #include <sill/argument/hybrid_domain.hpp>
 #include <sill/datastructure/hybrid_index.hpp>
-#include <sill/math/permutations.hpp>
+#include <sill/math/random/permutations.hpp>
 #include <sill/range/iterator_range.hpp>
 
 #include <iostream>

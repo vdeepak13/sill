@@ -72,6 +72,14 @@ namespace sill {
       return !(a == b);
     }
 
+    //! Prints the range to an output stream.
+    friend std::ostream& operator<<(std::ostream& out, const iterator_range& r) {
+      out << '(';
+      for (const auto& val : r) { out << val << ' '; }
+      out << ')';
+      return out;
+    }
+
   private:
     //! The start of the range.
     Iterator begin_;
@@ -79,16 +87,6 @@ namespace sill {
     //! The end of the range.
     Iterator end_;
   };
-
-  /**
-   * A utility function that creates an iterator range from a pair
-   * of iterators.
-   * \relates iterator_range
-   */
-  template <typename Iterator>
-  iterator_range<Iterator> make_iterator_range(Iterator begin, Iterator end) {
-    return iterator_range<Iterator>(begin, end);
-  }
 
 } // namespace sill
 

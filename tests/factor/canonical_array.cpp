@@ -55,9 +55,9 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   carray1 f;
   carray2 g;
   carray2 h;
-  g = parray2({x, y}, logd(1.0, log_tag()));
+  g = parray2({x, y}, std::exp(1.0));
   BOOST_CHECK(table_properties(g, {x, y}));
-  BOOST_CHECK_EQUAL(g[0], 1.0);
+  BOOST_CHECK_CLOSE(g[0], 1.0, 1e-6);
 
   h.reset({y, x});
   h.param().fill(2.0);

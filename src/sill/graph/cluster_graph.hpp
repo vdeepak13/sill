@@ -9,10 +9,11 @@
 #include <sill/graph/algorithm/tree_traversal.hpp>
 #include <sill/graph/algorithm/triangulate.hpp>
 #include <sill/graph/bidirectional.hpp>
-#include <sill/graph/property_functors.hpp>
+#include <sill/graph/property_fn.hpp>
 #include <sill/graph/undirected_graph.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <numeric>
 #include <stdexcept>
@@ -354,29 +355,21 @@ namespace sill {
     }
 
     /**
-     * Returns a vertex whose clique cover meets (intersects) the supplied
-     * domain. The returned vertex is the one that has the smallest cluster
-     * that has maximal intersection with the supplied domain.
-     */
-    size_t find_cluster_meets(const Domain& domain) const {
-      return cluster_index_.find_max_intersection(domain);
-    }
-
-    /**
-     * Outputs the vertices whose clusters overlap the supplied domain.
-     */
-    template <typename OutIt>
-    OutIt find_intersecting_clusters(const Domain& domain, OutIt out) const {
-      return cluster_index_.find_intersecting_sets(domain, out);
-    }
-
-    /**
      * Returns an edge whose separator covers the supplied domain.
      * If there are multiple such edges, one with the smallest separator
      * is returned. If there is no such edge, returns a null edge.
      */
     edge_type find_separator_cover(const Domain& domain) const {
       return separator_index_.find_min_cover(domain);
+    }
+
+    /**
+     * Returns a vertex whose clique cover meets (intersects) the supplied
+     * domain. The returned vertex is the one that has the smallest cluster
+     * that has maximal intersection with the supplied domain.
+     */
+    size_t find_cluster_meets(const Domain& domain) const {
+      return cluster_index_.find_max_intersection(domain);
     }
 
     /**
@@ -389,11 +382,19 @@ namespace sill {
     }
 
     /**
-     * Outputs the edges whose separators overlap the supplied domain.
+     * Visits the vertices whose clusters overlap the supplied domain.
      */
-    template <typename OutIt>
-    OutIt find_intersecting_separators(const Domain& domain, OutIt out) const {
-      return separator_index_.find_intersecting_sets(domain, out);
+    void intersecting_clusters(const Domain& domain,
+                               std::function<void(size_t)> visitor) const {
+      cluster_index_.intersecting_sets(domain, std::move(visitor));
+    }
+
+    /**
+     * Visits the edges whose separators overlap the supplied domain.
+     */
+    void intersecting_separators(const Domain& domain,
+                                 std::function<void(edge_type)> visitor) const {
+      separator_index_.intersecting_sets(domain, std::move(visitor));
     }
 
     /**
@@ -705,18 +706,13 @@ namespace sill {
       // Select a distinguished vertex of the tree.
       size_t root = *vertices().begin();
 
-      // For each pair of overlapping cliques, add a candidate edge to the
-      // graph using the set index.
-      std::vector<size_t> nbrs;
+      // For each pair of overlapping cliques, add a candidate edge to the graph
+      // Also, add edges between a distinguished vertex and all other vertices,
+      // to ensure that the resulting junction tree is connected
       for (size_t u : vertices()) {
-        nbrs.clear();
-        cluster_index_.find_intersecting_sets(cluster(u),
-                                              std::back_inserter(nbrs));
-        for (size_t v : nbrs) {
-          if (u < v) graph_.add_edge(u, v);
-        }
-        // Add edges between a distinguished vertex and all other vertices.
-        // This ensures that the resulting junction tree is connected.
+        intersecting_clusters(cluster(u), [&](size_t v) {
+            if (u < v) { graph_.add_edge(u, v); }
+          });
         if (root != u) { graph_.add_edge(root, u); }
       }
 
