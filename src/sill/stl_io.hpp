@@ -9,8 +9,6 @@
 #include <map>
 #include <algorithm>
 
-#include <sill/range/concepts.hpp>
-
 #include <sill/macros_def.hpp>
 
 // forward declaration

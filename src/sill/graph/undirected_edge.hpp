@@ -45,7 +45,7 @@ namespace sill {
     
     //! Conversion to bool indicating if this edge is empty.
     operator bool() const {
-      return source_ == Vertex() && target_ == Vertex();
+      return source_ != Vertex() || target_ != Vertex();
     }
 
     //! Returns the pair consisting of source and target vertex.
@@ -133,9 +133,9 @@ namespace std {
   template <typename Vertex>
   struct hash<sill::undirected_edge<Vertex>> {
     typedef sill::undirected_edge<Vertex> argument_type;
-    typedef std::size_t result_type;
-    std::size_t operator()(const sill::undirected_edge<Vertex>& e) const {
-      std::size_t seed = 0;
+    typedef size_t result_type;
+    size_t operator()(const sill::undirected_edge<Vertex>& e) const {
+      size_t seed = 0;
       std::pair<Vertex, Vertex> p = std::minmax(e.source(), e.target());
       sill::hash_combine(seed, p.first);
       sill::hash_combine(seed, p.second);

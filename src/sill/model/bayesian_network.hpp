@@ -5,7 +5,7 @@
 #include <sill/graph/algorithm/graph_traversal.hpp>
 #include <sill/graph/algorithm/make_clique.hpp>
 #include <sill/graph/directed_graph.hpp>
-#include <sill/graph/property_functors.hpp>
+#include <sill/graph/property_fn.hpp>
 #include <sill/graph/undirected_graph.hpp>
 #include <sill/math/logarithmic.hpp>
 
@@ -126,7 +126,7 @@ namespace sill {
     template <typename Generator>
     void sample(Generator& rng, assignment_type& a) const {
       partial_order_traversal(*this, [&](vertex_type v) {
-          (*this)[v].sample(rng, this->parents(v), a);
+          (*this)[v].sample(rng, {v}, a);
         });
     }
 

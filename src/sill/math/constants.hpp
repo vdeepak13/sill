@@ -2,6 +2,7 @@
 #define SILL_MATH_CONSTANTS_HPP
 
 #include <limits>
+
 #include <boost/math/constants/constants.hpp>
 
 namespace sill {

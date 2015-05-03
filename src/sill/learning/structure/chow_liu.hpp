@@ -1,124 +1,121 @@
 #ifndef SILL_CHOW_LIU_HPP
 #define SILL_CHOW_LIU_HPP
 
-#include <set>
-
-#include <sill/iterator/transform_output_iterator.hpp>
-#include <sill/learning/parameter/factor_mle.hpp>
+#include <sill/graph/undirected_graph.hpp>
+#include <sill/graph/algorithm/mst.hpp>
 #include <sill/model/decomposable.hpp>
-#include <sill/model/projections.hpp>
-
-#include <sill/macros_def.hpp>
+#include <sill/learning/parameter/factor_mle.hpp>
 
 namespace sill {
 
   /**
-   * Class for learning the Chow-Liu tree over variables X in the given dataset.
+   * Class for learning the Chow-Liu tree over a set of variables.
    * Models the Learner concept.
    *
-   * @tparam F  type of factor for the model
+   * \tparam F type of factor in the model
+   *
    * \ingroup learning_structure
-   * \see Learner
    */
   template <typename F>
   class chow_liu {
   public:
     // Learner concept types
-    typedef typename F::real_type                real_type;
-    typedef decomposable<F>                      model_type;
-    typedef typename factor_mle<F>::dataset_type dataset_type;
-    typedef typename factor_mle<F>::param_type   param_type;
+    typedef decomposable<F>       model_type;
+    typedef typename F::real_type real_type;
 
-    // Other public types
-    typedef typename F::variable_type    variable_type;
-    typedef typename F::domain_type      domain_type;
-    typedef typename F::var_vector_type  var_vector_type;
-    typedef typename F::marginal_fn_type marginal_fn_type;
+    // The algorithm parameters
+    typedef typename factor_mle<F>::regul_type param_type;
 
-    // Public methods
-    // =========================================================================
-  public:
-    /**
-     * Constructs the Chow-Liu learner over the given argument set.
-     */
-    chow_liu(const var_vector_type& vars)
-      : vars(vars) { }
+    // Additional types
+    typedef typename F::variable_type variable_type;
+    typedef typename F::domain_type   domain_type;
+    typedef undirected_edge<variable_type*> edge_type;
 
     /**
-     * Learns a decomposable model using the default parameters.
+     * Constructs the Chow-Liu learner using the given parameters.
      */
-    real_type learn(const dataset_type& ds, model_type& model) const {
-      return learn(factor_mle<F>(&ds), model);
-    }
+    explicit chow_liu(const param_type& param = param_type())
+      : param_(param) { }
 
     /**
-     * Learns a decomposable model for the given dataset and parameters.
+     * Fits a model using the supplied dataset for the given variables.
      */
-    real_type learn(const dataset_type& ds,
-                    const param_type& params,
-                    model_type& model) const {
-      return learn(factor_mle<F>(&ds, params), model);
-    }
+    template <typename Dataset>
+    chow_liu& fit(const Dataset& ds, const domain_type& vars) {
+      factor_mle<F> mle(param_);
+      model_.clear();
+      score_.clear();
 
-    /**
-     * Learns a decomposable model from the marginals provided by the given
-     * functor.
-     */
-    real_type learn(marginal_fn_type estim,
-                    model_type& model,
-                    std::map<domain_type, real_type>* edge_score_map = NULL) const {
-      if (vars.empty()) {
-        return 0.0;
+      // handle the edge cases first
+      if (vars.size() <= 1) {
+        if (vars.size() == 1) { model_.reset_marginal(mle(ds, {*vars.begin()})); }
+        return *this;
       }
-    
-      // g will hold weights (mutual information) and factors F for each edge.
-      typedef std::pair<double, F> edge_mi_pot;
-      typedef undirected_graph<variable_type*, void_, edge_mi_pot> ig_type;
-      ig_type g;
-      foreach(variable_type* v, vars) {
-        g.add_vertex(v);
-      }
-      for (size_t i = 0; i < vars.size() - 1; ++i) {
-        for (size_t j = i+1; j < vars.size(); ++j) {
-          domain_type edge_dom = make_domain(vars[i], vars[j]);
-          F f = estim(edge_dom);
-          double mi = f.mutual_information(make_domain(vars[i]),
-                                           make_domain(vars[j]));
-          g.add_edge(vars[i], vars[j], std::make_pair(mi, f));
-          if (edge_score_map) {
-            edge_score_map->insert(std::make_pair(edge_dom, mi));
+
+      // g will hold factor F and weight (mutual information) for each edge
+      // this part could be optimized to eliminate copies
+      undirected_graph<variable_type*, void_, std::pair<F, real_type> > g;
+      for (variable_type* u : vars) {
+        for (variable_type* v : vars) {
+          if (u < v) {
+            F f = mle(ds, {u, v});
+            real_type mi = f.mutual_information({u}, {v});
+            edge_type e = g.add_edge(u, v, {f, mi}).first;
+            score_[e] = mi;
           }
         }
       }
 
-      // Create a MST over the graph g.
-      std::vector<typename ig_type::edge> edges;
-      kruskal_minimum_spanning_tree
-        (g, std::back_inserter(edges), impl::mst_weight_functor<F>(g));
+      // Compute the MST; the edges are the cliques to be kept
+      std::vector<edge_type> edges;
+      kruskal_minimum_spanning_tree(
+        g,
+        [&g](const edge_type& e) { return -g[e].second; },
+        std::back_inserter(edges));
 
-      // Extract the objective value and factors
-      real_type sum_mi = 0.0;
-      std::vector<F> mst_factors;
-      foreach(typename ig_type::edge e, edges) {
-        sum_mi += g[e].first;
-        mst_factors.push_back(g[e].second);
+      // Construct the model
+      std::vector<F> marginals;
+      objective_ = real_type(0);
+      for (const edge_type& e : edges) {
+        marginals.push_back(std::move(g[e].first));
+        objective_ += g[e].second;
       }
+      model_.reset_marginals(marginals);
+      return *this;
+    }
 
-      // Create a decomposable model consisting of the cliques in edges
-      model.initialize(mst_factors);
-      return sum_mi;
+    //! Returns the trained model.
+    decomposable<F>& model() {
+      return model_;
+    }
+
+    //! Returns the objective value.
+    real_type objective() const {
+      return objective_;
+    }
+
+    //! Returns a map from edges (pairs of variables) to scores.
+    const std::unordered_map<edge_type, real_type>& scores() const {
+      return score_;
     }
 
     // Private data
     // =========================================================================
   private:
-    //! The vector variables in the learned model
-    var_vector_type vars;
+    //! The regularization parameters used in estimating the factors.
+    param_type param_;
+
+    //! The trained model.
+    model_type model_;
+
+    //! The objective value.
+    real_type objective_;
+
+    //! A map from edges (unordered pairs of variables) to mutual information.
+    std::unordered_map<edge_type, real_type> score_;
 
   }; // class chow_liu
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

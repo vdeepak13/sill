@@ -38,7 +38,7 @@ namespace sill {
   public:
     // FactorizedModel types
     typedef typename F::real_type       real_type;
-    typedef logarithmic<real_type>      result_type;
+    typedef typename F::result_type     result_type;
     typedef typename F::variable_type   variable_type;
     typedef typename F::domain_type     domain_type;
     typedef typename F::assignment_type assignment_type;
@@ -66,33 +66,31 @@ namespace sill {
      * Default constructor. The distribution has no arguments and
      * is identically one.
      */
-    decomposable()
-      : norm_(0, log_tag()) { }
+    decomposable() { }
 
     //! Swaps two decomposable models in place.
     friend void swap(decomposable& a, decomposable& b) {
       swap(a.jt_, b.jt_);
-      swap(a.norm_, b.norm_);
     }
 
     //! Serialize members.
     void save(oarchive& ar) const {
-      ar << jt_ << norm_;
+      ar << jt_;
     }
 
     //! Deserialize members
     void load(iarchive& ar) {
-      ar >> jt_ >> norm_;
+      ar >> jt_;
     }
 
     //! Returns true if the two decomposable models are identical.
     friend bool operator==(const decomposable& a, const decomposable& b) {
-      return a.norm_ == b.norm_ && a.jt_ == b.jt_;
+      return a.jt_ == b.jt_;
     }
 
     //! Returns true if the two decomposable models are not identical.
     friend bool operator!=(const decomposable& a, const decomposable& b) {
-      return a.norm_ != b.norm_ || a.jt_ != b.jt_;
+      return a.jt_ != b.jt_;
     }
 
     //! Prints the decomposable model to an output stream.
@@ -306,21 +304,17 @@ namespace sill {
 
       // Look for a separator that covers the variables.
       edge_type e = jt_.find_separator_cover(domain);
-      if (e != edge_type()) {
-        return jt_[e].marginal(domain);
-      }
+      if (e) { return jt_[e].marginal(domain); }
 
       // Look for a clique that covers the variables.
       size_t v = jt_.find_cluster_cover(domain);
-      if (v) {
-        return jt_[v].marginal(domain);
-      }
+      if (v) { return jt_[v].marginal(domain); }
 
       // Otherwise, compute the factors whose product represents
       // the marginal
       std::list<F> factors;
       marginal(domain, factors);
-      return prod_all(factors).marginal(domain); // should be reoder()
+      return prod_all(factors).marginal(domain); // TODO: should be reoder()
     }
 
     /**
@@ -489,7 +483,7 @@ namespace sill {
      * Otherwise, this function computes the marginal probability.
      */
     result_type operator()(const assignment_type& a) const {
-      return result_type(log(a), log_tag());
+      return std::exp(log(a));
     }
 
     // Restructuring operations
@@ -538,6 +532,14 @@ namespace sill {
       // calibrate & normalize in case the marginals are not consistent
       calibrate();
       normalize();
+    }
+
+    /**
+     * Initializes the decomposable model to a single marginal.
+     */
+    void reset_marginal(const F& marginal) {
+      clear();
+      jt_.add_cluster(marginal.arguments(), marginal);
     }
     
     /**
@@ -590,7 +592,7 @@ namespace sill {
       if (v) {
         return v;
       } else {
-        retriangulate(make_iterator_range(&domain, &domain+1));
+        retriangulate(iterator_range<const domain_type*>(&domain, &domain+1));
         return jt_.find_cluster_cover(domain);
       }
     }
@@ -685,26 +687,22 @@ namespace sill {
       domain_type restricted = restricted_args(a);
 
       // Update each affected clique
-      std::vector<size_t> vertices;
-      jt_.find_intersecting_clusters(restricted, std::back_inserter(vertices));
-      for (size_t v : vertices) {
-        F& factor = jt_[v];
-        factor = factor.restrict(a);
-        if (factor.arguments().empty()) {
-          jt_.remove_vertex(v);
-        } else {
-          jt_.update_cluster(v, factor.arguments());
-        }
-      }
+      jt_.intersecting_clusters(restricted, [&](size_t v) {
+          F& factor = jt_[v];
+          factor = factor.restrict(a);
+          if (factor.arguments().empty()) {
+            jt_.remove_vertex(v);
+          } else {
+            jt_.update_cluster(v, factor.arguments());
+          }
+        });
 
       // Update each affected separator
-      std::vector<edge_type> edges;
-      jt_.find_intersecting_separators(restricted, std::back_inserter(edges));
-      for (edge_type e : edges) {
-        F& factor = jt_[e];
-        factor = factor.restrict(a);
-        jt_.update_separator(e, factor.arguments());
-      }
+      jt_.intersecting_separators(restricted, [&](const edge_type& e) {
+          F& factor = jt_[e];
+          factor = factor.restrict(a);
+          jt_.update_separator(e, factor.arguments());
+        });
 
       // Update the arguments & recalibrate.
       calibrate();
@@ -858,9 +856,6 @@ namespace sill {
 
     //! The underlying junction tree
     graph_type jt_;
-
-    //! The normalization constant of the distribution.
-    result_type norm_;
 
   }; // class decomposable
 

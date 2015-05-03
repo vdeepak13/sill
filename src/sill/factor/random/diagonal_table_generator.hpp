@@ -64,7 +64,7 @@ namespace sill {
 
     //! Generate a marginal distribution p(args) using the stored parameters.
     template <typename RandomNumberGenerator>
-    F operator()(const domain_type& args, RandomNumberGenerator& rng) {
+    F operator()(const domain_type& args, RandomNumberGenerator& rng) const {
       F f(args, typename F::result_type(1));
       if (!args.empty()) {
         real_type x =

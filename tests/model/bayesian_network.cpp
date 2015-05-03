@@ -8,6 +8,8 @@
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/util/operations.hpp>
+#include <sill/learning/dataset/finite_dataset.hpp>
+#include <sill/learning/parameter/factor_mle.hpp>
 
 #include "predicates.hpp"
 
@@ -32,20 +34,20 @@ struct fixture {
 
     f0   = ptable({x[0]}, {0.3, 0.7});
     f1   = ptable({x[1]}, {0.5, 0.5});
-    f12  = ptable({x[1], x[2]}, {0.8, 0.2, 0.2, 0.8});
-    f123 = ptable({x[1], x[2], x[3]}, {0.1, 0.1, 0.3, 0.5, 0.9, 0.9, 0.7, 0.5});
-    f034 = ptable({x[0], x[3], x[4]}, {0.6, 0.1, 0.2, 0.1, 0.4, 0.9, 0.8, 0.9});
+    f21  = ptable({x[2], x[1]}, {0.8, 0.2, 0.2, 0.8});
+    f312 = ptable({x[3], x[1], x[2]}, {0.1, 0.9, 0.1, 0.9, 0.3, 0.7, 0.5, 0.5});
+    f403 = ptable({x[4], x[0], x[3]}, {0.6, 0.4, 0.1, 0.9, 0.2, 0.8, 0.1, 0.9});
 
     bn.add_factor(x[0], f0);
     bn.add_factor(x[1], f1);
-    bn.add_factor(x[2], f12);
-    bn.add_factor(x[3], f123);
-    bn.add_factor(x[4], f034);
+    bn.add_factor(x[2], f21);
+    bn.add_factor(x[3], f312);
+    bn.add_factor(x[4], f403);
   }
 
   universe u;
   finite_var_vector x;
-  ptable f0, f1, f12, f123, f034;
+  ptable f0, f1, f21, f312, f403;
   bayesian_network<ptable> bn;
 };
 
@@ -68,14 +70,38 @@ BOOST_FIXTURE_TEST_CASE(test_conditioning, fixture) {
   finite_assignment a;
   a[x[0]] = 0;
   a[x[1]] = 1;
-  double likelihood = bn.condition(a);
-  std::vector<ptable> factors = {f0, f1, f12, f123, f034};
+  double likelihood(bn.condition(a));
+  std::vector<ptable> factors = {f0, f1, f21, f312, f403};
   ptable marginal = prod_all(factors).marginal({x[0], x[1]});
   BOOST_CHECK_CLOSE(likelihood, marginal(a), 1e-5);
 
   bayesian_network<ptable> bn2;
-  bn2.add_factor(x[2], f12.restrict(a));
-  bn2.add_factor(x[3], f123.restrict(a));
-  bn2.add_factor(x[4], f034.restrict(a));
+  bn2.add_factor(x[2], f21.restrict(a));
+  bn2.add_factor(x[3], f312.restrict(a));
+  bn2.add_factor(x[4], f403.restrict(a));
   BOOST_CHECK(model_close_log_likelihoods(bn, bn2, 1e-6));
+}
+
+BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
+  finite_dataset<> ds(x);
+  finite_assignment a;
+  size_t nsamples = 5000;
+  std::mt19937 rng;
+  for (size_t i = 0; i < nsamples; ++i) {
+    bn.sample(rng, a);
+    ds.insert(a, 1.0);
+  }
+  
+  factor_mle<ptable> mle;
+  ptable g0 = mle(ds, {x[0]});
+  ptable g1 = mle(ds, {x[1]});
+  ptable g21 = mle(ds, {x[2]}, {x[1]});
+  ptable g312 = mle(ds, {x[3]}, {x[1], x[2]});
+  ptable g403 = mle(ds, {x[4]}, {x[0], x[3]});
+  
+  BOOST_CHECK_SMALL(kl_divergence(f0, g0), 1e-2);
+  BOOST_CHECK_SMALL(kl_divergence(f1, g1), 1e-2);
+  BOOST_CHECK_SMALL(kl_divergence(f21, g21), 1e-2);
+  BOOST_CHECK_SMALL(kl_divergence(f312, g312), 1e-2);
+  BOOST_CHECK_SMALL(kl_divergence(f403, g403), 1e-2);
 }

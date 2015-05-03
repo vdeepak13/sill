@@ -8,6 +8,7 @@
 
 #include <iterator>
 #include <map>
+#include <random>
 #include <unordered_map>
 
 namespace sill {
@@ -137,70 +138,70 @@ namespace sill {
     //! Returns the range of all type-1 vertices
     iterator_range<vertex1_iterator>
     vertices1() const {
-      return make_iterator_range(vertex1_iterator(data1_.begin()),
-                                 vertex1_iterator(data1_.end()));
+      return { vertex1_iterator(data1_.begin()),
+               vertex1_iterator(data1_.end()) };
     }
 
     //! Returns the range of all type-2 vertices
     iterator_range<vertex2_iterator>
     vertices2() const {
-      return make_iterator_range(vertex2_iterator(data2_.begin()),
-                                 vertex2_iterator(data2_.end()));
+      return { vertex2_iterator(data2_.begin()),
+               vertex2_iterator(data2_.end()) };
     }
 
     //! Returns the type-2 vertices adjacent to a type-1 vertex
     iterator_range<neighbor2_iterator>
     neighbors(Vertex1 u) const {
       const vertex1_data& data = find_vertex_data(u);
-      return make_iterator_range(neighbor2_iterator(data.neighbors.begin()),
-                                 neighbor2_iterator(data.neighbors.end()));
+      return { neighbor2_iterator(data.neighbors.begin()),
+               neighbor2_iterator(data.neighbors.end()) };
     }
 
     //! Returns the type-1 vertices adjacent to a type-2 vertex
     iterator_range<neighbor1_iterator>
     neighbors(Vertex2 u) const {
       const vertex2_data& data = find_vertex_data(u);
-      return make_iterator_range(neighbor1_iterator(data.neighbors.begin()),
-                                 neighbor1_iterator(data.neighbors.end()));
+      return { neighbor1_iterator(data.neighbors.begin()),
+               neighbor1_iterator(data.neighbors.end()) };
     }
 
     //! Returns all edges in the graph
     iterator_range<edge_iterator>
     edges() const {
-      return make_iterator_range(edge_iterator(data1_.begin(), data1_.end()),
-                                 edge_iterator(data1_.end(), data1_.end()));
+      return { edge_iterator(data1_.begin(), data1_.end()),
+               edge_iterator(data1_.end(), data1_.end()) };
     }
 
     //! Returns the edges incoming to a type-1 vertex
     iterator_range<in1_edge_iterator>
     in_edges(Vertex1 u) const {
       const vertex1_data& data = find_vertex_data(u);
-      return make_iterator_range(in1_edge_iterator(u, data.neighbors.begin()),
-                                 in1_edge_iterator(u, data.neighbors.end()));
+      return { in1_edge_iterator(u, data.neighbors.begin()),
+               in1_edge_iterator(u, data.neighbors.end()) };
     }
 
     //! Returns the edges incoming to a type-2 vertex
     iterator_range<in2_edge_iterator>
     in_edges(Vertex2 u) const {
       const vertex2_data& data = find_vertex_data(u);
-      return make_iterator_range(in2_edge_iterator(u, data.neighbors.begin()),
-                                 in2_edge_iterator(u, data.neighbors.end()));
+      return { in2_edge_iterator(u, data.neighbors.begin()),
+               in2_edge_iterator(u, data.neighbors.end()) };
     }
     
     //! Returns the edges outgoing from a type-1 vertex
     iterator_range<out1_edge_iterator>
     out_edges(Vertex1 u) const {
       const vertex1_data& data = find_vertex_data(u);
-      return make_iterator_range(out1_edge_iterator(u, data.neighbors.begin()),
-                                 out1_edge_iterator(u, data.neighbors.end()));
+      return { out1_edge_iterator(u, data.neighbors.begin()),
+               out1_edge_iterator(u, data.neighbors.end()) };
     }
 
     //! Returns the edges outgoing from a type-2 vertex
     iterator_range<out2_edge_iterator>
     out_edges(Vertex2 u) const {
       const vertex2_data& data = find_vertex_data(u);
-      return make_iterator_range(out2_edge_iterator(u, data.neighbors.begin()),
-                                 out2_edge_iterator(u, data.neighbors.end()));
+      return { out2_edge_iterator(u, data.neighbors.begin()),
+               out2_edge_iterator(u, data.neighbors.end()) };
     }
 
     //! Returns true if the graph contains the given type-1 vertex
@@ -224,7 +225,7 @@ namespace sill {
     bool contains(const edge_type& e) const {
       return contains(e.v1(), e.v2());
     }
-
+    
     //! Returns an undirected edge between u and v. The edge must exist.
     edge_type edge(Vertex1 u, Vertex2 v) const {
       const vertex1_data& data = find_vertex_data(u);
@@ -325,6 +326,24 @@ namespace sill {
      */
     EdgeProperty& operator()(Vertex1 u, Vertex2 v) {
       return *add_edge(u, v).first.property_;
+    }
+
+    /**
+     * Draws a random type-1 vertex in the graph, assuming one exists.
+     * \todo ensure sampling is uniform
+     */
+    template <typename Generator>
+    Vertex1 sample_vertex1(Generator& rng) const {
+      return sample_vertex(data1_, rng);
+    }
+    
+    /**
+     * Draws a random type-2 vertex in the graph, assumign on exists.
+     * \todo ensure sampling is uniform
+     */
+    template <typename Generator>
+    Vertex2 sample_vertex2(Generator& rng) const {
+      return sample_vertex(data2_, rng);
     }
 
     /**
@@ -582,6 +601,21 @@ namespace sill {
       return it->second;
     }
 
+    template <typename DataMap, typename Generator>
+    static typename DataMap::key_type
+    sample_vertex(DataMap& data, Generator& rng) {
+      assert(!data.empty());
+      std::uniform_int_distribution<size_t> unifb(0, data.bucket_count() - 1);
+      while (true) {
+        size_t bucket = unifb(rng);
+        size_t bsize = data.bucket_size(bucket);
+        if (bsize > 0) {
+          std::uniform_int_distribution<size_t> unifi(0, bsize - 1);
+          return std::next(data.begin(bucket), unifi(rng))->first;
+        }
+      }
+    }
+
     void free_edge_data() {
       for (edge_type e : edges()) {
         if(e.property_) {
@@ -606,6 +640,9 @@ namespace sill {
         : v1_(v1), v2_(v2), forward_(true), property_(property) { }
       edge_type(Vertex2 v2, Vertex1 v1, EdgeProperty* property)
         : v1_(v1), v2_(v2), forward_(false), property_(property) { }
+      operator bool() const {
+        return v1_ != Vertex1() || v2_ != Vertex2();
+      }
       Vertex1 v1() const {
         return v1_;
       }

@@ -1,20 +1,19 @@
 #define BOOST_TEST_MODULE mean_field_pairwise
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
-#include <sill/factor/canonical_matrix.hpp>
-#include <sill/factor/probability_matrix.hpp>
-#include <sill/factor/random/uniform_factor_generator.hpp>
-#include <sill/factor/table_factor.hpp>
-#include <sill/graph/bipartite_graph.hpp>
-#include <sill/graph/special/grid_graph.hpp>
-#include <sill/inference/exact/junction_tree_inference.hpp>
 #include <sill/inference/variational/mean_field_pairwise.hpp>
-#include <sill/model/markov_network.hpp>
 
-#include <boost/random/uniform_int_distribution.hpp>
+#include <sill/base/universe.hpp>
+#include <sill/factor/canonical_array.hpp>
+#include <sill/factor/probability_array.hpp>
+#include <sill/factor/probability_table.hpp>
+#include <sill/factor/random/functional.hpp>
+#include <sill/factor/random/uniform_table_generator.hpp>
+#include <sill/graph/special/grid_graph.hpp>
+#include <sill/inference/exact/sum_product_calibrate.hpp>
+#include <sill/model/pairwise_markov_network.hpp>
 
-#include <sill/macros_def.hpp>
+#include <random>
 
 BOOST_AUTO_TEST_CASE(test_convergence) {
   using namespace sill;
@@ -23,38 +22,25 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   size_t n = 5;
   size_t niters = 20;
 
-  // Create a grid graph
+  // Create a random grid Markov network
   universe u;
-  uniform_factor_generator gen;
-  boost::mt19937 rng;
-  pairwise_markov_network<canonical_matrix<> > model;
-  std::vector<table_factor> factors;
+  std::mt19937 rng;
+  pairwise_markov_network<carray1, carray2> model;
   finite_var_vector vars = u.new_finite_variables(m * n, 2);
-  arma::field<finite_variable*> grid = make_grid_graph(vars, m, n, model);
-  
-  // node potentials
-  foreach (finite_variable* v, model.vertices()) {
-    table_factor f = gen(make_domain(v), rng);
-    factors.push_back(f);
-    model[v] = f;
-  }
-
-  // edge potentials
-  foreach (undirected_edge<finite_variable*> e, model.edges()) {
-    table_factor f = gen(make_domain(e.source(), e.target()), rng);
-    factors.push_back(f);
-    model[e] = f;
-  } 
+  make_grid_graph(vars, m, n, model);
+  model.initialize(marginal_fn(uniform_table_generator<carray1>(), rng),
+                   marginal_fn(uniform_table_generator<carray2>(), rng));
 
   // run exact inference
-  shafer_shenoy<table_factor> sp(factors);
-  std::cout << "Tree width of the model: " << sp.tree_width() << std::endl;
+  pairwise_markov_network<ptable> converted(model);
+  sum_product_calibrate<ptable> sp(converted);
+  std::cout << "Tree width of the model: " << sp.jt().tree_width() << std::endl;
   sp.calibrate();
   sp.normalize();
   std::cout << "Finished exact inference" << std::endl;
 
   // run mean field inference
-  mean_field_pairwise<canonical_matrix<> > mf(&model);
+  mean_field_pairwise<carray1, carray2> mf(&model);
   double diff;
   for (size_t it = 0; it < niters; ++it) {
     diff = mf.iterate();
@@ -62,11 +48,10 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   }
   BOOST_CHECK_LT(diff, 1e-4);
   
-  // compute the KL divergence from exact to mean field
+  // compute the KL divergence from the exact to mean field result
   double kl = 0.0;
-  foreach (finite_variable* v, model.vertices()) {
-    probability_matrix<> exact(sp.belief(make_domain(v)));
-    kl += exact.relative_entropy(mf.belief(v));
+  for (finite_variable* v : model.vertices()) {
+    kl += kl_divergence(parray1(sp.belief({v})), mf.belief(v));
   }
   kl /= model.num_vertices();
   std::cout << "Average kl = " << kl << std::endl;

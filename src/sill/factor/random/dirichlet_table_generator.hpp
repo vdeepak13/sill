@@ -63,7 +63,7 @@ namespace sill {
     //! Generate a marginal distribution p(args) using the stored parameters.
     template <typename RandomNumberGenerator>
     F operator()(const domain_type& args,
-                 RandomNumberGenerator& rng) {
+                 RandomNumberGenerator& rng) const {
       F f(args);
       std::gamma_distribution<real_type> gamma(param_.alpha);
       std::generate(f.begin(), f.end(), std::bind(gamma, std::ref(rng)));
@@ -76,7 +76,7 @@ namespace sill {
     template <typename RandomNumberGenerator>
     F operator()(const domain_type& head,
                  const domain_type& tail,
-                 RandomNumberGenerator& rng) {
+                 RandomNumberGenerator& rng) const {
       // things go horribly wrong if this is not true
       assert(disjoint(head, tail));
       F f(head + tail);

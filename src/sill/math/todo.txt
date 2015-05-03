@@ -1,5 +1,0 @@
-table_factor
-mixture
-constant_factor
-soft_max
-

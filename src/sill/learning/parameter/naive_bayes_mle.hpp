@@ -2,81 +2,68 @@
 #define SILL_NAIVE_BAYES_MLE_HPP
 
 #include <sill/model/naive_bayes.hpp>
+#include <sill/learning/parameter/factor_mle.hpp>
 
-#include <sill/macros_def.hpp>
+#include <vector>
 
 namespace sill {
 
   /**
    * A class that can learn naive Bayes models in a fully supervised manner.
-   * This learner supports datasets with missing values for features.
    *
    * Models the Learner concept.
    */
-  template <typename FeatureF>
+  template <typename LabelF, typename FeatureF = LabelF>
   class naive_bayes_mle {
   public:
     // Learner concept types
-    typedef naive_bayes<FeatureF>           model_type;
-    typedef typename FeatureF::real_type    real_type;
-    typedef typename FeatureF::dataset_type dataset_type;
+    typedef naive_bayes<LabelF, FeatureF>  model_type;
+    typedef typename LabelF::real_type     real_type;
 
+    // The algorithm parameters
     struct param_type {
-      typedef typename factor_mle<table_factor>::param_type prior_param_type;
-      typedef typename factor_mle<FeatureF>::param_type     feature_param_type;
-      prior_param_type prior;
-      feature_param_type feature;
+      typedef typename factor_mle<LabelF>::regul_type   label_regul_type;
+      typedef typename factor_mle<FeatureF>::regul_type feature_regul_type;
+      label_regul_type prior_regul;
+      feature_reagul_type cpd_regul;
     };
  
-    // Other types
-    typedef typename FeatureF::variable_type   variable_type;
-    typedef typename FeatureF::var_vector_type var_vector_type;
+    // Additional types
+    typedef typename LabelF::variable_type variable_type;
+    typedef std::vector<variable_type*>    var_vector_type;
 
     /**
-     * Constructs a learner for the given label variable and features.
+     * Constructs a learner with the given parameters.
      */
-    naive_bayes_mle(finite_variable* label, const var_vector_type& features)
-      : label(label), features(features) {
-      assert(std::find(features.begin(), features.end(), label) ==
-             features.end());
-    }
+    explicit naive_bayes_mle(const param_type& param = param_type())
+      : param_(param) { }
 
     /**
-     * Learns a model using the supplied dataset and default regularization
-     * parameters for the prior and feature CPDs.
-     * \return the log-likelihood of the training set
+     * Fits a model using the supplied dataset for the given label variable
+     * and feature vector.
      */
-    real_type learn(const dataset_type& ds, model_type& model) {
-      return learn(ds, param_type(), model);
-    }
-
-    /**
-     * Learns a model using the supplied dataset and specified regularization
-     * parameters for the prior and feature CPDs.
-     * \return the log-likelihood of the training set
-     */
-    real_type learn(const dataset_type& ds, const param_type& params,
-                    model_type& model) {
-      factor_mle<table_factor> prior_mle(&ds, params.prior);
-      model = naive_bayes<FeatureF>(prior_mle(make_domain(label)));
-
-      factor_mle<FeatureF> feature_mle(&ds, params.feature, STRICT_MISSING);
-      foreach(variable_type* f, features) {
-        model.add_feature(feature_mle(make_vector<variable_type>(f),
-                                      make_vector<variable_type>(label)));
+    template <typename Dataset>
+    naive_bayes_mle& fit(const Dataset& ds,
+                         variable_type* label,
+                         const var_vector_type& features) {
+      factor_mle<LabelF> prior_mle(param_.prior_regul);
+      factor_mle<FeatureF> cpd_mle(param_.cpd_regul);
+      model_ = model_type(prior_mle(ds, {label}));
+      for (variable_type* v : features) {
+        model_.add_feature(cpd_mle(ds, {v}, {label}));
       }
-
-      return model.log_likelihood(ds);
+      return *this;
     }
-    
+
+    //! Returns the trained model
+    model_type& model() { return model_; }
+
   private:
-    finite_variable* label;
-    var_vector_type features;
+    param_type param_;
+    model_type model_;
 
   }; // class naive_bayes_mle
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

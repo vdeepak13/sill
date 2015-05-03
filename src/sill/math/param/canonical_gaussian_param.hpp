@@ -274,8 +274,8 @@ namespace sill {
      */
     friend T max_diff(const canonical_gaussian_param& f,
                       const canonical_gaussian_param& g) {
-      T de = (f.eta - g.eta).array().abs().max();
-      T dl = (f.lambda - g.lambda).array().abs().max();
+      T de = (f.eta - g.eta).array().abs().maxCoeff();
+      T dl = (f.lambda - g.lambda).array().abs().maxCoeff();
       return std::max(de, dl);
     }
 

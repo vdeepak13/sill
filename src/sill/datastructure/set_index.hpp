@@ -7,6 +7,7 @@
 #include <sill/range/iterator_range.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <iosfwd>
 #include <stdexcept>
 #include <unordered_map>
@@ -106,8 +107,8 @@ namespace sill {
 
     //! Returns the values stored in this index.
     iterator_range<value_iterator> values() const {
-      return make_iterator_range(value_iterator(adjacency_.begin()),
-                                 value_iterator(adjacency_.end()));
+      return { value_iterator(adjacency_.begin()),
+               value_iterator(adjacency_.end()) };
     }
 
     //! Returns the number of values stored in this index.
@@ -142,13 +143,26 @@ namespace sill {
                                    vecb.begin(), vecb.end(),
                                    out).count();
     }
+
+    /**
+     * Returns the sorted intersection of two sets with given handles.
+     */
+    Range intersection(Handle a, Handle b) {
+      Range result;
+      const vector_type& veca = *sets_.at(a);
+      const vector_type& vecb = *sets_.at(b);
+      std::set_intersection(veca.begin(), veca.end(),
+                            vecb.begin(), vecb.end(),
+                            std::inserter(result, result.end()));
+      return result;
+    }
     
     /**
      * Intersection query.  The handle for each set in this index that
      * intersects the supplied range is written to the output iterator.
      */
-    template <typename OutIt>
-    OutIt find_intersecting_sets(const Range& range, OutIt out) const {
+    void intersecting_sets(const Range& range,
+                           std::function<void(Handle)> visitor) const {
       // reserve enough elements in the result to avoid reallocation
       std::unordered_set<Handle> visited;
       std::size_t nelems = 0;
@@ -164,9 +178,10 @@ namespace sill {
         }
       }
 
-      // save the result
-      std::copy(visited.begin(), visited.end(), out);
-      return out;
+      // now visit them in arbitrary order
+      for (Handle handle : visited) {
+        visitor(handle);
+      }
     }
 
     /**
@@ -220,13 +235,12 @@ namespace sill {
      * contains all the elements of the supplied range is written
      * to the output iterator.
      */
-    template <typename OutIt>
-    OutIt find_supersets(const Range& range, OutIt out) const {
+    void supersets(const Range& range,
+                   std::function<void(Handle)> visitor) const {
       if (range.begin() == range.end()) {
         // every set in the index is a superset of an empty range
         for (const auto& p : sets_) {
-          *out = p.first;
-          ++out;
+          visitor(p.first);
         }
       } else {
         // pick one value and iterate over all sets that contain that value
@@ -234,13 +248,10 @@ namespace sill {
         for (const auto& p : adjacency(vec.front())) {
           if (std::includes(p.second->begin(), p.second->end(),
                             vec.begin(), vec.end())) {
-            *out = p.first;
-            ++out;
+            visitor(p.first);
           }
         }
       }
-
-      return out;
     }
 
     /**
@@ -277,9 +288,20 @@ namespace sill {
      * Returns true if there are no (non-strict) supersets of the supplied
      * set in this index.
      */
-    bool is_maximal(const Range& set) const {
-      counting_output_iterator it;
-      return find_supersets(set, it).count() == 0;
+    bool is_maximal(const Range& range) const {
+      if (range.begin() == range.end()) {
+        return sets_.empty();
+      } else {
+        // pick one value and iterate over all sets that contain that value
+        std::vector<value_type> vec = sorted(range);
+        for (const auto& p : adjacency(vec.front())) {
+          if (std::includes(p.second->begin(), p.second->end(),
+                            vec.begin(), vec.end())) {
+            return false;
+          }
+        }
+        return true;
+      }
     }
 
     /**
@@ -318,15 +340,14 @@ namespace sill {
     //! Removes the set with the given handle from the index.
     void erase(Handle handle) {
       auto it = sets_.find(handle);
-      if (it != sets_.end()) {
-        for (value_type value : *it->second) {
-          adjacency_[value].erase(handle);
-          if (adjacency_[value].empty()) {
-            adjacency_.erase(value);
-          }
+      assert(it != sets_.end());
+      for (value_type value : *it->second) {
+        adjacency_[value].erase(handle);
+        if (adjacency_[value].empty()) {
+          adjacency_.erase(value);
         }
-        sets_.erase(it); // automatically frees memory
       }
+      sets_.erase(it); // automatically frees memory
     }
     
     //! Removes all sets from this index.

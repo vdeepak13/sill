@@ -205,6 +205,18 @@ namespace sill {
   };
 
   /**
+   * An operator that converts its input to a given type.
+   */
+  template <typename T>
+  struct converter {
+    typedef T result_type;
+    template <typename U>
+    T operator()(const U& value) const {
+      return T(value);
+    }
+  };
+
+  /**
    * A unary operator that computes the sum of the argument and
    * a fixed value.
    */

@@ -140,10 +140,7 @@ namespace sill {
 
     //! Returns the weight associated with a key
     Priority get(const T& item) const {
-      typename index_map_type::const_iterator iter = index_map.find(item);
-      assert(iter != index_map.end());
-      size_t i = iter->second;
-      return heap[i].second;
+      return heap[index_map.at(item)].second;
     }
 
     //! Returns the priority associated with a key
@@ -455,4 +452,4 @@ namespace sill {
 
 } // namespace sill
 
-#endif // #ifndef SILL_MUTABLE_PRIORITY_QUEUE_HPP
+#endif

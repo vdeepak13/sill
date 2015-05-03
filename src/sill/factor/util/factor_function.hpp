@@ -10,7 +10,7 @@ namespace sill {
 
   template <typename F>
   using conditional_fn = std::function<F(const typename F::domain_type&,
-                                         const typename F::Domain_type&)>;
+                                         const typename F::domain_type&)>;
 } // namespace sill
 
 #endif

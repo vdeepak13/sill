@@ -1,9 +1,9 @@
 subdirs(
   exact
   loopy
-  mpi
-  parallel
-  sampling
+#  mpi
+#  parallel
+#  sampling
   variational
 )
 

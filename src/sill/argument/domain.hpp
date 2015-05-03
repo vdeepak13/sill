@@ -1,10 +1,12 @@
 #ifndef SILL_DOMAIN_HPP
 #define SILL_DOMAIN_HPP
 
+#include <sill/functional/hash.hpp>
 #include <sill/range/iterator_range.hpp>
 #include <sill/serialization/serialize.hpp>
 
 #include <algorithm>
+#include <array>
 #include <initializer_list>
 #include <iterator>
 #include <limits>
@@ -33,6 +35,11 @@ namespace sill {
     domain(const std::vector<Arg>& elems)
       : std::vector<Arg>(elems) { }
 
+    //! Creates a domain from the given argument array.
+    template <size_t N>
+    domain(const std::array<Arg, N>& elems)
+      : std::vector<Arg>(elems.begin(), elems.end()) { }
+    
     //! Creates a domain from the given iterator range.
     template <typename Iterator>
     domain(Iterator begin, Iterator end)
@@ -299,5 +306,18 @@ namespace sill {
   }
 
 } // namespace sill
+
+
+namespace std {
+  //! \relates domain
+  template <typename Arg>
+  struct hash<sill::domain<Arg>> {
+    typedef sill::domain<Arg> argument_type;
+    typedef size_t result_type;
+    size_t operator()(const sill::domain<Arg>& dom) const {
+      return sill::hash_range(dom.begin(), dom.end());
+    }
+  };
+} // namespace std
 
 #endif

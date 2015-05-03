@@ -3,7 +3,7 @@
 
 #include <sill/global.hpp>
 #include <sill/graph/bipartite_graph.hpp>
-#include <sill/graph/property_functors.hpp>
+#include <sill/graph/property_fn.hpp>
 #include <sill/math/logarithmic.hpp>
 
 #include <boost/iterator/transform_iterator.hpp>

@@ -1,5 +1,5 @@
-#ifndef BOOST_GRAPH_HELPERS_HPP
-#define BOOST_GRAPH_HELPERS_HPP
+#ifndef SILL_BOOST_GRAPH_HELPERS_HPP
+#define SILL_BOOST_GRAPH_HELPERS_HPP
 
 /**
  * \file boost_graph_helper.hpp

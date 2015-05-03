@@ -4,6 +4,7 @@
 #include <sill/range/iterator_range.hpp>
 
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/range.hpp>
 
 namespace sill {
 
@@ -13,10 +14,8 @@ namespace sill {
     boost::transform_iterator<
       F, typename boost::range_iterator<const Range>::type> >
   make_transformed(const Range& range, F f) {
-    return make_iterator_range(
-      boost::make_transform_iterator(range.begin(), f),
-      boost::make_transform_iterator(range.end(), f)
-    );
+    return { boost::make_transform_iterator(range.begin(), f),
+             boost::make_transform_iterator(range.end(), f) };
   }
   
 }

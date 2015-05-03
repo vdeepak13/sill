@@ -33,12 +33,17 @@ namespace sill {
     
     //! Conversion to bool indicating if this edge is empty.
     operator bool() const {
-      return source_ == Vertex() && target_ == Vertex();
+      return source_ != Vertex() || target_ != Vertex();
     }
 
-   //! Returns the pair consisting of source and target vertex.
+    //! Returns the pair consisting of source and target vertex.
     std::pair<Vertex, Vertex> pair() const {
       return { source_, target_ };
+    }
+
+    //! Returns the pair cosisting of target and source vertex.
+    std::pair<Vertex, Vertex> reverse_pair() const {
+      return { target_, source_ };
     }
 
     //! Compares two undirected edges.
@@ -116,9 +121,9 @@ namespace std {
   template <typename Vertex>
   struct hash<sill::directed_edge<Vertex>> {
     typedef sill::directed_edge<Vertex> argument_type;
-    typedef std::size_t result_type;
-    std::size_t operator()(const sill::directed_edge<Vertex>& e) const {
-      std::size_t seed = 0;
+    typedef size_t result_type;
+    size_t operator()(const sill::directed_edge<Vertex>& e) const {
+      size_t seed = 0;
       sill::hash_combine(seed, e.source());
       sill::hash_combine(seed, e.target());
       return seed;

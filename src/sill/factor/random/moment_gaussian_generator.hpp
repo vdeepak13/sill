@@ -90,7 +90,7 @@ namespace sill {
     //! Generates a marginal distribution p(args) using the stored parameters
     template <typename RandomNumberGenerator>
     moment_gaussian<T> operator()(const domain_type& args,
-                                  RandomNumberGenerator& rng) {
+                                  RandomNumberGenerator& rng) const {
       moment_gaussian<T> result(args);
       generate_moments(rng, result.param().mean, result.param().cov);
       return result;
@@ -101,7 +101,7 @@ namespace sill {
     template <typename RandomNumberGenerator>
     moment_gaussian<T> operator()(const domain_type& head,
                                   const domain_type& tail,
-                                  RandomNumberGenerator& rng) {
+                                  RandomNumberGenerator& rng) const {
       moment_gaussian<T> result(head, tail);
       generate_moments(rng, result.param().mean, result.param().cov);
       generate_coeffs(rng, result.param().coef);
