@@ -30,7 +30,7 @@ namespace sill {
     dynamic_bayesian_network<F> dbn;
 
     //! A map that translates time-t+1 to time-t variables
-    std::map<variable_type*, variable_type*> advance_var_map;
+    std::map<variable_type, variable_type> advance_var_map;
 
     // Public functions
     // =========================================================================
@@ -60,7 +60,7 @@ namespace sill {
       // The simplistic approach: multiply in all of transition model
       // and eliminate the time-t variables
       // TODO: use variable elimination
-      for (process_type* p : dbn.processes()) {
+      for (process_type p : dbn.processes()) {
         belief_ *= dbn[p];
       }
       belief_ = belief_.marginal(variables(dbn.processes(), next_step));
@@ -72,7 +72,7 @@ namespace sill {
       belief_ *= likelihood;
     }
 
-    F belief(const std::set<process_type*>& processes) const {
+    F belief(const std::set<process_type>& processes) const {
       assert(is_subset(processes, dbn.processes()));
       return belief_.marginal(variables(processes, current_step));
     }
@@ -82,7 +82,7 @@ namespace sill {
       return belief_.marginal(variables);
     }
 
-    F belief(variable_type* v) const {
+    F belief(variable_type v) const {
       return belief(make_domain(v));
     }
 

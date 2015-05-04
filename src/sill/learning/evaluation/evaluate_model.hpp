@@ -35,10 +35,10 @@ namespace sill {
     size_t n_correct_pred = 0;
     size_t n_pred = 0;
     size_t actual = 0;
-    foreach(typename F::output_variable_type* v, crf.output_arguments()) {
-      assert(v->type() == variable::FINITE_VARIABLE);
+    foreach(typename F::output_variable_type v, crf.output_arguments()) {
+      assert(v.type() == variable::FINITE_VARIABLE);
       finite_variable* fv = static_cast<finite_variable*>(v);
-      assert(fv->size() == 2);
+      assert(fv.size() == 2);
     }
     foreach(const record<LA>& r, ds.records()) {
       const decomposable<typename F::output_factor_type>& Ygivenx =

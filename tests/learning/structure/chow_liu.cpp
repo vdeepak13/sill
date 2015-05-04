@@ -3,7 +3,7 @@
 
 #include <sill/learning/structure/chow_liu.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_table.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/random/uniform_table_generator.hpp>
@@ -40,8 +40,7 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   size_t nsamples = 10000;
 
   universe u;
-  finite_var_vector v = u.new_finite_variables(6, 3);
-  typedef domain<finite_variable*> domain_type;
+  domain v = u.new_finite_variables(6, "v", 3);
 
   // generate a random Bayesian network with the given structure
   bayesian_network<ptable> bn;
@@ -58,7 +57,7 @@ BOOST_AUTO_TEST_CASE(test_simple) {
 
   // generate a dataset
   finite_dataset<> data(v, nsamples);
-  finite_assignment a;
+  finite_assignment<> a;
   for (size_t i = 0; i < nsamples; ++i) {
     bn.sample(rng, a);
     data.insert(a, 1.0);
@@ -74,19 +73,19 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   }
   
   // verify the cliques
-  std::unordered_set<domain_type> cliques;
+  std::unordered_set<domain> cliques;
   for (size_t v : dm.vertices()) {
-    const domain_type& clique = dm.clique(v);
+    const domain& clique = dm.clique(v);
     cliques.emplace(clique);
     std::cout << clique << std::endl;
   }
   
   BOOST_CHECK(cliques.size() == 5);
-  BOOST_CHECK(cliques.count(domain_type({v[0], v[1]}).unique()));
-  BOOST_CHECK(cliques.count(domain_type({v[1], v[2]}).unique()));
-  BOOST_CHECK(cliques.count(domain_type({v[1], v[3]}).unique()));
-  BOOST_CHECK(cliques.count(domain_type({v[3], v[4]}).unique()));
-  BOOST_CHECK(cliques.count(domain_type({v[3], v[5]}).unique()));
+  BOOST_CHECK(cliques.count(domain({v[0], v[1]}).unique()));
+  BOOST_CHECK(cliques.count(domain({v[1], v[2]}).unique()));
+  BOOST_CHECK(cliques.count(domain({v[1], v[3]}).unique()));
+  BOOST_CHECK(cliques.count(domain({v[3], v[4]}).unique()));
+  BOOST_CHECK(cliques.count(domain({v[3], v[5]}).unique()));
 
   // TODO: flatten, relative entropy for decomposable
   ptable p = prod_all(bn).normalize().marginal(v);

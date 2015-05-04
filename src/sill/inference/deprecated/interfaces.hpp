@@ -29,7 +29,7 @@ namespace sill {
     virtual double loop_to_convergence() = 0;
 
     //! Returns the belief of a particular variable
-    virtual const factor_type& belief(variable_type* variable) const = 0;
+    virtual const factor_type& belief(variable_type variable) const = 0;
     
     //! Returns the belief of a particular vertex in the factor graph
     virtual const factor_type& belief(const vertex_type& vert) const = 0;

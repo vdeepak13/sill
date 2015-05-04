@@ -1,10 +1,9 @@
 #ifndef SILL_VECTOR_SEQUENCE_DATASET_HPP
 #define SILL_VECTOR_SEQUENCE_DATASET_HPP
 
+#include <sill/argument/basic_domain.hpp>
 #include <sill/argument/vector_assignment.hpp>
-#include <sill/argument/domain.hpp>
-#include <sill/base/vector_variable.hpp>
-#include <sill/base/discrete_process.hpp>
+#include <sill/argument/process.hpp>
 #include <sill/learning/dataset/basic_sequence_dataset.hpp>
 #include <sill/math/eigen/dynamic.hpp>
 #include <sill/math/eigen/matrix_index.hpp>
@@ -20,28 +19,28 @@ namespace sill {
    *
    * \tparam T the type representing the values and weights
    */
-  template <typename T>
+  template <typename T, typename Var>
   struct vector_sequence_traits {
-    typedef vector_discrete_process process_type;
-    typedef vector_variable         variable_type;
-    typedef domain<process_type*>   proc_domain_type;
-    typedef domain<variable_type*>  var_domain_type;
-    typedef dynamic_matrix<T>       proc_data_type;
-    typedef dynamic_vector<T>       var_data_type;
-    typedef vector_assignment<T>    assignment_type;
-    typedef T                       weight_type;
-    typedef matrix_index            index_type;
+    typedef process<size_t, Var>            process_type;
+    typedef Var                             variable_type;
+    typedef basic_domain<process_type>      proc_domain_type;
+    typedef basic_domain<variable_type>     var_domain_type;
+    typedef dynamic_matrix<T>               proc_data_type;
+    typedef dynamic_vector<T>               var_data_type;
+    typedef vector_assignment<T, Var>       assignment_type;
+    typedef T                               weight_type;
+    typedef matrix_index                    index_type;
     typedef std::pair<dynamic_matrix<T>, T> proc_value_type;
     typedef std::pair<dynamic_vector<T>, T> var_value_type;
-    typedef std::unordered_map<process_type*, size_t>  column_map_type;
-    typedef std::unordered_map<variable_type*, size_t> offset_map_type;
+    typedef std::unordered_map<process_type, size_t>  column_map_type;
+    typedef std::unordered_map<variable_type, size_t> offset_map_type;
 
     //! Computes the column indices for the given process domain.
     static void initialize(const proc_domain_type& procs, column_map_type& cols) {
       size_t col = 0;
-      for (process_type* proc : procs) {
+      for (process_type proc : procs) {
         cols.emplace(proc, col);
-        col += proc->size();
+        col += proc.size();
       }
     }
 
@@ -53,11 +52,11 @@ namespace sill {
       size_t ndims = vector_size(procs);
       size_t offset = ndims * first;
       for (size_t t = 0; t < length; ++t) {
-        for (process_type* proc : procs) {
-          variable_type* v = proc->at(t);
+        for (process_type proc : procs) {
+          variable_type v = proc(t);
           variables.push_back(v);
           offsets.emplace(v, offset);
-          offset += v->size();
+          offset += v.size();
         }
       }
       return matrix_index(ndims * first, ndims * length);
@@ -67,8 +66,8 @@ namespace sill {
     static index_type
     index(const proc_domain_type& procs, const column_map_type& columns) {
       index_type index;
-      for (process_type* proc : procs) {
-        index.append(columns.at(proc), proc->size());
+      for (process_type proc : procs) {
+        index.append(columns.at(proc), proc.size());
       }
       return index;
     }
@@ -77,8 +76,8 @@ namespace sill {
     static index_type
     index(const var_domain_type& vars, const offset_map_type& offsets) {
       index_type index;
-      for (variable_type* var : vars) {
-        index.append(offsets.at(var), var->size());
+      for (variable_type var : vars) {
+        index.append(offsets.at(var), var.size());
       }
       return index;
     }
@@ -110,10 +109,10 @@ namespace sill {
       assignment_type& a = to.first;
       a.clear();
       a.reserve(procs.size() * nsteps);
-      for (process_type* proc : procs) {
+      for (process_type proc : procs) {
         size_t row = colmap.at(proc);
         for (size_t t = 0; t < nsteps; ++t) {
-          a[proc->at(t)] = from.first.block(row, t, proc->size(), 1);
+          a[proc(t)] = from.first.block(row, t, proc.size(), 1);
         }
       }
       to.second = from.second;
@@ -147,11 +146,11 @@ namespace sill {
       assignment_type& a = to.first;
       a.clear();
       a.reserve(vars.size());
-      for (variable_type* var : vars) {
+      for (variable_type var : vars) {
         dynamic_vector<T>& vec = a[var];
-        vec.resize(var->size());
+        vec.resize(var.size());
         const T* begin = from.first.data() + offsets.at(var) + offset;
-        std::copy(begin, begin + var->size(), vec.data());
+        std::copy(begin, begin + var.size(), vec.data());
       }
       to.second = from.second;
     }
@@ -178,9 +177,9 @@ namespace sill {
    * \tparam T the type representing the weights
    * \see Dataset
    */
-  template <typename T = double>
+  template <typename T = double, typename Var = variable>
   using vector_sequence_dataset =
-    basic_sequence_dataset<vector_sequence_traits<T> >;
+    basic_sequence_dataset<vector_sequence_traits<T, Var> >;
   
 } // namespace sill
 

@@ -419,7 +419,7 @@ namespace sill {
   table_factor::unroll(universe& u) const {
     size_t new_v_size = 1;
     foreach(finite_variable* v, arg_seq)
-      new_v_size *= v->size();
+      new_v_size *= v.size();
     finite_variable* new_v = u.new_finite_variable(new_v_size);
     finite_var_vector new_args;
     new_args.push_back(new_v);
@@ -434,8 +434,8 @@ namespace sill {
     finite_variable* arg = *(args.begin());
     size_t s = 1;
     foreach(finite_variable* v, orig_arg_list)
-      s *= v->size();
-    assert(s == arg->size());
+      s *= v.size();
+    assert(s == arg.size());
     table_factor newf
       (orig_arg_list,
        std::vector<result_type>(values().first, values().second));

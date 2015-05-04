@@ -92,7 +92,7 @@ struct ground_truths {
   finite_assignment mapassg;   // ground truth map assignment
  
   bool hasbeliefs;     // true if truebeliefs is set
-  std::map<finite_variable*, canonical_table> truebeliefs; // ground truth marginals
+  std::map<variable, canonical_table> truebeliefs; // ground truth marginals
 
 };
 
@@ -127,7 +127,7 @@ void save_maps(model_type& fg,
   // Create an ouptut filestream
   std::ofstream fout(output_filename.c_str());
   assert(fout.good());
-  foreach(finite_variable* v, fg.arguments()) {
+  foreach(variable v, fg.arguments()) {
     if (mapassg[v]) fout << v->name() << std::endl;
   }
   fout.close();
@@ -330,7 +330,7 @@ void parse_ground_truths(universe &u,
     // so if map is not set, do it.
     if (truths.hasmap == false) {
       truths.hasmap = true;
-      foreach(finite_variable* v, keys(truths.truebeliefs)) {
+      foreach(variable v, keys(truths.truebeliefs)) {
         finite_assignment localmapassg = arg_max(truths.truebeliefs[v]);
         truths.mapassg[v] = localmapassg[v];
       }
@@ -341,11 +341,11 @@ void parse_ground_truths(universe &u,
 
 
 
-std::map<finite_variable*, canonical_table> 
+std::map<variable, canonical_table> 
       collect_beliefs(finite_domain vars, engine_type &engine) {
       
-  std::map<finite_variable*, canonical_table> ret;
-  foreach(finite_variable* f, vars) {
+  std::map<variable, canonical_table> ret;
+  foreach(variable f, vars) {
     ret[f] = engine.belief(f);
   }
   
@@ -364,7 +364,7 @@ void inference_statistics(model_type &fg,
     finite_assignment mapassg;
     engine.map_assignment(mapassg);
     
-    std::map<finite_variable*, canonical_table> blfs = 
+    std::map<variable, canonical_table> blfs = 
                                       collect_beliefs(fg.arguments(), engine);
 
     // some statistics which do not depend on the truth
@@ -385,7 +385,7 @@ void inference_statistics(model_type &fg,
       // compute the norm1 error over all the beliefs
       factor_norm_1<canonical_table> norm;
       stats.blf_totalnorm1error = 0.0;
-      foreach(finite_variable* i, fg.arguments()) {
+      foreach(variable i, fg.arguments()) {
         double d = norm(truths.truebeliefs[i],engine.belief(i));
         stats.blf_totalnorm1error += d;
       }
@@ -525,7 +525,7 @@ void exec_root_node(mpi_post_office &po, input_parameters &params) {
     output_statistics(params, stats, params.statusfile);
     
     
-    std::map<finite_variable*, canonical_table> blfs = 
+    std::map<variable, canonical_table> blfs = 
                                     collect_beliefs(fg.arguments(), *engine);
     // save results if asked to
     if (params.uaioutput.length() > 0) {

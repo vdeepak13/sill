@@ -463,7 +463,7 @@ namespace sill {
     /**
      * Compute the belief for a vertex
      */
-    const belief_type& belief(variable_type* variable) {
+    const belief_type& belief(variable_type variable) {
       return beliefs_[vertex_type(variable)];
     } // end of send_message
 

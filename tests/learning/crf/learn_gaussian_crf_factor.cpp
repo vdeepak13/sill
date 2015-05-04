@@ -2,7 +2,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/learning/crf/crf_parameter_learner.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>
@@ -58,12 +58,12 @@ int main(int argc, char** argv) {
   universe u;
   boost::mt11213b rng(oracle_seed);
   boost::uniform_int<unsigned> unif_int(0,std::numeric_limits<unsigned>::max());
-  vector_var_vector Y, X;
+  domain Y, X;
   for (size_t j(0); j < Ysize; ++j)
     Y.push_back(u.new_vector_variable(1));
   for (size_t j(0); j < Xsize; ++j)
     X.push_back(u.new_vector_variable(1));
-  vector_var_vector YX(sill::concat(Y, X));
+  domain YX(sill::concat(Y, X));
   moment_gaussian_generator gen(-b_max, b_max, 2.0, 0.5);
   moment_gaussian truth = gen(make_domain(YX), rng);
   if (1) {
@@ -79,7 +79,7 @@ int main(int argc, char** argv) {
 
   // Generate a dataset
   cout << "Sampling " << (ntrain+ntest) << " samples from the model" << endl;
-  vector_assignment_dataset<> ds(finite_var_vector(), YX, 
+  vector_assignment_dataset<> ds(domain(), YX, 
                                std::vector<variable::variable_typenames>
                                (YX.size(), variable::VECTOR_VARIABLE));
   for (size_t i(0); i < ntrain; ++i) {
@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
     ds.insert(assignment(fa));
   }
   vector_assignment_dataset<>
-    test_ds(finite_var_vector(), YX, 
+    test_ds(domain(), YX, 
             std::vector<variable::variable_typenames>
             (YX.size(), variable::VECTOR_VARIABLE));
   for (size_t i(0); i < ntest; ++i) {

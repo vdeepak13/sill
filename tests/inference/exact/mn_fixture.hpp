@@ -1,7 +1,7 @@
 #ifndef SILL_TEST_MN_FIXTURE_HPP
 #define SILL_TEST_MN_FIXTURE_HPP
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/random/diagonal_table_generator.hpp>
 #include <sill/factor/random/uniform_table_generator.hpp>
@@ -19,7 +19,7 @@ struct fixture {
   fixture() {
     size_t m = 5;
     size_t n = 4;
-    vars = u.new_finite_variables(m * n, 2);
+    vars = u.new_finite_variables(m * n, "v", 2);
     std::mt19937 rng;
     make_grid_graph(vars, m, n, mn);
     mn.initialize(marginal_fn(uniform_table_generator<ptable>(), rng),
@@ -41,7 +41,7 @@ struct fixture {
   }
 
   universe u;
-  finite_var_vector vars;
+  domain vars;
   pairwise_markov_network<ptable> mn;
 };
 

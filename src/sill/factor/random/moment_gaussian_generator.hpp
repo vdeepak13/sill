@@ -27,12 +27,12 @@ namespace sill {
    * \see RandomFactorGenerator
    * \ingroup factor_random
    */
-  template <typename T>
+  template <typename T, typename Var = variable>
   class moment_gaussian_generator {
   public:
     // RandomFactorGenerator typedefs
-    typedef domain<vector_variable*> domain_type;
-    typedef moment_gaussian<T> result_type;
+    typedef basic_domain<Var> domain_type;
+    typedef moment_gaussian<T, Var> result_type;
 
     struct param_type {
       T mean_lower;
@@ -89,9 +89,9 @@ namespace sill {
 
     //! Generates a marginal distribution p(args) using the stored parameters
     template <typename RandomNumberGenerator>
-    moment_gaussian<T> operator()(const domain_type& args,
-                                  RandomNumberGenerator& rng) const {
-      moment_gaussian<T> result(args);
+    moment_gaussian<T, Var> operator()(const domain_type& args,
+                                       RandomNumberGenerator& rng) const {
+      moment_gaussian<T, Var> result(args);
       generate_moments(rng, result.param().mean, result.param().cov);
       return result;
     }
@@ -99,10 +99,10 @@ namespace sill {
     //! Generates a conditional distribution p(head | tail) using the stored
     //! parameters.
     template <typename RandomNumberGenerator>
-    moment_gaussian<T> operator()(const domain_type& head,
-                                  const domain_type& tail,
-                                  RandomNumberGenerator& rng) const {
-      moment_gaussian<T> result(head, tail);
+    moment_gaussian<T, Var> operator()(const domain_type& head,
+                                       const domain_type& tail,
+                                       RandomNumberGenerator& rng) const {
+      moment_gaussian<T, Var> result(head, tail);
       generate_moments(rng, result.param().mean, result.param().cov);
       generate_coeffs(rng, result.param().coef);
       return result;
@@ -162,9 +162,9 @@ namespace sill {
    * Prints the parameters of this generator to an output stream
    * \relates moment_gaussian_generator
    */
-  template <typename T>
+  template <typename T, typename Var>
   std::ostream&
-  operator<<(std::ostream& out, const moment_gaussian_generator<T>& gen) {
+  operator<<(std::ostream& out, const moment_gaussian_generator<T, Var>& gen) {
     out << gen.param();
     return out;
   }

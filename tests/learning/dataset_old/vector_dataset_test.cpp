@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 //#include <sill/learning/dataset_old/concepts.hpp>
 #include <sill/learning/dataset_old/data_loader.hpp>

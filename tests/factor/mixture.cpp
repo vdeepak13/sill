@@ -22,7 +22,7 @@ struct fixture {
     mix[1] = moment_gaussian(v, ones(2), "2 1; 1 3");
   }
   universe u;
-  vector_var_vector v;
+  domain v;
   vector_domain vars;
   mixture_gaussian mix;
 };

@@ -85,7 +85,7 @@ namespace sill {
       foreach(vector_variable* v, vvec) {
         std::pair<std::map<vector_variable*, size_t>::iterator, bool>
           it_inserted(idx.insert(std::make_pair(v, n)));
-        n += v->size();
+        n += v.size();
         if (!it_inserted.second) {
           throw std::runtime_error
             (std::string("build_vector_numbering(vvec,idx)") +

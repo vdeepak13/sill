@@ -9,16 +9,18 @@ namespace sill {
   /**
    * An assignment over a set of finite and vector variables.
    */
-  template <typename T = double>
+  template <typename T = double, typename Var = variable>
   class hybrid_assignment
-    : public finite_assignment, public vector_assignment<T> {
+    : public finite_assignment<Var>,
+      public vector_assignment<T, Var> {
+
   public:
 
     //! The value_type of the underlying finite assignment.
-    typedef finite_assignment::value_type             finite_value_type;
+    typedef typename finite_assignment<Var>::value_type finite_value_type;
 
     //! The value_type of the underlying vector assignment.
-    typedef typename vector_assignment<T>::value_type vector_value_type;
+    typedef typename vector_assignment<T, Var>::value_type vector_value_type;
 
     // Constructors and operators
     //==========================================================================
@@ -27,42 +29,42 @@ namespace sill {
     hybrid_assignment() { }
 
     //! Constructs an assignment with the given finite component.
-    hybrid_assignment(const finite_assignment& a)
-      : finite_assignment(a) { }
+    hybrid_assignment(const finite_assignment<Var>& a)
+      : finite_assignment<Var>(a) { }
 
     //! Constructs an assignment with the given vector component.
-    hybrid_assignment(const vector_assignment<T>& a)
-      : vector_assignment<T>(a) { }
+    hybrid_assignment(const vector_assignment<T, Var>& a)
+      : vector_assignment<T, Var>(a) { }
 
     //! Constructs an assignment with the given components.
-    hybrid_assignment(const finite_assignment& fa,
-                      const vector_assignment<T>& va)
-      : finite_assignment(fa),
-        vector_assignment<T>(va) { }
+    hybrid_assignment(const finite_assignment<Var>& fa,
+                      const vector_assignment<T, Var>& va)
+      : finite_assignment<Var>(fa),
+        vector_assignment<T, Var>(va) { }
 
     //! Constructs an assignment with the contents of an initializer list.
     hybrid_assignment(std::initializer_list<finite_value_type> finit)
-      : finite_assignment(finit) { }
+      : finite_assignment<Var>(finit) { }
 
     //! Constructs an assignment with the contents fo an initializer list.
     hybrid_assignment(std::initializer_list<vector_value_type> vinit)
-      : vector_assignment<T>(vinit) { }
+      : vector_assignment<T, Var>(vinit) { }
 
     //! Constructs an assignment with the contents of initializer lists.
     hybrid_assignment(std::initializer_list<finite_value_type> finit,
                       std::initializer_list<vector_value_type> vinit)
-      : finite_assignment(finit),
-        vector_assignment<T>(vinit) { }
+      : finite_assignment<Var>(finit),
+        vector_assignment<T, Var>(vinit) { }
 
     //! Assignment operator.
-    hybrid_assignment& operator=(const finite_assignment& a) {
+    hybrid_assignment& operator=(const finite_assignment<Var>& a) {
       finite() = a;
       vector().clear();
       return *this;
     }
 
     //! Assignment operator.
-    hybrid_assignment& operator=(const vector_assignment<T>& a) {
+    hybrid_assignment& operator=(const vector_assignment<T, Var>& a) {
       finite().clear();
       vector() = a;
       return *this;
@@ -78,22 +80,22 @@ namespace sill {
     // Accessors
     //==========================================================================
     //! Returns the finite component of this assignment.
-    finite_assignment& finite() {
+    finite_assignment<Var>& finite() {
       return *this;
     }
 
     //! Returns the finite component of this assignment.
-    const finite_assignment& finite() const {
+    const finite_assignment<Var>& finite() const {
       return *this;
     }
 
     //! Returns the vector component of this assignment.
-    vector_assignment<T>& vector() {
+    vector_assignment<T, Var>& vector() {
       return *this;
     }
 
     //! Returns the vector component of this assignment.
-    const vector_assignment<T>& vector() const {
+    const vector_assignment<T, Var>& vector() const {
       return *this;
     }
 
@@ -107,24 +109,13 @@ namespace sill {
       return finite().empty() && vector().empty();
     }
 
-    //! Returns 1 if the assignment contains the given finite variable.
-    size_t count(finite_variable* v) const {
-      return finite().count(v);
-    }
-
-    //! Returns 1 if the assignment contains the given vector variable.
-    size_t count(vector_variable* v) const {
-      return vector().count(v);
-    }
-
-    //! Returns 1 if the assignmemnt contains the given variable.
-    bool count(variable* v) const {
-      switch (v->type()) {
-      case variable::FINITE_VARIABLE:
-        return finite().count(dynamic_cast<finite_variable*>(v));
-      case variable::VECTOR_VARIABLE:
-        return vector().count(dynamic_cast<vector_variable*>(v));
-      default:
+    //! Returns 1 if the assignment contains the given variable.
+    bool count(Var v) const {
+      if (v.finite()) {
+        return finite().count(v);
+      } else if (v.vector()) {
+        return vector().count(v);
+      } else {
         return 0;
       }
     }
@@ -150,24 +141,13 @@ namespace sill {
     // Mutations
     //==========================================================================
 
-    //! Removes a finite variable from the assignment.
-    size_t erase(finite_variable* v) {
-      return finite().erase(v);
-    }
-
-    //! Removes a vector variable from the assignment.
-    size_t erase(vector_variable* v) {
-      return vector().erase(v);
-    }
-
     //! Removes a variable from the assignment.
-    size_t erase(variable* v) {
-      switch (v->type()) {
-      case variable::FINITE_VARIABLE:
-        return finite_assignment::erase(dynamic_cast<finite_variable*>(v));
-      case variable::VECTOR_VARIABLE:
-        return vector_assignment<T>::erase(dynamic_cast<vector_variable*>(v));
-      default:
+    size_t erase(variable v) {
+      if (v.finite()) {
+        return finite().erase(v);
+      } else if (v.vector()) {
+        return vector().erase(v);
+      } else {
         return 0;
       }
     }
@@ -184,8 +164,9 @@ namespace sill {
    * Prints a hybrid assignment to an output stream.
    * \relates hybrid_assignment
    */
-  template <typename T>
-  std::ostream& operator<<(std::ostream& out, const hybrid_assignment<T>& a) {
+  template <typename T, typename Var>
+  std::ostream& 
+  operator<<(std::ostream& out, const hybrid_assignment<T, Var>& a) {
     out << a.finite();
     out << a.vector();
     return out;

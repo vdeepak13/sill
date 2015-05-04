@@ -406,7 +406,7 @@ namespace sill {
       /**
       * Compute the belief for a vertex
       */
-      const F& belief(variable_type* variable) const{
+      const F& belief(variable_type variable) const{
         return beliefs_[factor_graph_->to_vertex(variable).id()];
       }
 

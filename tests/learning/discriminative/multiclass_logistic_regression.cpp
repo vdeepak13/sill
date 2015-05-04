@@ -2,7 +2,7 @@
 
 #include <boost/program_options.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset_old/dataset_view.hpp>
 #include <sill/learning/dataset_old/data_loader.hpp>
 #include <sill/learning/dataset_old/dataset_statistics.hpp>
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
 
   vector_dataset_old<la_type>& ds_train = *ds_train_ptr;
   vector_dataset_old<la_type>& ds_test = *ds_test_ptr;
-  finite_variable* class_var = ds_train.finite_class_variables().front();
+  variable class_var = ds_train.finite_class_variables().front();
 
   dataset_statistics<la_type> stats(ds_train);
 

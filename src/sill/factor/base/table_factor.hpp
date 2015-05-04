@@ -1,7 +1,7 @@
 #ifndef SILL_TABLE_FACTOR_HPP
 #define SILL_TABLE_FACTOR_HPP
 
-#include <sill/argument/domain.hpp>
+#include <sill/argument/basic_domain.hpp>
 #include <sill/argument/finite_assignment.hpp>
 #include <sill/datastructure/table.hpp>
 #include <sill/factor/base/factor.hpp>
@@ -21,7 +21,7 @@ namespace sill {
    * \tparam T the type of parameters stored in the table.
    * \see canonical_table, probability_table, hybrid
    */
-  template <typename T>
+  template <typename T, typename Var>
   class table_factor : public factor {
   public:
     // Range types
@@ -30,7 +30,8 @@ namespace sill {
     typedef T        value_type;
 
     // Finite domain
-    typedef domain<finite_variable*> domain_type;
+    typedef basic_domain<Var> domain_type;
+    typedef finite_assignment<Var> assignment_type;
 
     // Constructors
     //==========================================================================
@@ -75,7 +76,7 @@ namespace sill {
         finite_args_ = args;
         finite_index shape(args.size());
         for (size_t i = 0; i < args.size(); ++i) {
-          shape[i] = args[i]->size();
+          shape[i] = args[i].size();
         }
         param_.reset(shape);
       }
@@ -145,12 +146,12 @@ namespace sill {
     }
 
     //! Provides mutable access to the paramater for the given assignment.
-    T& param(const finite_assignment& a) {
+    T& param(const assignment_type& a) {
       return param_[index(a)];
     }
     
     //! Returns the parameter for the given assignment.
-    const T& param(const finite_assignment& a) const {
+    const T& param(const assignment_type& a) const {
       return param_[index(a)];
     }
 
@@ -171,7 +172,7 @@ namespace sill {
      * Converts the index to this factor's arguments to an assignment.
      * The index may be merely a prefix, and the output assignment is not cleared.
      */
-    void assignment(const finite_index& index, finite_assignment& a) const {
+    void assignment(const finite_index& index, assignment_type& a) const {
       assert(index.size() <= finite_args_.size());
       for(size_t i = 0; i < index.size(); i++) {
         a[finite_args_[i]] = index[i];
@@ -184,16 +185,16 @@ namespace sill {
      * assignment. If not strict, the missing arguments will be associated
      * with value 0.
      */
-    size_t index(const finite_assignment& a, bool strict = true) const {
+    size_t index(const assignment_type& a, bool strict = true) const {
       size_t result = 0;
       for (size_t i = 0; i < arity(); ++i) {
-        finite_variable* v = finite_args_[i];
-        finite_assignment::const_iterator it = a.find(v);
+        Var v = finite_args_[i];
+        auto it = a.find(v);
         if (it != a.end()) {
           result += param_.offset().multiplier(i) * it->second;
         } else if (strict) {
           throw std::invalid_argument(
-            "The assignment does not contain the variable " + v->str()
+            "The assignment does not contain the variable " + v.str()
           );
         }
       }
@@ -214,12 +215,11 @@ namespace sill {
     finite_index dim_map(const domain_type& vars, bool strict = true) const {
       finite_index map(arity(), std::numeric_limits<size_t>::max());
       for(size_t i = 0; i < map.size(); i++) {
-        domain_type::const_iterator it = 
-          std::find(vars.begin(), vars.end(), finite_args_[i]);
+        auto it = std::find(vars.begin(), vars.end(), finite_args_[i]);
         if (it != vars.end()) {
           map[i] = it - vars.begin();
         } else if (strict) {
-          throw std::invalid_argument("Missing variable " + finite_args_[i]->str());
+          throw std::invalid_argument("Missing variable " + finite_args_[i].str());
         }
       }
       return map;
@@ -229,12 +229,12 @@ namespace sill {
      * Substitutes this factor's arguments according to the given map,
      * in place.
      */
-    void subst_args(const finite_var_map& var_map) {
-      for (finite_variable*& var : finite_args_) {
-        finite_variable* new_var = var_map.at(var);
-        if (!var->type_compatible(new_var)) {
+    void subst_args(const std::unordered_map<Var, Var>& var_map) {
+      for (Var& var : finite_args_) {
+        Var new_var = var_map.at(var);
+        if (!compatible(var, new_var)) {
           throw std::invalid_argument(
-            "subst_args: " + var->str() + " and " + new_var->str() +
+            "subst_args: " + var.str() + " and " + new_var.str() +
             " are not compatible"
           );
         }
@@ -251,7 +251,7 @@ namespace sill {
         throw std::runtime_error("Invalid table arity");
       }
       for (size_t i = 0; i < finite_args_.size(); ++i) {
-        if (param_.size(i) != finite_args_[i]->size()) {
+        if (param_.size(i) != finite_args_[i].size()) {
           throw std::runtime_error("Invalid table shape");
         }
       }
@@ -305,9 +305,9 @@ namespace sill {
      * strongly typed, i.e., we could accidentally restrict a probability_table
      * and store the result in a canonical_table or vice versa.
      */
-    void restrict(const finite_assignment& a, table_factor& result) const {
+    void restrict(const assignment_type& a, table_factor& result) const {
       domain_type new_vars;
-      for (finite_variable* v : finite_args_) {
+      for (Var v : finite_args_) {
         if (!a.count(v)) { new_vars.push_back(v); }
       }
       result.reset(new_vars);
@@ -349,8 +349,10 @@ namespace sill {
    * Joins the parameter tables of two factors using a binary operation.
    * The resulting factor contains the union of f's and g's argument sets.
    */
-  template <typename Result, typename T, typename Op>
-  Result join(const table_factor<T>& f, const table_factor<T>& g, Op op) {
+  template <typename Result, typename T, typename Var, typename Op>
+  Result join(const table_factor<T, Var>& f,
+              const table_factor<T, Var>& g,
+              Op op) {
     if (f.finite_args() == g.finite_args()) {
       Result result(f.finite_args());
       std::transform(f.begin(), f.end(), g.begin(), result.begin(), op);
@@ -369,8 +371,8 @@ namespace sill {
    * Transforms the parameters of the factor with a unary operation
    * and returns the result.
    */
-  template <typename Result, typename T, typename Op>
-  Result transform(const table_factor<T>& f, Op op) {
+  template <typename Result, typename T, typename Var, typename Op>
+  Result transform(const table_factor<T, Var>& f, Op op) {
     Result result(f.finite_args());
     std::transform(f.begin(), f.end(), result.begin(), op);
     return result;
@@ -380,8 +382,10 @@ namespace sill {
    * Transforms the parameters of two factors using a binary operation
    * and returns the result. The two factors must have the same argument vectors.
    */
-  template <typename Result, typename T, typename Op>
-  Result transform(const table_factor<T>& f, const table_factor<T>& g, Op op) {
+  template <typename Result, typename T, typename Var, typename Op>
+  Result transform(const table_factor<T, Var>& f,
+                   const table_factor<T, Var>& g,
+                   Op op) {
     assert(f.finite_args() == g.finite_args());
     Result result(f.finite_args());
     std::transform(f.begin(), f.end(), g.begin(), result.begin(), op);
@@ -392,9 +396,9 @@ namespace sill {
    * Transforms the parameters of two factors using a binary operation
    * and accumulates the result using another operation.
    */
-  template <typename T, typename JoinOp, typename AggOp>
-  T transform_accumulate(const table_factor<T>& f,
-                         const table_factor<T>& g,
+  template <typename T, typename Var, typename JoinOp, typename AggOp>
+  T transform_accumulate(const table_factor<T, Var>& f,
+                         const table_factor<T, Var>& g,
                          JoinOp join_op,
                          AggOp agg_op) {
     assert(f.finite_args() == g.finite_args());

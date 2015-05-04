@@ -3,7 +3,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/uniform_int.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>
 #include <sill/learning/dataset_old/dataset_statistics.hpp>
@@ -69,9 +69,9 @@ int main(int argc, char* argv[]) {
   finite_assignment evidence;
   finite_domain args(bn.arguments());
   std::vector<size_t> permutation(randperm(args.size(), rng));
-  finite_var_vector arg_vector(args.begin(), args.end());
+  domain arg_vector(args.begin(), args.end());
   for (size_t i = 0; i < size_evidence; ++i) {
-    finite_variable* var = arg_vector[permutation[i]];
+    variable var = arg_vector[permutation[i]];
     boost::uniform_int<int> uniform_int(0, var->size() - 1);
     evidence[var] = uniform_int(rng);
   }

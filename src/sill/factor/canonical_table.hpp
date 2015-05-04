@@ -18,7 +18,7 @@
 namespace sill {
 
   // Forward declaration
-  template <typename T> class probability_table;
+  template <typename T, typename Var> class probability_table;
 
   /**
    * A factor of a categorical probability distribution represented in the
@@ -32,18 +32,18 @@ namespace sill {
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename T>
-  class canonical_table : public table_factor<T> {
+  template <typename T, typename Var>
+  class canonical_table : public table_factor<T, Var> {
   public: 
     // Public types
     //==========================================================================
 
     // Factor member types
-    typedef T                 real_type;
-    typedef logarithmic<T>    result_type;
-    typedef finite_variable   variable_type;
-    typedef domain<finite_variable*> domain_type;
-    typedef finite_assignment assignment_type;
+    typedef T                      real_type;
+    typedef logarithmic<T>         result_type;
+    typedef Var                    variable_type;
+    typedef basic_domain<Var>      domain_type;
+    typedef finite_assignment<Var> assignment_type;
 
     // ParametricFactor types
     typedef table<T>     param_type;
@@ -54,7 +54,7 @@ namespace sill {
     typedef canonical_table_ll<T> ll_type;
     
     // ExponentialFamilyFactor member types
-    typedef probability_table<T> probability_factor_type;
+    typedef probability_table<T, Var> probability_type;
     
     // Constructors and conversion operators
     //==========================================================================
@@ -81,11 +81,11 @@ namespace sill {
 
     //! Creates a factor with the specified arguments and parameters.
     canonical_table(const domain_type& args, const table<T>& param)
-      : table_factor<T>(args, param) { }
+      : table_factor<T, Var>(args, param) { }
 
     //! Creates a factor with the specified arguments and parameters.
     canonical_table(const domain_type& args, table<T>&& param)
-      : table_factor<T>(args, std::move(param)) { }
+      : table_factor<T, Var>(args, std::move(param)) { }
 
     //! Creates a factor with the specified arguments and parameters.
     canonical_table(const domain_type& args,
@@ -96,7 +96,7 @@ namespace sill {
     }
 
     //! Conversion from a probability_table factor.
-    explicit canonical_table(const probability_table<T>& f) {
+    explicit canonical_table(const probability_table<T, Var>& f) {
       *this = f;
     }
 
@@ -108,7 +108,7 @@ namespace sill {
     }
 
     //! Assigns a probability table factor to this factor.
-    canonical_table& operator=(const probability_table<T>& f) {
+    canonical_table& operator=(const probability_table<T, Var>& f) {
       this->reset(f.arguments());
       std::transform(f.begin(), f.end(), this->begin(), logarithm<T>());
       return *this;
@@ -128,7 +128,7 @@ namespace sill {
     }
 
     //! Returns the value of the factor for the given assignment.
-    logarithmic<T> operator()(const finite_assignment& a) const {
+    logarithmic<T> operator()(const assignment_type& a) const {
       return logarithmic<T>(this->param(a), log_tag());
     }
 
@@ -138,7 +138,7 @@ namespace sill {
     }
 
     //! Returns the log-value of the factor for the given assignment.
-    T log(const finite_assignment& a) const {
+    T log(const assignment_type& a) const {
       return this->param(a);
     }
 
@@ -313,14 +313,14 @@ namespace sill {
     }
 
     //! Computes the maximum value and stores the corresponding assignment.
-    logarithmic<T> maximum(finite_assignment& a) const {
+    logarithmic<T> maximum(assignment_type& a) const {
       const T* it = std::max_element(this->begin(), this->end());
       this->assignment(this->param_.index(it), a);
       return logarithmic<T>(*it, log_tag());
     }
 
     //! Computes the minimum value and stores the corresponding assignment.
-    logarithmic<T> minimum(finite_assignment& a) const {
+    logarithmic<T> minimum(assignment_type& a) const {
       const T* it = std::min_element(this->begin(), this->end());
       this->assignment(this->param_.index(it), a);
       return logarithmic<T>(*it, log_tag());
@@ -338,15 +338,15 @@ namespace sill {
     }
     
     //! Restricts this factor to an assignment.
-    canonical_table restrict(const finite_assignment& a) const {
+    canonical_table restrict(const assignment_type& a) const {
       canonical_table result;
       restrict(a, result);
       return result;
     }
 
     //! Restricts this factor to an assignment.
-    void restrict(const finite_assignment& a, canonical_table& result) const {
-      table_factor<T>::restrict(a, result);
+    void restrict(const assignment_type& a, canonical_table& result) const {
+      table_factor<T, Var>::restrict(a, result);
     }
 
     // Sampling
@@ -374,7 +374,7 @@ namespace sill {
      * storing the result in an assignment.
      */
     template <typename Generator>
-    void sample(Generator& rng, finite_assignment& a) const {
+    void sample(Generator& rng, assignment_type& a) const {
       this->assignment(sample(rng), a);
     }
 
@@ -385,7 +385,7 @@ namespace sill {
      */
     template <typename Generator>
     void sample(Generator& rng, const domain_type& head,
-                finite_assignment& a) const {
+                assignment_type& a) const {
       assert(prefix(head, arguments()));
       this->assignment(sample(rng, extract(a, arguments(), head.size())), a);
     }
@@ -395,7 +395,9 @@ namespace sill {
 
     //! Computes the entropy for the distribution represented by this factor.
     T entropy() const {
-      return this->param_.transform_accumulate(T(0), entropy_log_op<T>(), std::plus<T>());
+      return this->param_.transform_accumulate(T(0),
+                                               entropy_log_op<T>(),
+                                               std::plus<T>());
     }
 
     //! Computes the entropy for a subset of variables. Performs marginalization.
@@ -440,7 +442,7 @@ namespace sill {
    * A canonical_table factor using double precision.
    * \relates canonical_table
    */
-  typedef canonical_table<double> ctable;
+  typedef canonical_table<double, variable> ctable;
 
   // Input / output
   //============================================================================
@@ -449,8 +451,9 @@ namespace sill {
    * Prints a human-readable representatino of the table factor to the stream.
    * \relates canonical_table
    */
-  template <typename T>
-  std::ostream& operator<<(std::ostream& out, const canonical_table<T>& f) {
+  template <typename T, typename Var>
+  std::ostream&
+  operator<<(std::ostream& out, const canonical_table<T, Var>& f) {
     out << "#CT(" << f.arguments() << ")" << std::endl;
     out << f.param();
     return out;
@@ -459,38 +462,49 @@ namespace sill {
   // Traits
   //============================================================================
 
-  template <typename T>
-  struct has_multiplies<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_multiplies<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_multiplies_assign<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_multiplies_assign<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_divides<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_divides<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_divides_assign<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_divides_assign<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_max<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_max<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_min<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_min<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_marginal<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_marginal<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_maximum<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_maximum<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_minimum<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_minimum<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_arg_max<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_arg_max<canonical_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_arg_min<canonical_table<T> > : public boost::true_type { };
+  template <typename T, typename Var>
+  struct has_arg_min<canonical_table<T, Var> >
+    : public std::true_type { };
 
 } // namespace sill
 

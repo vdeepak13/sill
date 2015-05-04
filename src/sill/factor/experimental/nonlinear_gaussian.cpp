@@ -81,12 +81,12 @@ namespace sill {
       vector_variable* v = tail[i];
       if(a.count(v)) { // v is now fixed
         // TODO: check if this correct
-        span s(input_map[k], input_map[k] + v->size() - 1); 
+        span s(input_map[k], input_map[k] + v.size() - 1); 
         result.fixed_input.subvec(s) = safe_get(a, v);
-        k += v->size();
+        k += v.size();
       } else {
         result.tail.push_back(v);
-        for(size_t j = 0; j < v->size(); j++)
+        for(size_t j = 0; j < v.size(); j++)
           result.input_map.push_back(input_map[k++]);
       }
     }

@@ -163,7 +163,7 @@ namespace sill {
   }
 
   bool datasource::has_variable(variable* v) const {
-    switch (v->type()) {
+    switch (v.type()) {
     case variable::FINITE_VARIABLE:
       return has_variable((finite_variable*)v);
     case variable::VECTOR_VARIABLE:
@@ -307,7 +307,7 @@ namespace sill {
     uvec vars_inds(vector_size(vars));
     size_t k(0);
     foreach(vector_variable* v, vars) {
-      for (size_t j2(0); j2 < v->size(); ++j2) {
+      for (size_t j2(0); j2 < v.size(); ++j2) {
         vars_inds[k] = record_index(v) + j2;
         ++k;
       }
@@ -319,7 +319,7 @@ namespace sill {
     uvec vars_inds(vector_size(vars));
     size_t k(0);
     foreach(vector_variable* v, vars) {
-      for (size_t j2(0); j2 < v->size(); ++j2) {
+      for (size_t j2(0); j2 < v.size(); ++j2) {
         vars_inds[k] = record_index(v) + j2;
         ++k;
       }
@@ -377,10 +377,10 @@ namespace sill {
               << " " << var_type_order.size() << " variables:\n"
               << "  " << finite_seq.size() << " finite vars of arities:";
     foreach(finite_variable* v, finite_seq)
-      std::cerr << " " << v->size();
+      std::cerr << " " << v.size();
     std::cerr << "\n  " << vector_seq.size() << " vector vars of sizes:";
     foreach(vector_variable* v, vector_seq)
-      std::cerr << " " << v->size();
+      std::cerr << " " << v.size();
     std::cerr << std::endl;
   }
 
@@ -454,12 +454,12 @@ namespace sill {
     // Compute the index maps
     foreach(finite_variable* v, finite_seq) {
       finite_numbering_ptr_->operator[](v) = nfinite++;
-      dfinite += v->size();
+      dfinite += v.size();
     }
     // Compute the index maps
     foreach(vector_variable* v, vector_seq) {
       vector_numbering_ptr_->operator[](v) = dvector;
-      dvector += v->size();
+      dvector += v.size();
     }
 
     // Set var_type_order if necessary.
@@ -548,7 +548,7 @@ namespace sill {
 //    finite_vars.insert(v);
     finite_seq.push_back(v);
     finite_numbering_ptr_->operator[](v) = finite_seq.size() - 1;
-    dfinite += v->size();
+    dfinite += v.size();
     if (make_class)
       finite_class_vars.push_back(v);
     var_type_order.push_back(variable::FINITE_VARIABLE);
@@ -559,7 +559,7 @@ namespace sill {
 //    vector_vars.insert(v);
     vector_seq.push_back(v);
     vector_numbering_ptr_->operator[](v) = vector_seq.size() - 1;
-    dvector += v->size();
+    dvector += v.size();
     if (make_class)
       vector_class_vars.push_back(v);
     var_type_order.push_back(variable::VECTOR_VARIABLE);

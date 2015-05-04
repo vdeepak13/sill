@@ -52,7 +52,7 @@ namespace sill {
                      std::map<vertex_type, 
                               MessageData<factor_type> > > message_map_type;
     
-    typedef std::map<const variable_type*, 
+    typedef std::map<const variable_type, 
                      std::pair<factor_type,spinlock> > belief_map_type;
     
 
@@ -110,7 +110,7 @@ namespace sill {
       foreach(const factor_type& curfactor, model_->factors()) {
         // iterate over the edges of the factor
         if ( curfactor.arguments().size() ) {
-          foreach(variable_type* v, curfactor.arguments()) {
+          foreach(variable_type v, curfactor.arguments()) {
             // Message from variable to factor
             messages_[vertex_type(v)][vertex_type(&curfactor)].message = 
               message_type(make_domain(v), 1.0).normalize();
@@ -122,7 +122,7 @@ namespace sill {
       }
       
       // instantiate the variable beliefs
-      foreach(variable_type* v, model_->arguments()) {
+      foreach(variable_type v, model_->arguments()) {
         //         domain_type tempdomain;
         //         tempdomain.insert(v);
         //         beliefs_[v].first = belief_type(tempdomain,1).normalize();
@@ -323,7 +323,7 @@ namespace sill {
     }
   
     //! Gets the variable residual  
-    double residual(const variable_type* v) {
+    double residual(const variable_type v) {
       return residual(vertex_type(v));
     }
   

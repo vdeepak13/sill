@@ -259,7 +259,7 @@ namespace sill {
 
     //! implements Factor::subst_args
     mixture&
-    subst_args(const std::map<variable_type*, variable_type*>& var_map) {
+    subst_args(const std::map<variable_type, variable_type>& var_map) {
       foreach(F& factor, comps) factor.subst_args(var_map);
       return *this;
     }

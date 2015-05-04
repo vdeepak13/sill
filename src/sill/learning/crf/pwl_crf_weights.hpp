@@ -216,20 +216,20 @@ namespace sill {
      *       --> <edge part of score, y1 part of score, y2 part of score>
      * (Only retained when set in parameters.)
      */
-    mutable std::map<std::pair<output_variable_type*,output_variable_type*>,vec>
+    mutable std::map<std::pair<output_variable_type,output_variable_type>,vec>
       edge_score_info_;
 
     //! (For templated learning mode, or when saved b/c of parameter setting)
     //! map: vertex pair <y1,y2> --> regressor for edge part of score
     //! Vertex pairs are stored s.t. y1 < y2.
-    mutable std::map<std::pair<output_variable_type*,output_variable_type*>,
+    mutable std::map<std::pair<output_variable_type,output_variable_type>,
                      crf_factor>
       edge_part_map_;
 
     //! (For templated learning mode, or when saved b/c of parameter setting)
     //! map: vertex pair <y1,y2> --> regressors for vertex parts of score
     //! Vertex pairs are stored s.t. y1 < y2.
-    mutable std::map<std::pair<output_variable_type*,output_variable_type*>,
+    mutable std::map<std::pair<output_variable_type,output_variable_type>,
                      std::pair<crf_factor, crf_factor> >
       vertex_part_map_;
 
@@ -278,13 +278,13 @@ namespace sill {
             typename output_domain_type::const_iterator
               twoYvars_it(twoYvars.begin());
             assert(twoYvars_it != twoYvars.end());
-            output_variable_type* y1 = *twoYvars_it;
+            output_variable_type y1 = *twoYvars_it;
             ++twoYvars_it;
             assert(twoYvars_it != twoYvars.end());
-            output_variable_type* y2 = *twoYvars_it;
+            output_variable_type y2 = *twoYvars_it;
             if (y1 > y2)
               std::swap(y1,y2);
-            std::pair<output_variable_type*,output_variable_type*>
+            std::pair<output_variable_type,output_variable_type>
               y12pair(std::make_pair(y1,y2));
             switch (params.score_type) {
             case 0: // PWL
@@ -349,7 +349,7 @@ namespace sill {
     //!    edge pair (ordered first < second)
     //!     --> <edge part of score, y1 part of score, y2 part of score>
     //! (You must set a parameter to retain this full mapping.)
-    const std::map<std::pair<output_variable_type*,output_variable_type*>, vec>&
+    const std::map<std::pair<output_variable_type,output_variable_type>, vec>&
     edge_score_info() const {
       return edge_score_info_;
     }
@@ -360,7 +360,7 @@ namespace sill {
      *     --> regression function used for edge part of score
      * (You must set a parameter to retain this mapping.)
      */
-    const std::map<std::pair<output_variable_type*,output_variable_type*>,
+    const std::map<std::pair<output_variable_type,output_variable_type>,
                    crf_factor>&
     edge_part_map() const {
       return edge_part_map_;
@@ -372,7 +372,7 @@ namespace sill {
      *     --> regression functions used for vertex parts of score
      * (You must set a parameter to retain this mapping.)
      */
-    const std::map<std::pair<output_variable_type*,output_variable_type*>,
+    const std::map<std::pair<output_variable_type,output_variable_type>,
                    std::pair<crf_factor,crf_factor> >&
     vertex_part_map() const {
       return vertex_part_map_;
@@ -411,7 +411,7 @@ namespace sill {
      * @return <edge score, P(Y1,Y2 | X_{12})>
      */
     std::pair<double, crf_factor>
-    pwl(output_variable_type* y1, output_variable_type* y2) const {
+    pwl(output_variable_type y1, output_variable_type y2) const {
       assert(learning_mode_ == 0);
       vec edge_score(zeros<vec>(3));
       assert(y1 && y2);
@@ -419,7 +419,7 @@ namespace sill {
       if (y1 > y2)
         std::swap(y1,y2);
       output_domain_type Y(make_domain(y1,y2));
-      std::pair<output_variable_type*, output_variable_type*>
+      std::pair<output_variable_type, output_variable_type>
         y12pair(std::make_pair(y1,y2));
       crf_factor f(compute_regressor(Y));
       edge_part_map_[y12pair] = f;
@@ -446,7 +446,7 @@ namespace sill {
      * @return <edge score, P(Y1,Y2 | X_{12})>
      */
     std::pair<double, crf_factor>
-    dci(output_variable_type* y1, output_variable_type* y2) const {
+    dci(output_variable_type y1, output_variable_type y2) const {
       assert(learning_mode_ == 0);
       vec edge_score(zeros<vec>(3));
       assert(y1 && y2);
@@ -456,7 +456,7 @@ namespace sill {
       output_domain_type Y(make_domain(y1,y2));
       output_domain_type Y1(make_domain(y1));
       output_domain_type Y2(make_domain(y2));
-      std::pair<output_variable_type*, output_variable_type*>
+      std::pair<output_variable_type, output_variable_type>
         y12pair(std::make_pair(y1,y2));
       crf_factor f(compute_regressor(Y));
       crf_factor f1(compute_regressor(Y1));
@@ -493,7 +493,7 @@ namespace sill {
      * @return <edge score, P(Y1,Y2 | X_{12})>
      */
     std::pair<double, crf_factor>
-    cmi(output_variable_type* y1, output_variable_type* y2) const {
+    cmi(output_variable_type y1, output_variable_type y2) const {
       assert(learning_mode_ == 0);
       vec edge_score(zeros<vec>(3));
       assert(y1 && y2);
@@ -503,7 +503,7 @@ namespace sill {
       output_domain_type Y(make_domain(y1,y2));
       output_domain_type Y1(make_domain(y1));
       output_domain_type Y2(make_domain(y2));
-      std::pair<output_variable_type*, output_variable_type*>
+      std::pair<output_variable_type, output_variable_type>
         y12pair(std::make_pair(y1,y2));
       crf_factor f(compute_regressor(Y));
       edge_part_map_[y12pair] = f;
@@ -532,7 +532,7 @@ namespace sill {
      * @return <edge score, P(Y1,Y2 | X_{12})>
      */
     std::pair<double, crf_factor>
-    operator()(output_variable_type* y1, output_variable_type* y2) const {
+    operator()(output_variable_type y1, output_variable_type y2) const {
       switch(params.score_type) {
       case 0:
         return pwl(y1,y2);
@@ -567,13 +567,13 @@ namespace sill {
      */
     template <typename XType>
     double
-    operator()(output_variable_type* y1, output_variable_type* y2,
+    operator()(output_variable_type y1, output_variable_type y2,
                const XType& x) const {
       assert(learning_mode_ == 1);
       assert(y1 && y2);
       if (y1 > y2)
         std::swap(y1,y2);
-      std::pair<output_variable_type*,output_variable_type*>
+      std::pair<output_variable_type,output_variable_type>
         y12pair(std::make_pair(y1,y2));
       switch(params.score_type) {
       case 0:

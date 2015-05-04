@@ -8,7 +8,7 @@
 #include <sill/mpi/mpi_wrapper.hpp>
 #include <sill/mpi/mpi_consensus.hpp>
 #include <sill/inference/parallel/mpi_state_adapter.hpp>
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
 
@@ -20,7 +20,7 @@ void create_test_graph(universe &u, factor_graph_model<tablef> &fg) {
   uniform_factor_generator gen;
 
   // Create some variables and factors
-  std::vector<finite_variable*> x(5);
+  std::vector<variable> x(5);
   for(size_t i = 0; i < x.size(); ++i) {
     std::ostringstream strm;
     strm << i;

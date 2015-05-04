@@ -17,7 +17,7 @@ namespace sill {
     boost::uniform_int<int> unif_int;
     finite_assignment a;
     foreach(finite_variable* v, vars) {
-      a[v] = unif_int(rng, v->size());
+      a[v] = unif_int(rng, v.size());
     }
     return a;
   }

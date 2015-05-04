@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <sill/argument/vector_assignment.hpp>
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 
 #include "../math/eigen/helpers.hpp"
 
@@ -10,8 +10,8 @@ using namespace sill;
 
 BOOST_AUTO_TEST_CASE(test_vector_size) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 3);
-  vector_variable* y = u.new_vector_variable("y", 2);
+  variable x = u.new_vector_variable("x", 3);
+  variable y = u.new_vector_variable("y", 2);
   
   vector_assignment<double> a;
   BOOST_CHECK_EQUAL(vector_size(a), 0);
@@ -23,8 +23,8 @@ BOOST_AUTO_TEST_CASE(test_vector_size) {
 
 BOOST_AUTO_TEST_CASE(test_extract) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 3);
-  vector_variable* y = u.new_vector_variable("y", 2);
+  variable x = u.new_vector_variable("x", 3);
+  variable y = u.new_vector_variable("y", 2);
 
   vector_assignment<double> a;
   a[x] = vec3(1, 2, 3);

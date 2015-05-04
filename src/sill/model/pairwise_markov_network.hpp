@@ -23,11 +23,11 @@ namespace sill {
    */
   template <typename NodeF, typename EdgeF = NodeF> 
   class pairwise_markov_network 
-    : public undirected_graph<typename NodeF::variable_type*, NodeF, EdgeF> {
+    : public undirected_graph<typename NodeF::variable_type, NodeF, EdgeF> {
     static_assert(pairwise_compatible<NodeF, EdgeF>::value,
                   "The node and edge factors are not pairwise compatible");
 
-    typedef undirected_graph<typename NodeF::variable_type*, NodeF, EdgeF> base;
+    typedef undirected_graph<typename NodeF::variable_type, NodeF, EdgeF> base;
   
     // Public type declarations
     //==========================================================================
@@ -61,7 +61,7 @@ namespace sill {
 
     /**
      * Constructs a pairwise Markov network with the given vertices.
-     * \tparam Range A forward range over elements convertible to variable_type*
+     * \tparam Range A forward range over elements convertible to variable_type
      */
     template <typename Range>
     explicit pairwise_markov_network(
@@ -93,7 +93,7 @@ namespace sill {
     template <typename OtherNodeF, typename OtherEdgeF>
     explicit pairwise_markov_network(
         const pairwise_markov_network<OtherNodeF, OtherEdgeF>& g) {
-      for (variable_type* v : g.vertices()) {
+      for (variable_type v : g.vertices()) {
         this->add_vertex(v, NodeF(g[v]));
       }
       for (edge_type e : g.edges()) {
@@ -110,7 +110,7 @@ namespace sill {
     }
 
     //! Returns the arguments of the factor associated with a vertex.
-    const node_domain_type& arguments(variable_type* v) const {
+    const node_domain_type& arguments(variable_type v) const {
       return (*this)[v].arguments();
     }
 
@@ -186,7 +186,7 @@ namespace sill {
     /**
      * Computes a minimal Markov graph capturing dependencies in this model.
      */
-    void markov_graph(undirected_graph<variable_type*>& mg) const {
+    void markov_graph(undirected_graph<variable_type>& mg) const {
       for (vertex_type v : this->vertices()) {
         mg.add_vertex(v);
       }
@@ -262,7 +262,7 @@ namespace sill {
      */
     void condition(const assignment_type& a) {
       for (const auto& p : a) {
-        variable_type* u = p.first;
+        variable_type u = p.first;
         if (this->contains(u)) {
           for (edge_type e : this->out_edges(u)) {
             if (!a.count(e.target())) {

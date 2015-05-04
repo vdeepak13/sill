@@ -53,7 +53,7 @@ namespace sill {
      */
     explicit mean_field_pairwise(const model_type* model)
       : model_(*model) {
-      for (variable_type* v : model_.vertices()) {
+      for (variable_type v : model_.vertices()) {
         beliefs_[v] = belief_type({v}, real_type(1));
       }
     }
@@ -63,7 +63,7 @@ namespace sill {
      */
     real_type iterate() {
       real_type sum = 0.0;
-      for (variable_type* v : model_.vertices()) {
+      for (variable_type v : model_.vertices()) {
         sum += update(v);
       }
       return sum / model_.num_vertices();
@@ -72,7 +72,7 @@ namespace sill {
     /**
      * Returns the belief for a vertex.
      */
-    const belief_type& belief(variable_type* v) const {
+    const belief_type& belief(variable_type v) const {
       return beliefs_.at(v);
     }
 
@@ -80,7 +80,7 @@ namespace sill {
     /**
      * Updates a single vertex.
      */
-    real_type update(variable_type* v) {
+    real_type update(variable_type v) {
       NodeF result = model_[v];
       for (edge_type e : model_.in_edges(v)) {
         model_[e].exp_log_multiply(belief(e.source()), result);
@@ -95,7 +95,7 @@ namespace sill {
     const model_type& model_;
 
     //! A map of current beliefs, one for each variable
-    std::unordered_map<variable_type*, belief_type> beliefs_;
+    std::unordered_map<variable_type, belief_type> beliefs_;
 
   }; // class mean_field_pairwise
 

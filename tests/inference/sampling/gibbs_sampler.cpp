@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE gibbs_sampler
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/random/functional.hpp>
 #include <sill/factor/random/ising_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
@@ -38,7 +38,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   boost::mt19937 rng(random_seed);
   ising_factor_generator gen(0.0, 0.5, 0.0, 1.0);
   
-  finite_var_vector variables = u.new_finite_variables(m*n, 2);
+  domain variables = u.new_finite_variables(m*n, 2);
   pairwise_markov_network<table_factor> mn;
   make_grid_graph(variables, m, n, mn);
   mn.initialize(marginal_fn(gen, rng));
@@ -48,7 +48,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   std::vector<table_factor> var_marginals;
   decomposable<table_factor> joint;
   joint *= mn.factors();
-  foreach(finite_variable* v, variables) {
+  foreach(variable v, variables) {
     var_marginals.push_back(joint.marginal(make_domain(v)));
   }
   cout << "Computed exact marginals." << endl;
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   cout << "Samples\tAvg L1 Error" << endl;
   sequential_gibbs_sampler<table_factor> sampler(mn);
   std::vector<table_factor> approx_var_marginals;
-  foreach(finite_variable* v, variables) {
+  foreach(variable v, variables) {
     approx_var_marginals.push_back(table_factor(make_domain(v), 0));
   }
 

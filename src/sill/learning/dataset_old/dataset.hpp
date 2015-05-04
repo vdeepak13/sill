@@ -788,8 +788,8 @@ namespace sill {
   /*
     vector_type dataset::vector(size_t i, vector_variable* v) const {
     assert(v);
-    vector_type val(v->size());
-    for (size_t k(0); k < v->size(); ++k)
+    vector_type val(v.size());
+    for (size_t k(0); k < v.size(); ++k)
     val[k] = vector(i, safe_get(*vector_numbering_ptr_, v) + k);
     return val;
     }
@@ -798,7 +798,7 @@ namespace sill {
   template <typename LA>
   typename dataset<LA>::value_type
   dataset<LA>::vector(size_t i, vector_variable* v, size_t j) const {
-    assert(v && (j < v->size()));
+    assert(v && (j < v.size()));
     return vector(i, safe_get(*vector_numbering_ptr_, v) + j);
   }
 
@@ -852,7 +852,7 @@ namespace sill {
       if (!has_variable(v))
         throw std::invalid_argument
           ("dataset::covariance() given variable not in dataset");
-      Xsize += v->size();
+      Xsize += v.size();
     }
     if (mu.size() != Xsize)
       mu.zeros(Xsize);
@@ -885,7 +885,7 @@ namespace sill {
       if (!has_variable(v))
         throw std::invalid_argument
           ("dataset::covariance() given variable not in dataset");
-      Xsize += v->size();
+      Xsize += v.size();
     }
     cov.zeros(Xsize, Xsize);
     if (nrecords <= 1)
@@ -918,11 +918,11 @@ namespace sill {
       }
     } else if (format == "vars") {
       foreach(finite_variable* v, finite_seq)
-        out << v->name() << "\t" << v->type() << "\t"
-            << v->size() << "\n";
+        out << v.name() << "\t" << v.type() << "\t"
+            << v.size() << "\n";
       foreach(vector_variable* v, vector_seq)
-        out << v->name() << "\t" << v->type() << "\t"
-            << v->size() << "\n";
+        out << v.name() << "\t" << v.type() << "\t"
+            << v.size() << "\n";
     } else if (format == "tabbed") {
       foreach(const record_type& r, records()) {
         foreach(size_t f, r.finite())

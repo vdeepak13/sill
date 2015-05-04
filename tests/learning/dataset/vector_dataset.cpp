@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE vector_dataset
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/learning/dataset/vector_dataset.hpp>
 #include <sill/learning/dataset/vector_dataset_io.hpp>
@@ -13,8 +13,8 @@
 #include <random>
 
 namespace sill {
-  template class basic_dataset<vector_data_traits<double> >;
-  template class basic_dataset<vector_data_traits<float> >;
+  template class basic_dataset<vector_data_traits<double, variable> >;
+  template class basic_dataset<vector_data_traits<float, variable> >;
 }
 
 using namespace sill;
@@ -25,12 +25,10 @@ typedef std::pair<vector_assignment<>, double> sample_assignment_type;
 BOOST_TEST_DONT_PRINT_LOG_VALUE(sample_type);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(sample_assignment_type);
 
-typedef domain<vector_variable*> domain_type;
-
 BOOST_AUTO_TEST_CASE(test_insert) {
   universe u;
-  domain_type v = u.new_vector_variables(2, 1);
-  v.push_back(u.new_vector_variable(2));
+  domain v = u.new_vector_variables(2, "v", 1);
+  v.push_back(u.new_vector_variable("w", 2));
   
   vector_dataset<> ds;
   ds.initialize(v);
@@ -103,7 +101,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
 
 BOOST_AUTO_TEST_CASE(test_value_iterators) {
   universe u;
-  vector_var_vector v = u.new_vector_variables(3, 1);
+  domain v = u.new_vector_variables(3, "v", 1);
   
   vector_dataset<> ds;
   ds.initialize(v);
@@ -137,10 +135,10 @@ BOOST_AUTO_TEST_CASE(test_value_iterators) {
 
 BOOST_AUTO_TEST_CASE(test_assignment_iterators) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 1);
-  vector_variable* y = u.new_vector_variable("y", 1);
-  vector_variable* z = u.new_vector_variable("z", 2);
-  domain_type v = {x, y, z};
+  variable x = u.new_vector_variable("x", 1);
+  variable y = u.new_vector_variable("y", 1);
+  variable z = u.new_vector_variable("z", 2);
+  domain v = {x, y, z};
 
   vector_dataset<> ds(v);
 
@@ -179,14 +177,14 @@ BOOST_AUTO_TEST_CASE(test_assignment_iterators) {
 
 struct fixture {
   universe u;
-  domain_type v;
+  domain v;
   vector_dataset<> ds;
   mgaussian f;
   factor_mle<mgaussian> mle;
   std::mt19937 rng;
 
   fixture()  {
-    v = u.new_vector_variables(3, 1);
+    v = u.new_vector_variables(3, "v", 1);
     ds.initialize(v, 1000);
     f = mgaussian(v, vec3(0.5, 1, 2), mat33(3, 2, 1, 2, 2, 1, 1, 1, 2));
     auto d = f.distribution();
@@ -201,7 +199,7 @@ BOOST_FIXTURE_TEST_CASE(test_reconstruction, fixture) {
   // matches the factor for every variable or every pair of variables
   for (size_t i = 0; i < v.size(); ++i) {
     for (size_t j = i; j < v.size(); ++j) {
-      domain_type dom = domain_type({v[i], v[j]}).unique();
+      domain dom = domain({v[i], v[j]}).unique();
       double kl = kl_divergence(f.marginal(dom), mle(ds, dom));
       std::cout << dom << ": " << kl << std::endl;
       BOOST_CHECK_SMALL(kl, 1e-2);
@@ -209,7 +207,7 @@ BOOST_FIXTURE_TEST_CASE(test_reconstruction, fixture) {
   }
 
   // fill the content of the dataset using mutable iteration
-  domain_type v01 = {v[0], v[1]};
+  domain v01 = {v[0], v[1]};
   for (auto& sample : ds(v01)) {
     sample.first[0] = nan<double>();
     sample.first[1] = nan<double>();
@@ -224,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE(test_reconstruction, fixture) {
   }
 
   // verify that the marginal over v[2] is still good
-  domain_type dom2 = {v[2]};
+  domain dom2 = {v[2]};
   double kl = kl_divergence(f.marginal(dom2), mle(ds, dom2));
   std::cout << "Rest: " << kl << std::endl;
   BOOST_CHECK_SMALL(kl, 1e-2);

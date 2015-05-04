@@ -3,7 +3,7 @@
 
 #include <sill/inference/loopy/pairwise_mn_bp.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/random/functional.hpp>
@@ -37,13 +37,13 @@ void test(pairwise_mn_bp<cgaussian>&& engine,
   }
 
   // check that the marginal means have converged to the true means
-  for (vector_variable* v : joint.arguments()) {
+  for (variable v : joint.arguments()) {
     mgaussian belief(engine.belief(v));
     BOOST_CHECK_SMALL((belief.mean(v) - joint.mean(v)).norm(), error);
   }
 
   // check that the edge marginals agree on the shared variable
-  for (vector_variable* v : engine.graph().vertices()) {
+  for (variable v : engine.graph().vertices()) {
     cgaussian nbelief = engine.belief(v);
     for (auto e : engine.graph().in_edges(v)) {
       cgaussian ebelief = engine.belief(e);
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
 
   // construct a grid network with attractive Gaussian potentials
   universe u;
-  vector_var_vector variables = u.new_vector_variables(m * n, 1);
+  domain variables = u.new_vector_variables(m * n, "v", 1);
   pairwise_markov_network<cgaussian> model;
   make_grid_graph(variables, m, n, model);
   moment_gaussian_generator<double> gen;

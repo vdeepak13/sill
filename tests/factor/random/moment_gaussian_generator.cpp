@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE moment_gaussian_generator
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 
 namespace sill {
@@ -13,18 +13,17 @@ using namespace sill;
 
 typedef dynamic_vector<double> vec_type;
 typedef dynamic_matrix<double> mat_type;
-typedef domain<vector_variable*> domain_type;
 
 size_t nsamples = 100;
 
 BOOST_AUTO_TEST_CASE(test_all) {
   universe u;
-  vector_variable* x1 = u.new_vector_variable(1);
-  vector_variable* x2 = u.new_vector_variable(2);
-  vector_variable* y = u.new_vector_variable(1);
-  domain_type xs = {x1, x2};
-  domain_type ys = {y};
-  domain_type xy = {x1, x2, y};
+  variable x1 = u.new_vector_variable("x1", 1);
+  variable x2 = u.new_vector_variable("x2", 2);
+  variable y = u.new_vector_variable("y", 1);
+  domain xs = {x1, x2};
+  domain ys = {y};
+  domain xy = {x1, x2, y};
 
   std::mt19937 rng;
   moment_gaussian_generator<double> gen(-0.5, 1.5, 2.0, 0.3, 0);

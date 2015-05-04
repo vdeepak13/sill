@@ -72,7 +72,7 @@ namespace sill {
       allocated_ = std::max(capacity, size_t(1));
       inserted_ = 0;
       size_t col = 0;
-      for (argument_type* v : args) {
+      for (argument_type v : args) {
         col_.emplace(v, col);
         col += Traits::ncols(v);
       }
@@ -166,7 +166,7 @@ namespace sill {
       value_type value;
       value.first.resize(Traits::ncols(dom));
       element_type* dest = value.first.data();
-      for (argument_type* v : dom) {
+      for (argument_type v : dom) {
         for (size_t i = 0, col = col_.at(v); i < Traits::ncols(v); ++i, ++col) {
           *dest++ = colptr_[col][row];
         }
@@ -200,7 +200,7 @@ namespace sill {
     std::pair<assignment_type, weight_type>
     assignment(size_t row, const domain_type& dom) const {
       std::pair<assignment_type, weight_type> a;
-      for (argument_type* v : dom) {
+      for (argument_type v : dom) {
         Traits::copy(&colptr_[col_.at(v)], Traits::ncols(v), row, a.first[v]);
       }
       a.second = weight_[row];
@@ -244,7 +244,7 @@ namespace sill {
       data_type values;
       values.resize(num_cols());
       size_t col = 0;
-      for (argument_type* v : args_) {
+      for (argument_type v : args_) {
         Traits::copy(a.at(v), Traits::ncols(v), &values[col]);
         col += Traits::ncols(v);
       }
@@ -676,7 +676,7 @@ namespace sill {
       void load_advance() {
         if (nrows_ > 0) {
           size_t col = 0;
-          for (argument_type* v : args_) {
+          for (argument_type v : args_) {
             Traits::copy(&elems_[col], Traits::ncols(v), 0, value_.first[v]);
             col += Traits::ncols(v);
           }
@@ -734,7 +734,7 @@ namespace sill {
     std::vector<element_type*> colptrs(const domain_type& dom) const {
       std::vector<element_type*> result;
       result.reserve(Traits::ncols(dom));
-      for (argument_type* v : dom) {
+      for (argument_type v : dom) {
         size_t col = col_.at(v);
         for (size_t i = 0; i < Traits::ncols(v); ++i, ++col) {
           result.push_back(colptr_[col]);
@@ -744,7 +744,7 @@ namespace sill {
     }
 
     domain_type args_;                      //!< the dataset arguments
-    std::unordered_map<argument_type*, size_t> col_; //!< the column of each arg
+    std::unordered_map<argument_type, size_t> col_; //!< the column of each arg
     std::unique_ptr<element_type[]> data_;  //!< the data storage
     std::unique_ptr<weight_type[]> weight_; //!< the weight storage
     std::vector<element_type*> colptr_;     //!< pointers to the elements

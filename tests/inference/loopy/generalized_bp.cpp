@@ -4,7 +4,7 @@
 #include <sill/inference/loopy/generalized_bp.hpp>
 #include <sill/inference/loopy/generalized_bp_pc.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/random/functional.hpp>
@@ -26,11 +26,9 @@ namespace sill {
 
 using namespace sill;
 
-typedef domain<finite_variable*> domain_type;
-
 template <typename Engine>
 void test(const pairwise_markov_network<ptable>& model,
-          const region_graph<domain_type>& rg,
+          const region_graph<domain>& rg,
           size_t niters,
           const decomposable<ptable>& joint,
           double error_tol,
@@ -51,7 +49,7 @@ void test(const pairwise_markov_network<ptable>& model,
   
   // check if the approximation error is small enough
   double max_error = 0;
-  for (finite_variable* var : joint.arguments()) {
+  for (variable var : joint.arguments()) {
     ptable exact = joint.marginal({var});
     ptable approx = engine.belief({var});
     double error = max_diff(exact, approx);
@@ -78,24 +76,24 @@ struct fixture {
     size_t n = 4;
 
     // generate a random model
-    finite_var_vector varvec = u.new_finite_variables(m * n, 2);
-    arma::field<finite_variable*> vars = make_grid_graph(varvec, m, n, mn);
+    domain varvec = u.new_finite_variables(m * n, "v", 2);
+    arma::field<variable> vars = make_grid_graph(varvec, m, n, mn);
     uniform_table_generator<ptable> gen;
     std::mt19937 rng;
     mn.initialize(marginal_fn(gen, rng), marginal_fn(gen, rng));
 
     // create a region graph with clusters over pairs of adjacent variables
-    std::vector<domain_type> clusters;
+    std::vector<domain> clusters;
     for (auto e : mn.edges()) {
       clusters.push_back({e.source(), e.target()});
     }
     pairs_rg.bethe(clusters);
 
     // create a region graph with clusters over 2x2 adjacent variables
-    std::vector<domain_type> root_clusters;
+    std::vector<domain> root_clusters;
     for(size_t i = 0; i < m - 1; i++) {
       for(size_t j = 0; j < n - 1; j++) {
-        domain_type cluster({vars(i,j), vars(i+1,j), vars(i,j+1), vars(i+1,j+1)});
+        domain cluster({vars(i,j), vars(i+1,j), vars(i,j+1), vars(i+1,j+1)});
         root_clusters.push_back(cluster);
       }
     }
@@ -107,8 +105,8 @@ struct fixture {
 
   universe u;
   pairwise_markov_network<ptable> mn;
-  region_graph<domain_type> pairs_rg;
-  region_graph<domain_type> square_rg;
+  region_graph<domain> pairs_rg;
+  region_graph<domain> square_rg;
   decomposable<ptable> dm;
 };
 

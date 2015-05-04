@@ -47,7 +47,7 @@ namespace sill {
 
     //! Constructor
     /*
-    jt_ipf(const junction_tree<variable_type*>& jt)
+    jt_ipf(const junction_tree<variable_type>& jt)
       :jt_engine(jt) { }
     */
 

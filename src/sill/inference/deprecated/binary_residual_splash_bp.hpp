@@ -359,7 +359,7 @@ namespace sill {
     /**
      * Compute the belief for a vertex
      */
-    belief_type belief(variable_type* variable) {
+    belief_type belief(variable_type variable) {
       // Initialize the belief as uniform
       belief_type blf = belief_type(make_domain(variable), 
                                     1.0).normalize();

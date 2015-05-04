@@ -1,8 +1,7 @@
 #ifndef SILL_GAUSSIAN_FACTOR_HPP
 #define SILL_GAUSSIAN_FACTOR_HPP
 
-#include <sill/argument/domain.hpp>
-#include <sill/base/vector_variable.hpp>
+#include <sill/argument/basic_domain.hpp>
 #include <sill/datastructure/vector_map.hpp>
 #include <sill/factor/base/factor.hpp>
 #include <sill/math/eigen/matrix_index.hpp>
@@ -14,9 +13,10 @@ namespace sill {
    *
    * \ingroup factor_types
    */
+  template <typename Var>
   class gaussian_factor : public factor {
   public:
-    typedef domain<vector_variable*> domain_type;
+    typedef basic_domain<Var> domain_type;
 
     // Constructors and indexing
     //==========================================================================
@@ -35,10 +35,10 @@ namespace sill {
     }
 
     //! Returns the start of a single variable.
-    size_t start(vector_variable* v) const {
+    size_t start(Var v) const {
       auto it = start_.find(v);
       if (it == start_.end()) {
-        throw std::invalid_argument("Could not find variable " + v->str());
+        throw std::invalid_argument("Could not find variable " + v.str());
       }
       return it->second;
     }
@@ -46,8 +46,8 @@ namespace sill {
     //! Returns the indices of arguments of this corresponding to dom.
     matrix_index index_map(const domain_type& dom) const {
       matrix_index result;
-      for (vector_variable* v : dom) {
-        result.append(start(v), v->size());
+      for (Var v : dom) {
+        result.append(start(v), v.size());
       }
       return result;
     }
@@ -77,7 +77,7 @@ namespace sill {
     }
 
     //! Renames the arguments and the variable-index span map
-    void subst_args(const vector_var_map& map) {
+    void subst_args(const std::unordered_map<Var, Var>& map) {
       start_.subst_keys(map);
     }
 
@@ -87,15 +87,15 @@ namespace sill {
     }
 
     //! The map from each variable to its index span
-    vector_map<vector_variable*, size_t> start_;
+    vector_map<Var, size_t> start_;
 
   private:
     //! Inserts a domain into the start structure.
     size_t insert_start(const domain_type& args) {
       size_t n = 0;
-      for (vector_variable* v : args) {
+      for (Var v : args) {
         start_.emplace(v, n);
-        n += v->size();
+        n += v.size();
       }
       return n;
     }

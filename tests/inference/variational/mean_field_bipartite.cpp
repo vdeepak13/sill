@@ -3,7 +3,7 @@
 
 #include <sill/inference/variational/mean_field_bipartite.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_array.hpp>
 #include <sill/factor/probability_array.hpp>
 #include <sill/factor/probability_table.hpp>
@@ -17,7 +17,7 @@
 
 using namespace sill;
 
-typedef finite_variable* vertex_type;
+typedef variable vertex_type;
 BOOST_STRONG_TYPEDEF(vertex_type, vertex1);
 BOOST_STRONG_TYPEDEF(vertex_type, vertex2);
 
@@ -26,14 +26,14 @@ namespace std {
   struct hash<::vertex1> {
     typedef ::vertex1 argument_type;
     typedef size_t result_type;
-    size_t operator()(::vertex1 v) const { return size_t(v.t); }
+    size_t operator()(::vertex1 v) const { return hash_value(v.t); }
   };
 
   template<>
   struct hash<::vertex2> {
     typedef ::vertex2 argument_type;
     typedef size_t result_type;
-    size_t operator()(::vertex2 v) const { return size_t(v.t); }
+    size_t operator()(::vertex2 v) const { return hash_value(v.t); }
   };
 }
 
@@ -110,9 +110,9 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
 // consider boost strong typedef
 template <int index>
 struct vertex { 
-  finite_variable* v;
+  variable v;
   vertex() : v(NULL) { }
-  vertex(finite_variable* v) : v(v) { }
+  vertex(variable v) : v(v) { }
   size_t id() const { return v ? v->id() : -1; }
   bool operator<(vertex u) const { return id() < u.id(); }
   bool operator==(vertex u) const { return id() == u.id(); }

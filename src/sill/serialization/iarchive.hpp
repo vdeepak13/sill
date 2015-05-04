@@ -4,6 +4,7 @@
 #include <cassert>
 #include <cstdint>
 #include <iostream>
+#include <unordered_map>
 
 #include <boost/noncopyable.hpp>
 
@@ -96,6 +97,25 @@ namespace sill {
       return it;
     }
 
+    //! Deserializes a dynamically allocated object.
+    template <typename Object>
+    Object* deserialize_dynamic() {
+      int64_t id = deserialize_int();
+      if (id == 0) {
+        return nullptr;
+      } else {
+        auto it = dynamic_.find(id);
+        if (it == dynamic_.end()) {
+          Object* obj = new Object;
+          obj->load(*this);
+          dynamic_.emplace(id, obj);
+          return obj;
+        } else {
+          return static_cast<Object*>(it->second);
+        }
+      }
+    }
+
     SILL_DESERIALIZE_CHAR(bool)
     SILL_DESERIALIZE_CHAR(char)
     SILL_DESERIALIZE_CHAR(unsigned char);
@@ -122,9 +142,18 @@ namespace sill {
     }
 
   private:
-    std::istream* in_;  //!< The stream from which we read data.
-    sill::universe* u_; //!< The attached universe.
-    size_t bytes_;      //!< The number of bytes read.
+
+     //!< The stream from which we read data.
+    std::istream* in_;
+
+    //!< The attached universe.
+    sill::universe* u_;
+
+    //!< The number of bytes read.
+    size_t bytes_;
+
+    //! A map that stores for each ID a dynamically allocated object.
+    std::unordered_map<size_t, void*> dynamic_;
   };
 
   /**

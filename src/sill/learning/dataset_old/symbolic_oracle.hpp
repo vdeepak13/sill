@@ -500,7 +500,7 @@ namespace sill {
       case variable::VECTOR_VARIABLE: {
 	vector_variable* v = vector_seq[nv];
 	for (size_t k = vector_numbering_ptr_->operator[](v);
-	     k < vector_numbering_ptr_->operator[](v) + v->size();
+	     k < vector_numbering_ptr_->operator[](v) + v.size();
 	     k++) {
 	  if (token_iter == tokens.end()) {
 	    if (j > 0)

@@ -3,15 +3,15 @@
 
 #include <sill/factor/moment_gaussian.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 
 #include "predicates.hpp"
 #include "../math/eigen/helpers.hpp"
 
 namespace sill {
-  template class moment_gaussian<double>;
-  template class moment_gaussian<float>;
+  template class moment_gaussian<double, variable>;
+  template class moment_gaussian<float, variable>;
   template class moment_gaussian_param<double>;
   template class moment_gaussian_param<float>;
 }
@@ -24,11 +24,11 @@ typedef dynamic_matrix<double> mat_type;
 
 boost::test_tools::predicate_result
 mg_properties(const mgaussian& f,
-              const domain<vector_variable*>& head,
-              const domain<vector_variable*>& tail = domain<vector_variable*>()) {
+              const domain& head,
+              const domain& tail = domain()) {
   size_t m = vector_size(head);
   size_t n = vector_size(tail);
-  domain<vector_variable*> args = head + tail;
+  domain args = head + tail;
 
   if (f.empty() && !args.empty()) {
     boost::test_tools::predicate_result result(false);
@@ -132,9 +132,9 @@ mg_params(const mgaussian& f,
 
 BOOST_AUTO_TEST_CASE(test_constructors) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 2);
-  vector_variable* y = u.new_vector_variable("y", 1);
-  vector_variable* z = u.new_vector_variable("z", 1);
+  variable x = u.new_vector_variable("x", 2);
+  variable y = u.new_vector_variable("y", 1);
+  variable z = u.new_vector_variable("z", 1);
 
   mgaussian a;
   BOOST_CHECK(a.empty());
@@ -181,9 +181,9 @@ BOOST_AUTO_TEST_CASE(test_constructors) {
 
 BOOST_AUTO_TEST_CASE(test_assignment_swap) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 2);
-  vector_variable* y = u.new_vector_variable("y", 1);
-  vector_variable* z = u.new_vector_variable("z", 1);
+  variable x = u.new_vector_variable("x", 2);
+  variable y = u.new_vector_variable("y", 1);
+  variable z = u.new_vector_variable("z", 1);
 
   mgaussian f;
   f = logd(2.0);
@@ -215,8 +215,8 @@ BOOST_AUTO_TEST_CASE(test_assignment_swap) {
 
 BOOST_AUTO_TEST_CASE(test_indexing) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 2);
-  vector_variable* y = u.new_vector_variable("y", 1);
+  variable x = u.new_vector_variable("x", 2);
+  variable y = u.new_vector_variable("y", 1);
   
   mgaussian f({x, y}, vec3(2, 1, 0), 2*mat_type::Identity(3, 3), 0.5);
   vec_type vec = vec3(0.5, -2, 0);
@@ -228,8 +228,8 @@ BOOST_AUTO_TEST_CASE(test_indexing) {
   BOOST_CHECK_EQUAL(a[x], vec2(3, 2));
   BOOST_CHECK_EQUAL(a[y], vec1(1));
 
-  vector_variable* v = u.new_vector_variable("v", 2);
-  vector_variable* w = u.new_vector_variable("w", 1);
+  variable v = u.new_vector_variable("v", 2);
+  variable w = u.new_vector_variable("w", 1);
   f.subst_args({{x, v}, {y, w}});
   BOOST_CHECK(mg_properties(f, {v, w}));
 }
@@ -237,9 +237,9 @@ BOOST_AUTO_TEST_CASE(test_indexing) {
 
 BOOST_AUTO_TEST_CASE(test_multiplication) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 1);
-  vector_variable* y = u.new_vector_variable("y", 2);
-  vector_variable* z = u.new_vector_variable("z", 1);
+  variable x = u.new_vector_variable("x", 1);
+  variable y = u.new_vector_variable("y", 2);
+  variable z = u.new_vector_variable("z", 1);
 
   // small test
   mgaussian f({x}, {y}, vec1(1), mat11(2), mat12(0.5, 3), 1.2);
@@ -287,9 +287,9 @@ BOOST_AUTO_TEST_CASE(test_multiplication) {
 
 BOOST_AUTO_TEST_CASE(test_collapse) {  
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 1);
-  vector_variable* y = u.new_vector_variable("y", 1);
-  vector_variable* z = u.new_vector_variable("z", 1);
+  variable x = u.new_vector_variable("x", 1);
+  variable y = u.new_vector_variable("y", 1);
+  variable z = u.new_vector_variable("z", 1);
 
   vec_type mean = vec3(2, 0.5, 0.2);
   mat_type cov = mat33(2, 1, 1, 1, 3, 1, 1, 1, 4);
@@ -337,10 +337,10 @@ BOOST_AUTO_TEST_CASE(test_collapse) {
 
 BOOST_AUTO_TEST_CASE(test_restrict) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 1);
-  vector_variable* y = u.new_vector_variable("y", 1);
-  vector_variable* z = u.new_vector_variable("z", 1);
-  vector_variable* w = u.new_vector_variable("w", 1);
+  variable x = u.new_vector_variable("x", 1);
+  variable y = u.new_vector_variable("y", 1);
+  variable z = u.new_vector_variable("z", 1);
+  variable w = u.new_vector_variable("w", 1);
 
   mgaussian f({x, y}, {z, w}, vec2(3,4), mat22(2,1,1,2), mat22(4,5,2,-1), 2.0);
 
@@ -361,9 +361,9 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
 
 BOOST_AUTO_TEST_CASE(test_sample) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 1);
-  vector_variable* y = u.new_vector_variable("y", 1);
-  vector_variable* z = u.new_vector_variable("z", 1);
+  variable x = u.new_vector_variable("x", 1);
+  variable y = u.new_vector_variable("y", 1);
+  variable z = u.new_vector_variable("z", 1);
   std::mt19937 rng1;
   std::mt19937 rng2;
   std::mt19937 rng3;
@@ -403,9 +403,9 @@ BOOST_AUTO_TEST_CASE(test_sample) {
 
 BOOST_AUTO_TEST_CASE(test_entropy) {
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 1);
-  vector_variable* y = u.new_vector_variable("y", 1);
-  vector_variable* z = u.new_vector_variable("z", 1);
+  variable x = u.new_vector_variable("x", 1);
+  variable y = u.new_vector_variable("y", 1);
+  variable z = u.new_vector_variable("z", 1);
 
   vec_type mean = vec3(2, 0.5, 0.2);
   mat_type cov = mat33(2, 1, 1, 1, 3, 1, 1, 1, 4);

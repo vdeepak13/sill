@@ -59,7 +59,7 @@ namespace sill{
     size_t  numvars = bis.read<int32_t>();
     size_t  numedges = bis.read<int32_t>();
     if (bis.fail()) return false;
-    std::vector<variable_type*> idtovar;
+    std::vector<variable_type> idtovar;
     idtovar.resize(numvars);
     // ignore the next 2 * num_edges * int32_t bytes
     // this will contain the list of edges which we do not need
@@ -78,7 +78,7 @@ namespace sill{
       //char temp[16]; sprintf(temp,"%d", varid);
       std::stringstream varname;
       varname << varid;
-      variable_type* var = universe.new_finite_variable(varname.str(), cardinality);
+      variable_type var = universe.new_finite_variable(varname.str(), cardinality);
       idtovar[varid] = var;
 
       // create the factor
@@ -103,13 +103,13 @@ namespace sill{
       // read the src vertex
       size_t srcid = bis.read<int32_t>();
       assert(srcid< numvars);
-      variable_type* varsrc = idtovar[srcid];
+      variable_type varsrc = idtovar[srcid];
       size_t srccard = bis.read<int32_t>();
       if (bis.fail()) return false;
       // read the destination vertex
       size_t destid = bis.read<int32_t>();
       assert(destid < numvars);
-      variable_type* vardest = idtovar[destid];
+      variable_type vardest = idtovar[destid];
       size_t destcard = bis.read<int32_t>();
       if (bis.fail()) return false;
       
@@ -187,18 +187,18 @@ namespace sill{
     typedef typename factor_graph_model<F>::variable_type variable_type;
     assert(network.arguments().size() == truth_asgs.size());
     size_t correct = 0;
-    foreach(variable_type* v, network.arguments()) {
+    foreach(variable_type v, network.arguments()) {
       F blf = engine.belief(v);
       assert(blf.arguments().size() == 1);
       // find the max assignment in the belief
       size_t pred = 0;
-      for(size_t asg = 0; asg < v->size(); ++asg) {
+      for(size_t asg = 0; asg < v.size(); ++asg) {
         if (blf.v(asg) > blf.v(pred)) {
           pred = asg;
         }
       }
 
-      int varid = atoi(v->name().c_str());
+      int varid = atoi(v.name().c_str());
       if( truth_asgs[varid].count(pred) > 0 ) ++correct;
     }
     return static_cast<double>(correct) / network.arguments().size();

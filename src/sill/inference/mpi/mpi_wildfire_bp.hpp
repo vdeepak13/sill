@@ -472,7 +472,7 @@ namespace sill {
         return recvbuf == 1;
       }
 
-      const F& belief(variable_type* variable) const {
+      const F& belief(variable_type variable) const {
         return belief(root_factor_graph_->to_vertex(variable));
       } // end of send_message
 

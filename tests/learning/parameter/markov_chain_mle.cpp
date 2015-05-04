@@ -22,11 +22,11 @@ BOOST_AUTO_TEST_CASE(test_reconstruct) {
   size_t length = 100;
 
   // create the processes
-  vector_discrete_process* x = new vector_discrete_process("x", 1);
-  vector_discrete_process* y = new vector_discrete_process("y", 2);
-  std::vector<vector_discrete_process*> xy = make_vector(x, y);
-  vector_var_vector xy_t = variables(xy, current_step);
-  vector_var_vector xy_t1 = variables(xy, next_step);
+  dprocess x = new vector_discrete_process("x", 1);
+  dprocess y = new vector_discrete_process("y", 2);
+  std::vector<dprocess> xy = make_vector(x, y);
+  domain xy_t = variables(xy, current_step);
+  domain xy_t1 = variables(xy, next_step);
 
   // create the chain
   moment_gaussian init(xy_t, "-1 0 1", "2 0.5 0.2; 0.5 1 0.2; 0.2 0.2 1");

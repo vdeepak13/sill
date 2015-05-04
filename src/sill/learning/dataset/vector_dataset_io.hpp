@@ -28,7 +28,7 @@ namespace sill {
         "The dataset contains variable(s) that are not vector"
       );
     }
-    domain<vector_variable*> vars = format.vector_vars();
+    domain vars = format.vector_vars();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -44,8 +44,8 @@ namespace sill {
       if (format.parse(index.size(), line, line_number, tokens)) {
         size_t col = format.skip_cols;
         size_t i = 0;
-        for (vector_variable* v : vars) {
-          size_t size = v->size();
+        for (variable v : vars) {
+          size_t size = v.size();
           if (std::count(&tokens[col], &tokens[col] + size, format.missing)) {
             // TODO: warning if only a subset of columns missing
             index.segment(i, size).fill(std::numeric_limits<T>::quiet_NaN());
@@ -78,7 +78,7 @@ namespace sill {
         "The dataset contains variable(s) that are not vector"
       );
     }
-    domain<vector_variable*> vars = format.vector_vars();
+    domain vars = format.vector_vars();
     
     std::ofstream out(filename);
     if (!out) {

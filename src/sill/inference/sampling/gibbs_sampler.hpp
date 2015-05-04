@@ -122,7 +122,7 @@ namespace sill {
 
     //! Return the last variable which was updated.
     //! This returns NULL if no samples have been taken.
-    variable_type* last_variable() const {
+    variable_type last_variable() const {
       if (last_v < var_sequence.size())
         return var_sequence[last_v];
       else
@@ -164,14 +164,14 @@ namespace sill {
     std::vector<std::vector<size_t> > var2factors;
 
     //! var2factors[v] = pointers to factors which include variable v
-//    std::map<variable_type*, std::vector<const factor_type*> > var2factors;
+//    std::map<variable_type, std::vector<const factor_type*> > var2factors;
 
     //! Current assignment to variables
     record_type r;
 
     //! Last variable which was updated
     size_t last_v;
-    //    variable_type* last_v;
+    //    variable_type last_v;
 
     //! singleton_factors[index into var_sequence]
     //!   = factor whose domain is only that variable
@@ -200,7 +200,7 @@ namespace sill {
         std::vector<size_t> perm(randperm(vars.size(), rng));
         var_sequence.resize(vars.size());
         size_t j = 0;
-        foreach(variable_type* v, vars) {
+        foreach(variable_type v, vars) {
           var_sequence[perm[j]] = v;
           ++j;
         }
@@ -215,7 +215,7 @@ namespace sill {
       }
 
       // Set var2factors, r_numberings.
-      std::map<variable_type*, size_t> var2index;
+      std::map<variable_type, size_t> var2index;
       for (size_t i = 0; i < var_sequence.size(); ++i) {
         var2index[var_sequence[i]] = i;
       }
@@ -225,7 +225,7 @@ namespace sill {
       r_numberings.resize(factor_ptrs.size());
       for (size_t i = 0; i < factor_ptrs.size(); ++i) {
         const factor_type& f = *(factor_ptrs[i]);
-        foreach(variable_type* v, f.arguments()) {
+        foreach(variable_type v, f.arguments()) {
           var2factors[var2index[v]].push_back(i);
         }
         f.set_record_indices(r, r_numberings[i]);
@@ -238,7 +238,7 @@ namespace sill {
 
       singleton_factors.clear();
       singleton_factors_tmp.clear();
-      foreach(variable_type* v, var_sequence)
+      foreach(variable_type v, var_sequence)
         singleton_factors.push_back(factor_type(make_domain(v)));
       singleton_factors_tmp = singleton_factors;
     } // init(model)

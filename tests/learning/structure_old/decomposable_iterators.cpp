@@ -3,7 +3,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>
 #include <sill/learning/dataset_old/dataset_statistics.hpp>

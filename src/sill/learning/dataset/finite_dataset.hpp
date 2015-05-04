@@ -1,9 +1,8 @@
 #ifndef SILL_FINITE_DATASET_HPP
 #define SILL_FINITE_DATASET_HPP
 
+#include <sill/argument/basic_domain.hpp>
 #include <sill/argument/finite_assignment.hpp>
-#include <sill/argument/domain.hpp>
-#include <sill/base/finite_variable.hpp>
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/learning/dataset/basic_dataset.hpp>
 
@@ -15,17 +14,17 @@ namespace sill {
    * The traits for a dataset that stores observations for finite variables.
    * \tparam T the type representing the weights
    */
-  template <typename T>
+  template <typename T, typename Var>
   struct finite_data_traits {
-    typedef finite_variable          variable_type;
-    typedef domain<finite_variable*> domain_type;
-    typedef finite_assignment        assignment_type;
-    typedef finite_index             data_type;
-    typedef size_t                   element_type;
-    typedef T                        weight_type;
+    typedef Var                    variable_type;
+    typedef basic_domain<Var>      domain_type;
+    typedef finite_assignment<Var> assignment_type;
+    typedef finite_index           data_type;
+    typedef size_t                 element_type;
+    typedef T                      weight_type;
 
     //! Returns the number of columns occupied by a variable (always 1).
-    static constexpr size_t ncols(finite_variable* v) {
+    static constexpr size_t ncols(Var v) {
       return 1;
     }
 
@@ -60,8 +59,8 @@ namespace sill {
    * \tparam T the type representing the weights
    * \see Dataset
    */
-  template <typename T = double>
-  using finite_dataset = basic_dataset<finite_data_traits<T> >;
+  template <typename T = double, typename Var = variable>
+  using finite_dataset = basic_dataset<finite_data_traits<T, Var> >;
 
 } // namespace sill
 

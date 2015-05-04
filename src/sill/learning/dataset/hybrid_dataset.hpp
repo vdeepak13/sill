@@ -31,16 +31,16 @@ namespace sill {
    * \tparam T the type representing the weights and vector values
    * \see Dataset
    */
-  template <typename T = double>
-  class hybrid_dataset  {
+  template <typename T = double, typename Var = variable>
+  class hybrid_dataset {
   public:
     // Dataset concept types
-    typedef void                 traits_type;
-    typedef variable             argument_type;
-    typedef hybrid_domain        domain_type;
-    typedef hybrid_assignment<T> assignment_type;
-    typedef hybrid_index<T>      data_type;
-    typedef T                    weight_type;
+    typedef void                      traits_type;
+    typedef Var                       argument_type;
+    typedef hybrid_domain<Var>        domain_type;
+    typedef hybrid_assignment<T, Var> assignment_type;
+    typedef hybrid_index<T>           data_type;
+    typedef T                         weight_type;
     class assignment_iterator;
 
     // Range concept types
@@ -71,13 +71,13 @@ namespace sill {
       allocated_ = std::max(capacity, size_t(1));
       inserted_ = 0;
       size_t fcol = 0;
-      for (finite_variable* v : args.finite()) {
+      for (Var v : args.finite()) {
         col_.emplace(v, fcol++);
       }
       size_t vcol = 0;
-      for (vector_variable* v : args.vector()) {
+      for (Var v : args.vector()) {
         col_.emplace(v, vcol);
-        vcol += v->size();
+        vcol += v.size();
       }
       fdata_.reset(new size_t[allocated_ * fcol]);
       vdata_.reset(new T[allocated_ * vcol]);
@@ -179,12 +179,12 @@ namespace sill {
       value_type value;
       value.first.resize(dom.finite_size(), dom.vector_size());
       size_t* fdest = value.first.finite().data();
-      for (finite_variable* v : dom.finite()) {
+      for (Var v : dom.finite()) {
         *fdest++ = fcolptr_[col_.at(v)][row];
       }
       T* vdest = value.first.vector().data();
-      for (vector_variable* v : dom.vector()) {
-        for (size_t i = 0, col = col_.at(v); i < v->size(); ++i, ++col) {
+      for (Var v : dom.vector()) {
+        for (size_t i = 0, col = col_.at(v); i < v.size(); ++i, ++col) {
           *vdest++ = vcolptr_[col][row];
         }
       }
@@ -217,13 +217,13 @@ namespace sill {
     std::pair<assignment_type, T>
     assignment(size_t row, const domain_type& dom) const {
       std::pair<assignment_type, T> a;
-      for (finite_variable* v : dom.finite()) {
+      for (Var v : dom.finite()) {
         a.first.finite()[v] = fcolptr_[col_.at(v)][row];
       }
-      for (vector_variable* v : dom.vector()) {
+      for (Var v : dom.vector()) {
         dynamic_vector<T>& vec = a.first.vector()[v];
-        vec.resize(v->size());
-        for (size_t i = 0, col = col_.at(v); i < v->size(); ++i, ++col) {
+        vec.resize(v.size());
+        for (size_t i = 0, col = col_.at(v); i < v.size(); ++i, ++col) {
           vec[i] = vcolptr_[col][row];
         }
       }
@@ -272,13 +272,13 @@ namespace sill {
       hybrid_index<T> values;
       values.resize(finite_cols(), vector_cols());
       size_t fcol = 0;
-      for (finite_variable* v : args_.finite()) {
+      for (Var v : args_.finite()) {
         values.finite()[fcol++] = a.finite().at(v);
       }
       size_t vcol = 0;
-      for (vector_variable* v :  args_.vector()) {
-        values.vector().segment(vcol, v->size()) = a.vector().at(v);
-        vcol += v->size();
+      for (Var v :  args_.vector()) {
+        values.vector().segment(vcol, v.size()) = a.vector().at(v);
+        vcol += v.size();
       }
       insert(values, weight);
     }
@@ -770,15 +770,15 @@ namespace sill {
       void load_advance() {
         if (nrows_ > 0) {
           size_t fcol = 0;
-          for (finite_variable* v : args_.finite()) {
+          for (Var v : args_.finite()) {
             value_.first.finite()[v] = *felems_[fcol]++;
             ++fcol;
           }
           size_t vcol = 0;
-          for (vector_variable* v : args_.vector()) {
+          for (Var v : args_.vector()) {
             dynamic_vector<T>& vec = value_.first.vector()[v];
-            vec.resize(v->size());
-            for (size_t i = 0; i < v->size(); ++i) {
+            vec.resize(v.size());
+            for (size_t i = 0; i < v.size(); ++i) {
               vec[i] = *velems_[vcol]++;
               ++vcol;
             }
@@ -843,7 +843,7 @@ namespace sill {
     std::vector<size_t*> fcolptrs(const domain_type& dom) const {
       std::vector<size_t*> result;
       result.reserve(dom.finite_size());
-      for (finite_variable* v : dom.finite()) {
+      for (Var v : dom.finite()) {
         result.push_back(fcolptr_[col_.at(v)]);
       }
       return result;
@@ -853,8 +853,8 @@ namespace sill {
     std::vector<T*> vcolptrs(const domain_type& dom) const {
       std::vector<T*> result;
       result.reserve(dom.vector_size());
-      for (vector_variable* v : dom.vector()) {
-        for (size_t i = 0, col = col_.at(v); i < v->size(); ++i, ++col) {
+      for (Var v : dom.vector()) {
+        for (size_t i = 0, col = col_.at(v); i < v.size(); ++i, ++col) {
           result.push_back(vcolptr_[col]);
         }
       }
@@ -862,7 +862,7 @@ namespace sill {
     }
 
     domain_type args_;                //!< the dataset arguments
-    std::unordered_map<variable*, size_t> col_; //!< the column of each argument
+    std::unordered_map<Var, size_t> col_; //!< the column of each argument
     std::unique_ptr<size_t[]> fdata_; //!< the finite data storage
     std::unique_ptr<T[]> vdata_;      //!< the vector data storage
     std::unique_ptr<T[]> weight_;     //!< the weight storage

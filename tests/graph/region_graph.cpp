@@ -3,20 +3,18 @@
 
 #include <sill/graph/region_graph.hpp>
 
-#include <sill/argument/domain.hpp>
-#include <sill/base/universe.hpp>
+#include <sill/argument/basic_domain.hpp>
+#include <sill/argument/universe.hpp>
 
 namespace sill {
-  template class region_graph<domain<size_t> >;
+  template class region_graph<basic_domain<size_t> >;
 }
 
 using namespace sill;
 
-typedef domain<finite_variable*> domain_type;
-
 struct fixture {
   fixture() {
-    x = u.new_finite_variables(6, 2);
+    x = u.new_finite_variables(6, "x", 2);
     root_clusters.push_back({x[1], x[2], x[5]});
     root_clusters.push_back({x[2], x[3], x[5]});
     root_clusters.push_back({x[3], x[4], x[5]});
@@ -24,8 +22,8 @@ struct fixture {
     rg.saturated(root_clusters);
   }
 
-  size_t find_cluster(domain_type cluster) {
-    cluster.unique();
+  size_t find_cluster(domain cluster) {
+    cluster.sort();
     size_t v = 0;
     for (size_t u : rg.vertices()) {
       if (equivalent(rg.cluster(u), cluster)) {
@@ -38,9 +36,9 @@ struct fixture {
   }
   
   universe u;
-  finite_var_vector x;
-  std::vector<domain_type> root_clusters;
-  region_graph<domain_type> rg;
+  domain x;
+  std::vector<domain> root_clusters;
+  region_graph<domain> rg;
 };
 
 BOOST_FIXTURE_TEST_CASE(test_validity, fixture) {

@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE hybrid_dataset
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset/hybrid_dataset.hpp>
 #include <sill/learning/dataset/hybrid_dataset_io.hpp>
 #include <sill/math/constants.hpp>
@@ -25,9 +25,9 @@ BOOST_TEST_DONT_PRINT_LOG_VALUE(sample_assignment_type);
 
 BOOST_AUTO_TEST_CASE(test_insert) {
   universe u;
-  finite_var_vector fv = u.new_finite_variables(3, 3);
-  vector_var_vector vv = u.new_vector_variables(1, 2);
-  hybrid_domain v(fv, vv);
+  domain fv = u.new_finite_variables(3, "fv", 3);
+  domain vv = u.new_vector_variables(1, "vv", 2);
+  hybrid_domain<> v(fv, vv);
   
   hybrid_dataset<> ds(v);
   BOOST_CHECK(ds.empty());
@@ -98,9 +98,9 @@ BOOST_AUTO_TEST_CASE(test_insert) {
 
 BOOST_AUTO_TEST_CASE(test_value_iterators) {
   universe u;
-  finite_var_vector fv = u.new_finite_variables(3, 3);
-  vector_var_vector vv = u.new_vector_variables(3, 2);
-  hybrid_domain v(fv, vv);
+  domain fv = u.new_finite_variables(3, "fv", 3);
+  domain vv = u.new_vector_variables(3, "vv", 2);
+  hybrid_domain<> v(fv, vv);
   
   hybrid_dataset<> ds(v);
   ds.insert(1);
@@ -132,9 +132,9 @@ BOOST_AUTO_TEST_CASE(test_value_iterators) {
 
 BOOST_AUTO_TEST_CASE(test_assignment_iterators) {
   universe u;
-  finite_var_vector fv = u.new_finite_variables(3, 3);
-  vector_var_vector vv = u.new_vector_variables(1, 2);
-  hybrid_domain v(fv, vv);
+  domain fv = u.new_finite_variables(3, "fv", 3);
+  domain vv = u.new_vector_variables(1, "vv", 2);
+  hybrid_domain<> v(fv, vv);
   
   hybrid_dataset<> ds(v);
 
@@ -183,9 +183,9 @@ BOOST_AUTO_TEST_CASE(test_assignment_iterators) {
 
 BOOST_AUTO_TEST_CASE(test_sample) {
   universe u;
-  finite_var_vector fv = u.new_finite_variables(1, 2);
-  vector_var_vector vv = u.new_vector_variables(1, 1);
-  hybrid_domain v(fv, vv);
+  domain fv = u.new_finite_variables(1, "fv", 2);
+  domain vv = u.new_vector_variables(1, "vv", 1);
+  hybrid_domain<> v(fv, vv);
 
   hybrid_dataset<> ds(v);
 
@@ -213,9 +213,9 @@ BOOST_AUTO_TEST_CASE(test_sample) {
 
 BOOST_AUTO_TEST_CASE(test_shuffle) {
   universe u;
-  finite_var_vector fv = u.new_finite_variables(1, 3);
-  vector_var_vector vv = u.new_vector_variables(1, 1);
-  hybrid_domain v(fv, vv);
+  domain fv = u.new_finite_variables(1, "fv", 3);
+  domain vv = u.new_vector_variables(1, "vv", 1);
+  hybrid_domain<> v(fv, vv);
 
   hybrid_dataset<> ds(v);
 

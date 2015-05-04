@@ -53,8 +53,8 @@ namespace sill {
 
   private:
     //! Variables to swap
-    variable_type* var1;
-    variable_type* var2;
+    variable_type var1;
+    variable_type var2;
 
     ////////////////////////// PUBLIC METHODS //////////////////////////////
   public:
@@ -62,7 +62,7 @@ namespace sill {
     dmove_swap_variables() : var1(NULL), var2(NULL) { }
 
     //! Creates a move which swaps 2 variables.
-    dmove_swap_variables(variable_type* var1, variable_type* var2)
+    dmove_swap_variables(variable_type var1, variable_type var2)
       : var1(var1), var2(var2) {
     }
 
@@ -74,8 +74,8 @@ namespace sill {
                        const decomposable_score<F>& score, dataset_statistics<>& stats,
                        Inserter& inserter, bool use_estimates = false) const {
       // For each pair of variables
-      std::vector<variable_type*> var_vec;
-      foreach(variable_type* v, model.arguments())
+      std::vector<variable_type> var_vec;
+      foreach(variable_type v, model.arguments())
         var_vec.push_back(v);
       for (size_t i = 0; i < var_vec.size() - 1; ++i) {
         for (size_t j = i+1; j < var_vec.size(); ++j) {
@@ -120,7 +120,7 @@ namespace sill {
       foreach(const clique_change& change, clique_changes) {
         affected_vars = set_union(affected_vars, model.clique(change.v));
       }
-      std::vector<variable_type*> var_vec(affected_vars.begin(),
+      std::vector<variable_type> var_vec(affected_vars.begin(),
                                           affected_vars.end());
       for (size_t i = 0; i < var_vec.size() - 1; ++i) {
         for (size_t j = i+1; j < var_vec.size(); ++j) {
@@ -136,8 +136,8 @@ namespace sill {
           inserter.push(move_ptr, change);
         }
       }
-      foreach(variable_type* v1, var_vec) {
-        foreach(variable_type* v2, set_difference(model.arguments(), affected_vars)) {
+      foreach(variable_type v1, var_vec) {
+        foreach(variable_type v2, set_difference(model.arguments(), affected_vars)) {
           dmove_swap_variables<F,Inserter>* move_ptr =
             new dmove_swap_variables<F,Inserter>(v1, v2);
           double change;

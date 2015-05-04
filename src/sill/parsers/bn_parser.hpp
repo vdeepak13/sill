@@ -52,7 +52,7 @@ namespace sill {
     
     // Read all the variables and create a map from the variable name
     // (string) to the variable* prl variable pointer.
-    std::map<std::string, variable_type*> variable_map;
+    std::map<std::string, variable_type> variable_map;
     while(fin.good() && getline(fin, line, line_number) && line != "factors:") {
       size_t begin_arity = line.find_last_of('/')+1;
       size_t end_var_name = begin_arity - 2;
@@ -61,7 +61,7 @@ namespace sill {
       std::istringstream iss(line.substr(begin_arity));
       if (!(iss >> arity))
         assert(false);
-      variable_type* v = u.new_finite_variable(var_name,(size_t)(arity));
+      variable_type v = u.new_finite_variable(var_name,(size_t)(arity));
       assert(v != NULL);
       variable_map[var_name] = v;
     }
@@ -78,16 +78,16 @@ namespace sill {
     while(fin.good() && getline(fin, line, line_number)) {
       // Process the arguments
       size_t end_of_variables = line.find_last_of('/')-1;
-      std::vector<variable_type*> args;
+      std::vector<variable_type> args;
       for(size_t i = 0; i < end_of_variables; 
           i = line.find_first_of('/', i) + 1) {
         std::string variable_name = 
           trim(line.substr(i, line.find_first_of('/',i) - i));
-        variable_type* var = variable_map[variable_name];
+        variable_type var = variable_map[variable_name];
         assert(var != NULL);
         args.push_back(var);
       }  
-      variable_type* child_arg = args.back();
+      variable_type child_arg = args.back();
       // Initialize a factor and get the table
       factor_type factor(args, 0.0);
       table_type& tbl = factor.table();
@@ -182,7 +182,7 @@ namespace sill {
     
     // Read all the variables and create a map from the variable name
     // (string) to the variable* prl variable pointer.
-    std::map<std::string, variable_type*> variable_map;
+    std::map<std::string, variable_type> variable_map;
     size_t nvars = 0;
     while(fin.good() && getline(fin, line, line_number) && line != "factors:") {
       size_t begin_arity = line.find_last_of('/')+1;
@@ -194,9 +194,9 @@ namespace sill {
         assert(false);
       ++nvars;
       assert(var_order.size() >= nvars);
-      variable_type* v = var_order[nvars-1];
+      variable_type v = var_order[nvars-1];
       assert(v != NULL);
-      assert(v->size() == (size_t)(arity));
+      assert(v.size() == (size_t)(arity));
       variable_map[var_name] = v;
     }
     
@@ -212,16 +212,16 @@ namespace sill {
     while(fin.good() && getline(fin, line, line_number)) {
       // Process the arguments
       size_t end_of_variables = line.find_last_of('/')-1;
-      std::vector<variable_type*> args;
+      std::vector<variable_type> args;
       for(size_t i = 0; i < end_of_variables; 
           i = line.find_first_of('/', i) + 1) {
         std::string variable_name = 
           trim(line.substr(i, line.find_first_of('/',i) - i));
-        variable_type* var = variable_map[variable_name];
+        variable_type var = variable_map[variable_name];
         assert(var != NULL);
         args.push_back(var);
       }  
-      variable_type* child_arg = args.back();
+      variable_type child_arg = args.back();
       // Initialize a factor and get the table
       factor_type factor(args, 0.0);
       table_type& tbl = factor.table();

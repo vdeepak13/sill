@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE mixture_generator
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/random/mixture_generator.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 
@@ -17,8 +17,8 @@ using namespace sill;
 
 BOOST_AUTO_TEST_CASE(test_all) {
   universe u;
-  vector_variable* x = u.new_vector_variable(2);
-  vector_variable* y = u.new_vector_variable(1);
+  variable x = u.new_vector_variable(2);
+  variable y = u.new_vector_variable(1);
   vector_domain xs = make_domain(x);
   vector_domain ys = make_domain(y);
   vector_domain xy = make_domain(x, y);

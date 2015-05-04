@@ -1,8 +1,9 @@
 #ifndef SILL_FINITE_ASSIGNMENT_ITERATOR_HPP
 #define SILL_FINITE_ASSIGNMENT_ITERATOR_HPP
 
-#include <sill/argument/domain.hpp>
+#include <sill/argument/basic_domain.hpp>
 #include <sill/argument/finite_assignment.hpp>
+#include <sill/range/iterator_range.hpp>
 
 #include <iterator>
 
@@ -22,10 +23,13 @@ namespace sill {
    *
    * \ingroup base_types
    */
+  template <typename Var = variable>
   class finite_assignment_iterator
-    : public std::iterator<std::forward_iterator_tag, const finite_assignment> {
+    : public std::iterator<std::forward_iterator_tag,
+                           const finite_assignment<Var> > {
   public:
-    typedef domain<finite_variable*> domain_type;
+    typedef basic_domain<Var> domain_type;
+    typedef finite_assignment<Var> assignment_type;
 
     //! Default constructor. Creates the "end" iterator.
     finite_assignment_iterator()
@@ -34,16 +38,16 @@ namespace sill {
     //! Constructs an iterator pointing to the all-0 assignment for the domain.
     explicit finite_assignment_iterator(const domain_type& vars)
       : vars_(vars), done_(false) {
-      for (finite_variable* v : vars) {
+      for (Var v : vars) {
         a_.emplace(v, 0);
       }
     }
 
     //! Prefix increment.
     finite_assignment_iterator& operator++() {
-      for (finite_variable* v : vars_) {
+      for (Var v : vars_) {
         size_t value = a_[v] + 1;
-        if (value >= v->size()) {
+        if (value >= v.size()) {
           a_[v] = 0;
         } else {
           a_[v] = value;
@@ -62,12 +66,12 @@ namespace sill {
     }
 
     //! Returns a const reference to the current assignment.
-    const finite_assignment& operator*() const {
+    const assignment_type& operator*() const {
       return a_;
     }
 
     //! Returns a const pointer to the current assignment.
-    const finite_assignment* operator->() const {
+    const assignment_type* operator->() const {
       return &a_;
     }
 
@@ -88,7 +92,7 @@ namespace sill {
     domain_type vars_;
 
     //! The current assignment.
-    finite_assignment a_;
+    assignment_type a_;
 
     //! A flag indicating whether the index has wrapped around.
     bool done_;
@@ -98,11 +102,12 @@ namespace sill {
   /**
    * Returns a range over all assignments to variables in the domain.
    */
-  inline boost::iterator_range<finite_assignment_iterator>
-  assignments(const domain<finite_variable*>& vars) {
-    return std::make_pair(finite_assignment_iterator(vars),
-                          finite_assignment_iterator());
-  }        
+  template <typename Var>
+  iterator_range<finite_assignment_iterator<Var> >
+  finite_assignments(const basic_domain<Var>& vars) {
+    return { finite_assignment_iterator<Var>(vars),
+             finite_assignment_iterator<Var>() };
+  }
 
 } // namespace sill
 

@@ -31,7 +31,7 @@ namespace sill {
     bool first_line = true;
     foreach(const finite_variable* v, f.arg_vector()){
       if(!first_line) out << " ";
-      out << v->name() << " /";
+      out << v.name() << " /";
       first_line = false;
     }
     out << "/ ";
@@ -47,7 +47,7 @@ namespace sill {
     bool first_line = true;
     foreach(const finite_variable* v, f.arg_vector()){
       if(!first_line) out << " ";
-      out << v->name() << " /";
+      out << v.name() << " /";
       first_line = false;
     }
     out << "/ ";
@@ -67,7 +67,7 @@ namespace sill {
     // Print the variables
     out << "variables:" << std::endl;
     foreach(const finite_variable* v, fg.arguments()) {
-      out << v->name() << '\t' << v->size() << std::endl;
+      out << v.name() << '\t' << v.size() << std::endl;
     } // end of foreach variable
     // Print the factors in alchemy format
     out << "factors:" << std::endl;
@@ -164,7 +164,7 @@ namespace sill {
     bool warnprinted = false;
     // Read all the variables and create a map from the variable name
     // (string) to the variable* prl variable pointer.
-    std::map<std::string, variable_type*> variable_map;
+    std::map<std::string, variable_type> variable_map;
     while(fin.good() &&
           getline(fin, line, line_number) &&
           trim(line) != "factors:") {
@@ -181,7 +181,7 @@ namespace sill {
       // Get the variable name
       std::string var_name = trim(line.substr(0, namelen));
       // Create a new finite variable in the universe
-      variable_type* v = universe.new_finite_variable(var_name, varsize);
+      variable_type v = universe.new_finite_variable(var_name, varsize);
       assert(v != NULL);
       // Store the variable in the local variable map
       variable_map[var_name] = v;
@@ -209,14 +209,14 @@ namespace sill {
 
       // Process the arguments
       size_t end_of_variables = line.find("//")-1;
-      std::vector<variable_type*>
+      std::vector<variable_type>
         tmp_args,  // temporary arguments not as a set
         args_as_read_from_file; // exact arguments read from the file
 
 
 
       // the map "true variable" --> its copies in the temporary factor
-      std::map<variable_type*, std::vector<variable_type*> >
+      std::map<variable_type, std::vector<variable_type> >
         var_occurence_map;
 
       // Read in all the variables in the factor and store them
@@ -226,7 +226,7 @@ namespace sill {
         std::string variable_name =
           trim(line.substr(i, line.find_first_of('/',i) - i));
         // Look up the variable in the variable map
-        variable_type* var = variable_map[variable_name];
+        variable_type var = variable_map[variable_name];
         // The variable must have already been defined in the preamble
         // containing all the variables
         assert(var != NULL);
@@ -237,7 +237,7 @@ namespace sill {
         if( !var_occurence_map[var].empty() ) {
           // create a unique temporary variable for each duplicate
           // occurrence
-          variable_type* unique_copy =
+          variable_type unique_copy =
             universe.new_finite_variable(var->size());
           // map the original variable to this copy (there may be
           // others)
@@ -266,7 +266,7 @@ namespace sill {
         F temp_factor(tmp_args, 0.0);
         parse_alchemy_factor(temp_factor, weights,line);
         // remapping taking duplicate values into account
-        std::set<variable_type*> args = keys(var_occurence_map);
+        std::set<variable_type> args = keys(var_occurence_map);
         factor = F(args, 0.0);
 
         // Loop through all possible assignments.  For each assignment
@@ -280,7 +280,7 @@ namespace sill {
           bool duplicates_consistent = true;
           // For all of the true variable arguments check against
           // duplicates
-          foreach(variable_type* unique_var, args){
+          foreach(variable_type unique_var, args){
             // If the unique variable only occurs once then its
             // trivially consistent
             if(var_occurence_map[unique_var].size() == 1) {
@@ -388,7 +388,7 @@ namespace sill {
 
     // Read all the variables and create a map from the variable name
     // (string) to the variable* prl variable pointer.
-    std::map<std::string, variable_type*> variable_map;
+    std::map<std::string, variable_type> variable_map;
     while(fin.good() &&
           getline(fin, line, line_number) &&
           trim(line) != "factors:") {
@@ -405,7 +405,7 @@ namespace sill {
       // Get the variable name
       std::string var_name = trim(line.substr(0, namelen));
       // Create a new finite variable in the universe
-      variable_type* v = universe.new_finite_variable(var_name, varsize);
+      variable_type v = universe.new_finite_variable(var_name, varsize);
       assert(v != NULL);
       // Store the variable in the local variable map
       variable_map[var_name] = v;
@@ -433,14 +433,14 @@ namespace sill {
 
       // Process the arguments
       size_t end_of_variables = line.find("//")-1;
-      std::vector<variable_type*>
+      std::vector<variable_type>
         tmp_args,  // temporary arguments not as a set
         args_as_read_from_file; // exact arguments read from the file
 
 
 
       // the map "true variable" --> its copies in the temporary factor
-      std::map<variable_type*, std::vector<variable_type*> >
+      std::map<variable_type, std::vector<variable_type> >
         var_occurence_map;
 
       // Read in all the variables in the factor and store them
@@ -450,7 +450,7 @@ namespace sill {
         std::string variable_name =
           trim(line.substr(i, line.find_first_of('/',i) - i));
         // Look up the variable in the variable map
-        variable_type* var = variable_map[variable_name];
+        variable_type var = variable_map[variable_name];
         // The variable must have already been defined in the preamble
         // containing all the variables
         assert(var != NULL);
@@ -461,7 +461,7 @@ namespace sill {
         if( !var_occurence_map[var].empty() ) {
           // create a unique temporary variable for each duplicate
           // occurrence
-          variable_type* unique_copy =
+          variable_type unique_copy =
             universe.new_finite_variable(var->size());
           // map the original variable to this copy (there may be
           // others)
@@ -490,7 +490,7 @@ namespace sill {
         F temp_factor(tmp_args, 0.0);
         parse_alchemy_factor(temp_factor, weights,line);
         // remapping taking duplicate values into account
-        std::set<variable_type*> args = keys(var_occurence_map);
+        std::set<variable_type> args = keys(var_occurence_map);
         factor = F(args, 0.0);
 
         // Loop through all possible assignments.  For each assignment
@@ -504,7 +504,7 @@ namespace sill {
           bool duplicates_consistent = true;
           // For all of the true variable arguments check against
           // duplicates
-          foreach(variable_type* unique_var, args){
+          foreach(variable_type unique_var, args){
             // If the unique variable only occurs once then its
             // trivially consistent
             if(var_occurence_map[unique_var].size() == 1) {
@@ -686,7 +686,7 @@ namespace sill {
         }
         else {
           std::stringstream strm(beliefline);
-          for (size_t i = 0;i <fv->size(); ++i) {
+          for (size_t i = 0;i <fv.size(); ++i) {
             double value = 0.0;
             strm >> value;
             truth[fv].set_v(i, value);
@@ -711,7 +711,7 @@ namespace sill {
     std::ofstream fout(output_filename.c_str());
     assert(fout.good());
     foreach(finite_variable* v, keys(beliefs)) {
-      fout<<"\"" << v->name() << "\", ";
+      fout<<"\"" << v.name() << "\", ";
       for (size_t i = 0;i < beliefs[v].size(); ++i) {
         fout << (double)(beliefs[v](i)) << " ";
       }

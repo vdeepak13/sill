@@ -24,12 +24,12 @@ using namespace sill;
 
 BOOST_AUTO_TEST_CASE(test_construct) {
   universe u;
-  finite_var_vector finite_vars = u.new_finite_variables(2, 2);
-  vector_var_vector vector_vars = u.new_vector_variables(3, 1);
+  domain finite_vars = u.new_finite_variables(2, 2);
+  domain vector_vars = u.new_vector_variables(3, 1);
   finite_domain finite_dom = make_domain(finite_vars);
   vector_domain vector_dom = make_domain(vector_vars);
-  finite_var_vector finite_sorted = finite_vars;
-  vector_var_vector vector_sorted = vector_vars;
+  domain finite_sorted = finite_vars;
+  domain vector_sorted = vector_vars;
   boost::sort(finite_sorted);
   boost::sort(vector_sorted);
 
@@ -37,8 +37,8 @@ BOOST_AUTO_TEST_CASE(test_construct) {
   hybrid_moment h1(2.0);
   BOOST_CHECK_EQUAL(h1.num_finite(), 0);
   BOOST_CHECK_EQUAL(h1.num_vector(), 0);
-  BOOST_CHECK_EQUAL(h1.finite_args(), finite_var_vector());
-  BOOST_CHECK_EQUAL(h1.vector_args(), vector_var_vector());
+  BOOST_CHECK_EQUAL(h1.finite_args(), domain());
+  BOOST_CHECK_EQUAL(h1.vector_args(), domain());
   BOOST_CHECK_EQUAL(h1.arguments(), domain());
   BOOST_CHECK_EQUAL(h1.size(), 1);
   BOOST_CHECK_CLOSE(double(h1[0].norm_constant()), 2.0, 1e-2 /* percent */);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE(test_construct) {
   BOOST_CHECK_EQUAL(h4.num_finite(), 2);
   BOOST_CHECK_EQUAL(h4.num_vector(), 0);
   BOOST_CHECK_EQUAL(h4.finite_args(), finite_vars);
-  BOOST_CHECK_EQUAL(h4.vector_args(), vector_var_vector());
+  BOOST_CHECK_EQUAL(h4.vector_args(), domain());
   BOOST_CHECK_EQUAL(h4.arguments(), domain(finite_vars.begin(), finite_vars.end()));
   BOOST_CHECK_EQUAL(h4.size(), 4);
   for (size_t i = 0; i < 4; ++i) {
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(test_construct) {
   hybrid_moment h5(mg);
   BOOST_CHECK_EQUAL(h5.num_finite(), 0);
   BOOST_CHECK_EQUAL(h5.num_vector(), 3);
-  BOOST_CHECK_EQUAL(h5.finite_args(), finite_var_vector());
+  BOOST_CHECK_EQUAL(h5.finite_args(), domain());
   BOOST_CHECK_EQUAL(h5.vector_args(), vector_vars);
   BOOST_CHECK_EQUAL(h5.arguments(), domain(vector_vars.begin(), vector_vars.end()));
   BOOST_CHECK_EQUAL(h5.size(), 1);
@@ -97,14 +97,14 @@ BOOST_AUTO_TEST_CASE(test_construct) {
 
 BOOST_AUTO_TEST_CASE(test_assign) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 2);
-  vector_variable* v = u.new_vector_variable("v", 1);
-  vector_variable* w = u.new_vector_variable("w", 1);
-  vector_variable* q = u.new_vector_variable("q", 1);
-  vector_variable* r = u.new_vector_variable("r", 2);
-  finite_var_vector finite_vars = make_vector(x, y);
-  vector_var_vector vector_vars = make_vector(v, w, q);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 2);
+  variable v = u.new_vector_variable("v", 1);
+  variable w = u.new_vector_variable("w", 1);
+  variable q = u.new_vector_variable("q", 1);
+  variable r = u.new_vector_variable("r", 2);
+  domain finite_vars = make_vector(x, y);
+  domain vector_vars = make_vector(v, w, q);
   finite_domain finite_dom = make_domain(finite_vars);
   vector_domain vector_dom = make_domain(vector_vars);
 
@@ -129,9 +129,9 @@ BOOST_AUTO_TEST_CASE(test_assign) {
   h = h2;
   BOOST_CHECK_EQUAL(h.num_finite(), 0);
   BOOST_CHECK_EQUAL(h.num_vector(), 1);
-  BOOST_CHECK_EQUAL(h.finite_args(), finite_var_vector());
+  BOOST_CHECK_EQUAL(h.finite_args(), domain());
   BOOST_CHECK_EQUAL(h.vector_args(), make_vector(r));
-  BOOST_CHECK_EQUAL(h.arguments(), make_domain<variable>(r));
+  BOOST_CHECK_EQUAL(h.arguments(), make_domain(r));
   BOOST_CHECK_EQUAL(h.size(), 1);
   BOOST_CHECK_CLOSE(double(h[0].norm_constant()), 1.0, 1e-2 /* percent */);
   BOOST_CHECK(equal(h[0].mean(), vec(arma::zeros(2))));
@@ -143,7 +143,7 @@ BOOST_AUTO_TEST_CASE(test_assign) {
   BOOST_CHECK_EQUAL(h.num_finite(), 2);
   BOOST_CHECK_EQUAL(h.num_vector(), 0);
   BOOST_CHECK_EQUAL(h.finite_args(), finite_vars);
-  BOOST_CHECK_EQUAL(h.vector_args(), vector_var_vector());
+  BOOST_CHECK_EQUAL(h.vector_args(), domain());
   BOOST_CHECK_EQUAL(h.arguments(), domain(finite_vars.begin(), finite_vars.end()));
   BOOST_CHECK_EQUAL(h.size(), 4);
   for (size_t i = 0; i < 4; ++i) {
@@ -154,8 +154,8 @@ BOOST_AUTO_TEST_CASE(test_assign) {
   h = 3.0;
   BOOST_CHECK_EQUAL(h.num_finite(), 0);
   BOOST_CHECK_EQUAL(h.num_vector(), 0);
-  BOOST_CHECK_EQUAL(h.finite_args(), finite_var_vector());
-  BOOST_CHECK_EQUAL(h.vector_args(), vector_var_vector());
+  BOOST_CHECK_EQUAL(h.finite_args(), domain());
+  BOOST_CHECK_EQUAL(h.vector_args(), domain());
   BOOST_CHECK_EQUAL(h.arguments(), domain());
   BOOST_CHECK_EQUAL(h.size(), 1);
   BOOST_CHECK_CLOSE(double(h[0].norm_constant()), 3.0, 1e-2 /* percent */);
@@ -165,9 +165,9 @@ BOOST_AUTO_TEST_CASE(test_assign) {
   h = moment_gaussian(make_vector(r), 2.0);
   BOOST_CHECK_EQUAL(h.num_finite(), 0);
   BOOST_CHECK_EQUAL(h.num_vector(), 1);
-  BOOST_CHECK_EQUAL(h.finite_args(), finite_var_vector());
+  BOOST_CHECK_EQUAL(h.finite_args(), domain());
   BOOST_CHECK_EQUAL(h.vector_args(), make_vector(r));
-  BOOST_CHECK_EQUAL(h.arguments(), make_domain<variable>(r));
+  BOOST_CHECK_EQUAL(h.arguments(), make_domain(r));
   BOOST_CHECK_EQUAL(h.size(), 1);
   BOOST_CHECK_CLOSE(double(h[0].norm_constant()), 2.0, 1e-2 /* percent */);
   BOOST_CHECK(equal(h[0].mean(), vec(zeros(2))));
@@ -177,11 +177,11 @@ BOOST_AUTO_TEST_CASE(test_assign) {
 
 BOOST_AUTO_TEST_CASE(test_value) {
   universe u;
-  finite_var_vector finite_vars = u.new_finite_variables(2, 2);
-  vector_var_vector vector_vars = u.new_vector_variables(1, 1);
-  finite_variable* x = finite_vars[0];
-  finite_variable* y = finite_vars[1];
-  vector_variable* w = vector_vars[0];
+  domain finite_vars = u.new_finite_variables(2, 2);
+  domain vector_vars = u.new_vector_variables(1, 1);
+  variable x = finite_vars[0];
+  variable y = finite_vars[1];
+  variable w = vector_vars[0];
   
   // create the instance
   hybrid_canonical h(finite_vars, vector_vars, 5.0);
@@ -212,15 +212,15 @@ BOOST_AUTO_TEST_CASE(test_value) {
 BOOST_AUTO_TEST_CASE(test_combine) {
   // create the variables
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 2);
-  finite_variable* z = u.new_finite_variable("z", 2);
-  vector_variable* v = u.new_vector_variable("v", 1);
-  vector_variable* w = u.new_vector_variable("w", 1);
-  finite_var_vector finite_a = make_vector(x, y);
-  finite_var_vector finite_b = make_vector(y, z);
-  vector_var_vector vector_a = make_vector(v);
-  vector_var_vector vector_b = make_vector(w);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 2);
+  variable z = u.new_finite_variable("z", 2);
+  variable v = u.new_vector_variable("v", 1);
+  variable w = u.new_vector_variable("w", 1);
+  domain finite_a = make_vector(x, y);
+  domain finite_b = make_vector(y, z);
+  domain vector_a = make_vector(v);
+  domain vector_b = make_vector(w);
   
   // create some hybrid factors
   boost::array<double, 4> val_a = {{ 1, 2, 3, 4 }};
@@ -235,8 +235,8 @@ BOOST_AUTO_TEST_CASE(test_combine) {
   // test the combination of two hybrids
   hybrid_canonical h1 = ha * hb;
   hybrid_canonical h2 = ha / hb;
-  BOOST_CHECK_EQUAL(h1.arguments(), make_domain<variable>(x, y, z, v, w));
-  BOOST_CHECK_EQUAL(h2.arguments(), make_domain<variable>(x, y, z, v, w));
+  BOOST_CHECK_EQUAL(h1.arguments(), make_domain(x, y, z, v, w));
+  BOOST_CHECK_EQUAL(h2.arguments(), make_domain(x, y, z, v, w));
   finite_assignment a;
   for (size_t i = 0; i < 2; ++i) {
     a[x] = i;
@@ -258,8 +258,8 @@ BOOST_AUTO_TEST_CASE(test_combine) {
   table_factor f = make_dense_table_factor(finite_b, val_b);
   hybrid_canonical h3 = ha * f;
   hybrid_canonical h4 = ha / f;
-  BOOST_CHECK_EQUAL(h3.arguments(), make_domain<variable>(x, y, z, v));
-  BOOST_CHECK_EQUAL(h4.arguments(), make_domain<variable>(x, y, z, v));
+  BOOST_CHECK_EQUAL(h3.arguments(), make_domain(x, y, z, v));
+  BOOST_CHECK_EQUAL(h4.arguments(), make_domain(x, y, z, v));
   for (size_t i = 0; i < 2; ++i) {
     a[x] = i;
     for (size_t j = 0; j < 2; ++j) {
@@ -279,8 +279,8 @@ BOOST_AUTO_TEST_CASE(test_combine) {
   // test the combination of a hybrid and component factor
   hybrid_canonical h5 = ha * canonical_gaussian(vector_b, 2.0);
   hybrid_canonical h6 = ha / canonical_gaussian(vector_b, 2.0);
-  BOOST_CHECK_EQUAL(h5.arguments(), make_domain<variable>(x, y, v, w));
-  BOOST_CHECK_EQUAL(h6.arguments(), make_domain<variable>(x, y, v, w));
+  BOOST_CHECK_EQUAL(h5.arguments(), make_domain(x, y, v, w));
+  BOOST_CHECK_EQUAL(h6.arguments(), make_domain(x, y, v, w));
   std::vector<size_t> index(2);
   for (size_t i = 0; i < 2; ++i) {
     index[0] = i;
@@ -298,8 +298,8 @@ BOOST_AUTO_TEST_CASE(test_combine) {
   // test the combination of a hybrid and a constant
   hybrid_canonical h7 = ha * 2.0;
   hybrid_canonical h8 = ha / 2.0;
-  BOOST_CHECK_EQUAL(h7.arguments(), make_domain<variable>(x, y, v));
-  BOOST_CHECK_EQUAL(h8.arguments(), make_domain<variable>(x, y, v));
+  BOOST_CHECK_EQUAL(h7.arguments(), make_domain(x, y, v));
+  BOOST_CHECK_EQUAL(h8.arguments(), make_domain(x, y, v));
   for (size_t i = 0; i < 2; ++i) {
     index[0] = i;
     for (size_t j = 0; j < 2; ++j) {
@@ -318,14 +318,14 @@ BOOST_AUTO_TEST_CASE(test_combine) {
 BOOST_AUTO_TEST_CASE(test_combine_in) {
   // create the variables
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 2);
-  vector_variable* v = u.new_vector_variable("v", 1);
-  vector_variable* w = u.new_vector_variable("w", 1);
-  finite_var_vector finite_a = make_vector(x, y);
-  finite_var_vector finite_b = make_vector(y);
-  vector_var_vector vector_a = make_vector(v);
-  vector_var_vector vector_b = make_vector(w);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 2);
+  variable v = u.new_vector_variable("v", 1);
+  variable w = u.new_vector_variable("w", 1);
+  domain finite_a = make_vector(x, y);
+  domain finite_b = make_vector(y);
+  domain vector_a = make_vector(v);
+  domain vector_b = make_vector(w);
 
   // create some hybrid factors
   boost::array<double, 4> val_a = {{ 1, 2, 3, 4 }};
@@ -342,8 +342,8 @@ BOOST_AUTO_TEST_CASE(test_combine_in) {
   // test the combination of two hybrids
   hybrid_canonical h1 = ha; h1 *= hb;
   hybrid_canonical h2 = ha; h2 /= hb;
-  BOOST_CHECK_EQUAL(h1.arguments(), make_domain<variable>(x, y, v, w));
-  BOOST_CHECK_EQUAL(h2.arguments(), make_domain<variable>(x, y, v, w));
+  BOOST_CHECK_EQUAL(h1.arguments(), make_domain(x, y, v, w));
+  BOOST_CHECK_EQUAL(h2.arguments(), make_domain(x, y, v, w));
   std::vector<size_t> index(2);
   for (size_t i = 0; i < 2; ++i) {
     index[0] = i;
@@ -362,8 +362,8 @@ BOOST_AUTO_TEST_CASE(test_combine_in) {
   table_factor f = make_dense_table_factor(finite_b, val_b);
   hybrid_canonical h3 = ha; h3 *= f;
   hybrid_canonical h4 = ha; h4 /= f;
-  BOOST_CHECK_EQUAL(h3.arguments(), make_domain<variable>(x, y, v));
-  BOOST_CHECK_EQUAL(h4.arguments(), make_domain<variable>(x, y, v));
+  BOOST_CHECK_EQUAL(h3.arguments(), make_domain(x, y, v));
+  BOOST_CHECK_EQUAL(h4.arguments(), make_domain(x, y, v));
   for (size_t i = 0; i < 2; ++i) {
     index[0] = i;
     for (size_t j = 0; j < 2; ++j) {
@@ -381,8 +381,8 @@ BOOST_AUTO_TEST_CASE(test_combine_in) {
   canonical_gaussian cg(vector_b, 2.0);
   hybrid_canonical h5 = ha; h5 *= cg;
   hybrid_canonical h6 = ha; h6 /= cg;
-  BOOST_CHECK_EQUAL(h5.arguments(), make_domain<variable>(x, y, v, w));
-  BOOST_CHECK_EQUAL(h6.arguments(), make_domain<variable>(x, y, v, w));
+  BOOST_CHECK_EQUAL(h5.arguments(), make_domain(x, y, v, w));
+  BOOST_CHECK_EQUAL(h6.arguments(), make_domain(x, y, v, w));
   for (size_t i = 0; i < 2; ++i) {
     index[0] = i;
     for (size_t j = 0; j < 2; ++j) {
@@ -399,8 +399,8 @@ BOOST_AUTO_TEST_CASE(test_combine_in) {
   // test the combination of a hybrid and a constant
   hybrid_canonical h7 = ha; h7 *= 2.0;
   hybrid_canonical h8 = ha; h8 /= 2.0;
-  BOOST_CHECK_EQUAL(h7.arguments(), make_domain<variable>(x, y, v));
-  BOOST_CHECK_EQUAL(h8.arguments(), make_domain<variable>(x, y, v));
+  BOOST_CHECK_EQUAL(h7.arguments(), make_domain(x, y, v));
+  BOOST_CHECK_EQUAL(h8.arguments(), make_domain(x, y, v));
   for (size_t i = 0; i < 2; ++i) {
     index[0] = i;
     for (size_t j = 0; j < 2; ++j) {
@@ -419,13 +419,13 @@ BOOST_AUTO_TEST_CASE(test_combine_in) {
 BOOST_AUTO_TEST_CASE(test_marginal) {
   // create some variables
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 2);
-  finite_variable* z = u.new_finite_variable("z", 2);
-  vector_variable* v = u.new_vector_variable("v", 1);
-  vector_variable* w = u.new_vector_variable("w", 1);
-  finite_var_vector finite_vars = make_vector(x, y, z);
-  vector_var_vector vector_vars = make_vector(v, w);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 2);
+  variable z = u.new_finite_variable("z", 2);
+  variable v = u.new_vector_variable("v", 1);
+  variable w = u.new_vector_variable("w", 1);
+  domain finite_vars = make_vector(x, y, z);
+  domain vector_vars = make_vector(v, w);
 
   // marginal over a finite domain
   boost::array<double, 8> vals = {{1, 0.1, 3.2, 4.8, 0.5, 2.1, 2.0, 1.5}};
@@ -448,8 +448,8 @@ BOOST_AUTO_TEST_CASE(test_marginal) {
   hybrid_moment hb(make_vector(x), vector_vars);
   hb[0] = moment_gaussian(vector_vars, "1 2", eye(2, 2) * 2.0, 1.5);
   hb[1] = moment_gaussian(vector_vars, "2 4", eye(2, 2) * 0.5, 2.5);
-  hybrid_moment h2 = hb.marginal(make_domain<variable>(x, v));
-  BOOST_CHECK_EQUAL(h2.arguments(), make_domain<variable>(x, v));
+  hybrid_moment h2 = hb.marginal(make_domain(x, v));
+  BOOST_CHECK_EQUAL(h2.arguments(), make_domain(x, v));
   BOOST_CHECK_EQUAL(h2.num_finite(), 1);
   BOOST_CHECK_EQUAL(h2.num_vector(), 1);
   BOOST_CHECK_EQUAL(h2.finite_args(), make_vector(x));
@@ -463,7 +463,7 @@ BOOST_AUTO_TEST_CASE(test_marginal) {
   BOOST_CHECK_CLOSE(double(h2[1].norm_constant()), 2.5, 1e-2 /* percent */);
 
   // unsupported marginals
-  BOOST_CHECK_THROW(ha.marginal(make_domain<variable>(x, v)),
+  BOOST_CHECK_THROW(ha.marginal(make_domain(x, v)),
                     std::invalid_argument);
 }
 
@@ -471,12 +471,12 @@ BOOST_AUTO_TEST_CASE(test_marginal) {
 BOOST_AUTO_TEST_CASE(test_restrict) {
   // create some variables
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 2);
-  vector_variable* v = u.new_vector_variable("v", 1);
-  vector_variable* w = u.new_vector_variable("w", 1);
-  finite_var_vector finite_vars = make_vector(x, y);
-  vector_var_vector vector_vars = make_vector(v, w);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 2);
+  variable v = u.new_vector_variable("v", 1);
+  variable w = u.new_vector_variable("w", 1);
+  domain finite_vars = make_vector(x, y);
+  domain vector_vars = make_vector(v, w);
 
   // create the factor to be restricted
   hybrid_canonical h(finite_vars, vector_vars);
@@ -498,7 +498,7 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
   BOOST_CHECK_EQUAL(h1.num_vector(), 1);
   BOOST_CHECK_EQUAL(h1.finite_args(), make_vector(x));
   BOOST_CHECK_EQUAL(h1.vector_args(), make_vector(v));
-  BOOST_CHECK_EQUAL(h1.arguments(), make_domain<variable>(x, v));
+  BOOST_CHECK_EQUAL(h1.arguments(), make_domain(x, v));
   BOOST_CHECK_EQUAL(h1.size(), 2);
   BOOST_CHECK(equal(h1[0].inf_vector(), vec("1")));
   BOOST_CHECK(equal(h1[0].inf_matrix(), mat(eye(1,1))));
@@ -519,10 +519,10 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
 
 BOOST_AUTO_TEST_CASE(test_normalize) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 3);
-  vector_variable* y = u.new_vector_variable("y", 2);
-  finite_var_vector finite_vars = make_vector(x);
-  vector_var_vector vector_vars = make_vector(y);
+  variable x = u.new_finite_variable("x", 3);
+  variable y = u.new_vector_variable("y", 2);
+  domain finite_vars = make_vector(x);
+  domain vector_vars = make_vector(y);
 
   hybrid_moment h(finite_vars, vector_vars);
   h[0] = moment_gaussian(vector_vars, "0 1", eye(2,2), 1.0);
@@ -533,7 +533,7 @@ BOOST_AUTO_TEST_CASE(test_normalize) {
 
   BOOST_CHECK_EQUAL(h.finite_args(), finite_vars);
   BOOST_CHECK_EQUAL(h.vector_args(), vector_vars);
-  BOOST_CHECK_EQUAL(h.arguments(), make_domain<variable>(x, y));
+  BOOST_CHECK_EQUAL(h.arguments(), make_domain(x, y));
   BOOST_CHECK_CLOSE(double(h.norm_constant()), 1.0, 1e-2 /* percent */);
   BOOST_CHECK_CLOSE(double(h[0].norm_constant()), 0.2, 1e-2 /* percent */);
   BOOST_CHECK_CLOSE(double(h[1].norm_constant()), 0.4, 1e-2 /* percent */);
@@ -549,12 +549,12 @@ BOOST_AUTO_TEST_CASE(test_normalize) {
 
 BOOST_AUTO_TEST_CASE(test_reorder) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 2);
-  vector_variable* v = u.new_vector_variable("v", 1);
-  vector_variable* w = u.new_vector_variable("w", 1);
-  finite_var_vector finite_vars = make_vector(x, y);
-  vector_var_vector vector_vars = make_vector(v, w);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 2);
+  variable v = u.new_vector_variable("v", 1);
+  variable w = u.new_vector_variable("w", 1);
+  domain finite_vars = make_vector(x, y);
+  domain vector_vars = make_vector(v, w);
 
   hybrid_moment h(finite_vars, vector_vars);
   h[0] = moment_gaussian(vector_vars, "1 2", "1 0; 0 2", 1.0);
@@ -581,9 +581,9 @@ BOOST_AUTO_TEST_CASE(test_reorder) {
 
 BOOST_AUTO_TEST_CASE(test_evaluator) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 3);
-  finite_var_vector finite_vars = make_vector(x, y);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 3);
+  domain finite_vars = make_vector(x, y);
   
   boost::array<double, 6> vals = {{ 0.0, 0.5, 1.0, 1.5, 2.0, 2.5 }};
   hybrid_moment h(finite_vars);
@@ -607,11 +607,11 @@ BOOST_AUTO_TEST_CASE(test_marginal_sampler_mle) {
 
   // create a few variables
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 3);
-  vector_variable* z = u.new_vector_variable("z", 1);
-  finite_var_vector finite_vars = make_vector(x, y);
-  vector_var_vector vector_vars = make_vector(z);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 3);
+  variable z = u.new_vector_variable("z", 1);
+  domain finite_vars = make_vector(x, y);
+  domain vector_vars = make_vector(z);
 
   // create the hybrid factor
   hybrid_moment h(finite_vars, vector_vars);
@@ -633,7 +633,7 @@ BOOST_AUTO_TEST_CASE(test_marginal_sampler_mle) {
 
   // compare the trained and the original model
   hybrid_moment h2 = mle.estimate();
-  BOOST_CHECK_EQUAL(h2.arguments(), make_domain<variable>(x, y, z));
+  BOOST_CHECK_EQUAL(h2.arguments(), make_domain(x, y, z));
   BOOST_CHECK_EQUAL(h2.size(), 6);
   BOOST_CHECK_EQUAL(h2.num_finite(), 2);
   BOOST_CHECK_EQUAL(h2.num_vector(), 1);
@@ -652,9 +652,9 @@ BOOST_AUTO_TEST_CASE(test_conditional_sampler_mle) {
 
   // create a few variables
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 3);
-  vector_variable* z = u.new_vector_variable("z", 1);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 3);
+  variable z = u.new_vector_variable("z", 1);
   var_vector head_vars = make_vector<variable>(y, z);
   var_vector tail_vars = make_vector<variable>(x);
 
@@ -690,7 +690,7 @@ BOOST_AUTO_TEST_CASE(test_conditional_sampler_mle) {
 
   // compare the trained and the original model
   hybrid_moment h2 = mle.estimate();
-  BOOST_CHECK_EQUAL(h2.arguments(), make_domain<variable>(x, y, z));
+  BOOST_CHECK_EQUAL(h2.arguments(), make_domain(x, y, z));
   BOOST_CHECK_EQUAL(h2.size(), 6);
   BOOST_CHECK_EQUAL(h2.num_finite(), 2);
   BOOST_CHECK_EQUAL(h2.num_vector(), 1);

@@ -1,6 +1,7 @@
 #ifndef SILL_CANONICAL_GAUSSIAN_HPP
 #define SILL_CANONICAL_GAUSSIAN_HPP
 
+#include <sill/argument/basic_domain.hpp>
 #include <sill/argument/vector_assignment.hpp>
 #include <sill/factor/base/gaussian_factor.hpp>
 #include <sill/factor/traits.hpp>
@@ -11,7 +12,7 @@
 namespace sill {
 
   // forward declaration
-  template <typename T> class moment_gaussian;
+  template <typename T, typename Var> class moment_gaussian;
 
   /**
    * A factor of a Gaussian distribution in the natural parameterization.
@@ -19,31 +20,31 @@ namespace sill {
    * \tparam T the real type for representing the parameters.
    * \ingroup factor_types
    */
-  template <typename T>
-  class canonical_gaussian : public gaussian_factor {
+  template <typename T, typename Var>
+  class canonical_gaussian : public gaussian_factor<Var> {
   public:
     // Public types
     //==========================================================================
     // Base type
-    typedef gaussian_factor base;
+    typedef gaussian_factor<Var> base;
 
     // Underlying storage
     typedef dynamic_matrix<T> mat_type;
     typedef dynamic_vector<T> vec_type;
 
     // Factor member types
-    typedef T                        real_type;
-    typedef logarithmic<T>           result_type;
-    typedef vector_variable          variable_type;
-    typedef domain<vector_variable*> domain_type;
-    typedef vector_assignment<T>     assignment_type;
+    typedef T                         real_type;
+    typedef logarithmic<T>            result_type;
+    typedef Var                       variable_type;
+    typedef basic_domain<Var>         domain_type;
+    typedef vector_assignment<T, Var> assignment_type;
 
     // ParametricFactor member types
     typedef canonical_gaussian_param<T> param_type;
     typedef dynamic_vector<T>           index_type;
     
     // ExponentialFamilyFactor member types
-    typedef moment_gaussian<T> probability_factor_type;
+    typedef moment_gaussian<T, Var> probability_type;
 
     // Constructors and conversion operators
     //==========================================================================
@@ -86,7 +87,7 @@ namespace sill {
     }
 
     //! Conversion from a moment_gaussian
-    explicit canonical_gaussian(const moment_gaussian<T>& mg) {
+    explicit canonical_gaussian(const moment_gaussian<T, Var>& mg) {
       *this = mg;
     }
     
@@ -98,15 +99,15 @@ namespace sill {
     }
 
     //! Assigns a moment_gaussian to this factor.
-    canonical_gaussian& operator=(const moment_gaussian<T>& mg) {
+    canonical_gaussian& operator=(const moment_gaussian<T, Var>& mg) {
       reset(mg.arguments());
       param_ = mg.param();
       return *this;
     }
 
     //! Casts this canonical_gaussian to a moment_gaussian.
-    moment_gaussian<T> moment() const {
-      return moment_gaussian<T>(*this);
+    moment_gaussian<T, Var> moment() const {
+      return moment_gaussian<T, Var>(*this);
     }
 
     //! Exchanges the content of two factors.
@@ -200,25 +201,25 @@ namespace sill {
     }
 
     //! Returns the information vector for a single variable.
-    Eigen::VectorBlock<const vec_type> inf_vector(vector_variable* v) const {
-      return param_.eta.segment(this->start(v), v->size());
+    Eigen::VectorBlock<const vec_type> inf_vector(Var v) const {
+      return param_.eta.segment(this->start(v), v.size());
     }
 
     //! Returns the information matrix for a single variable.
-    Eigen::Block<const mat_type> inf_matrix(vector_variable* v) const {
+    Eigen::Block<const mat_type> inf_matrix(Var v) const {
       size_t i = this->start(v);
-      return param_.lambda.block(i, i, v->size(), v->size());
+      return param_.lambda.block(i, i, v.size(), v.size());
     }
 
     //! Returns the information vector for a subset of the arguments
     vec_type inf_vector(const domain_type& args) const {
-      matrix_index map = index_map(args);
+      matrix_index map = this->index_map(args);
       return subvec(param_.eta, map).plain();
     }
 
     //! Returns the information matrix for a subset of the arguments
     mat_type inf_matrix(const domain_type& args) const {
-      matrix_index map = index_map(args);
+      matrix_index map = this->index_map(args);
       return submat(param_.eta, map, map).plain();
     }
 
@@ -241,16 +242,16 @@ namespace sill {
     void assignment(const vec_type& vec, assignment_type& a) const {
       assert(vec.size() == size());
       size_t i = 0;
-      for (vector_variable* v : args_) {
-        a[v] = vec.segment(i, v->size());
-        i += v->size();
+      for (Var v : args_) {
+        a[v] = vec.segment(i, v.size());
+        i += v.size();
       }
     }
 
     /**
      * Substitutes the arguments in-place according to the given map.
      */
-    void subst_args(const vector_var_map& map) {
+    void subst_args(const std::unordered_map<Var, Var>& map) {
       base::subst_args(map);
       args_.subst(map);
     }
@@ -262,7 +263,7 @@ namespace sill {
       if (!equivalent(args, args_)) {
         throw std::runtime_error("canonical_gaussian::reorder: invalid ordering");
       }
-      return canonical_gaussian(args, param_.reorder(index_map(args)));
+      return canonical_gaussian(args, param_.reorder(this->index_map(args)));
     }
     
     /**
@@ -544,7 +545,7 @@ namespace sill {
    * A canonical_gaussian factor using double precision.
    * \relates canonical_gaussian
    */
-  typedef canonical_gaussian<double> cgaussian;
+  typedef canonical_gaussian<double, variable> cgaussian;
   
   // Common operations
   //============================================================================
@@ -553,8 +554,9 @@ namespace sill {
    * Prints the canonical_gaussian to a stream.
    * \relates canonical_gaussian
    */
-  template <typename T>
-  std::ostream& operator<<(std::ostream& out, const canonical_gaussian<T>& f) {
+  template <typename T, typename Var>
+  std::ostream&
+  operator<<(std::ostream& out, const canonical_gaussian<T, Var>& f) {
     out << f.arguments() << std::endl
         << f.param() << std::endl;
     return out;
@@ -567,9 +569,10 @@ namespace sill {
    * Returns an object that can add the parameters of one canonical Gaussian
    * to another one in-place.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_join_inplace<T, sill::plus_assign<> >
-  multiplies_assign_op(canonical_gaussian<T>& h, const canonical_gaussian<T>& f) {
+  multiplies_assign_op(canonical_gaussian<T, Var>& h,
+                       const canonical_gaussian<T, Var>& f) {
     return { h.index_map(f.arguments()) };
   }
 
@@ -577,9 +580,9 @@ namespace sill {
    * Returns an object that can add a constant to the log-multiplier of
    * a canonical Gaussian in-place.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_join_inplace<T, sill::plus_assign<> >
-  multiplies_assign_op(canonical_gaussian<T>& h) {
+  multiplies_assign_op(canonical_gaussian<T, Var>& h) {
     return { };
   }
 
@@ -587,9 +590,10 @@ namespace sill {
    * Returns an object that can subrtact the parameters of one canonical Gaussian
    * from another one in-place.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_join_inplace<T, sill::minus_assign<> >
-  divides_assign_op(canonical_gaussian<T>& h, const canonical_gaussian<T>& f) {
+  divides_assign_op(canonical_gaussian<T, Var>& h,
+                    const canonical_gaussian<T, Var>& f) {
     return { h.index_map(f.arguments()) };
   }
 
@@ -597,9 +601,9 @@ namespace sill {
    * Returns an object that can subtract a constant to the log-multiplier of
    * a canonical Gaussian in-place.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_join_inplace<T, sill::minus_assign<> >
-  divides_assign_op(canonical_gaussian<T>& h) {
+  divides_assign_op(canonical_gaussian<T, Var>& h) {
     return { };
   }
 
@@ -607,10 +611,11 @@ namespace sill {
    * Returns an object that can compute the parameters corresponding to the
    * product of two canonical Gaussians. Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_join<T, sill::plus_assign<> >
-  multiplies_op(const canonical_gaussian<T>& f, const canonical_gaussian<T>& g,
-                canonical_gaussian<T>& h) {
+  multiplies_op(const canonical_gaussian<T, Var>& f,
+                const canonical_gaussian<T, Var>& g,
+                canonical_gaussian<T, Var>& h) {
     size_t n = h.reset_prototype(f.arguments() | g.arguments());
     return { h.index_map(f.arguments()), h.index_map(g.arguments()), n };
   }
@@ -619,10 +624,11 @@ namespace sill {
    * Returns an object that can compute the parameters corresponding to the
    * ratio of two canonical Gaussians. Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_join<T, sill::minus_assign<> >
-  divides_op(const canonical_gaussian<T>& f, const canonical_gaussian<T>& g,
-             canonical_gaussian<T>& h) {
+  divides_op(const canonical_gaussian<T, Var>& f,
+             const canonical_gaussian<T, Var>& g,
+             canonical_gaussian<T, Var>& h) {
     size_t n = h.reset_prototype(f.arguments() | g.arguments());
     return { h.index_map(f.arguments()), h.index_map(g.arguments()), n };
   }
@@ -632,11 +638,11 @@ namespace sill {
    * the marginal of a canonical Gaussian over a subset of arguments.
    * Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_marginal<T>
-  marginal_op(const canonical_gaussian<T>& f,
-              const domain<vector_variable*>& retain,
-              canonical_gaussian<T>& h) {
+  marginal_op(const canonical_gaussian<T, Var>& f,
+              const basic_domain<Var>& retain,
+              canonical_gaussian<T, Var>& h) {
     h.reset_prototype(retain);
     return { f.index_map(retain), f.index_map(f.arguments() - retain) };
   }
@@ -646,11 +652,11 @@ namespace sill {
    * the maximum of a canonical Gaussian over a subset of arguments.
    * Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_marginal<T>
-  maximum_op(const canonical_gaussian<T>& f,
-             const domain<vector_variable*>& retain,
-             canonical_gaussian<T>& h) {
+  maximum_op(const canonical_gaussian<T, Var>& f,
+             const basic_domain<Var>& retain,
+             canonical_gaussian<T, Var>& h) {
     h.reset_prototype(retain);
     return { f.index_map(retain), f.index_map(f.arguments() - retain) };
   }
@@ -660,12 +666,12 @@ namespace sill {
    * restricting a canonical Gaussian to the given assignment.
    * Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_restrict<T>
-  restrict_op(const canonical_gaussian<T>& f,
-              const vector_assignment<T>& a,
-              canonical_gaussian<T>& h) {
-    domain<vector_variable*> y, x; // restricted, retained
+  restrict_op(const canonical_gaussian<T, Var>& f,
+              const vector_assignment<T, Var>& a,
+              canonical_gaussian<T, Var>& h) {
+    basic_domain<Var> y, x; // restricted, retained
     f.arguments().partition(a, y, x);
     h.reset_prototype(x);
     return { f.index_map(x), f.index_map(y), extract(a, y) };
@@ -675,12 +681,12 @@ namespace sill {
    * Returns an object that can restrict a canonical Gaussian and
    * add the resulting parameters to another one.
    */
-  template <typename T>
+  template <typename T, typename Var>
   canonical_gaussian_restrict_join<T, sill::plus_assign<> >
-  restrict_multiply_op(const canonical_gaussian<T>& f,
-                       const vector_assignment<T>& a,
-                       canonical_gaussian<T>& h) {
-    domain<vector_variable*> y, x; // restricted, retained
+  restrict_multiply_op(const canonical_gaussian<T, Var>& f,
+                       const vector_assignment<T, Var>& a,
+                       canonical_gaussian<T, Var>& h) {
+    basic_domain<Var> y, x; // restricted, retained
     f.arguments().partition(a, y, x);
     return { f.index_map(x), f.index_map(y), h.index_map(x), extract(a, y) };
   }
@@ -691,31 +697,36 @@ namespace sill {
   //! \addtogroup factor_traits
   //! @{
 
-  template <typename T>
-  struct has_multiplies<canonical_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_multiplies<canonical_gaussian<T, Var>>
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_multiplies_assign<canonical_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_multiplies_assign<canonical_gaussian<T, Var>>
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_divides<canonical_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_divides<canonical_gaussian<T, Var>>
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_divides_assign<canonical_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_divides_assign<canonical_gaussian<T, Var>>
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_marginal<canonical_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_marginal<canonical_gaussian<T, Var>>
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_maximum<canonical_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_maximum<canonical_gaussian<T, Var>>
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_arg_max<canonical_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_arg_max<canonical_gaussian<T, Var>>
+    : public std::true_type { };
   
   //! @}
 
 } // namespace sill
-
-//#include <sill/factor/gaussian_common.hpp>
 
 #endif

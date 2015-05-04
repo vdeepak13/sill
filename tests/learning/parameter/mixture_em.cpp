@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE mixture_em
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/learning/dataset/vector_memory_dataset.hpp>
 #include <sill/learning/parameter/mixture_em.hpp>
@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   // size_t niters = 100;
 
   universe u;
-  vector_var_vector vars = u.new_vector_variables(1, 2); // 1 2D variable
+  domain vars = u.new_vector_variables(1, 2); // 1 2D variable
   
   mixture_gaussian original(k, vars);
   original[0] = moment_gaussian(vars, "-2 0", "1 0.5; 0.5 1");

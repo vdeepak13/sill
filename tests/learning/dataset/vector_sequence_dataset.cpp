@@ -1,20 +1,19 @@
 #define BOOST_TEST_MODULE vector_sequence_dataset
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset/vector_sequence_dataset.hpp>
 #include <sill/learning/dataset/vector_sequence_dataset_io.hpp>
 
 #include <random>
 
 namespace sill {
-  template class basic_sequence_dataset<vector_sequence_traits<double> >;
-  template class basic_sequence_dataset<vector_sequence_traits<float> >;
+  template class basic_sequence_dataset<vector_sequence_traits<double, variable> >;
+  template class basic_sequence_dataset<vector_sequence_traits<float, variable> >;
 }
 
 using namespace sill;
 
-typedef domain<vector_discrete_process*> domain_type;
 typedef dynamic_matrix<double> data_type;
 typedef std::pair<data_type, double> sample_type;
 typedef std::pair<vector_assignment<double>, double> sample_assignment_type;
@@ -22,14 +21,15 @@ BOOST_TEST_DONT_PRINT_LOG_VALUE(sample_type);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(sample_assignment_type);
 
 struct fixture {
-  domain_type p;
+  universe u;
+  dprocess_domain p;
   data_type seq0, seq1;
   vector_sequence_dataset<> ds;
 
   fixture()
     : p(2), seq0(3, 2), seq1(3, 1) {
-    p[0] = new vector_discrete_process("a", 1);
-    p[1] = new vector_discrete_process("b", 2);
+    p[0] = u.new_vector_dprocess("a", 1);
+    p[1] = u.new_vector_dprocess("b", 2);
     seq0 << 0, 1, 1, 2, 2, 3;
     seq1 << 1, 2, 3;
     ds.initialize(p);
@@ -70,7 +70,7 @@ BOOST_FIXTURE_TEST_CASE(test_insert, fixture) {
 
   // indirect iteration
   // direct iteration
-  domain_type p1 = {p[1]};
+  dprocess_domain p1 = {p[1]};
   const auto& cds = ds;
   std::tie(it, end) = cds(p1);
   BOOST_CHECK_EQUAL(it->first, seq0.block(1, 0, 2, 2));
@@ -122,17 +122,17 @@ BOOST_FIXTURE_TEST_CASE(test_value_iterators, fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_asignment_iterators, fixture) {
-  domain_type p01 = {p[0], p[1]};
+  dprocess_domain p01 = {p[0], p[1]};
 
   vector_sequence_dataset<>::assignment_iterator it, end;
   std::tie(it, end) = ds.assignments(p);
   
   // check the first sample
   BOOST_CHECK_EQUAL(it->first.size(), 4);
-  BOOST_CHECK_EQUAL(it->first.at(p[0]->at(0)), seq0.block(0, 0, 1, 1));
-  BOOST_CHECK_EQUAL(it->first.at(p[1]->at(0)), seq0.block(1, 0, 2, 1));
-  BOOST_CHECK_EQUAL(it->first.at(p[0]->at(1)), seq0.block(0, 1, 1, 1));
-  BOOST_CHECK_EQUAL(it->first.at(p[1]->at(1)), seq0.block(1, 1, 2, 1));
+  BOOST_CHECK_EQUAL(it->first.at(p[0](0)), seq0.block(0, 0, 1, 1));
+  BOOST_CHECK_EQUAL(it->first.at(p[1](0)), seq0.block(1, 0, 2, 1));
+  BOOST_CHECK_EQUAL(it->first.at(p[0](1)), seq0.block(0, 1, 1, 1));
+  BOOST_CHECK_EQUAL(it->first.at(p[1](1)), seq0.block(1, 1, 2, 1));
   BOOST_CHECK_EQUAL(it->second, 0.5);
   BOOST_CHECK_EQUAL(*it, ds.assignment(0));
   BOOST_CHECK_EQUAL(*it, ds.assignment(0, p));
@@ -141,8 +141,8 @@ BOOST_FIXTURE_TEST_CASE(test_asignment_iterators, fixture) {
 
   // check the second sample
   BOOST_CHECK_EQUAL(it->first.size(), 2);
-  BOOST_CHECK_EQUAL(it->first.at(p[0]->at(0)), seq1.block(0, 0, 1, 1));
-  BOOST_CHECK_EQUAL(it->first.at(p[1]->at(0)), seq1.block(1, 0, 2, 1));
+  BOOST_CHECK_EQUAL(it->first.at(p[0](0)), seq1.block(0, 0, 1, 1));
+  BOOST_CHECK_EQUAL(it->first.at(p[1](0)), seq1.block(1, 0, 2, 1));
   BOOST_CHECK_EQUAL(it->second, 1.0);
   BOOST_CHECK_EQUAL(*it, ds.assignment(1));
   BOOST_CHECK_EQUAL(*it, ds.assignment(1, p));

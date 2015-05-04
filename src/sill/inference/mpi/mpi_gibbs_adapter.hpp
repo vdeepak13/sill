@@ -97,10 +97,10 @@ namespace sill {
     };
 
     //! a map from the local variable pointer to its unique id (number)
-    typedef std::map<variable_type*, variable_id_type> var2id_map_type;
+    typedef std::map<variable_type, variable_id_type> var2id_map_type;
 
     //! a map from the variables unique id to its local pointer
-    typedef std::vector<variable_type*> id2var_map_type;
+    typedef std::vector<variable_type> id2var_map_type;
 
 
     

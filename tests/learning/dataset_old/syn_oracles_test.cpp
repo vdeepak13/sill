@@ -3,7 +3,7 @@
 
 #include <boost/array.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/learning/dataset_old/syn_oracle_knorm.hpp>
 #include <sill/learning/dataset_old/syn_oracle_majority.hpp>
@@ -15,7 +15,7 @@ using namespace sill;
 int main(int argc, char** argv) {
 
   universe u;
-  vector_var_vector vector_list;
+  domain vector_list;
   std::vector<variable::variable_typenames> var_type_order;
 
   // Test knorm oracle
@@ -25,7 +25,7 @@ int main(int argc, char** argv) {
     vector_list.push_back(u.new_vector_variable(1));
     var_type_order.push_back(variable::VECTOR_VARIABLE);
   }
-  finite_variable* fv = u.new_finite_variable(nmeans);
+  variable fv = u.new_finite_variable(nmeans);
   var_type_order.push_back(variable::FINITE_VARIABLE);
   syn_oracle_knorm knorm(vector_list, fv, var_type_order);
   for (size_t i = 0; i < 5; i++) {

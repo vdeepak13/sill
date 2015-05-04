@@ -232,7 +232,7 @@ namespace sill {
       
       // Construct the canonical tree
       // Each vertex of the tree is associated with a PL factor
-      typedef junction_tree<variable_type*, factor_type> jt_type;
+      typedef junction_tree<variable_type, factor_type> jt_type;
       typedef typename jt_type::vertex vertex;
       jt_type jt(cliques(), factors().begin());
 
@@ -273,7 +273,7 @@ namespace sill {
 
     //! implements Factor::subst_args
     fragment& 
-    subst_args(const std::map<variable_type*, variable_type*>& map) {
+    subst_args(const std::map<variable_type, variable_type>& map) {
       args = subst_vars(args, map);
       foreach(factor_type& pl, *pls) pl.subst_args(map);
       return *this;

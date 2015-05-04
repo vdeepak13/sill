@@ -81,7 +81,7 @@ namespace sill {
 
     //! This mutable junction tree may be modified and then swapped
     //! in constant time with the tree stored by the base class.
-    learnt_junction_tree<variable_type*, F, F> learnt_jt;
+    learnt_junction_tree<variable_type, F, F> learnt_jt;
 
     using base::args;
     using base::jt;

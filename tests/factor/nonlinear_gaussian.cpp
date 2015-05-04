@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE nonlinear_gaussian
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/approx/hybrid_conditional.hpp>
 #include <sill/factor/approx/integration_points.hpp>
 #include <sill/factor/nonlinear_gaussian.hpp>
@@ -14,11 +14,11 @@ BOOST_AUTO_TEST_CASE(test_multiplication) {
   using namespace sill;
 
   universe u;
-  vector_variable* x = u.new_vector_variable("x", 1);
-  vector_variable* y = u.new_vector_variable("y", 1);
-  vector_variable* z = u.new_vector_variable("z", 1);
-  vector_var_vector xy = make_vector(x, y);
-  vector_var_vector zv = make_vector(z);
+  variable x = u.new_vector_variable("x", 1);
+  variable y = u.new_vector_variable("y", 1);
+  variable z = u.new_vector_variable("z", 1);
+  domain xy = make_vector(x, y);
+  domain zv = make_vector(z);
 
   integration_points_approximator ip_approx;
   hybrid_conditional_approximator hybrid_approx(ip_approx, x, 25, 0, 3);

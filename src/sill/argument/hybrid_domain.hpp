@@ -1,28 +1,28 @@
 #ifndef SILL_HYBRID_DOMAIN_HPP
 #define SILL_HYBRID_DOMAIN_HPP
 
-#include <sill/argument/domain.hpp>
-#include <sill/base/finite_variable.hpp>
-#include <sill/base/vector_variable.hpp>
+#include <sill/argument/basic_domain.hpp>
+#include <sill/argument/variable.hpp>
 
 namespace sill {
   
   /**
    * A domain that consists of a finite and a vector component.
    */
+  template <typename Arg = variable>
   class hybrid_domain {
   public:
     //! Default construct. Creates an empty domain.
     hybrid_domain() { }
 
     //! Constructs a hybrid domain with the given finite and vector components.
-    hybrid_domain(const domain<finite_variable*>& finite,
-                  const domain<vector_variable*>& vector)
+    hybrid_domain(const basic_domain<Arg>& finite,
+                  const basic_domain<Arg>& vector)
       : finite_(finite), vector_(vector) { }
 
     //! Constructs a hybrid domain with the given finite and vector components.
-    hybrid_domain(domain<finite_variable*>&& finite,
-                  domain<vector_variable*>&& vector)
+    hybrid_domain(basic_domain<Arg>&& finite,
+                  basic_domain<Arg>&& vector)
       : finite_(std::move(finite)), vector_(std::move(vector)) { }
 
     //! Saves the domain to an archive.
@@ -38,22 +38,22 @@ namespace sill {
     }
 
     //! Returns the finite component of the domain.
-    domain<finite_variable*>& finite() {
+    basic_domain<Arg>& finite() {
       return finite_;
     }
 
     //! Returns the finite component of the domain.
-    const domain<finite_variable*>& finite() const {
+    const basic_domain<Arg>& finite() const {
       return finite_;
     }
 
     //! Returns the vector component of the domain.
-    domain<vector_variable*>& vector() {
+    basic_domain<Arg>& vector() {
       return vector_;
     }
 
     //! Returns the vector component of the domain.
-    const domain<vector_variable*>& vector() const {
+    const basic_domain<Arg>& vector() const {
       return vector_;
     }
 
@@ -78,23 +78,12 @@ namespace sill {
     }
 
     //! Returns the number of times a variable is present in the domain.
-    size_t count(finite_variable* v) const {
-      return finite_.count(v);
-    }
-
-    //! Returns the number of times a variable is present in the domain.
-    size_t count(vector_variable* v) const {
-      return vector_.count(v);
-    }
-
-    //! Returns the number of times a variable is present in the domain.
-    size_t count(variable* v) const {
-      switch (v->type()) {
-      case variable::FINITE_VARIABLE:
-        return finite_.count(dynamic_cast<finite_variable*>(v));
-      case variable::VECTOR_VARIABLE:
-        return vector_.count(dynamic_cast<vector_variable*>(v));
-      default:
+    size_t count(Arg v) const {
+      if (v.finite()) {
+        return finite_.count(v);
+      } else if (v.vector()) {
+        return vector_.count(v);
+      } else {
         return 0;
       }
     }
@@ -123,6 +112,17 @@ namespace sill {
     // Mutations
     //==========================================================================
 
+    //! Adds a variable at the end.
+    void push_back(Arg arg) {
+      if (arg.finite()) {
+        finite().push_back(arg);
+      } else if (arg.vector()) {
+        vector().push_back(arg);
+      } else {
+        throw std::invalid_argument("Invalid type for " + arg.str());
+      }
+    }
+
     //! Removes all variables from the domain.
     void clear() {
       finite_.clear();
@@ -136,12 +136,18 @@ namespace sill {
       vector_.subst(map);
     }
 
+    //! Swaps the contents of two domains
+    friend void swap(hybrid_domain& a, hybrid_domain& b) {
+      swap(a.finite(), b.finite());
+      swap(a.vector(), b.vector());
+    }
+
   private:
     //! The finite component.
-    domain<finite_variable*> finite_;
+    basic_domain<Arg> finite_;
     
     //! The vector component.
-    domain<vector_variable*> vector_;
+    basic_domain<Arg> vector_;
 
   }; // struct hybrid_domain
 
@@ -149,18 +155,13 @@ namespace sill {
    * Prints the hybrid domain to an output stream.
    * \relates hybrid_domain
    */
-  inline std::ostream& operator<<(std::ostream& out, const hybrid_domain& d) {
+  template <typename Arg>
+  std::ostream&
+  operator<<(std::ostream& out, const hybrid_domain<Arg>& d) {
     out << '(' << d.finite() << ", " << d.vector() << ')';
     return out;
   }
 
-  /**
-   * Swaps the contents of two hybrid domains.
-   */
-  inline void swap(hybrid_domain& a, hybrid_domain& b) {
-    swap(a.finite(), b.finite());
-    swap(a.vector(), b.vector());
-  }
 
   // Set operations
   //============================================================================
@@ -169,45 +170,49 @@ namespace sill {
    * Returns the concatenation of two hybrid domains.
    * \relates hybrid_domain
    */
-  inline hybrid_domain
-  operator+(const hybrid_domain& a, const hybrid_domain& b) {
-    return hybrid_domain(a.finite() + b.finite(), a.vector() + b.vector());
+  template <typename Arg>
+  hybrid_domain<Arg>
+  operator+(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
+    return hybrid_domain<Arg>(a.finite() + b.finite(), a.vector() + b.vector());
   }
 
   /**
    * Returns the difference of two hybrid domains.
    * \relates hybrid_domain
    */
-  inline hybrid_domain
-  operator-(const hybrid_domain& a, const hybrid_domain& b) {
-    return hybrid_domain(a.finite() - b.finite(), a.vector() - b.vector());
+  template <typename Arg>
+  hybrid_domain<Arg>
+  operator-(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
+    return hybrid_domain<Arg>(a.finite() - b.finite(), a.vector() - b.vector());
   }
 
   /**
    * Returns the ordered union of two hybrid domains.
    * \relates hybrid_domain
    */
-  inline hybrid_domain
-  operator|(const hybrid_domain& a, const hybrid_domain& b) {
-    return hybrid_domain(a.finite() | b.finite(), a.vector() | b.vector());
+  template <typename Arg>
+  hybrid_domain<Arg>
+  operator|(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
+    return hybrid_domain<Arg>(a.finite() | b.finite(), a.vector() | b.vector());
   }
 
   /**
    * Returns the ordered intersection of two hybrid domains.
    * \relates hybrid_domain
    */
-  inline hybrid_domain
-  operator&(const hybrid_domain& a, const hybrid_domain& b) {
-    return hybrid_domain(a.finite() & b.finite(), a.vector() & b.vector());
+  template <typename Arg>
+  hybrid_domain<Arg>
+  operator&(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
+    return hybrid_domain<Arg>(a.finite() & b.finite(), a.vector() & b.vector());
   }
 
   /**
    * Returns true if two hybrid domains do not have nay elements in common.
    * \relates hybrid_domain
    */
-  inline bool disjoint(const hybrid_domain& a, const hybrid_domain& b) {
-    return disjoint(a.finite(), b.finite())
-      && disjoint(a.vector(), b.vector());
+  template <typename Arg>
+  bool disjoint(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
+    return disjoint(a.finite(), b.finite()) && disjoint(a.vector(), b.vector());
   }
 
   /**
@@ -216,7 +221,8 @@ namespace sill {
    * vector components are equivalent.
    * \relates hybrid_domain
    */
-  inline bool equivalent(const hybrid_domain& a, const hybrid_domain& b) {
+  template <typename Arg>
+  bool equivalent(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
     return equivalent(a.finite(), b.finite())
       && equivalent(a.vector(), b.vector());
   }
@@ -226,9 +232,9 @@ namespace sill {
    * present in the second domain.
    * \relates hybrid_domain
    */
-  inline bool subset(const hybrid_domain& a, const hybrid_domain& b) {
-    return subset(a.finite(), b.finite())
-      && subset(a.vector(), b.vector());
+  template <typename Arg>
+  bool subset(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
+    return subset(a.finite(), b.finite()) && subset(a.vector(), b.vector());
   }
 
   /**
@@ -236,7 +242,8 @@ namespace sill {
    * present in the first domain.
    * \relates hybrid_domain
    */
-  inline bool superset(const hybrid_domain& a, const hybrid_domain& b) {
+  template <typename Arg>
+  bool superset(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
     return superset(a.finite(), b.finite())
       && superset(a.vector(), b.vector());
   }
@@ -245,10 +252,10 @@ namespace sill {
    * Returns true if two domains are type-compatible.
    * \relates hybrid_domain
    */
-  inline bool type_compatible(const hybrid_domain& a,
-                              const hybrid_domain& b) {
-    return type_compatible(a.finite(), b.finite())
-      && type_compatible(a.vector(), b.vector());
+  template <typename Arg>
+  bool compatible(const hybrid_domain<Arg>& a, const hybrid_domain<Arg>& b) {
+    return compatible(a.finite(), b.finite())
+      && compatible(a.vector(), b.vector());
   }
 
 } // namespace sill

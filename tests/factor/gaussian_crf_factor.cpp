@@ -2,7 +2,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/crf/gaussian_crf_factor.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 
@@ -24,8 +24,8 @@ int main(int argc, char** argv) {
   boost::mt11213b rng(random_seed);
   moment_gaussian_generator gen(-0.3, 0.3, 0.3, 0.5);
 
-  vector_variable* Y1 = u.new_vector_variable(1);
-  vector_variable* X1 = u.new_vector_variable(1);
+  variable Y1 = u.new_vector_variable(1);
+  variable X1 = u.new_vector_variable(1);
 
   moment_gaussian mg_Y1X1 = gen(make_domain(Y1,X1), rng);
   moment_gaussian mg_Y1_given_X1(mg_Y1X1.conditional(make_domain(X1)));

@@ -18,9 +18,9 @@
 namespace sill {
 
   // Forward declaration
-  template <typename T> class canonical_table;
-  template <typename T, size_t N> class probability_array;
-  template <typename T, size_t N> class canonical_array;
+  template <typename T, typename Var> class canonical_table;
+  template <typename T, size_t N, typename Var> class probability_array;
+  template <typename T, size_t N, typename Var> class canonical_array;
 
   /**
    * A factor of a categorical probability distribution in the probability
@@ -36,18 +36,18 @@ namespace sill {
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename T>
-  class probability_table : public table_factor<T> {
+  template <typename T, typename Var>
+  class probability_table : public table_factor<T, Var> {
   public: 
     // Public types
     //==========================================================================
 
     // Factor member types
-    typedef T                 real_type;
-    typedef T                 result_type;
-    typedef finite_variable   variable_type;
-    typedef domain<finite_variable*> domain_type;
-    typedef finite_assignment assignment_type;
+    typedef T                      real_type;
+    typedef T                      result_type;
+    typedef Var                    variable_type;
+    typedef basic_domain<Var>      domain_type;
+    typedef finite_assignment<Var> assignment_type;
 
     // ParametricFactor types
     typedef table<T>     param_type;
@@ -83,11 +83,11 @@ namespace sill {
 
     //! Creates a factor with the specified arguments and parameters.
     probability_table(const domain_type& args, const table<T>& param)
-      : table_factor<T>(args, param) { }
+      : table_factor<T, Var>(args, param) { }
 
     //! Creates a factor with the specified arguments and parameters.
     probability_table(const domain_type& args, table<T>&& param)
-      : table_factor<T>(args, std::move(param)) { }
+      : table_factor<T, Var>(args, std::move(param)) { }
 
     //! Creates a factor with the specified arguments and parameters.
     probability_table(const domain_type& args,
@@ -98,25 +98,23 @@ namespace sill {
     }
 
     //! Conversion from a canonical_table factor.
-    explicit probability_table(const canonical_table<T>& f) {
+    explicit probability_table(const canonical_table<T, Var>& f) {
       *this = f;
     }
 
     //! Conversion from a probability_array factor.
     template <size_t N>
-    explicit probability_table(const probability_array<T, N>& f) {
+    explicit probability_table(const probability_array<T, N, Var>& f) {
       this->reset(f.arguments());
       std::copy(f.begin(), f.end(), this->begin());
     }
 
     //! Conversion from a canonical_array factor.
     template <size_t N>
-    explicit probability_table(const canonical_array<T, N>& f) {
+    explicit probability_table(const canonical_array<T, N, Var>& f) {
       this->reset(f.arguments());
       std::transform(f.begin(), f.end(), this->begin(), exponent<T>());
     }
-
-
 
     //! Assigns a constant to this factor.
     probability_table& operator=(T value) {
@@ -126,7 +124,7 @@ namespace sill {
     }
 
     //! Assigns a probability table factor to this factor.
-    probability_table& operator=(const canonical_table<T>& f) {
+    probability_table& operator=(const canonical_table<T, Var>& f) {
       this->reset(f.arguments());
       std::transform(f.begin(), f.end(), this->begin(), exponent<T>());
       return *this;
@@ -146,7 +144,7 @@ namespace sill {
     }
 
     //! Returns the value of the factor for the given assignment.
-    T operator()(const finite_assignment& a) const {
+    T operator()(const assignment_type& a) const {
       return this->param(a);
     }
 
@@ -156,7 +154,7 @@ namespace sill {
     }
 
     //! Returns the log-value of the factor for the given assignment.
-    T log(const finite_assignment& a) const {
+    T log(const assignment_type& a) const {
       return std::log(this->param(a));
     }
 
@@ -380,14 +378,14 @@ namespace sill {
     }
 
     //! Computes the maximum value and stores the corresponding assignment.
-    T maximum(finite_assignment& a) const {
+    T maximum(assignment_type& a) const {
       const T* it = std::max_element(this->begin(), this->end());
       this->assignment(this->param_.index(it), a);
       return *it;
     }
 
     //! Computes the minimum value and stores the corresponding assignment.
-    T minimum(finite_assignment& a) const {
+    T minimum(assignment_type& a) const {
       const T* it = std::min_element(this->begin(), this->end());
       this->assignment(this->param_.index(it), a);
       return *it;
@@ -405,15 +403,15 @@ namespace sill {
     }
     
     //! Restricts this factor to an assignment.
-    probability_table restrict(const finite_assignment& a) const {
+    probability_table restrict(const assignment_type& a) const {
       probability_table result;
       restrict(a, result);
       return result;
     }
 
     //! Restricts this factor to an assignment.
-    void restrict(const finite_assignment& a, probability_table& result) const {
-      table_factor<T>::restrict(a, result);
+    void restrict(const assignment_type& a, probability_table& result) const {
+      table_factor<T, Var>::restrict(a, result);
     }
 
     // Sampling
@@ -441,7 +439,7 @@ namespace sill {
      * storing the result in an assignment.
      */
     template <typename Generator>
-    void sample(Generator& rng, finite_assignment& a) const {
+    void sample(Generator& rng, assignment_type& a) const {
       this->assignment(sample(rng), a);
     }
 
@@ -452,7 +450,7 @@ namespace sill {
      */
     template <typename Generator>
     void sample(Generator& rng, const domain_type& head,
-                finite_assignment& a) const {
+                assignment_type& a) const {
       assert(prefix(head, arguments()));
       this->assignment(sample(rng, extract(a, arguments(), head.size())), a);
     }
@@ -507,7 +505,7 @@ namespace sill {
    * A probability_table factor using double precision.
    * \relates probability_table
    */
-  typedef probability_table<double> ptable;
+  typedef probability_table<double, variable> ptable;
 
   // Input / output
   //============================================================================
@@ -516,8 +514,9 @@ namespace sill {
    * Prints a human-readable representation of the table factor to the stream.
    * \relates probability_table
    */
-  template <typename T>
-  std::ostream& operator<<(std::ostream& out, const probability_table<T>& f) {
+  template <typename T, typename Var>
+  std::ostream&
+  operator<<(std::ostream& out, const probability_table<T, Var>& f) {
     out << "#PT(" << f.arguments() << ")" << std::endl;
     out << f.param();
     return out;
@@ -526,38 +525,49 @@ namespace sill {
   // Traits
   //============================================================================
 
-  template <typename T>
-  struct has_multiplies<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_multiplies<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_multiplies_assign<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_multiplies_assign<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_divides<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_divides<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_divides_assign<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_divides_assign<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_max<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_max<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_min<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_min<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_marginal<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_marginal<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_maximum<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_maximum<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_minimum<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_minimum<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_arg_max<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_arg_max<probability_table<T, Var> >
+    : public std::true_type { };
 
-  template <typename T>
-  struct has_arg_min<probability_table<T> > : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_arg_min<probability_table<T, Var> >
+    : public std::true_type { };
 
 } // namespace sill
 

@@ -3,8 +3,8 @@
 
 #include <sill/graph/cluster_graph.hpp>
 
-#include <sill/argument/domain.hpp>
-#include <sill/base/universe.hpp>
+#include <sill/argument/basic_domain.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/stl_io.hpp>
 
 #include <functional>
@@ -12,16 +12,14 @@
 #include "../predicates.hpp"
 
 namespace sill {
-  template class cluster_graph<domain<finite_variable*> >;
+  template class cluster_graph<domain>;
 }
 
 using namespace sill;
 
 struct fixture {
-  typedef domain<finite_variable*> domain_type;
-  
   fixture()
-    : v(u.new_finite_variables(6, 2)) {
+    : v(u.new_finite_variables(6, "v", 2)) {
     cg.add_cluster(1, {v[0], v[1]});
     cg.add_cluster(2, {v[1], v[2], v[3]});
     cg.add_cluster(3, {v[2], v[3], v[4]});
@@ -32,8 +30,8 @@ struct fixture {
   }
 
   universe u;
-  finite_var_vector v;
-  cluster_graph<domain_type> cg;
+  domain v;
+  cluster_graph<domain> cg;
 };
 
 BOOST_FIXTURE_TEST_CASE(test_properties, fixture) {
@@ -47,16 +45,18 @@ BOOST_FIXTURE_TEST_CASE(test_properties, fixture) {
 }
 
 BOOST_FIXTURE_TEST_CASE(test_copy, fixture) {
-  cluster_graph<domain_type> cg2(cg);
+  cluster_graph<domain> cg2(cg);
   BOOST_CHECK(cg2.connected());
   BOOST_CHECK(cg2.tree());
   BOOST_CHECK(cg2.running_intersection());
   BOOST_CHECK_EQUAL(cg, cg2);
 }
 
+/*
 BOOST_FIXTURE_TEST_CASE(test_serialization, fixture) {
   BOOST_CHECK(serialize_deserialize(cg, u));
 }
+*/
 
 BOOST_AUTO_TEST_CASE(test_triangulated) {  
   // Build the graph. This graph must have no self-loops or parallel edges.
@@ -65,9 +65,9 @@ BOOST_AUTO_TEST_CASE(test_triangulated) {
     {vpair(6, 2), vpair(1, 2), vpair(1, 3), vpair(1, 5),
      vpair(2, 3), vpair(3, 4), vpair(4, 6), vpair(4, 1)};
   undirected_graph<size_t> g(vpairs);
+  typedef basic_domain<size_t> domain_type;
 
   // Build a junction tree using the min-degree strategy
-  typedef domain<size_t> domain_type;
   cluster_graph<domain_type> jt;
   jt.triangulated(g, min_degree_strategy());
   BOOST_CHECK(jt.connected());

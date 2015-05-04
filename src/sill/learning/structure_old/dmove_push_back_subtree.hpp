@@ -58,23 +58,23 @@ namespace sill {
     vertex v;
 
     //! Variable to add to vertex v
-    variable_type* add_var;
+    variable_type add_var;
 
     //! Variable to remove from vertex v
-    variable_type* remove_var;
+    variable_type remove_var;
 
     //! Find all variables which appear in u's neighbors exactly once.
     domain_type get_once_vars(const vertex& u,
                               const decomposable<F>& model) const {
-      std::map<variable_type*, size_t> var_count;
+      std::map<variable_type, size_t> var_count;
       foreach(const vertex& u2, model.neighbors(u)) {
-        foreach(variable_type* tmpvar, model.clique(u2))
+        foreach(variable_type tmpvar, model.clique(u2))
           var_count[tmpvar]++;
       }
       domain_type once_vars;
-      typename std::map<variable_type*, size_t>::const_iterator it_end
+      typename std::map<variable_type, size_t>::const_iterator it_end
         = var_count.end();
-      for (typename std::map<variable_type*, size_t>::const_iterator it
+      for (typename std::map<variable_type, size_t>::const_iterator it
              = var_count.begin();
            it != it_end; ++it)
         if (it->second == 1)
@@ -91,8 +91,8 @@ namespace sill {
                     const decomposable_score<F>& score,
                     dataset_statistics<>& stats, Inserter& inserter,
                     bool use_estimates) const {
-      foreach(variable_type* r, r_vars) {
-        foreach(variable_type* a, a_vars) {
+      foreach(variable_type r, r_vars) {
+        foreach(variable_type a, a_vars) {
           dmove_push_back_subtree<F,Inserter>* move_ptr =
             new dmove_push_back_subtree<F,Inserter>(u, a, r);
           double change;
@@ -113,8 +113,8 @@ namespace sill {
     dmove_push_back_subtree() : v(decomposable<F>::null_vertex()) { }
 
     //! Creates a move which replaces remove_var with add_var in vertex v.
-    dmove_push_back_subtree(vertex v, variable_type* add_var,
-                           variable_type* remove_var)
+    dmove_push_back_subtree(vertex v, variable_type add_var,
+                           variable_type remove_var)
       : v(v), add_var(add_var), remove_var(remove_var) {
     }
 

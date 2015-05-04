@@ -1,5 +1,4 @@
 project(examples)
-link_libraries(sill ${Boost_LIBRARIES})
 subdirs(
   filter
   grid_motion

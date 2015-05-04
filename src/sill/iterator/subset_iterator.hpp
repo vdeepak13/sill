@@ -9,8 +9,6 @@
 
 #include <set>
 
-#include <sill/base/stl_util.hpp>
-
 namespace sill {
 
   /**

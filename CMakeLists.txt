@@ -30,7 +30,7 @@ endfunction(add_prefix)
 # used for the class branch, not the lab branch: subdirs(src examples
 # EXCLUDE_FROM_ALL tests timings projects) (Remove EXCLUDE_FROM_ALL
 # for lab branch.)
-subdirs(src examples tests timings tools) # python)
+subdirs(examples tests timings tools) # python)
 
 # This would make the if statements easier to read
 # set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS true)
@@ -103,7 +103,7 @@ link_directories(
   )
 
 link_libraries(
-  # ${Boost_LIBRARIES}
+  ${Boost_LIBRARIES}
   # Boost libraries these are now included in tests/ etc. to ensure proper
   # ordering libraries in static linking.
   ${ARMADILLO_LIBRARIES}

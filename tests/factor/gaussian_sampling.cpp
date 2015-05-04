@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/model/random.hpp>
 
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 
   // Create a multivariate Gaussian.
   boost::uniform_real<double> unif_real(-5, 5);
-  vector_var_vector X;
+  domain X;
   for (size_t j(0); j < 5; ++j)
     X.push_back(u.new_vector_variable(1));
   size_t Xsize(vector_size(X));
@@ -65,8 +65,8 @@ int main(int argc, char** argv) {
   // Create a model to sample from
   decomposable<canonical_gaussian> YXmodel;
   crf_model<gaussian_crf_factor> YgivenXmodel;
-  boost::tuple<vector_var_vector, vector_var_vector,
-               std::map<vector_variable*, copy_ptr<vector_domain> > >
+  boost::tuple<domain, domain,
+               std::map<variable, copy_ptr<vector_domain> > >
     Y_X_and_map(create_chain_gaussian_crf(YXmodel, YgivenXmodel, n, u,
                                           model_seed));
 

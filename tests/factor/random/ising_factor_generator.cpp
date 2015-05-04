@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE ising_factor_generator
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/random/ising_factor_generator.hpp>
 
 #include <boost/random/mersenne_twister.hpp>
@@ -18,8 +18,8 @@ const double exp_upper = std::exp(upper);
 
 BOOST_AUTO_TEST_CASE(test_all) {
   universe u;
-  finite_variable* x = u.new_finite_variable(2);
-  finite_variable* y = u.new_finite_variable(2);
+  variable x = u.new_finite_variable(2);
+  variable y = u.new_finite_variable(2);
   finite_domain xs = make_domain(x);
   finite_domain ys = make_domain(y);
   finite_domain xy = make_domain(x, y);

@@ -32,7 +32,7 @@ namespace sill {
       : source_(), target_(target), property_() { }
     
     //! Conversion to bool indicating if this edge is empty.
-    operator bool() const {
+    explicit operator bool() const {
       return source_ != Vertex() || target_ != Vertex();
     }
 

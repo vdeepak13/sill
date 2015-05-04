@@ -30,7 +30,7 @@ namespace sill {
     
     // Other types
     typedef typename LabelF::variable_type variable_type;
-    typedef std::vector<variable_type*>    var_vector_type;
+    typedef std::vector<variable_type>    var_vector_type;
 
     /**
      * Constructs a naive Bayes learner with given parameters.
@@ -44,7 +44,7 @@ namespace sill {
      */
     template <typename Dataset>
     naive_bayes_em& fit(const Dataset& ds,
-                        variable_type* label,
+                        variable_type label,
                         const var_vector_type& features) {
       reset(&ds, label, features);
       fit();
@@ -74,14 +74,14 @@ namespace sill {
      */
     template <typename Dataset>
     void reset(const Dataset* ds,
-               variable_type* label,
+               variable_type label,
                const var_vector_type& features) {
       // initialize the model
       uniform_table_generator<LabelF> prior_gen;
       uniform_table_generator<FeatureF> cpd_gen;
       std::mt19937 rng(param_.seed);
       model_ = model_type(prior_gen({label}, rng).normalize());
-      for (variable_type* feature : features) {
+      for (variable_type feature : features) {
         model_.add_feature(cpd_gen({feature, label}, rng));
       }
       // initialize the udpater and statistics
@@ -169,8 +169,8 @@ namespace sill {
     private:
       const Dataset* ds_;
       model_type* model_;
-      variable_type* label_;
-      std::vector<variable_type*> features_;
+      variable_type label_;
+      std::vector<variable_type> features_;
       typename FeatureF::mle_type mle_;
 
     }; // class updater

@@ -1,8 +1,8 @@
 #ifndef SILL_FINITE_ASSIGNMENT_HPP
 #define SILL_FINITE_ASSIGNMENT_HPP
 
-#include <sill/argument/domain.hpp>
-#include <sill/base/finite_variable.hpp>
+#include <sill/argument/basic_domain.hpp>
+#include <sill/argument/variable.hpp>
 #include <sill/datastructure/finite_index.hpp>
 
 #include <unordered_map>
@@ -14,18 +14,23 @@ namespace sill {
 
   /**
    * A type that represents an assignment to finite variables.
-   * Each finite variable is mapped to a finite value.
+   * Each variable is mapped to a finite value.
+   *
+   * \tparam Var a type representing variables, such as sill::variable
    */
-  typedef std::unordered_map<finite_variable*, size_t> finite_assignment;
+  template <typename Var = variable>
+  using finite_assignment = std::unordered_map<Var, size_t>;
 
   /**
    * Returns the number of variables for which both finite_assignments
    * agree.
+   * \relates finite_assignment
    */
-  inline size_t
-  agreement(const finite_assignment& a1, const finite_assignment& a2) {
-    const finite_assignment& a = a1.size() < a2.size() ? a1 : a2;
-    const finite_assignment& b = a1.size() < a2.size() ? a2 : a1;
+  template <typename Var>
+  size_t agreement(const finite_assignment<Var>& a1,
+                   const finite_assignment<Var>& a2) {
+    const finite_assignment<Var>& a = a1.size() < a2.size() ? a1 : a2;
+    const finite_assignment<Var>& b = a1.size() < a2.size() ? a2 : a1;
     size_t count = 0;
     for (const auto& p : a) {
       auto it = b.find(p.first);
@@ -39,10 +44,10 @@ namespace sill {
    * in the order specified by the given domain.
    * \relates finite_assignment
    */
-  inline finite_index
-  extract(const finite_assignment& a,
-          const domain<finite_variable*>& dom,
-          size_t start = 0) {
+  template <typename Var>
+  finite_index extract(const finite_assignment<Var>& a,
+                       const basic_domain<Var>& dom,
+                       size_t start = 0) {
     assert(start <= dom.size());
     finite_index result(dom.size() - start);
     for (size_t i = start; i < dom.size(); ++i) {

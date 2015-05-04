@@ -1,9 +1,8 @@
 #ifndef SILL_VECTOR_DATASET_HPP
 #define SILL_VECTOR_DATASET_HPP
 
-#include <sill/argument/domain.hpp>
+#include <sill/argument/basic_domain.hpp>
 #include <sill/argument/vector_assignment.hpp>
-#include <sill/base/vector_variable.hpp>
 #include <sill/math/eigen/dynamic.hpp>
 #include <sill/learning/dataset/basic_dataset.hpp>
 
@@ -16,18 +15,18 @@ namespace sill {
    * The traits for a dataset that stores observations for vector variables.
    * \tparam T the type representing the value and weights
    */
-  template <typename T>
+  template <typename T, typename Var = variable>
   struct vector_data_traits {
-    typedef vector_variable          variable_type;
-    typedef domain<vector_variable*> domain_type;
-    typedef vector_assignment<T>     assignment_type;
-    typedef dynamic_vector<T>        data_type;
-    typedef T                        element_type;
-    typedef T                        weight_type;
+    typedef Var                       variable_type;
+    typedef basic_domain<Var>         domain_type;
+    typedef vector_assignment<T, Var> assignment_type;
+    typedef dynamic_vector<T>         data_type;
+    typedef T                         element_type;
+    typedef T                         weight_type;
 
     //! Returns the number of columns occupied by a variable.
-    static size_t ncols(vector_variable* v) {
-      return v->size();
+    static size_t ncols(Var v) {
+      return v.size();
     }
 
     //! Returns the number of columns occupied by a domain.
@@ -66,8 +65,8 @@ namespace sill {
    * \tparam T the type representing the values and weights
    * \see Dataset
    */
-  template <typename T = double>
-  using vector_dataset = basic_dataset<vector_data_traits<T> >;
+  template <typename T = double, typename Var = variable>
+  using vector_dataset = basic_dataset<vector_data_traits<T, Var> >;
 
 } // namespace sill
 

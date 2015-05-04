@@ -2,7 +2,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/crf/gaussian_crf_factor.hpp>
 #include <sill/learning/crf/pwl_crf_learner.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>
@@ -45,25 +45,25 @@ int main(int argc, char** argv) {
   boost::mt11213b rng(oracle_seed);
   decomposable<canonical_gaussian> YXmodel;
   crf_model<gaussian_crf_factor> YgivenXmodel;
-  boost::tuple<vector_var_vector, vector_var_vector,
-               std::map<vector_variable*, copy_ptr<vector_domain> > >
+  boost::tuple<domain, domain,
+               std::map<variable, copy_ptr<vector_domain> > >
     Y_X_and_map(create_random_gaussian_crf
                 (YXmodel, YgivenXmodel, n, u, "chain", b_max, c_max, variance,
                  YYcorrelation, YXcorrelation, XXcorrelation, add_cross_factors,
                  model_seed));
   model_product_inplace(YgivenXmodel, YXmodel);
-  vector_var_vector Y(Y_X_and_map.get<0>());
-  vector_var_vector X(Y_X_and_map.get<1>());
-  vector_var_vector YX(Y);
+  domain Y(Y_X_and_map.get<0>());
+  domain X(Y_X_and_map.get<1>());
+  domain YX(Y);
   YX.insert(YX.end(), X.begin(), X.end());
-  std::map<vector_variable*, copy_ptr<vector_domain> >
+  std::map<variable, copy_ptr<vector_domain> >
     Y2X_map(Y_X_and_map.get<2>());
   cout << "True model for P(Y,X):\n" << YXmodel << "\n" << endl;
 //  cout << "True model for P(Y|X):\n" << YgivenXmodel << "\n" << endl;
 
   // Generate a dataset
   cout << "Sampling " << nsamples << " training samples from the model" << endl;
-  vector_dataset_old<> ds(finite_var_vector(), YX, 
+  vector_dataset_old<> ds(domain(), YX, 
                     std::vector<variable::variable_typenames>
                     (YX.size(), variable::VECTOR_VARIABLE));
   for (size_t i(0); i < nsamples; ++i) {

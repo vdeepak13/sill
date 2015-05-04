@@ -2,10 +2,10 @@
 #define SILL_SYMBOLIC_FORMAT_HPP
 
 #include <sill/global.hpp>
-#include <sill/argument/domain.hpp>
+#include <sill/argument/basic_domain.hpp>
 #include <sill/argument/hybrid_domain.hpp>
-#include <sill/base/discrete_process.hpp>
-#include <sill/base/universe.hpp>
+#include <sill/argument/process.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/parsers/simple_config.hpp>
 #include <sill/parsers/string_functions.hpp>
 
@@ -33,32 +33,32 @@ namespace sill {
 
     //! A class that holds formatting information for a single variable
     class variable_info {
-      variable* v;
+      variable v;
       std::vector<std::string> labels;
 
     public:
       //! Default constructor with empty variable.
-      variable_info()
-        : v(NULL) { }
+      variable_info() { }
 
       //! Constructor for a generic variable
-      explicit variable_info(variable* v)
+      explicit variable_info(variable v)
         : v(v) { }
 
       //! Constructor for a finite variable with named values.
-      variable_info(finite_variable* v, const std::vector<std::string>& values)
+      variable_info(variable v, const std::vector<std::string>& values)
         : v(v), labels(values) {
-        assert(v->size() == labels.size());
+        assert(v.finite());
+        assert(v.size() == labels.size());
       }
 
       //! Returns the arity / dimensionality of the variable
       size_t size() const {
-        return v->size();
+        return v.size();
       }
 
       //! Returns the name of the variable
       const std::string& name() const {
-        return v->name();
+        return v.name();
       }
 
       //! Returns the values vector
@@ -68,7 +68,7 @@ namespace sill {
 
       //! Returns true if the variable is finite
       bool is_finite() const {
-        return v->type() == variable::FINITE_VARIABLE;
+        return v.finite();
       }
 
       //! Returns true if the variable is finite and uses unnamed values.
@@ -83,22 +83,12 @@ namespace sill {
 
       //! Returns true if the variable is vector
       bool is_vector() const {
-        return v->type() == variable::VECTOR_VARIABLE;
+        return v.vector();
       }
 
       //! Returns the underlying variable
-      variable* var() const {
+      variable var() const {
         return v;
-      }
-
-      //! Casts the variable to a finite variable. Returns NULL on error.
-      finite_variable* as_finite() const { 
-        return dynamic_cast<finite_variable*>(v);
-      }
-
-      //! Casts the variable to a vector variable. Returns NULL on error.
-      vector_variable* as_vector() const {
-        return dynamic_cast<vector_variable*>(v);
       }
 
       //! Returns the finite value corresponding to the given string.
@@ -113,7 +103,7 @@ namespace sill {
         if (it == labels.end()) {
           std::ostringstream os;
           os << "Unknown value \"" << str
-             << "\" for variable \"" << v->name()
+             << "\" for variable \"" << v.name()
              << "\"";
           throw std::invalid_argument(os.str());
         }
@@ -134,7 +124,7 @@ namespace sill {
 
     //! A class that holds formatting information for a single discrete process
     class discrete_process_info {
-      discrete_process<variable>* p;
+      dprocess p;
       std::vector<std::string> labels;
 
     public:
@@ -142,28 +132,25 @@ namespace sill {
       discrete_process_info() { }
 
       //! Constructor for a plain finite discrete process
-      explicit discrete_process_info(finite_discrete_process* p)
-        : p(new discrete_process<variable>(p)) { }
+      explicit discrete_process_info(dprocess p)
+        : p(p) { }
 
       //! Constructor for a finite discrete process with named values.
-      discrete_process_info(finite_discrete_process* p,
+      discrete_process_info(dprocess p,
                             const std::vector<std::string>& values)
-        : p(new discrete_process<variable>(p)), labels(values) {
-        assert(p->size() == labels.size());
+        : p(p), labels(values) {
+        assert(p.finite());
+        assert(p.size() == labels.size());
       }
-
-      //! Constructor for a vector discrete process
-      explicit discrete_process_info(vector_discrete_process* p)
-        : p(new discrete_process<variable>(p)) { }
 
       //! Returns the arity / dimensionality of the process
       size_t size() const {
-        return p->size();
+        return p.size();
       }
 
       //! Returns the name of the process
       const std::string& name() const {
-        return p->name();
+        return p.name();
       }
 
       //! Returns the values vector
@@ -173,37 +160,27 @@ namespace sill {
 
       //! Returns true if the process is finite
       bool is_finite() const {
-        return p->is_finite();
+        return p.finite();
       }
 
       //! Returns true if the process is finite and uses unnamed values.
       bool is_plain_finite() const {
-        return p->is_finite() && labels.empty();
+        return p.finite() && labels.empty();
       }
 
       //! Returns true if the process is finite and uses named values.
       bool is_named_finite() const {
-        return p->is_finite() && !labels.empty();
+        return p.finite() && !labels.empty();
       }
 
       //! Returns true if the process is vector
       bool is_vector() const {
-        return p->is_vector();
+        return p.vector();
       }
 
       //! Returns the underlying process
-      discrete_process<variable>* proc() const {
+      dprocess proc() const {
         return p;
-      }
-
-      //! Casts the process to a finite process. Returns NULL on error.
-      finite_discrete_process* as_finite() const { 
-        return p->as_finite();
-      }
-
-      //! Casts the process to a vector process. Returns NULL on error.
-      vector_discrete_process* as_vector() const {
-        return p->as_vector();
       }
 
       //! Returns the finite value corresponding to the given string.
@@ -218,7 +195,7 @@ namespace sill {
         if (it == labels.end()) {
           std::ostringstream os;
           os << "Unknown value \"" << str
-             << "\" for process \"" << p->name()
+             << "\" for process \"" << p.name()
              << "\"";
           throw std::invalid_argument(os.str());
         }
@@ -282,11 +259,11 @@ namespace sill {
     /**
      * Returns the domain of all finite variables in the format.
      */
-    domain<finite_variable*> finite_vars() const {
-      domain<finite_variable*> result;
+    domain finite_vars() const {
+      domain result;
       for (const variable_info& info : var_infos) {
         if (info.is_finite()) {
-          result.push_back(info.as_finite());
+          result.push_back(info.var());
         }
       }
       return result;
@@ -297,11 +274,11 @@ namespace sill {
      * \throw std::out_of_range if the variable with the name is not present
      * \throw std::domain_error if the variable is present but is not finite
      */
-    finite_variable* finite_var(const std::string& name) const {
+    variable finite_var(const std::string& name) const {
       for (const variable_info& info : var_infos) {
         if (info.name() == name) {
           if (info.is_finite()) {
-            return info.as_finite();
+            return info.var();
           } else {
             throw std::domain_error("Variable \"" + name + "\" if not finite");
           }
@@ -325,11 +302,11 @@ namespace sill {
     /**
      * Returns the domain of all vector variables in the format.
      */
-    domain<vector_variable*> vector_vars() const {
-      domain<vector_variable*> result;
+    domain vector_vars() const {
+      domain result;
       for (const variable_info& info : var_infos) {
         if (info.is_vector()) {
-          result.push_back(info.as_vector());
+          result.push_back(info.var());
         }
       }
       return result;
@@ -340,11 +317,11 @@ namespace sill {
      * \throw std::out_of_range if the variable with the name is not present
      * \throw std::domain_error if the variable is present but is not vector
      */
-    vector_variable* vector_var(const std::string& name) const {
+    variable vector_var(const std::string& name) const {
       for (const variable_info& info : var_infos) {
         if (info.name() == name) {
           if (info.is_vector()) {
-            return info.as_vector();
+            return info.var();
           } else {
             throw std::domain_error("Variable \"" + name + "\" if not a vector");
           }
@@ -356,13 +333,13 @@ namespace sill {
     /**
      * Returns the domain of variables in this format.
      */
-    hybrid_domain vars() const {
-      hybrid_domain result;
+    hybrid_domain<> vars() const {
+      hybrid_domain<> result;
       for (const variable_info& info : var_infos) {
         if (info.is_finite()) {
-          result.finite().push_back(info.as_finite());
+          result.finite().push_back(info.var());
         } else {
-          result.vector().push_back(info.as_vector());
+          result.vector().push_back(info.var());
         }
       }
       return result;
@@ -372,7 +349,7 @@ namespace sill {
      * Returns a variable with the given name.
      * \throw std::out_of_range if the variable with the name is not present
      */
-    variable* var(const std::string& name) const {
+    variable var(const std::string& name) const {
       for (const variable_info& info : var_infos) {
         if (info.name() == name) {
           return info.var();
@@ -399,11 +376,11 @@ namespace sill {
     /**
      * Returns the domain of all finite discrete processes in the format.
      */
-    domain<finite_discrete_process*> finite_discrete_procs() const {
-      domain<finite_discrete_process*> result;
+    dprocess_domain finite_discrete_procs() const {
+      dprocess_domain result;
       for (const discrete_process_info& info : discrete_infos) {
         if (info.is_finite()) {
-          result.push_back(info.as_finite());
+          result.push_back(info.proc());
         }
       }
       return result;
@@ -414,11 +391,11 @@ namespace sill {
      * \throw std::out_of_range if the process with the name is not present
      * \throw std::domain_error if the process is present but is not finite
      */
-    finite_discrete_process* finite_discrete_proc(const std::string& name) const {
+    dprocess finite_discrete_proc(const std::string& name) const {
       for (const discrete_process_info& info : discrete_infos) {
         if (info.name() == name) {
           if (info.is_finite()) {
-            return info.as_finite();
+            return info.proc();
           } else {
             throw std::domain_error("Process \"" + name + "\" if not finite");
           }
@@ -442,11 +419,11 @@ namespace sill {
     /**
      * Returns the domain of all vector discrete processes in the format.
      */
-    domain<vector_discrete_process*> vector_discrete_procs() const {
-      domain<vector_discrete_process*> result;
+    dprocess_domain vector_discrete_procs() const {
+      dprocess_domain result;
       for (const discrete_process_info& info : discrete_infos) {
         if (info.is_vector()) {
-          result.push_back(info.as_vector());
+          result.push_back(info.proc());
         }
       }
       return result;
@@ -457,11 +434,11 @@ namespace sill {
      * \throw std::out_of_range if the variable with the name is not present
      * \throw std::domain_error if the variable is present but is not vector
      */
-    vector_discrete_process* vector_discrete_proc(const std::string& name) const {
+    dprocess vector_discrete_proc(const std::string& name) const {
       for (const discrete_process_info& info : discrete_infos) {
         if (info.name() == name) {
           if (info.is_vector()) {
-            return info.as_vector();
+            return info.proc();
           } else {
             throw std::domain_error("Process \"" + name + "\" if not a vector");
           }
@@ -473,8 +450,8 @@ namespace sill {
     /**
      * Returns the domain of discrete processes in this format.
      */
-    domain<discrete_process<variable>*> discrete_procs() const {
-      domain<discrete_process<variable>*> result;
+    hybrid_domain<dprocess> discrete_procs() const {
+      hybrid_domain<dprocess> result;
       for (const discrete_process_info& info : discrete_infos) {
         result.push_back(info.proc());
       }
@@ -485,7 +462,7 @@ namespace sill {
      * Returns a process with the given name.
      * \throw std::out_of_range if the variable with the name is not present
      */
-    discrete_process<variable>* discrete_proc(const std::string& name) const {
+    dprocess discrete_proc(const std::string& name) const {
       for (const discrete_process_info& info : discrete_infos) {
         if (info.name() == name) {
           return info.proc();
@@ -563,7 +540,7 @@ namespace sill {
       // load the components of a config
       load_options(config);
       load_variables(config, u);
-      load_discrete(config);
+      load_discrete(config, u);
 
       // empty formats are not allowed
       if (var_infos.empty() && discrete_infos.empty()) {
@@ -644,14 +621,14 @@ namespace sill {
               "a value of finite variable \"" + entry.first + "\"";
             throw std::invalid_argument(msg);
           }
-          finite_variable* v = u.new_finite_variable(entry.first, values.size());
+          variable v = u.new_finite_variable(entry.first, values.size());
           var_infos.emplace_back(v, values);
         }
       }
     }
 
     //! load the discrete processes
-    void load_discrete(simple_config& config) {
+    void load_discrete(simple_config& config, universe& u) {
       typedef std::pair<std::string, std::string> config_entry;
       for (const config_entry& entry : config["discrete_processes"]) {
         if (entry.second.compare(0, 7, "vector(") == 0) {
@@ -664,7 +641,7 @@ namespace sill {
               "\": " + entry.second;
             throw std::invalid_argument(msg);
           }
-          discrete_infos.emplace_back(new vector_discrete_process(name, dim));
+          discrete_infos.emplace_back(u.new_vector_dprocess(name, dim));
         } else if (entry.second.compare(0, 7, "finite(") == 0) {
           std::string name = entry.first;
           std::string param = entry.second.substr(7, entry.second.size() - 8);
@@ -675,7 +652,7 @@ namespace sill {
               "\": " + entry.second;
             throw std::invalid_argument(msg);
           }
-          discrete_infos.emplace_back(new finite_discrete_process(name, arity));
+          discrete_infos.emplace_back(u.new_finite_dprocess(name, arity));
         } else { // finite discrete process with named values
           std::string name = entry.first;
           std::vector<std::string> values;
@@ -692,7 +669,7 @@ namespace sill {
               "a value of finite discrete proces \"" + entry.first + "\"";
             throw std::invalid_argument(msg);
           }
-          finite_discrete_process* p = new finite_discrete_process(name, values.size());
+          dprocess p = u.new_finite_dprocess(name, values.size());
           discrete_infos.emplace_back(p, values);
         }
       }

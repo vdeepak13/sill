@@ -157,7 +157,7 @@ namespace sill {
       //  the extra cliques we create.
       // TODO: It'd be better to choose the set more carefully.
       c.erase(c.begin());
-      foreach(variable_type* v, other_vars) {
+      foreach(variable_type v, other_vars) {
         // Make a factor v2 with variable x and max_clique_size - 1
         //  other variables from c, make a clique for it, and attach it to c_v.
         vertex u(model.add_clique(set_union(c, v),
@@ -177,7 +177,7 @@ namespace sill {
       //  the extra cliques we create.
       // TODO: It'd be better to choose the set more carefully.
       c.remove(c.representative());
-      foreach(variable_type* v, other_vars)
+      foreach(variable_type v, other_vars)
         // Make a factor v2 with variable x and max_clique_size - 1
         //  other variables from c
         factor_vec.push_back(stats.marginal(c.plus(v), smoothing));

@@ -25,7 +25,7 @@
         assignment_type a(sample(rng));
         decomposable Yx_model(*this);
         assignment_type ax;
-        foreach(variable_type* v, X)
+        foreach(variable_type v, X)
           ax[v] = a[v];
         Yx_model.condition(ax);
         decomposable Y_given_x_model;
@@ -103,7 +103,7 @@
      */
     size_t accuracy(const assignment_type& a) const {
       assignment_type pred(max_prob_assignment());
-      foreach(variable_type* v, args) {
+      foreach(variable_type v, args) {
         if (!equal(pred[v],safe_get(a, v))) {
           return 0;
         }
@@ -147,7 +147,7 @@
     double
     mean_squared_error(const assignment_type& a, const domain_type& X) const {
       assignment_type tmpa;
-      foreach(variable_type* v, X) {
+      foreach(variable_type v, X) {
         tmpa[v] = safe_get(a, v);
       }
       decomposable tmp_model(*this);
@@ -173,7 +173,7 @@
     double per_label_accuracy(const assignment_type& a) const {
       double acc = 0;
       assignment_type pred(max_prob_assignment());
-      foreach(variable_type* v, args) {
+      foreach(variable_type v, args) {
         if (equal(pred[v], safe_get(a, v)))
           ++acc;
       }
@@ -190,7 +190,7 @@
     double
     per_label_accuracy(const assignment_type& a, const domain_type& X) const {
       assignment_type tmpa;
-      foreach(variable_type* v, X) {
+      foreach(variable_type v, X) {
         tmpa[v] = safe_get(a, v);
       }
       decomposable tmp_model(*this);
@@ -302,7 +302,7 @@
      * \todo The implementation somewhat inefficient at the moment.
      */
     void marginalize_out(const domain_type& vars) {
-      for (variable_type* var, vars) {
+      for (variable_type var, vars) {
         while (true) {
           // Find a cover for this variable.
           vertex v = find_clique_cover(make_domain(var));
@@ -392,7 +392,7 @@
      *        an object such that map[v] maps the variable handle v
      *        a type compatible variable handle; this mapping must be 1:1.
      */
-    void subst_args(const std::map<variable_type*, variable_type*>& var_map) {
+    void subst_args(const std::map<variable_type, variable_type>& var_map) {
       // Compute the variables to be replaced.
       domain_type old_vars = keys(var_map);
 

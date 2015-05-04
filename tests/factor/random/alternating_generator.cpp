@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE alternating_generator
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/random/alternating_generator.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
@@ -36,11 +36,11 @@ BOOST_AUTO_TEST_CASE(test_constructors) {
 
 BOOST_AUTO_TEST_CASE(test_operators) {
   universe u;
-  finite_variable* x = u.new_finite_variable(2);
-  finite_variable* y = u.new_finite_variable(1);
-  domain<finite_variable*> xs = { x };
-  domain<finite_variable*> ys = { y };
-  domain<finite_variable*> xy = { x, y };
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 1);
+  domain xs = { x };
+  domain ys = { y };
+  domain xy = { x, y };
 
   uniform_table_generator<ptable> def_gen(-2.0, -1.0); // log space
   uniform_table_generator<ptable> alt_gen(+1.0, +2.0); // log space

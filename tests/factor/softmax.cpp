@@ -4,8 +4,8 @@
 #include <sill/factor/softmax.hpp>
 
 namespace sill {
-  template class softmax<double>;
-  template class softmax<float>;
+  template class softmax<double, variable>;
+  template class softmax<float, variable>;
 }
 
 using namespace sill;

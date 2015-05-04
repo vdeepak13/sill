@@ -69,7 +69,7 @@ namespace sill {
     typename std::enable_if<is_range<Range, F>::value>::type
     reset(const Range& factors) {
       // compute the junction tree for the given factors
-      undirected_graph<variable_type*> mg;
+      undirected_graph<variable_type> mg;
       for (const F& factor : factors) {
         make_clique(mg, factor.arguments());
       }

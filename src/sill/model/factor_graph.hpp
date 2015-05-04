@@ -25,9 +25,9 @@ namespace sill {
    */
   template <typename F>
   class factor_graph
-    : public bipartite_graph<size_t, typename F::variable_type*, F> {
+    : public bipartite_graph<size_t, typename F::variable_type, F> {
 
-    typedef bipartite_graph<size_t, typename F::variable_type*, F> base;
+    typedef bipartite_graph<size_t, typename F::variable_type, F> base;
 
     // Public type declarations
     // =========================================================================
@@ -144,7 +144,7 @@ namespace sill {
       }
       size_t id = next_id_++;
       this->add_vertex(id, f);
-      for (variable_type* var : f.arguments()) {
+      for (variable_type var : f.arguments()) {
         this->add_edge(id, var);
       }
       return id;
@@ -163,7 +163,7 @@ namespace sill {
       // remove all the old edges
       this->remove_edges(id);
       // add all the new edges
-      for (variable_type* v : f.arguments()) {
+      for (variable_type v : f.arguments()) {
         this->add_edge(id, v);
       }
       (*this)[id] = f;
@@ -185,7 +185,7 @@ namespace sill {
     void condition(const assignment_type& a) {
       assert(false); // not working yet
       for (const auto& p : a) {
-        variable_type* var = p.first;
+        variable_type var = p.first;
         if (!this->contains(var)) {
           continue;
         }
@@ -209,8 +209,8 @@ namespace sill {
         const domain_type& f_args = arguments(f_id);
         // identify the variable with the fewest connected factors
         size_t min_degree = std::numeric_limits<size_t>::max();
-        variable_type* var = NULL;
-        for (variable_type* v : f_args) {
+        variable_type var;
+        for (variable_type v : f_args) {
           if (this->degree(v) < min_degree) {
             min_degree = this->degree(v);
             var = v;

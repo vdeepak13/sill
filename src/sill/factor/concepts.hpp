@@ -80,13 +80,13 @@ namespace sill {
     
     /**
      * The type that represents the factor's domain, that is, the set of
-     * factor's arguments. This type must be equal to set<variable_type*>.
+     * factor's arguments. This type must be equal to set<variable_type>.
      */
     typedef typename F::domain_type domain_type;
 
     /**
      * The type that represents the factor's argument vector, that is,
-     * a sequence of variables. This must be equal to vector<variable_type*>.
+     * a sequence of variables. This must be equal to vector<variable_type>.
      */
     typedef typename F::var_vector_type var_vector_type;
     
@@ -142,13 +142,13 @@ namespace sill {
      *        a type compatible variable handle; this mapping must be 1:1.
      * \todo Requires that the keys and values of var_map are disjoint?
      */
-    F& subst_args(const std::map<variable_type*, variable_type*>& map);
+    F& subst_args(const std::map<variable_type, variable_type>& map);
    
     // TODO: fix this
     concept_usage(Factor) {
       F f;
       const F& cf = f;
-      std::map<variable_type*, variable_type*> vm;
+      std::map<variable_type, variable_type> vm;
       assignment_type a;
       domain_type d;
 
@@ -440,17 +440,17 @@ namespace sill {
 
     //! The type that represents the factor's input variable domain,
     //! that is, the set of input arguments X in the factor.
-    //! This type must be equal to set<input_variable_type*>.
+    //! This type must be equal to set<input_variable_type>.
     typedef typename F::input_domain_type input_domain_type;
 
     //! The type that represents the factor's output variable domain,
     //! that is, the set of output arguments Y in the factor.
-    //! This type must be equal to set<output_variable_type*>.
+    //! This type must be equal to set<output_variable_type>.
     typedef typename F::output_domain_type output_domain_type;
 
     //! The type that represents the factor's variable domain,
     //! that is, the set of arguments X,Y in the factor.
-    //! This type must be equal to set<variable_type*>.
+    //! This type must be equal to set<variable_type>.
     typedef typename F::domain_type domain_type;
 
     //! The type that represents an assignment to input variables.

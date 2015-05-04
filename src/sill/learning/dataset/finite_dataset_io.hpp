@@ -26,7 +26,7 @@ namespace sill {
         "The dataset contains variable(s) that are not finite"
       );
     }
-    domain<finite_variable*> vars = format.finite_vars();
+    domain vars = format.finite_vars();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -69,7 +69,7 @@ namespace sill {
         "The dataset contains variable(s) that are not finite"
       );
     }
-    domain<finite_variable*> vars = format.finite_vars();
+    domain vars = format.finite_vars();
     
     std::ofstream out(filename);
     if (!out) {

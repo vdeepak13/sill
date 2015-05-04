@@ -3,7 +3,7 @@
 
 #include <boost/array.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/range/concepts.hpp>
 #include <sill/learning/dataset_old/data_loader.hpp>
 #include <sill/copy_ptr.hpp>
@@ -20,7 +20,7 @@ int main(int argc, char** argv) {
   sym_params.skiplines = 1;
 
   boost::array<size_t, 7> var_sizes = {{2, 2, 3, 3, 2, 2, 2}};
-  finite_var_vector var_order;
+  domain var_order;
   universe u;
   foreach(size_t size, var_sizes) {
     var_order.push_back(u.new_finite_variable(size));

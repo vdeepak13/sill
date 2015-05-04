@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE constrained_triangulation
 #include <boost/test/unit_test.hpp>
 
-#include <sill/argument/domain.hpp>
+#include <sill/argument/basic_domain.hpp>
 #include <sill/graph/algorithm/constrained_elim_strategy.hpp>
 #include <sill/graph/algorithm/min_degree_strategy.hpp>
 #include <sill/graph/algorithm/min_fill_strategy.hpp>
@@ -30,7 +30,7 @@ using namespace sill;
 
 BOOST_AUTO_TEST_CASE(test_triangulation) {
   typedef undirected_graph<size_t, size_t> graph_type;
-  typedef domain<size_t> domain_type;
+  typedef basic_domain<size_t> domain_type;
 
   // Build an m x 2 lattice.
   size_t m = 5;

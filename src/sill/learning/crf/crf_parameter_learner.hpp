@@ -955,7 +955,7 @@ namespace sill {
       case parameters::MPLE:
         while (ds_it != ds_end) {
           double pl = 0;
-          foreach(output_variable_type* y, crf_.output_arguments()) {
+          foreach(output_variable_type y, crf_.output_arguments()) {
             output_factor_type P_Yi_given_MB(make_domain(y), 1);
             get_node_conditional(y, *ds_it, P_Yi_given_MB);
             pl += P_Yi_given_MB.logv(*ds_it);
@@ -987,7 +987,7 @@ namespace sill {
      * @param P_Yi_given_MB  (Return value) This must be pre-allocated,
      *                       with constant value.
      */
-    void get_node_conditional(output_variable_type* Yi, const record_type& r,
+    void get_node_conditional(output_variable_type Yi, const record_type& r,
                               output_factor_type& P_Yi_given_MB) const {
       output_factor_type tmpf;
       foreach(const typename crf_graph_type::vertex& neighbor_v,
@@ -1069,7 +1069,7 @@ namespace sill {
     //! (MPLE)
     void my_mple_gradient_r_(opt_variables& gradient,
                              const record_type& r, double w) const {
-      foreach(output_variable_type* Yi, crf_.output_arguments()) {
+      foreach(output_variable_type Yi, crf_.output_arguments()) {
         output_factor_type P_Yi_given_MB(make_domain(Yi), 1);
         get_node_conditional(Yi, r, P_Yi_given_MB);
         foreach(const typename crf_graph_type::vertex& neighbor_v,
@@ -1356,7 +1356,7 @@ namespace sill {
       assert(codes == 1); // TO DO
 
       double pl = 0;
-      foreach(output_variable_type* Yi, crf_.output_arguments()) {
+      foreach(output_variable_type Yi, crf_.output_arguments()) {
         output_factor_type P_Yi_given_MB(make_domain(Yi), 1);
         get_node_conditional(Yi, r, P_Yi_given_MB);
         pl += P_Yi_given_MB.logv(r);

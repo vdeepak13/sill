@@ -40,7 +40,7 @@ int main(int argc, const char* argv[]) {
   // get all the variables and randomly decide whether to split or merge
   
   finite_var_map vmap;
-  foreach(finite_variable* v, fg.arguments()) {
+  foreach(variable v, fg.arguments()) {
     if (double(rand())/RAND_MAX < SPLITPROB) {
       // if we are splitting, create a new finite variable of the same size
       vmap[v] = u.new_finite_variable(std::string(*v)+"p",v->size());
@@ -54,7 +54,7 @@ int main(int argc, const char* argv[]) {
   foreach(const canonical_table &f, fg.factors()) {
     // check if there are any changes to this factor
     bool changes = false;
-    foreach(finite_variable* v, f.arguments()) {
+    foreach(variable v, f.arguments()) {
       if (vmap[v] != v) {
         changes = true;
         break;

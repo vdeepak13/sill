@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset_old/assignment_dataset.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>
 #include <sill/learning/dataset_old/dataset_statistics.hpp>
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
   dataset_statistics<> stats(ds);
   stats.compute_order_stats();
   const std::vector<std::vector<size_t> >& order_stats = stats.order_stats();
-  const vector_var_vector& vector_list = ds.vector_list();
+  const domain& vector_list = ds.vector_list();
   size_t d = 0; // counts from 0 to ds.vector_dim() - 1
   for (size_t j = 0; j < ds.num_vector(); j++) {
     for (size_t k = 0; k < vector_list[j]->size(); k++) {

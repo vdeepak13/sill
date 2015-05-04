@@ -6,6 +6,7 @@
 #include <iostream>
 #include <iterator>
 #include <stdexcept>
+#include <unordered_set>
 
 #include <boost/noncopyable.hpp>
 
@@ -95,6 +96,18 @@ namespace sill {
       assert(count == len);
     }
 
+    //! Serializes a dynamically allocated object.
+    template <typename Object>
+    void serialize_dynamic(const Object* obj) {
+      if (obj == nullptr) {
+        serialize_int(0);
+      } else {
+        auto p = dynamic_.emplace(obj, dynamic_.size() + 1);
+        serialize_int(p.first->second);   // the ID (existing or new)
+        if (p.second) { obj->save(*this); } // if newly inserted, serialize obj
+      }
+    }
+
     SILL_SERIALIZE_CHAR(char);
     SILL_SERIALIZE_CHAR(unsigned char);
     SILL_SERIALIZE_CHAR(bool);
@@ -121,8 +134,15 @@ namespace sill {
     }
 
   private:
-    std::ostream* out_; //!< The associated stream
-    size_t bytes_;      //!< The number of serialized bytes.
+    //! The stream to which we write data.
+    std::ostream* out_; 
+
+    //! The number of serialized bytes.
+    size_t bytes_;
+
+    //! A map that stores for each dynamically allocated object its ID in archive.
+    std::unordered_map<const void*, size_t> dynamic_;
+
   }; // class oarchive
 
   /**

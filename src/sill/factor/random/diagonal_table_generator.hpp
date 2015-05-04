@@ -1,7 +1,6 @@
 #ifndef SILL_DIAGONAL_TABLE_GENERATOR_HPP
 #define SILL_DIAGONAL_TABLE_GENERATOR_HPP
 
-#include <sill/base/finite_variable.hpp>
 #include <sill/datastructure/finite_index.hpp>
 
 #include <iostream>
@@ -28,6 +27,7 @@ namespace sill {
   public:
     // The real type of the factor
     typedef typename F::real_type real_type;
+    typedef typename F::variable_type variable_type;
 
     // RandomMarginalFactorGenerator typedefs
     typedef typename F::domain_type domain_type;
@@ -69,9 +69,9 @@ namespace sill {
       if (!args.empty()) {
         real_type x =
           std::uniform_real_distribution<real_type>(param_.lower, param_.upper)(rng);
-        size_t size = args[0]->size();
-        for (finite_variable* v : args) {
-          if (v->size() != size) {
+        size_t size = args[0].size();
+        for (variable_type v : args) {
+          if (v.size() != size) {
             throw std::invalid_argument(
               "diagonal_table_generator: all arguments must have the same size"
             );

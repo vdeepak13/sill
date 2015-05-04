@@ -2,7 +2,7 @@
 
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/crf/log_reg_crf_factor.hpp>
 #include <sill/factor/crf/table_crf_factor.hpp>
 #include <sill/factor/table_factor.hpp>
@@ -54,23 +54,23 @@ int main(int argc, char** argv) {
   boost::mt11213b rng(oracle_seed);
   decomposable<table_factor> YXmodel;
   crf_model<table_crf_factor> YgivenXmodel;
-  boost::tuple<finite_var_vector, finite_var_vector,
-               std::map<finite_variable*, copy_ptr<finite_domain> > >
+  boost::tuple<domain, domain,
+               std::map<variable, copy_ptr<finite_domain> > >
     Y_X_and_map(create_random_chain_crf(YXmodel, YgivenXmodel, n, u,
                                         model_seed));
   model_product_inplace(YgivenXmodel, YXmodel);
-  finite_var_vector Y(Y_X_and_map.get<0>());
-  finite_var_vector X(Y_X_and_map.get<1>());
-  finite_var_vector YX(Y);
+  domain Y(Y_X_and_map.get<0>());
+  domain X(Y_X_and_map.get<1>());
+  domain YX(Y);
   YX.insert(YX.end(), X.begin(), X.end());
-  std::map<finite_variable*, copy_ptr<finite_domain> >
+  std::map<variable, copy_ptr<finite_domain> >
     Y2X_map(Y_X_and_map.get<2>());
   cout << "True model for P(Y,X):\n" << YXmodel << "\n" << endl;
 //  cout << "True model for P(Y|X):\n" << YgivenXmodel << "\n" << endl;
 
   // Generate a dataset
   cout << "Sampling " << nsamples << " training samples from the model" << endl;
-  assignment_dataset<> ds(YX, vector_var_vector(),
+  assignment_dataset<> ds(YX, domain(),
                         std::vector<variable::variable_typenames>
                         (YX.size(), variable::FINITE_VARIABLE));
   for (size_t i(0); i < nsamples; ++i) {
@@ -149,10 +149,10 @@ int main(int argc, char** argv) {
     pwlcl_params.DEBUG = debug_mode;
 
     if (use_per_variable_inputs) {
-      std::map<finite_variable*, copy_ptr<domain> > Y2X_finite_map;
-      foreach(finite_variable* fv, Y) {
+      std::map<variable, copy_ptr<domain> > Y2X_finite_map;
+      foreach(variable fv, Y) {
         copy_ptr<domain> tmpdom;
-        foreach(finite_variable* tmpfv, *(Y2X_map[fv]))
+        foreach(variable tmpfv, *(Y2X_map[fv]))
           tmpdom->insert(tmpfv);
         Y2X_finite_map[fv] = tmpdom;
       }
