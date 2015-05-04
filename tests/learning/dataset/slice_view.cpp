@@ -3,7 +3,7 @@
 
 #include <sill/learning/dataset/slice_view.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/random/uniform_table_generator.hpp>
 #include <sill/learning/dataset/finite_dataset.hpp>
@@ -37,8 +37,8 @@ BOOST_TEST_DONT_PRINT_LOG_VALUE(sample_type);
 
 BOOST_AUTO_TEST_CASE(test_accessors) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 3);
-  finite_variable* y = u.new_finite_variable("y", 3);
+  variable x = u.new_finite_variable("x", 3);
+  variable y = u.new_finite_variable("y", 3);
   
   finite_dataset<> ds({x, y});
   ds.insert(finite_index({1, 2}), 0.5);
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE(test_accessors) {
   auto view = subset(ds, slice(1, 3));
 
   // arguments
-  BOOST_CHECK_EQUAL(view.arguments(), domain<finite_variable*>({x, y}));
+  BOOST_CHECK_EQUAL(view.arguments(), domain({x, y}));
   BOOST_CHECK_EQUAL(view.arity(), 2);
   BOOST_CHECK_EQUAL(view.size(), 3);
   BOOST_CHECK_EQUAL(view.num_slices(), 1);
@@ -67,7 +67,7 @@ BOOST_AUTO_TEST_CASE(test_accessors) {
   BOOST_CHECK_EQUAL(view(2, {y}).second, 2.0);
 
   // assignment
-  std::pair<finite_assignment, double> a;
+  std::pair<finite_assignment<>, double> a;
   a = view.assignment(1);
   BOOST_CHECK_EQUAL(a.first.size(), 2);
   BOOST_CHECK_EQUAL(a.first.at(x), 2);
@@ -83,8 +83,8 @@ BOOST_AUTO_TEST_CASE(test_accessors) {
 
 BOOST_AUTO_TEST_CASE(test_value_iterators) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 3);
-  finite_variable* y = u.new_finite_variable("y", 3);
+  variable x = u.new_finite_variable("x", 3);
+  variable y = u.new_finite_variable("y", 3);
   
   finite_dataset<> ds({x, y});
   ds.insert(finite_index({1, 2}), 0.5);
@@ -128,8 +128,8 @@ BOOST_AUTO_TEST_CASE(test_value_iterators) {
 
 BOOST_AUTO_TEST_CASE(test_assignment_iterator) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 3);
-  finite_variable* y = u.new_finite_variable("y", 3);
+  variable x = u.new_finite_variable("x", 3);
+  variable y = u.new_finite_variable("y", 3);
   
   finite_dataset<> ds({x, y});
   ds.insert(finite_index({1, 2}), 0.5);
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(test_reconstruction) {
   // generate some random samples
   universe u;
   std::mt19937 rng;
-  domain<finite_variable*> v = u.new_finite_variables(3, 2);
+  domain v = u.new_finite_variables(3, "v", 2);
   ptable f = uniform_table_generator<ptable>()(v, rng).normalize();
   auto d = f.distribution();
   finite_dataset<> ds(v, 1000);

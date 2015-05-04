@@ -3,7 +3,7 @@
 
 #include <iostream>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/bayesian_network.hpp>
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   size_t nsamples = 1000; // argc > 1 ? atoi(argv[1]) : 10000;
 
   universe u;
-  finite_var_vector v = u.new_finite_variables(6, 3);
+  domain v = u.new_finite_variables(6, 3);
 
   // generate a random Bayesian network with the given structure
   bayesian_network<table_factor> bn;
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE(test_simple) {
   //cout << bn << endl;
 
   // generate a dataset
-  vector_dataset_old<> data(v, vector_var_vector(),
+  vector_dataset_old<> data(v, domain(),
                         std::vector<variable::variable_typenames>());
   for (size_t i = 0; i < nsamples; ++i) {
     finite_assignment a = bn.sample(rng);

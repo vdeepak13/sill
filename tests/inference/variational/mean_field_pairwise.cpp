@@ -3,7 +3,7 @@
 
 #include <sill/inference/variational/mean_field_pairwise.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_array.hpp>
 #include <sill/factor/probability_array.hpp>
 #include <sill/factor/probability_table.hpp>
@@ -26,7 +26,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   universe u;
   std::mt19937 rng;
   pairwise_markov_network<carray1, carray2> model;
-  finite_var_vector vars = u.new_finite_variables(m * n, 2);
+  domain vars = u.new_finite_variables(m * n, "v", 2);
   make_grid_graph(vars, m, n, model);
   model.initialize(marginal_fn(uniform_table_generator<carray1>(), rng),
                    marginal_fn(uniform_table_generator<carray2>(), rng));
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE(test_convergence) {
   
   // compute the KL divergence from the exact to mean field result
   double kl = 0.0;
-  for (finite_variable* v : model.vertices()) {
+  for (variable v : model.vertices()) {
     kl += kl_divergence(parray1(sp.belief({v})), mf.belief(v));
   }
   kl /= model.num_vertices();

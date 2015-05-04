@@ -22,9 +22,9 @@ namespace sill {
    */
   template <typename F>
   class bayesian_network
-    : public directed_graph<typename F::variable_type*, F> {
+    : public directed_graph<typename F::variable_type, F> {
 
-    typedef directed_graph<typename F::variable_type*, F> base;
+    typedef directed_graph<typename F::variable_type, F> base;
 
     // Public type declarations
     //==========================================================================
@@ -56,7 +56,7 @@ namespace sill {
 
     //! Constructs a Bayesian network with the given variables and no edges.
     explicit bayesian_network(const domain_type& variables) {
-      for (variable_type* v : variables) {
+      for (variable_type v : variables) {
         this->add_vertex(v);
       }
     }
@@ -70,7 +70,7 @@ namespace sill {
     }
 
     //! Returns the arguments of the factor associated with a variable.
-    const domain_type& arguments(variable_type* v) const {
+    const domain_type& arguments(variable_type v) const {
       return (*this)[v].arguments();
     }
 
@@ -133,7 +133,7 @@ namespace sill {
     /**
      * Computes a minimal Markov graph capturing dependencies in this model.
      */
-    void markov_graph(undirected_graph<variable_type*>& mg) const {
+    void markov_graph(undirected_graph<variable_type>& mg) const {
       for (vertex_type v : this->vertices()) {
         mg.add_vertex(v);
         make_clique(mg, arguments(v));
@@ -164,13 +164,13 @@ namespace sill {
      * Note: It is the responsibility of the caller to ensure that the
      * graph remains a DAG.
      */
-    void add_factor(variable_type* v, const F& f) {
+    void add_factor(variable_type v, const F& f) {
       if (this->contains(v)) {
         this->remove_vertex(v);
       }
       assert(f.arguments().count(v));
       this->add_vertex(v, f);
-      for (variable_type* u : f.arguments()) {
+      for (variable_type u : f.arguments()) {
         if (u != v) {
           this->add_edge(u, v);
         }
@@ -185,12 +185,12 @@ namespace sill {
     result_type condition(const assignment_type& a) {
       // condition each factor, collecting the vertices from the assignment
       real_type ll = 0;
-      std::vector<variable_type*> removed;
-      for (variable_type* v : this->vertices()) {
+      std::vector<variable_type> removed;
+      for (variable_type v : this->vertices()) {
         F& factor = (*this)[v];
         // count the number of arguments restricted
         std::size_t n = 0;
-        for (variable_type* u : factor.arguments()) {
+        for (variable_type u : factor.arguments()) {
           n += a.count(u);
         }
         if (n == 0) { // nothing to do
@@ -206,7 +206,7 @@ namespace sill {
       }
 
       // remove the vertices (this will drop the edges as well)
-      for (variable_type* v : removed) {
+      for (variable_type v : removed) {
         this->remove_vertex(v);
       }
       return result_type(ll, log_tag());
@@ -221,7 +221,7 @@ namespace boost {
   //! A traits class that lets bayesian_network work in BGL algorithms
   template <typename F>
   struct graph_traits< sill::bayesian_network<F> >
-    : public graph_traits<sill::directed_graph<typename F::variable_type*, F> >
+    : public graph_traits<sill::directed_graph<typename F::variable_type, F> >
   { };
 
 } // namespace boost

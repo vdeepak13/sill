@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
   // save_statistics(universe, fg);
 
   finite_assignment truth;
-  std::map<finite_variable*, canonical_table> truebeliefs;
+  std::map<variable, canonical_table> truebeliefs;
   
   if (truthdir.length() > 0) {
     alchemy_parse_truthdir(universe,truth,truthdir,true);
@@ -285,7 +285,7 @@ int main(int argc, char* argv[]) {
 //   }
 //   if (belieffile.length() > 0) {
 //     factor_norm_1<canonical_table> norm;
-//     foreach(finite_variable* i, fg.arguments()) {
+//     foreach(variable i, fg.arguments()) {
 //       double d = norm(truebeliefs[i],engine.belief(i));
 //       //double d = truebeliefs[i].relative_entropy(engine.belief(i));
 //       kldiff+=d;

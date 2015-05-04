@@ -3,7 +3,7 @@
 #include <boost/program_options.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/crf/crf_parameter_learner_builder.hpp>
 #include <sill/learning/crf/crf_validation_functor.hpp>
 #include <sill/learning/crf/pwl_crf_parameter_learner.hpp>
@@ -182,12 +182,12 @@ int main(int argc, char** argv) {
   if (crf_builder.factor_type == "table") {
     decomposable<table_factor> YXmodel;
     crf_model<table_crf_factor> YgivenXmodel;
-    finite_var_vector Y, X;
-    std::map<finite_variable*, copy_ptr<finite_domain> > Y2X_map;
+    domain Y, X;
+    std::map<variable, copy_ptr<finite_domain> > Y2X_map;
     crf_builder.create_model(YXmodel, YgivenXmodel, Y, X, Y2X_map,
                              u, unif_int(rng));
     model_product_inplace(YgivenXmodel, YXmodel);
-    finite_var_vector YX(sill::concat(Y,X));
+    domain YX(sill::concat(Y,X));
     datasource_info_type ds_info(YX);
 
     run_test<table_crf_factor>
@@ -196,12 +196,12 @@ int main(int argc, char** argv) {
   } else if (crf_builder.factor_type == "gaussian") {
     decomposable<canonical_gaussian> YXmodel;
     crf_model<gaussian_crf_factor> YgivenXmodel;
-    vector_var_vector Y, X;
-    std::map<vector_variable*, copy_ptr<vector_domain> > Y2X_map;
+    domain Y, X;
+    std::map<variable, copy_ptr<vector_domain> > Y2X_map;
     crf_builder.create_model(YXmodel, YgivenXmodel, Y, X, Y2X_map,
                              u, unif_int(rng));
     model_product_inplace(YgivenXmodel, YXmodel);
-    vector_var_vector YX(sill::concat(Y,X));
+    domain YX(sill::concat(Y,X));
     datasource_info_type ds_info(YX);
 
     run_test<gaussian_crf_factor>

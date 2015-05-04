@@ -12,7 +12,7 @@
 #include <sill/mpi/mpilogger.hpp>
 #include <sill/inference/parallel/mpi_state_manager.hpp>
 #include <sill/inference/parallel/mpi_state_manager_protocol.hpp>
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/inference/parallel/residual_splash_engine.hpp>
@@ -26,7 +26,7 @@ void create_test_graph(universe &u, factor_graph_model<tablef> &fg) {
   uniform_factor_generator gen;
 
   // Create some variables and factors
-  std::vector<finite_variable*> x(100);
+  std::vector<variable> x(100);
   for(size_t i = 0; i < x.size(); ++i) {
     char c[16];
     sprintf(c,"%d",i);

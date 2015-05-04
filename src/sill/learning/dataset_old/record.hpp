@@ -407,7 +407,7 @@ namespace sill {
   sill::assignment record<LA>::assignment(const domain& X) const {
     sill::assignment a;
     foreach(variable* v, X) {
-      switch(v->type()) {
+      switch(v.type()) {
       case variable::FINITE_VARIABLE:
         {
           finite_variable* vf = dynamic_cast<finite_variable*>(v);
@@ -418,8 +418,8 @@ namespace sill {
         {
           vector_variable* vv = dynamic_cast<vector_variable*>(v);
           size_t v_index(safe_get(*vector_numbering_ptr, vv));
-          vec val(vv->size());
-          for(size_t j(0); j < vv->size(); ++j)
+          vec val(vv.size());
+          for(size_t j(0); j < vv.size(); ++j)
             val[j] = vec_ptr->operator[](v_index + j);
           a.vector()[vv] = val;
         }
@@ -435,7 +435,7 @@ namespace sill {
   void
   record<LA>::add_to_assignment(const domain& X, sill::assignment& a) const {
     foreach(variable* v, X) {
-      switch(v->type()) {
+      switch(v.type()) {
       case variable::FINITE_VARIABLE:
         {
           finite_variable* vf = dynamic_cast<finite_variable*>(v);
@@ -446,8 +446,8 @@ namespace sill {
         {
           vector_variable* vv = dynamic_cast<vector_variable*>(v);
           size_t v_index(safe_get(*vector_numbering_ptr, vv));
-          vec val(vv->size());
-          for(size_t j(0); j < vv->size(); ++j)
+          vec val(vv.size());
+          for(size_t j(0); j < vv.size(); ++j)
             val[j] = vec_ptr->operator[](v_index + j);
           a.vector()[vv] = val;
         }

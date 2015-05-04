@@ -314,13 +314,13 @@ namespace sill {
       if (new_Y.count(v)) {
         Y_in_head_.push_back(v);
         assert(new_X.count(v) == 0);
-        for (size_t j = 0; j < v->size(); ++j) {
+        for (size_t j = 0; j < v.size(); ++j) {
           Y_in_head_ov_indices_tmp.push_back(i);
           ++i;
         }
       } else if (new_X.count(v)) {
         X_in_head_.push_back(v);
-        for (size_t j = 0; j < v->size(); ++j) {
+        for (size_t j = 0; j < v.size(); ++j) {
           X_in_head_ov_indices_tmp.push_back(i);
           ++i;
         }
@@ -333,13 +333,13 @@ namespace sill {
       if (new_Y.count(v)) {
         Y_in_tail_.push_back(v);
         assert(new_X.count(v) == 0);
-        for (size_t j = 0; j < v->size(); ++j) {
+        for (size_t j = 0; j < v.size(); ++j) {
           Y_in_tail_ov_indices_tmp.push_back(i);
           ++i;
         }
       } else if (new_X.count(v)) {
         X_in_tail_.push_back(v);
-        for (size_t j = 0; j < v->size(); ++j) {
+        for (size_t j = 0; j < v.size(); ++j) {
           X_in_tail_ov_indices_tmp.push_back(i);
           ++i;
         }

@@ -24,7 +24,7 @@ namespace sill {
     static_assert(pairwise_compatible<LabelF, FeatureF>::value,
                   "The prior and feature factors are not pairwise compatible.");
 
-    typedef std::unordered_map<variable_type*, F> feature_map;
+    typedef std::unordered_map<variable_type, F> feature_map;
 
     // Public type declarations
     //==========================================================================
@@ -48,7 +48,7 @@ namespace sill {
     naive_bayes() { }
     
     //! Creates a naive Bayes model with the given label and uniform prior.
-    explicit naive_bayes(variable_type* label)
+    explicit naive_bayes(variable_type label)
       : prior_({label}, result_type(1)) {
       check_prior(prior_);
     }
@@ -79,8 +79,8 @@ namespace sill {
           "naive_bayes::add_feature(): CPD must contain exactly two arguments"
         );
       }
-      variable_type* f = *cpd.arguments().begin();
-      variable_type* l = *++cpd.arguments().begin();
+      variable_type f = *cpd.arguments().begin();
+      variable_type l = *++cpd.arguments().begin();
       if (f == label() || l != label()) {
         throw std::invalid_argument(
           "naive_bayes::add_feature(): the arguments must be (feature, label)"
@@ -92,7 +92,7 @@ namespace sill {
     // Queries
     //==========================================================================
     //! Returns the label variable.
-    variable_type* label() const {
+    variable_type label() const {
       if (prior_.arguments().empty()) {
         throw std::runtime_error("The naive_bayes object is empty");
       }
@@ -116,12 +116,12 @@ namespace sill {
     }
     
     //! Returns the feature CPD.
-    const FeatureF& cpd(variable_type* v) const {
+    const FeatureF& cpd(variable_type v) const {
       return feature_.at(v);
     }
 
     //! Returns true if the model contains the given variable.
-    bool contains(variable_type* v) const {
+    bool contains(variable_type v) const {
       return v == label() || feature_.count(v);
     }
 
@@ -191,7 +191,7 @@ namespace sill {
     template <typename Dataset>
     typename std::enable_if<is_dataset<Dataset>::value, real_type>::type
     accuracy(const dataset_type& ds) const {
-      variable_type* label = label_var();
+      variable_type label = label_var();
       real_type result(0);
       real_type weight(0);
       assignment_type a;

@@ -3,7 +3,7 @@
 
 #include <sill/inference/exact/variable_elimination.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/random/diagonal_table_generator.hpp>
 #include <sill/factor/random/uniform_table_generator.hpp>
@@ -23,7 +23,7 @@ BOOST_AUTO_TEST_CASE(test_grid) {
   universe u;                      
   size_t m = 4;
   size_t n = 3;
-  finite_var_vector variables = u.new_finite_variables(m * n, 2);
+  domain variables = u.new_finite_variables(m * n, "v", 2);
   
   // generate a random Markov network
   pairwise_markov_network<ptable> mn;
@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE(test_grid) {
   // computed directly matches the one computed by variable elimination
   ptable product = prod_all(mn);
   for (auto e : mn.edges()) {
-    domain<finite_variable*> retain({e.source(), e.target()});
+    domain retain({e.source(), e.target()});
     std::list<ptable> factors(mn.begin(), mn.end());
     variable_elimination(factors, retain, sum_product<ptable>());
     ptable elim_result = ptable(retain, 1.0) * prod_all(factors);

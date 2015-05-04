@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset_old/dataset_view.hpp>
 #include <sill/learning/dataset_old/data_loader.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>
@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
   // Create a dataset to work with
   universe u;
   syn_oracle_majority majority(create_syn_oracle_majority(100,u));
-  finite_variable* class_var = majority.finite_class_variables().front();
+  variable class_var = majority.finite_class_variables().front();
 
   size_t ntrain = 500;
   size_t ntest = 500;
@@ -35,7 +35,7 @@ int main(int argc, char* argv[]) {
   vector_dataset_old<> ds_test;
   oracle2dataset(majority, ntest, ds_test);
 
-  finite_var_vector new_class_vars;
+  domain new_class_vars;
   new_class_vars.push_back(ds_train.finite_list()[0]);
   new_class_vars.push_back(ds_train.finite_list()[1]);
   ds_train.set_finite_class_variables(new_class_vars);
@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
     ds_test.normalize(means,std_devs);
   }
 
-  finite_variable* new_merged_var =
+  variable new_merged_var =
     u.new_finite_variable(num_assignments(make_domain(new_class_vars)));
 
   dataset_statistics<> stats(ds_train);

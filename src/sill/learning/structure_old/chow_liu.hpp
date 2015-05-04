@@ -84,21 +84,21 @@ namespace sill {
      * @param X             Variables over which to learn a tree.
      * @param ds            Dataset to use for computing marginals.
      */
-    chow_liu(const forward_range<typename F::variable_type*>& X_,
+    chow_liu(const forward_range<typename F::variable_type>& X_,
              const dataset<>& ds, const parameters& params = parameters())
       : params(params) {
 
       typedef typename F::variable_type variable_type;
       assert(ds.size() > 0);
-      std::vector<variable_type*> X(X_.begin(), X_.end());
+      std::vector<variable_type> X(X_.begin(), X_.end());
       if (X.size() == 0)
         return;
 
       // g will hold weights (mutual information) and factors F for each edge.
       typedef std::pair<double, F> edge_mi_pot;
-      typedef undirected_graph<variable_type*, void_, edge_mi_pot> ig_type;
+      typedef undirected_graph<variable_type, void_, edge_mi_pot> ig_type;
       ig_type g;
-      foreach(variable_type* v, X)
+      foreach(variable_type v, X)
         g.add_vertex(v);
       for (size_t i(0); i < X.size() - 1; ++i) {
         for (size_t j(i+1); j < X.size(); ++j) {

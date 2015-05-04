@@ -32,7 +32,7 @@ void test_marginal(size_t m, size_t n) {
 
   // generate a random model
   pairwise_markov_network< table_factor > mn;
-  finite_var_vector variables = u.new_finite_variables(m * n, 2);
+  domain variables = u.new_finite_variables(m * n, 2);
   make_grid_graph(variables, m, n, mn);
   mn.initialize(marginal_fn(ising_factor_generator(), rng));
 

@@ -3,7 +3,7 @@
 
 #include <sill/factor/random/diagonal_table_generator.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/datastructure/finite_index.hpp>
 #include <sill/factor/canonical_table.hpp>
 #include <sill/factor/probability_table.hpp>
@@ -25,9 +25,9 @@ typedef boost::mpl::list<ctable,ptable> factor_types;
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(test_all, F, factor_types) {
   universe u;
-  finite_variable* x = u.new_finite_variable(3);
-  finite_variable* y = u.new_finite_variable(3);
-  domain<finite_variable*> xy = {x, y};
+  variable x = u.new_finite_variable("x", 3);
+  variable y = u.new_finite_variable("y", 3);
+  domain xy = {x, y};
 
   std::mt19937 rng;
   diagonal_table_generator<F> gen(lower, upper);

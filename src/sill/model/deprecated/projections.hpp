@@ -17,7 +17,7 @@ namespace sill {
     class mst_weight_functor {
     public:
       typedef std::pair<double, F> edge_mi_pot;
-      typedef undirected_graph<typename F::variable_type*, void_, edge_mi_pot>
+      typedef undirected_graph<typename F::variable_type, void_, edge_mi_pot>
         ig_type;
       typedef typename ig_type::edge argument_type;
       typedef double result_type;
@@ -35,7 +35,7 @@ namespace sill {
     class mst_edge2f_functor {
     public:
       typedef std::pair<double, F> edge_mi_pot;
-      typedef undirected_graph<typename F::variable_type*, void_, edge_mi_pot>
+      typedef undirected_graph<typename F::variable_type, void_, edge_mi_pot>
         ig_type;
       typedef F result_type;
     private:
@@ -79,7 +79,7 @@ namespace sill {
     */
     typedef typename F::variable_type   variable_type;
     typedef std::pair<double, F> edge_mi_pot;
-    typedef undirected_graph<variable_type*, void_, edge_mi_pot> ig_type;
+    typedef undirected_graph<variable_type, void_, edge_mi_pot> ig_type;
     ig_type g;
 
     // List of single-variable beliefs
@@ -88,9 +88,9 @@ namespace sill {
       if (f.arguments().size() == 1)
         single_var_beliefs.push_back(f);
       else if (f.arguments().size() > 1) {
-        std::vector<variable_type*> args(f.arguments().begin(),
+        std::vector<variable_type> args(f.arguments().begin(),
                                            f.arguments().end());
-        foreach(variable_type* v, args)
+        foreach(variable_type v, args)
           if (!(g.contains(v)))
             g.add_vertex(v);
         for (size_t i = 0; i < args.size(); i++) {
@@ -122,7 +122,7 @@ namespace sill {
     domain decomposable_args(boost::begin(g.vertices()),
                              boost::end(g.vertices()));
     foreach(F& f, single_var_beliefs) {
-      variable_type* f_arg = *(f.arguments().begin());
+      variable_type f_arg = *(f.arguments().begin());
       if (!(decomposable_args.count(f_arg))) {
         decomposable_args.insert(f_arg);
         mst_factors.push_back(f);

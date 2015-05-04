@@ -42,13 +42,13 @@ namespace sill {
     virtual void estimation(const F& likelihood) = 0;
     
     //! Extracts the beliefs over a subset of the processes
-    virtual F belief(const domain<process_type*>& processes) const = 0;
+    virtual F belief(const domain<process_type>& processes) const = 0;
 
     //! Extracts the beliefs over a subset of step-t variables
     virtual F belief(const domain_type& variables) const = 0;
 
     //! Extracts the belief over a single step-t variable
-    virtual F belief(variable_type* v) const = 0;
+    virtual F belief(variable_type v) const = 0;
 
   }; // class filter
 

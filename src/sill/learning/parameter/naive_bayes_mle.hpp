@@ -30,7 +30,7 @@ namespace sill {
  
     // Additional types
     typedef typename LabelF::variable_type variable_type;
-    typedef std::vector<variable_type*>    var_vector_type;
+    typedef std::vector<variable_type>    var_vector_type;
 
     /**
      * Constructs a learner with the given parameters.
@@ -44,12 +44,12 @@ namespace sill {
      */
     template <typename Dataset>
     naive_bayes_mle& fit(const Dataset& ds,
-                         variable_type* label,
+                         variable_type label,
                          const var_vector_type& features) {
       factor_mle<LabelF> prior_mle(param_.prior_regul);
       factor_mle<FeatureF> cpd_mle(param_.cpd_regul);
       model_ = model_type(prior_mle(ds, {label}));
-      for (variable_type* v : features) {
+      for (variable_type v : features) {
         model_.add_feature(cpd_mle(ds, {v}, {label}));
       }
       return *this;

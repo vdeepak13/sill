@@ -184,8 +184,8 @@ namespace sill {
       sill::vector_assignment a;
       foreach(vector_variable* v, X) {
         size_t v_index(safe_get(*vector_numbering_ptr, v));
-        vector_type val(v->size());
-        for(size_t j(0); j < v->size(); ++j)
+        vector_type val(v.size());
+        for(size_t j(0); j < v.size(); ++j)
           val[j] = vec_ptr->operator[](v_index + j);
         a[v] = val;
       }
@@ -200,8 +200,8 @@ namespace sill {
                       sill::vector_assignment& a) const {
       foreach(vector_variable* v, X) {
         size_t v_index(safe_get(*vector_numbering_ptr, v));
-        vector_type val(v->size());
-        for(size_t j(0); j < v->size(); ++j)
+        vector_type val(v.size());
+        for(size_t j(0); j < v.size(); ++j)
           val[j] = vec_ptr->operator[](v_index + j);
         a[v] = val;
       }
@@ -283,7 +283,7 @@ namespace sill {
       size_t i(0); // index into vals
       foreach(vector_variable* v, vars) {
         size_t j(safe_get(*vector_numbering_ptr, v));
-        for (size_t k(0); k < v->size(); ++k) {
+        for (size_t k(0); k < v.size(); ++k) {
           vals[i] = vec_ptr->operator[](j + k);
           ++i;
         }
@@ -310,7 +310,7 @@ namespace sill {
       size_t i(0); // index into indices
       foreach(vector_variable* v, vars) {
         size_t j(safe_get(*vector_numbering_ptr, v));
-        for (size_t k(0); k < v->size(); ++k) {
+        for (size_t k(0); k < v.size(); ++k) {
           indices[i] = j + k;
           ++i;
         }
@@ -549,7 +549,7 @@ namespace sill {
     size_t i = 0; // index into vals
     foreach(vector_variable* v, vars) {
       size_t j = safe_get(*vector_numbering_ptr, v);
-      for (size_t k = 0; k < v->size(); ++k) {
+      for (size_t k = 0; k < v.size(); ++k) {
         vals[i] = vec_ptr->operator[](j + k);
         ++i;
       }

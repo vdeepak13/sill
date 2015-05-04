@@ -61,13 +61,13 @@ namespace sill {
     size_t i = 0; // index into x
     vec val;
     foreach(vector_variable* v, X) {
-      val.set_size(v->size());
-      if (i + v->size() > x.size()) {
+      val.set_size(v.size());
+      if (i + v.size() > x.size()) {
         throw std::invalid_argument
           (std::string("add_vector2vector_assignment(X,x,va)") +
            " given X,x of non-matching dimensionalities (|X| > |x|).");
       }
-      for (size_t j = 0; j < v->size(); ++j)
+      for (size_t j = 0; j < v.size(); ++j)
         val[j] = x[i++];
       va[v] = val;
     }
@@ -98,13 +98,13 @@ namespace sill {
            " assignment.");
       }
       const vec& tmpvec = it->second;
-      for (size_t j(0); j < v->size(); j++) {
+      for (size_t j(0); j < v.size(); j++) {
         if (tmpvec[j] != 0) {
           inds.push_back(i + j);
           vals.push_back(tmpvec[i + j]);
         }
       }
-      i += v->size();
+      i += v.size();
     }
     vecdata.reset(n, inds, vals);
   }

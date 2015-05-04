@@ -339,7 +339,7 @@ namespace sill {
      */
     void relabel_outputs_inputs(const output_domain_type& new_Y) {
       input_domain_type new_X(input_arguments());
-      foreach(output_variable_type* v, output_arguments()) {
+      foreach(output_variable_type v, output_arguments()) {
         if (new_Y.count(v) == 0)
           new_X.insert(v);
       }
@@ -359,9 +359,9 @@ namespace sill {
                                   const input_domain_type& new_X) {
       domain_type args(old_Y);
       args.insert(old_X.begin(), old_X.end());
-      foreach(output_variable_type* v, new_Y)
+      foreach(output_variable_type v, new_Y)
         args.erase(v);
-      foreach(input_variable_type* v, new_X)
+      foreach(input_variable_type v, new_X)
         args.erase(v);
       if (args.size() != 0)
         return false;

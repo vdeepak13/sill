@@ -34,7 +34,7 @@ namespace sill {
     // =========================================================================
   private:
     //! The arguments of this DBN
-    std::set<process_type*> processes_;
+    std::set<process_type> processes_;
 
     //! The prior model
     bayesian_network<F> prior;
@@ -57,7 +57,7 @@ namespace sill {
     // Accessors
     // =========================================================================
     //! Returns the processes in this DBN
-    const std::set<process_type*>& processes() const {
+    const std::set<process_type>& processes() const {
       return processes_;
     }
 
@@ -72,12 +72,12 @@ namespace sill {
     }
 
     //! Returns the CPD of the transition model for a given process
-    const F& operator[](process_type* p) const {
+    const F& operator[](process_type p) const {
       return transition[p->next()];
     }
 
     //! Returns the CPD of the transition model for a given time-t+1 variable
-    const F& operator[](variable_type* v) const {
+    const F& operator[](variable_type v) const {
       return transition[v];
     }
     
@@ -89,7 +89,7 @@ namespace sill {
      * Returns the ancestors of the t+1-time variables in the transition model.
      * \param procs The set of processes whose ancestors are being sought
      */
-    domain_type ancestors(const std::set<process_type*>& procs) const {
+    domain_type ancestors(const std::set<process_type>& procs) const {
       return transition.ancestors(variables(procs, next_step));
     }
 
@@ -99,10 +99,10 @@ namespace sill {
      */
     bayesian_network<F> unroll(size_t n) const {
       // Initialize the prior
-      std::map<variable_type*, variable_type*> prior_var_map
+      std::map<variable_type, variable_type> prior_var_map
         = make_process_var_map(processes(), current_step, 0);
       bayesian_network<F> bn;
-      for (process_type* p : processes()) {
+      for (process_type p : processes()) {
         F factor = prior.factor(p->current());
         factor.subst_args(prior_var_map);
         bn.add_factor(p->at(0), factor);
@@ -110,10 +110,10 @@ namespace sill {
       
       // Add the n transition models
       for(size_t t = 0; t < n; t++) {
-        std::map<variable_type*, variable_type*> var_map
+        std::map<variable_type, variable_type> var_map
           = map_union(make_process_var_map(processes(), current_step, t),
                       make_process_var_map(processes(), next_step, t+1));
-        for (process_type* p : processes()) {
+        for (process_type p : processes()) {
           F cpd = transition[p->next()];
           cpd.subst_args(var_map);
           bn.add_factor(p->at(t+1), cpd);
@@ -146,10 +146,10 @@ namespace sill {
      *        The process, for which the CPD is being added.  The argument 
      *        factor must contain the t+1-step variable of process p. 
      */
-    void add_factor(process_type* p, const F& factor) {
+    void add_factor(process_type p, const F& factor) {
       assert(factor.arguments().count(p->next()) > 0);
-      for (variable_type* v : factor.arguments()) {
-        int t = boost::any_cast<int>(v->index());
+      for (variable_type v : factor.arguments()) {
+        int t = boost::any_cast<int>(v.index());
         assert(t == current_step || t == next_step);
       }
       processes_.insert(p);
@@ -165,7 +165,7 @@ namespace sill {
      * @param v
      *        The head of the conditional probability distribution.
      */
-    void add_factor(variable_type* head, const F& factor) {
+    void add_factor(variable_type head, const F& factor) {
       assert(factor.arguments().count(head) > 0);
       check_index(factor.arguments(), current_step);
       prior.add_factor(head, factor);

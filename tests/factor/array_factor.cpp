@@ -1,21 +1,21 @@
 #define BOOST_TEST_MODULE array_factor
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/base/array_factor.hpp>
 #include <sill/functional/operators.hpp>
 #include <sill/functional/eigen.hpp>
 
 namespace sill {
-  template class array_factor<double, 1>;
-  template class array_factor<double, 2>;
+  template class array_factor<double, 1, variable>;
+  template class array_factor<double, 2, variable>;
 }
 
 using namespace sill;
 
 template <size_t N>
-struct iarray : public array_factor<int, N> {
-  typedef array_factor<int, N> base;
+struct iarray : public array_factor<int, N, variable> {
+  typedef array_factor<int, N, variable> base;
   typedef typename base::domain_type domain_type;
   typedef typename base::array_type array_type;
   iarray() { }
@@ -39,8 +39,8 @@ typedef iarray<2> iarray2;
 
 BOOST_AUTO_TEST_CASE(test_join) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 3);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 3);
 
   iarray1 fx({x}, {1, 2});
   iarray1 fy({y}, {2, 3, 4});
@@ -80,8 +80,8 @@ BOOST_AUTO_TEST_CASE(test_join) {
 
 BOOST_AUTO_TEST_CASE(test_join_inplace) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 3);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 3);
 
   iarray1 fx({x}, {1, 2});
   iarray1 fy({y}, {2, 3, 4});
@@ -110,8 +110,8 @@ BOOST_AUTO_TEST_CASE(test_join_inplace) {
 
 BOOST_AUTO_TEST_CASE(test_aggregate) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 3);
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 3);
 
   iarray2 fxy({x, y}, {-1, -2, -3, 4, 5, 6});
 
@@ -126,10 +126,10 @@ BOOST_AUTO_TEST_CASE(test_aggregate) {
 
 BOOST_AUTO_TEST_CASE(test_restrict) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 3);
-  finite_variable* z = u.new_finite_variable("z", 3);
-  finite_assignment empty = {{z, 2}};
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 3);
+  variable z = u.new_finite_variable("z", 3);
+  finite_assignment<> empty = {{z, 2}};
 
   iarray2 fxy({x, y}, {-1, -2, -3, 4, 5, 6});
   
@@ -144,10 +144,10 @@ BOOST_AUTO_TEST_CASE(test_restrict) {
 
 BOOST_AUTO_TEST_CASE(test_restrict_join) {
   universe u;
-  finite_variable* x = u.new_finite_variable("x", 2);
-  finite_variable* y = u.new_finite_variable("y", 3);
-  finite_variable* z = u.new_finite_variable("z", 2);
-  finite_assignment empty = {{z, 1}};
+  variable x = u.new_finite_variable("x", 2);
+  variable y = u.new_finite_variable("y", 3);
+  variable z = u.new_finite_variable("z", 2);
+  finite_assignment<> empty = {{z, 1}};
 
   iarray1 fy({y}, {2, 3, 4});
   iarray2 fxy({x, y}, {-1, -2, -3, 4, 5, 6});

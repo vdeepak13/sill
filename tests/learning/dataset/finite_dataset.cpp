@@ -1,7 +1,7 @@
 #define BOOST_TEST_MODULE finite_dataset
 #include <boost/test/unit_test.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/probability_table.hpp>
 #include <sill/factor/random/uniform_table_generator.hpp>
 #include <sill/learning/dataset/finite_dataset.hpp>
@@ -9,23 +9,21 @@
 #include <sill/learning/parameter/factor_mle.hpp>
 
 namespace sill {
-  template class basic_dataset<finite_data_traits<double> >;
-  template class basic_dataset<finite_data_traits<float> >;
+  template class basic_dataset<finite_data_traits<double, variable> >;
+  template class basic_dataset<finite_data_traits<float, variable> >;
 }
 
 using namespace sill;
 
 typedef std::pair<finite_index, double> sample_type;
-typedef std::pair<finite_assignment, double> sample_assignment_type;
+typedef std::pair<finite_assignment<>, double> sample_assignment_type;
 BOOST_TEST_DONT_PRINT_LOG_VALUE(finite_index);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(sample_type);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(sample_assignment_type);
 
-typedef domain<finite_variable*> domain_type;
-
 BOOST_AUTO_TEST_CASE(test_insert) {
   universe u;
-  domain_type v = u.new_finite_variables(3, 3);
+  domain v = u.new_finite_variables(3, "v", 3);
   
   finite_dataset<> ds;
   ds.initialize(v);
@@ -39,7 +37,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   ds.insert(values, 0.5);
 
   // insert a finite assignment
-  finite_assignment a;
+  finite_assignment<> a;
   a[v[0]] = 1;
   a[v[1]] = 2;
   a[v[2]] = 0;
@@ -52,7 +50,9 @@ BOOST_AUTO_TEST_CASE(test_insert) {
   std::cout << ds << std::endl;
   size_t i = 0;
   for (const auto& sample : ds) {
-    std::cout << i << " " << sample.first << " " << sample.second << std::endl;
+    std::cout << i << " ";
+    for (size_t x : sample.first) { std::cout << x << " "; }
+    std::cout << sample.second << std::endl;
     ++i;
   }
 
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE(test_insert) {
 
 BOOST_AUTO_TEST_CASE(test_value_iterators) {
   universe u;
-  domain_type v = u.new_finite_variables(3, 3);
+  domain v = u.new_finite_variables(3, "v", 3);
   
   finite_dataset<> ds;
   ds.initialize(v);
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE(test_value_iterators) {
 
 BOOST_AUTO_TEST_CASE(test_assignment_iterators) {
   universe u;
-  domain_type v = u.new_finite_variables(3, 3);
+  domain v = u.new_finite_variables(3, "v", 3);
   
   finite_dataset<> ds;
   ds.initialize(v);
@@ -169,14 +169,14 @@ BOOST_AUTO_TEST_CASE(test_assignment_iterators) {
 
 struct fixture {
   universe u;
-  domain_type v;
+  domain v;
   finite_dataset<> ds;
   ptable f;
   factor_mle<ptable> mle;
   std::mt19937 rng;
 
   fixture() {
-    v = u.new_finite_variables(3, 2);
+    v = u.new_finite_variables(3, "v", 2);
     ds.initialize(v, 1000);
     
     f = uniform_table_generator<ptable>()(v, rng).normalize();
@@ -192,7 +192,7 @@ BOOST_FIXTURE_TEST_CASE(test_reconstruction, fixture) {
   // matches the factor for every variable or every pair of variables
   for (size_t i = 0; i < v.size(); ++i) {
     for (size_t j = i; j < v.size(); ++j) {
-      domain_type dom = domain_type({v[i], v[j]}).unique();
+      domain dom = domain({v[i], v[j]}).unique();
       double kl = kl_divergence(f.marginal(dom), mle(ds, dom));
       std::cout << dom << ": " << kl << std::endl;
       BOOST_CHECK_SMALL(kl, 1e-2);
@@ -200,7 +200,7 @@ BOOST_FIXTURE_TEST_CASE(test_reconstruction, fixture) {
   }
 
   // fill the content of the dataset using mutable iteration
-  domain_type v01 = {v[0], v[1]};
+  domain v01 = {v[0], v[1]};
   for (auto& sample : ds(v01)) {
     sample.first[0] = 1;
     sample.first[1] = 0;
@@ -214,7 +214,7 @@ BOOST_FIXTURE_TEST_CASE(test_reconstruction, fixture) {
   }
 
   // verify that the marginal over v[2] is still good
-  domain_type dom2 = {v[2]};
+  domain dom2 = {v[2]};
   double kl = kl_divergence(f.marginal(dom2), mle(ds, dom2));
   std::cout << "Rest: " << kl << std::endl;
   BOOST_CHECK_SMALL(kl, 1e-2);

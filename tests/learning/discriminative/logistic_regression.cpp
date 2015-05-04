@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset_old/dataset_view.hpp>
 #include <sill/learning/dataset_old/data_loader.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>
@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
      ds_train.finite_list(),
      ds_train.vector_list(), ds_train.variable_type_order(), ntest);
   vector_dataset_old& ds_test = *ds_test_ptr;
-  finite_variable* class_var = ds_train.finite_class_variables().front();
+  variable class_var = ds_train.finite_class_variables().front();
   vec means;
   vec std_devs;
   boost::tie(means,std_devs) = ds_train.normalize();
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
   oracle_params.std_dev = 2.5;
   oracle_params.random_seed = 489167211;
   syn_oracle_knorm knorm(create_syn_oracle_knorm(2,20,u,oracle_params));
-  finite_variable* class_var = knorm.finite_class_variables().front();
+  variable class_var = knorm.finite_class_variables().front();
   cout << knorm;
   vector_dataset_old<> ds_train;
   oracle2dataset(knorm, ntrain, ds_train);
@@ -61,7 +61,7 @@ int main(int argc, char* argv[]) {
   size_t ntrain = 500;
   size_t ntest = 500;
   syn_oracle_majority majority(create_syn_oracle_majority(9,u));
-  finite_variable* class_var = majority.finite_class_variables().front();
+  variable class_var = majority.finite_class_variables().front();
   cout << majority;
   boost::shared_ptr<vector_dataset_old<> > ds_train_ptr
     = oracle2dataset<vector_dataset_old<> >(majority, ntrain);

@@ -38,13 +38,13 @@ namespace sill {
     typedef typename F::variable_type variable_type;
     
     // construct the Markov graph for the input factors
-    undirected_graph<variable_type*> graph;
+    undirected_graph<variable_type> graph;
     for (const F& factor : factors) {
       make_clique(graph, factor.arguments());
     }
 
     // eliminate variables
-    eliminate(graph, [&](variable_type* v) {
+    eliminate(graph, [&](variable_type v) {
         if (!retain.count(v)) {
           // Combine all factors that have this variable as an argument
           F combination = csr.combine_init();

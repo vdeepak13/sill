@@ -75,7 +75,7 @@ namespace sill {
       calibrated_ = false;
 
       // initialize the junction tree
-      undirected_graph<variable_type*> mg;
+      undirected_graph<variable_type> mg;
       for (const F& factor : factors) {
         make_clique(mg, factor.arguments());
       }

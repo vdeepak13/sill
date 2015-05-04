@@ -4,7 +4,7 @@
 #include <boost/random/normal_distribution.hpp>
 #include <boost/timer.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset_old/dataset_view.hpp>
 #include <sill/learning/dataset_old/data_loader.hpp>
 #include <sill/learning/dataset_old/data_conversions.hpp>
@@ -33,7 +33,7 @@ int main(int argc, char* argv[]) {
   for (size_t j(0); j < nX; ++j)
     ds_info.vector_seq.push_back(u.new_vector_variable(1));
   for (size_t j(0); j < nY; ++j) {
-    vector_variable* v = u.new_vector_variable(1);
+    variable v = u.new_vector_variable(1);
     ds_info.vector_seq.push_back(v);
     ds_info.vector_class_vars.push_back(v);
   }

@@ -13,7 +13,7 @@
 namespace sill {
 
   // forward declaration
-  template <typename T> class canonical_gaussian;
+  template <typename T, typename Var> class canonical_gaussian;
 
   /**
    * A factor of a Gaussian distribution in the moment parameterization.
@@ -21,24 +21,24 @@ namespace sill {
    * \tparam T the real type for representing the parameters.
    * \ingroup factor_types
    */
-  template <typename T>
-  class moment_gaussian : public gaussian_factor {
+  template <typename T, typename Var>
+  class moment_gaussian : public gaussian_factor<Var> {
   public:
     // Public types
     //==========================================================================
     // Base type
-    typedef gaussian_factor base;
+    typedef gaussian_factor<Var> base;
 
     // Underlying storage
     typedef dynamic_matrix<T> mat_type;
     typedef dynamic_vector<T> vec_type;
 
     // Factor member types
-    typedef T                        real_type;
-    typedef logarithmic<T>           result_type;
-    typedef vector_variable          variable_type;
-    typedef domain<vector_variable*> domain_type;
-    typedef vector_assignment<T>     assignment_type;
+    typedef T                         real_type;
+    typedef logarithmic<T>            result_type;
+    typedef Var                       variable_type;
+    typedef basic_domain<Var>         domain_type;
+    typedef vector_assignment<T, Var> assignment_type;
 
     // ParametricFactor member types
     typedef moment_gaussian_param<T> param_type;
@@ -133,7 +133,7 @@ namespace sill {
     }
 
     //! Conversion from a canonical_gaussian.
-    explicit moment_gaussian(const canonical_gaussian<T>& cg) {
+    explicit moment_gaussian(const canonical_gaussian<T, Var>& cg) {
       *this = cg;
     }
     
@@ -145,15 +145,15 @@ namespace sill {
     }
 
     //! Assigns a moment_gaussian to this factor.
-    moment_gaussian& operator=(const canonical_gaussian<T>& cg) {
+    moment_gaussian& operator=(const canonical_gaussian<T, Var>& cg) {
       reset(cg.arguments());
       param_ = cg.param();
       return *this;
     }
 
     //! Casts this moment_gaussian to a canonical_gaussian.
-    canonical_gaussian<T> canonical() const {
-      return canonical_gaussian<T>(*this);
+    canonical_gaussian<T, Var> canonical() const {
+      return canonical_gaussian<T, Var>(*this);
     }
 
     //! Exchanges the content of two factors.
@@ -190,7 +190,7 @@ namespace sill {
         tail_ = tail;
         if (tail.empty()) args_.clear(); else args_ = head + tail;
         size_t m, n;
-        std::tie(m, n) = compute_start(head, tail);
+        std::tie(m, n) = this->compute_start(head, tail);
         param_.resize(m, n);
       }
     }
@@ -202,7 +202,7 @@ namespace sill {
         head_ = head;
         tail_ = tail;
         if (tail.empty()) args_.clear(); else args_ = head + tail;
-        compute_start(head, tail);
+        this->compute_start(head, tail);
         param_.resize(0, 0);
       }
     }
@@ -296,25 +296,25 @@ namespace sill {
     }
 
     //! Returns the mean for a single variable.
-    Eigen::VectorBlock<const vec_type> mean(vector_variable* v) const {
-      return param_.mean.segment(this->start(v), v->size());
+    Eigen::VectorBlock<const vec_type> mean(Var v) const {
+      return param_.mean.segment(this->start(v), v.size());
     }
 
     //! Returns the covariance matrix for a single variable.
-    Eigen::Block<const mat_type> covariance(vector_variable* v) const {
+    Eigen::Block<const mat_type> covariance(Var v) const {
       size_t i = this->start(v);
-      return param_.cov.block(i, i, v->size(), v->size());
+      return param_.cov.block(i, i, v.size(), v.size());
     }
 
     //! Returns the mean for a subset of the arguments
     vec_type mean(const domain_type& args) const {
-      matrix_index map = index_map(args);
+      matrix_index map = this->index_map(args);
       return subvec(param_.mean, map).plain();
     }
 
     //! Returns the covariance matrix for a subset of the arguments
     mat_type covariance(const domain_type& args) const {
-      matrix_index map = index_map(args);
+      matrix_index map = this->index_map(args);
       return submat(param_.cov, map, map).plain();
     }
 
@@ -340,16 +340,16 @@ namespace sill {
     void assignment(const vec_type& vec, assignment_type& a) const {
       assert(vec.size() == head_size());
       size_t i = 0;
-      for (vector_variable* v : head()) {
-        a[v] = vec.segment(i, v->size());
-        i += v->size();
+      for (Var v : head()) {
+        a[v] = vec.segment(i, v.size());
+        i += v.size();
       }
     }
 
     /**
      * Substitutes the arguments in-place according to the given map.
      */
-    void subst_args(const vector_var_map& map) {
+    void subst_args(const std::unordered_map<Var, Var>& map) {
       base::subst_args(map);
       head_.subst(map);
       tail_.subst(map);
@@ -368,8 +368,8 @@ namespace sill {
       if (!equivalent(tail, tail_)) {
         throw std::runtime_error("moment_gaussian::reorder: invalid tail");
       }
-      matrix_index head_map = index_map(head);
-      matrix_index tail_map = index_map(tail);
+      matrix_index head_map = this->index_map(head);
+      matrix_index tail_map = this->index_map(tail);
       return moment_gaussian(head, tail, param_.reorder(head_map, tail_map));
     }
     
@@ -650,7 +650,7 @@ namespace sill {
    * A moment_gaussian factor using double precision.
    * \relates moment_gaussian
    */
-  typedef moment_gaussian<double> mgaussian;
+  typedef moment_gaussian<double, variable> mgaussian;
   
   // Input / outputx
   //============================================================================
@@ -659,8 +659,9 @@ namespace sill {
    * Prints the moment_gaussian to a stream.
    * \relates moment_gaussian
    */
-  template <typename T>
-  std::ostream& operator<<(std::ostream& out, const moment_gaussian<T>& f) {
+  template <typename T, typename Var>
+  std::ostream& operator<<(std::ostream& out,
+                           const moment_gaussian<T, Var>& f) {
     out << "moment_gaussian(" << f.head() << ", " << f.tail() << ")\n"
         << f.param() << std::endl;
     return out;
@@ -673,9 +674,9 @@ namespace sill {
    * Returns an object that can add a constant to the log-multiplier of
    * a moment Gaussian in-place.
    */
-  template <typename T>
+  template <typename T, typename Var>
   moment_gaussian_join_inplace<T, sill::plus_assign<> >
-  multiplies_assign_op(moment_gaussian<T>& h) {
+  multiplies_assign_op(moment_gaussian<T, Var>& h) {
     return { };
   }
 
@@ -683,9 +684,9 @@ namespace sill {
    * Returns an object that can subtract a constant from the log-multiplier
    * of moment Gaussian in-place.
    */
-  template <typename T>
+  template <typename T, typename Var>
   moment_gaussian_join_inplace<T, sill::minus_assign<> >
-  divides_assign_op(moment_gaussian<T>& h) {
+  divides_assign_op(moment_gaussian<T, Var>& h) {
     return { };
   }
 
@@ -693,15 +694,16 @@ namespace sill {
    * Returns an object that can compute the parameters corresponding to the
    * product of two moment Gaussians. Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   moment_gaussian_multiplies<T>
-  multiplies_op(const moment_gaussian<T>& f, const moment_gaussian<T>& g,
-                moment_gaussian<T>& h) {
-    const moment_gaussian<T>& p = f.is_marginal() ? f : g;
-    const moment_gaussian<T>& q = f.is_marginal() ? g : f;
+  multiplies_op(const moment_gaussian<T, Var>& f,
+                const moment_gaussian<T, Var>& g,
+                moment_gaussian<T, Var>& h) {
+    const moment_gaussian<T, Var>& p = f.is_marginal() ? f : g;
+    const moment_gaussian<T, Var>& q = f.is_marginal() ? g : f;
     if (p.is_marginal() && disjoint(f.head(), g.head())) {
-      domain<vector_variable*> x1 = q.tail() & p.head();
-      domain<vector_variable*> y  = q.tail() - p.head();
+      basic_domain<Var> x1 = q.tail() & p.head();
+      basic_domain<Var> y  = q.tail() - p.head();
       h.reset_prototype(f.head() + g.head(), y);
       moment_gaussian_multiplies<T> op;
       op.p1 = p.index_map(x1);
@@ -722,13 +724,13 @@ namespace sill {
    * the marginal of a moment Gaussian over a subset of arguments.
    * Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   moment_gaussian_collapse<T>
-  marginal_op(const moment_gaussian<T>& f,
-              const domain<vector_variable*>& retain,
-              moment_gaussian<T>& h) {
-    domain<vector_variable*> head = retain & f.head();
-    domain<vector_variable*> tail = retain & f.tail();
+  marginal_op(const moment_gaussian<T, Var>& f,
+              const basic_domain<Var>& retain,
+              moment_gaussian<T, Var>& h) {
+    basic_domain<Var> head = retain & f.head();
+    basic_domain<Var> tail = retain & f.tail();
     if (head.size() + tail.size() != retain.size()) {
       throw std::invalid_argument(
         "moment_gaussian::marginal: some of the retained variables "
@@ -749,13 +751,13 @@ namespace sill {
    * the maximum of a moment Gaussian over a subset of arguments.
    * Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   moment_gaussian_collapse<T>
-  maximum_op(const moment_gaussian<T>& f,
-             const domain<vector_variable*>& retain,
-             moment_gaussian<T>& h) {
-    domain<vector_variable*> head = retain & f.head();
-    domain<vector_variable*> tail = retain & f.tail();
+  maximum_op(const moment_gaussian<T, Var>& f,
+             const basic_domain<Var>& retain,
+             moment_gaussian<T, Var>& h) {
+    basic_domain<Var> head = retain & f.head();
+    basic_domain<Var> tail = retain & f.tail();
     if (head.size() + tail.size() != retain.size()) {
       throw std::invalid_argument(
         "moment_gaussian::maximum: some of the retained variables "
@@ -776,13 +778,13 @@ namespace sill {
    * conditioning a marginal moment Gaussian distribution.
    * Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   moment_gaussian_conditional<T>
-  conditional_op(const moment_gaussian<T>& f,
-                 const domain<vector_variable*>& tail,
-                 moment_gaussian<T>& h) {
+  conditional_op(const moment_gaussian<T, Var>& f,
+                 const basic_domain<Var>& tail,
+                 moment_gaussian<T, Var>& h) {
     assert(f.is_marginal());
-    domain<vector_variable*> head = f.head() - tail;
+    basic_domain<Var> head = f.head() - tail;
     if (f.size() != head.size() + tail.size()) {
       throw std::invalid_argument(
         "moment_gaussian::conditional: some of the tail variables "
@@ -797,14 +799,14 @@ namespace sill {
    * restricting a moment Gaussian to the given assignment.
    * Initializes the arguments of the result.
    */
-  template <typename T>
+  template <typename T, typename Var>
   moment_gaussian_restrict<T>
-  restrict_op(const moment_gaussian<T>& f,
+  restrict_op(const moment_gaussian<T, Var>& f,
               const vector_assignment<T>& a,
-              moment_gaussian<T>& h) {
+              moment_gaussian<T, Var>& h) {
     if (subset(f.tail(), a)) {
       // case 1: partially restricted head, fully restricted tail
-      domain<vector_variable*> y, x; // restricted, retained
+      basic_domain<Var> y, x; // restricted, retained
       f.head().partition(a, y, x);
       h.reset_prototype(x);
       moment_gaussian_restrict<T> op(moment_gaussian_restrict<T>::MARGINAL);
@@ -815,7 +817,7 @@ namespace sill {
       return op;
     } else if (disjoint(f.head(), a)) {
       // case 2: unrestricted head, partially restricted tail
-      domain<vector_variable*> y, x; // restricted, retained
+      basic_domain<Var> y, x; // restricted, retained
       f.tail().partition(a, y, x);
       h.reset_prototype(f.head(), x);
       moment_gaussian_restrict<T> op(moment_gaussian_restrict<T>::CONDITIONAL);
@@ -836,23 +838,23 @@ namespace sill {
   //! \addtogroup factor_traits
   //! @{
 
-  template <typename T>
-  struct has_multiplies<moment_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_multiplies<moment_gaussian<T, Var>> : public std::true_type { };
 
-  template <typename T>
-  struct has_multiplies_assign<moment_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_multiplies_assign<moment_gaussian<T, Var>> : public std::true_type { };
 
-  template <typename T>
-  struct has_divides_assign<moment_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_divides_assign<moment_gaussian<T, Var>> : public std::true_type { };
 
-  template <typename T>
-  struct has_marginal<moment_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_marginal<moment_gaussian<T, Var>> : public std::true_type { };
 
-  template <typename T>
-  struct has_maximum<moment_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_maximum<moment_gaussian<T, Var>> : public std::true_type { };
 
-  template <typename T>
-  struct has_arg_max<moment_gaussian<T>> : public std::true_type { };
+  template <typename T, typename Var>
+  struct has_arg_max<moment_gaussian<T, Var>> : public std::true_type { };
   
   //! @}
 

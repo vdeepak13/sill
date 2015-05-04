@@ -5,7 +5,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/timer.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/factor/random/moment_gaussian_generator.hpp>
 #include <sill/learning/crf/crf_parameter_learner.hpp>
@@ -24,8 +24,8 @@
 //! Create a finite variable dataset for testing table log_reg CRF factors.
 static void
 create_finite_var_data
-(sill::finite_var_vector& Y, sill::finite_var_vector& X,
- sill::finite_var_vector& YX, sill::table_factor& truth_YX,
+(sill::domain& Y, sill::domain& X,
+ sill::domain& YX, sill::table_factor& truth_YX,
  sill::table_factor& truth_Y_given_X, sill::table_factor& truth_X,
  sill::vector_assignment_dataset<>& train_ds,
  sill::vector_assignment_dataset<>& test_ds,
@@ -62,7 +62,7 @@ create_finite_var_data
   // Generate a dataset
   cout << "Sampling " << (ntrain+ntest) << " samples from the model" << endl;
   train_ds =
-    vector_assignment_dataset<>(YX, vector_var_vector(),
+    vector_assignment_dataset<>(YX, domain(),
                               std::vector<variable::variable_typenames>
                               (YX.size(), variable::FINITE_VARIABLE));
   for (size_t i(0); i < ntrain; ++i) {
@@ -70,7 +70,7 @@ create_finite_var_data
     train_ds.insert(assignment(fa));
   }
   test_ds =
-    vector_assignment_dataset<>(YX, vector_var_vector(),
+    vector_assignment_dataset<>(YX, domain(),
                               std::vector<variable::variable_typenames>
                               (YX.size(), variable::FINITE_VARIABLE));
   for (size_t i(0); i < ntest; ++i) {
@@ -365,9 +365,9 @@ int main(int argc, char** argv) {
   boost::mt11213b rng(random_seed);
 
   if (factor_type == "table") { //=============================================
-    finite_var_vector Y;
-    finite_var_vector X;
-    finite_var_vector YX;
+    domain Y;
+    domain X;
+    domain YX;
     table_factor truth_YX;
     table_factor truth_Y_given_X;
     table_factor truth_X;
@@ -410,9 +410,9 @@ int main(int argc, char** argv) {
 
   } else if (factor_type == "log_reg") {
     // TO DO: Test this with both finite- and vector-valued X variables.
-    finite_var_vector Y;
-    finite_var_vector X;
-    finite_var_vector YX;
+    domain Y;
+    domain X;
+    domain YX;
     table_factor truth_YX;
     table_factor truth_Y_given_X;
     table_factor truth_X;
@@ -474,12 +474,12 @@ int main(int argc, char** argv) {
     gcf_params.reg.lambdas = .01;
 
     // Create P(Y | X), P(X)
-    vector_var_vector Y, X;
+    domain Y, X;
     for (size_t j = 0; j < Ysize; ++j)
       Y.push_back(u.new_vector_variable(1));
     for (size_t j = 0; j < Xsize; ++j)
       X.push_back(u.new_vector_variable(1));
-    vector_var_vector YX(sill::concat(Y, X));
+    domain YX(sill::concat(Y, X));
     moment_gaussian_generator gen(-b_max, b_max, 2.0, 0.5);
     moment_gaussian truth_YX = gen(make_domain(YX), rng);
     truth_YX.normalize();
@@ -501,7 +501,7 @@ int main(int argc, char** argv) {
 
     // Generate a dataset
     cout << "Sampling " << (ntrain+ntest) << " samples from the model" << endl;
-    vector_assignment_dataset<> train_ds(finite_var_vector(), YX, 
+    vector_assignment_dataset<> train_ds(domain(), YX, 
                                        std::vector<variable::variable_typenames>
                                        (YX.size(), variable::VECTOR_VARIABLE));
     for (size_t i(0); i < ntrain; ++i) {
@@ -509,7 +509,7 @@ int main(int argc, char** argv) {
       train_ds.insert(assignment(fa));
     }
     vector_assignment_dataset<>
-      test_ds(finite_var_vector(), YX, 
+      test_ds(domain(), YX, 
               std::vector<variable::variable_typenames>
               (YX.size(), variable::VECTOR_VARIABLE));
     for (size_t i(0); i < ntest; ++i) {

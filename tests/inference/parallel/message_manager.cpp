@@ -3,7 +3,7 @@
 #include <boost/array.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/model/factor_graph_model.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
@@ -26,7 +26,7 @@ public:
   }
   void run() {
     for (int i = 0; i < 10000; ++i) {
-      foreach(const finite_variable* var, fg_->arguments()) {
+      foreach(const variable var, fg_->arguments()) {
         foreach(const table_factor* tbl, fg_->factors(var)) {
           table_factor *f = m_->checkout_variable_to_factor(var,tbl,Writing);
           m_->checkin_variable_to_factor(var,tbl,f);
@@ -54,7 +54,7 @@ public:
   }
   void run() {
     for (int i = 0; i < 10000; ++i) {
-      foreach(const finite_variable* var, fg_->arguments()) {
+      foreach(const variable var, fg_->arguments()) {
         foreach(const table_factor* tbl, fg_->factors(var)) {
           table_factor *f = m_->checkout_variable_to_factor(var,tbl,Reading);
           m_->checkin_variable_to_factor(var,tbl,f);
@@ -92,7 +92,7 @@ int main() {
   fg.print(std::cout);
 
   // Create some variables and factors
-  std::vector<finite_variable*> x(10);
+  std::vector<variable> x(10);
   for(size_t i = 0; i < x.size(); ++i) x[i] = u.new_finite_variable(""+i, 2);
 
   // Create some unary factors
@@ -114,7 +114,7 @@ int main() {
   
   std::cout << "Basic Test : ";
   std::cout.flush();
-  foreach(const finite_variable* var, fg.arguments()) {
+  foreach(const variable var, fg.arguments()) {
     table_factor *f = manager.checkout_belief(var);
     foreach(const table_factor* tbl, fg.factors(var)) {
       table_factor *f = manager.checkout_variable_to_factor(var,tbl,Reading);
@@ -140,7 +140,7 @@ int main() {
   {
     std::cout << "Checking Messages : ";
     
-    foreach(const finite_variable* var, fg.arguments()) {
+    foreach(const variable var, fg.arguments()) {
       table_factor *f = manager.checkout_belief(var);
       foreach(const table_factor* tbl, fg.factors(var)) {
         table_factor *f = manager.checkout_variable_to_factor(var,tbl,Reading);
@@ -173,18 +173,18 @@ int main() {
   }
   {
     std::cout << "Short Var Schedule Consistency check: ";
-    std::pair<const finite_variable*,double> p = manager.get_top_variable();
+    std::pair<const variable,double> p = manager.get_top_variable();
     foreach(const table_factor* tbl, fg.factors(p.first)) {
       table_factor *f = manager.checkout_factor_to_variable(tbl,p.first,Writing);
       finite_assignment a_f;
-      a_f[const_cast<finite_variable*>(p.first)] = 0;
+      a_f[const_cast<variable>(p.first)] = 0;
       (*f)(a_f)=1000000;
-      a_f[const_cast<finite_variable*>(p.first)] = 1;
+      a_f[const_cast<variable>(p.first)] = 1;
       (*f)(a_f)=1000000;
       manager.checkin_factor_to_variable(tbl,p.first,f);
     }  
     manager.deactivate(p.first);
-    std::pair<const finite_variable*,double> p2 = manager.get_top_variable();
+    std::pair<const variable,double> p2 = manager.get_top_variable();
     assert(p2.first == p.first);
     manager.deactivate(p2.first);
     
@@ -197,7 +197,7 @@ int main() {
 {
     std::cout << "Short Factor Schedule Consistency check: ";
     std::pair<const table_factor*,double> p = manager.get_top_factor();
-    foreach(const finite_variable* tbl, p.first->arguments()) {
+    foreach(const variable tbl, p.first->arguments()) {
       table_factor *f = manager.checkout_variable_to_factor(tbl,p.first,Writing);
       (*f)(1,1)=100000;
       (*f)(0,0)=100000;

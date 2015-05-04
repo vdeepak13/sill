@@ -34,7 +34,7 @@ namespace sill {
     size_t limit;
 
     //! A map that translates time-t+1 to time-t variables
-    map<variable_type*, variable_type*> advance_var_map;
+    map<variable_type, variable_type> advance_var_map;
     
     // Public member functions
     // =========================================================================
@@ -63,14 +63,14 @@ namespace sill {
     void advance() {
       // Multiply in the transition models in topological order
       // and approximate after each one is incorporated
-      std::vector<process_type*> procs = dbn.topological();
-      for (process_type* p : procs) {
+      std::vector<process_type> procs = dbn.topological();
+      for (process_type p : procs) {
         belief_ *= dbn[p];
         belief_.thin(limit);
       }
 
       // Marginalize out the state variables from the previous time step
-      for (process_type* p : procs) {
+      for (process_type p : procs) {
         belief_.marginalize_out(p->current());
         belief_.thin(limit);
       }
@@ -85,7 +85,7 @@ namespace sill {
       belief_.thin(limit);
     }
 
-    F belief(const set<process_type*>& processes) const {
+    F belief(const set<process_type>& processes) const {
       assert(processes.subset_of(dbn.processes()));
       return belief_.marginal(variables(processes, current_step));
     }

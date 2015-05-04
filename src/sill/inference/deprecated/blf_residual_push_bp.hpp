@@ -261,7 +261,7 @@ namespace sill {
     /**
      * Compute the belief for a vertex
      */
-    belief_type belief(variable_type* variable) {
+    belief_type belief(variable_type variable) {
       return beliefs_[vertex_type(variable)];
     } // end of send_message
 

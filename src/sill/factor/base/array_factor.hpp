@@ -27,7 +27,7 @@ namespace sill {
    * \tparam N the arity of the factor (must be either 1 or 2).
    * \see canonical_array, probability_array
    */
-  template <typename T, size_t N>
+  template <typename T, size_t N, typename Var>
   class array_factor : public factor {
   public:
     static_assert(N == 1 || N == 2, "The arity of factor must be 1 or 2");
@@ -42,7 +42,8 @@ namespace sill {
     typedef T        value_type;
 
     // Domain
-    typedef array_domain<finite_variable*, N> domain_type;
+    typedef array_domain<Var, N> domain_type;
+    typedef finite_assignment<Var> assignment_type;
 
     // Constructors
     //==========================================================================
@@ -119,9 +120,9 @@ namespace sill {
       if (args_ != args || empty()) {
         args_ = args;
         if (N == 1) {
-          param_.resize(x()->size(), 1);
+          param_.resize(x().size(), 1);
         } else {
-          param_.resize(x()->size(), y()->size());
+          param_.resize(x().size(), y().size());
         }
       }
     }
@@ -134,14 +135,14 @@ namespace sill {
       return args_;
     }
 
-    //! Returns the first argument or NULL if the factor is empty or nullary.
-    finite_variable* x() const {
+    //! Returns the first argument or null if the factor is empty or nullary.
+    Var x() const {
       return args_[0];
     }
 
-    //! Returns the second argument or NULL if the factor has <=1 arguments.
-    finite_variable* y() const {
-      return N == 2 ? args_[1] : NULL;
+    //! Returns the second argument or null if the factor has <=1 arguments.
+    Var y() const {
+      return N == 2 ? args_[1] : Var();
     }
 
     //! Returns the number of arguments of this factor.
@@ -200,12 +201,12 @@ namespace sill {
     }
 
     //! Returns the parameter for the given assignment.
-    T& param(const finite_assignment& a) {
+    T& param(const assignment_type& a) {
       return param_(linear_index(a));
     }
 
     //! Returns the parameter for the given assignment.
-    const T& param(const finite_assignment& a) const {
+    const T& param(const assignment_type& a) const {
       return param_(linear_index(a));
     }
 
@@ -226,7 +227,7 @@ namespace sill {
      * Converts a linear index to the corresponding assignment to the
      * factor arguments.
      */
-    void assignment(size_t linear_index, finite_assignment& a) const {
+    void assignment(size_t linear_index, assignment_type& a) const {
       if (N == 1) {
         a[x()] = linear_index;
       } else {
@@ -238,7 +239,7 @@ namespace sill {
     /**
      * Returns the linear index corresponding to the given assignment.
      */
-    size_t linear_index(const finite_assignment& a) const {
+    size_t linear_index(const assignment_type& a) const {
       if (N == 1) {
         return a.at(x());
       } else {
@@ -264,12 +265,12 @@ namespace sill {
      * Substitutes this factor's arguments according to the given map
      * in place.
      */
-    void subst_args(const finite_var_map& var_map) {
-      for (finite_variable*& x : args_) {
-        finite_variable* xn = var_map.at(x);
-        if (!x->type_compatible(xn)) {
+    void subst_args(const std::unordered_map<Var, Var>& var_map) {
+      for (Var& x : args_) {
+        Var xn = var_map.at(x);
+        if (!compatible(x, xn)) {
           throw std::invalid_argument(
-            "subst_args: " + x->str() + " and " + xn->str() + " are not compatible"
+            "subst_args: " + x.str() + " and " + xn.str() + " are not compatible"
           );
         }
         x = xn;
@@ -282,10 +283,10 @@ namespace sill {
      * \throw std::runtime_error if some of the dimensions do not match
      */
     void check_param() const {
-      if (param_.rows() != x()->size()) {
+      if (param_.rows() != x().size()) {
         throw std::runtime_error("Invalid number of rows");
       }
-      if (param_.cols() != (y() ? y()->size() : 1)) {
+      if (param_.cols() != (y() ? y().size() : 1)) {
         throw std::runtime_error("Invalid number of columns");
       }
     }
@@ -323,16 +324,16 @@ namespace sill {
   }; // class array_factor
 
   // Implementations of common factor operations
-  //========================================================================
+  //============================================================================
 
   /**
    * Throws an std::invalid_argument exception if the two factors do not
    * have the same argument vectors.
    * \relates array_factor
    */
-  template <typename T, size_t N>
-  void check_same_arguments(const array_factor<T, N>& f,
-                            const array_factor<T, N>& g) {
+  template <typename T, size_t N, typename Var>
+  void check_same_arguments(const array_factor<T, N, Var>& f,
+                            const array_factor<T, N, Var>& g) {
     if (f.arguments() != g.arguments()) {
       throw std::invalid_argument(
         "Element-wise operations require the two factors to have the same arguments"
@@ -344,8 +345,10 @@ namespace sill {
    * Joins two factors with same arity element-wise.
    * \relates array_factor
    */
-  template <typename Result, typename T, size_t N, typename Op>
-  Result join(const array_factor<T, N>& f, const array_factor<T, N>& g, Op op) {
+  template <typename Result, typename T, size_t N, typename Var, typename Op>
+  Result join(const array_factor<T, N, Var>& f,
+              const array_factor<T, N, Var>& g,
+              Op op) {
     if (f.arguments() == g.arguments()) {
       return Result(f.arguments(), op(f.param(), g.param()));
     }
@@ -359,8 +362,10 @@ namespace sill {
    * Joins a binary and a unary factor.
    * \relates array_factor
    */
-  template <typename Result, typename T, typename Op>
-  Result join(const array_factor<T, 2>& f, const array_factor<T, 1>& g, Op op) {
+  template <typename Result, typename T, typename Var, typename Op>
+  Result join(const array_factor<T, 2, Var>& f,
+              const array_factor<T, 1, Var>& g,
+              Op op) {
     const auto& a = f.param(); // 2D array
     const auto& b = g.param(); // 1D array
     typedef Eigen::Array<T, Eigen::Dynamic, 1> b_type;
@@ -379,8 +384,10 @@ namespace sill {
    * Joins a unary and a binary factor.
    * \relates array_factor
    */
-  template <typename Result, typename T, typename Op>
-  Result join(const array_factor<T, 1>& f, const array_factor<T, 2>& g, Op op) {
+  template <typename Result, typename T, typename Var, typename Op>
+  Result join(const array_factor<T, 1, Var>& f,
+              const array_factor<T, 2, Var>& g,
+              Op op) {
     const auto& a = f.param(); // 1D array
     const auto& b = g.param(); // 2D array
     typedef Eigen::Array<T, Eigen::Dynamic, 1> a_type;
@@ -399,8 +406,10 @@ namespace sill {
    * Joins two factors with the same arity element-wise in-place
    * using a mutating operation.
    */
-  template <typename T, size_t N, typename Op>
-  void join_inplace(array_factor<T, N>& h, const array_factor<T, N>& f, Op op) {
+  template <typename T, size_t N, typename Var, typename Op>
+  void join_inplace(array_factor<T, N, Var>& h,
+                    const array_factor<T, N, Var>& f,
+                    Op op) {
     if (h.arguments() == f.arguments()) {
       op(h.param(), f.param());
     } else if (h.x() == f.y() && h.y() == f.x()) {
@@ -416,8 +425,9 @@ namespace sill {
    * Joins a binary factor with a unary factor in-place
    * using a mutating operation.
    */
-  template <typename T, typename Op>
-  void join_inplace(array_factor<T, 2>& h, const array_factor<T, 1>& f, Op op) {
+  template <typename T, typename Var, typename Op>
+  void join_inplace(array_factor<T, 2, Var>& h,
+                    const array_factor<T, 1, Var>& f, Op op) {
     if (h.x() == f.x()) {
       op(h.param().colwise(), f.param());
     } else if (h.y() == f.x()) {
@@ -436,9 +446,9 @@ namespace sill {
    * 
    * \throws std::invalid_argument if f does not contain the argument of g
    */
-  template <typename Result, typename T>
-  Result expectation(const array_factor<T, 2>& f,
-                     const array_factor<T, 1>& g) {
+  template <typename Result, typename T, typename Var>
+  Result expectation(const array_factor<T, 2, Var>& f,
+                     const array_factor<T, 1, Var>& g) {
     auto a = f.param().matrix(); // matrix
     auto b = g.param().matrix(); // vector
     if (f.y() == g.x()) {
@@ -457,10 +467,10 @@ namespace sill {
    * under the probabilities given by a unary factor g and joins the
    * result into a unary factor h.
    */
-  template <typename T, typename Op>
-  void join_expectation(array_factor<T, 1>& h,
-                        const array_factor<T, 2>& f,
-                        const array_factor<T, 1>& g,
+  template <typename T, typename Var, typename Op>
+  void join_expectation(array_factor<T, 1, Var>& h,
+                        const array_factor<T, 2, Var>& f,
+                        const array_factor<T, 1, Var>& g,
                         Op op) {
     auto a = f.param().matrix(); // matrix
     auto b = g.param().matrix(); // vector
@@ -479,10 +489,10 @@ namespace sill {
    * dimension different from retain and stores the result to the specified
    * unary factor.
    */
-  template <typename T, typename TransOp, typename AggOp>
-  void transform_aggregate(const array_factor<T, 2>& f,
-                           array_domain<finite_variable*, 1> retain,
-                           array_factor<T, 1>& h,
+  template <typename T, typename Var, typename TransOp, typename AggOp>
+  void transform_aggregate(const array_factor<T, 2, Var>& f,
+                           array_domain<Var, 1> retain,
+                           array_factor<T, 1, Var>& h,
                            TransOp trans_op,
                            AggOp agg_op) {
     h.reset({retain});
@@ -502,10 +512,10 @@ namespace sill {
    * different from retain (if any) and stores the result to the specified
    * unary factor.
    */
-  template <typename T, typename AggOp>
-  void aggregate(const array_factor<T, 2>& f,
-                 array_domain<finite_variable*, 1> retain,
-                 array_factor<T, 1>& h,
+  template <typename T, typename Var, typename AggOp>
+  void aggregate(const array_factor<T, 2, Var>& f,
+                 array_domain<Var, 1> retain,
+                 array_factor<T, 1, Var>& h,
                  AggOp agg_op) {
     transform_aggregate(f, retain, h, identity(), agg_op);
   }
@@ -514,9 +524,9 @@ namespace sill {
    * Aggregates the parameter array of a binary factor along dimension
    * different from retain (if any) and returns the result with given type.
    */
-  template <typename Result, typename T, typename AggOp>
-  Result aggregate(const array_factor<T, 2>& f,
-                   array_domain<finite_variable*, 1> retain,
+  template <typename Result, typename T, typename Var, typename AggOp>
+  Result aggregate(const array_factor<T, 2, Var>& f,
+                   array_domain<Var, 1> retain,
                    AggOp agg_op) {
     Result result;
     aggregate(f, retain, result, agg_op);
@@ -529,10 +539,10 @@ namespace sill {
    * excluded, so that the result is exactly representable by
    * a unary factor.
    */
-  template <typename T>
-  void restrict_assign(const array_factor<T, 2>& f,
-                       const finite_assignment& a,
-                       array_factor<T, 1>& result) {
+  template <typename T, typename Var>
+  void restrict_assign(const array_factor<T, 2, Var>& f,
+                       const finite_assignment<Var>& a,
+                       array_factor<T, 1, Var>& result) {
     auto itx = a.find(f.x());
     auto ity = a.find(f.y());
     if (itx == a.end() && ity != a.end()) {
@@ -552,10 +562,10 @@ namespace sill {
    * Restricts a binary factor to an assignment, excluding the variables
    * in the unary factor result, and joins the restriction into result.
    */
-  template <typename T, typename Op>
-  void restrict_join(const array_factor<T, 2>& f,
-                     const finite_assignment& a,
-                     array_factor<T, 1>& result,
+  template <typename T, typename Var, typename Op>
+  void restrict_join(const array_factor<T, 2, Var>& f,
+                     const finite_assignment<Var>& a,
+                     array_factor<T, 1, Var>& result,
                      Op op) {
     auto itx = result.x() != f.x() ? a.find(f.x()) : a.end();
     auto ity = result.x() != f.y() ? a.find(f.y()) : a.end();
@@ -580,9 +590,9 @@ namespace sill {
    * Transforms the parameters of two factors using a binary operation
    * and returns the result. The two factors must have the same domains.
    */
-  template <typename Result, typename T, size_t N, typename Op>
-  Result transform(const array_factor<T, N>& f,
-                   const array_factor<T, N>& g,
+  template <typename Result, typename T, size_t N, typename Var, typename Op>
+  Result transform(const array_factor<T, N, Var>& f,
+                   const array_factor<T, N, Var>& g,
                    Op op) {
     check_same_arguments(f, g);
     Result result(f.arguments());
@@ -594,8 +604,9 @@ namespace sill {
    * Transforms the elements of a single factor using a unary operation
    * and accumulates the result using another operation.
    */
-  template <typename T, size_t N, typename TransOp, typename AccuOp>
-  T transform_accumulate(const array_factor<T, N>& f,
+  template <typename T, size_t N, typename Var,
+            typename TransOp, typename AccuOp>
+  T transform_accumulate(const array_factor<T, N, Var>& f,
                          TransOp trans_op, AccuOp accu_op) {
     T result(0);
     for (const T& x : f) {
@@ -608,9 +619,10 @@ namespace sill {
    * Transforms the parameters of two factors using a binary operation
    * and accumulates the result using another operation.
    */
-  template <typename T, size_t N, typename JoinOp, typename AggOp>
-  T transform_accumulate(const array_factor<T, N>& f,
-                         const array_factor<T, N>& g,
+  template <typename T, size_t N, typename Var,
+            typename JoinOp, typename AggOp>
+  T transform_accumulate(const array_factor<T, N, Var>& f,
+                         const array_factor<T, N, Var>& g,
                          JoinOp join_op,
                          AggOp agg_op) {
     check_same_arguments(f, g);

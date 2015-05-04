@@ -242,8 +242,8 @@ namespace sill {
     /**
      * Computes the Markov graph capturing the dependencies in this model.
      */
-    void markov_graph(undirected_graph<variable_type*>& mg) const {
-      for (variable_type* v : arguments()) {
+    void markov_graph(undirected_graph<variable_type>& mg) const {
+      for (variable_type v : arguments()) {
         mg.add_vertex(v);
       }
       for (size_t v : vertices()) {
@@ -557,7 +557,7 @@ namespace sill {
     template <typename Range>
     void retriangulate(const Range& cliques) {
       // Create a graph with the cliques of this decomposable model.
-      undirected_graph<variable_type*> mg;
+      undirected_graph<variable_type> mg;
       markov_graph(mg);
 
       // Add the new cliques
@@ -833,7 +833,7 @@ namespace sill {
      */
     domain_type restricted_args(const assignment_type& a) const {
       domain_type result;
-      for (variable_type* v : arguments()) {
+      for (variable_type v : arguments()) {
         if (a.count(v)) {
           result.push_back(v);
         }
@@ -846,7 +846,7 @@ namespace sill {
      */
     domain_type intersecting_args(const domain_type& dom) const {
       domain_type result;
-      for (variable_type* v : dom) {
+      for (variable_type v : dom) {
         if (jt_.count(v)) {
           result.push_back(v);
         }
@@ -867,7 +867,7 @@ namespace boost {
   template <typename F>
   struct graph_traits< sill::decomposable<F> >
     : public graph_traits<
-        sill::cluster_graph<typename F::variable_type*, F, F> > { };
+        sill::cluster_graph<typename F::variable_type, F, F> > { };
 
 } // namespace boost
 

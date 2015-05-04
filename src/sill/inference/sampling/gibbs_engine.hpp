@@ -50,7 +50,7 @@ namespace sill {
 
     typedef std::set<factor_type*> factor_set_type;
 
-    typedef std::map<variable_type*, factor_set_type> var2factors_type;
+    typedef std::map<variable_type, factor_set_type> var2factors_type;
 
     ///////////////////////////////////////////////////////////////////////
     // Data members
@@ -101,7 +101,7 @@ namespace sill {
 
       largest_var_cardinality_ = 0;
       foreach(const finite_variable* v, factor_graph_->arguments())
-        largest_var_cardinality_ = std::max((size_t) largest_var_cardinality_, v->size());
+        largest_var_cardinality_ = std::max((size_t) largest_var_cardinality_, v.size());
 
     } // end gibbs_engine
 
@@ -184,7 +184,7 @@ namespace sill {
       typename factor_type::result_type 
         restricted_factor_values[largest_var_cardinality_];
 
-      BOOST_FOREACH(variable_type* var, factor_graph_->arguments()) {
+      BOOST_FOREACH(variable_type var, factor_graph_->arguments()) {
         assert(var->size() <= largest_var_cardinality_);
 
         for(size_t i=0; i<var->size(); i++)
@@ -258,7 +258,7 @@ namespace sill {
         // Construct the conditional assignment to the other variables
         belief_type& blf = pair.second;
         finite_assignment full_asg;
-        foreach(variable_type* var, blf.arguments()) {
+        foreach(variable_type var, blf.arguments()) {
           full_asg[var] = cur_sample_[var];
         }
         typename factor_type::result_type f = blf.v(full_asg);
@@ -270,7 +270,7 @@ namespace sill {
     /**
      * Compute the belief for a vertex
      */
-    belief_type belief(variable_type* variable) {
+    belief_type belief(variable_type variable) {
       belief_type b = beliefs_[vertex_type(variable)];
       b.normalize();
       return b;

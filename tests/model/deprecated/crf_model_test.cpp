@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/crf/crf_X_mapping.hpp>
 #include <sill/model/random.hpp>
 
@@ -30,8 +30,8 @@ int main(int argc, char** argv) {
   decomposable<table_factor> Xmodel;
   crf_model<table_crf_factor> YgivenXmodel;
   size_t n = 5;
-  boost::tuple<finite_var_vector, finite_var_vector,
-               std::map<finite_variable*, copy_ptr<finite_domain> > >
+  boost::tuple<domain, domain,
+               std::map<variable, copy_ptr<finite_domain> > >
     Y_X_Y2Xmap
     (create_random_chain_crf(Xmodel, YgivenXmodel, n, u, random_seed));
   crf_X_mapping<table_crf_factor> X_mapping(Y_X_Y2Xmap.get<2>());
@@ -54,8 +54,8 @@ int main(int argc, char** argv) {
     universe read_u;
     decomposable<table_factor> read_Xmodel;
     crf_model<table_crf_factor> read_YgivenXmodel;
-    finite_var_vector read_Y;
-    finite_var_vector read_X;
+    domain read_Y;
+    domain read_X;
     crf_X_mapping<table_crf_factor> read_X_mapping;
     {
       std::ifstream fin(filepath.c_str());

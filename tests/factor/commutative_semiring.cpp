@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/util/commutative_semiring.hpp>
 #include <sill/factor/table_factor.hpp>
@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_ops) {
   size_t arity = 2;
 
   universe u;
-  finite_var_vector vec = u.new_finite_variables(nvars, arity);
+  domain vec = u.new_finite_variables(nvars, arity);
   finite_domain dom(vec.begin(), vec.end());
   finite_domain var(vec.begin(), vec.begin()+1);
 

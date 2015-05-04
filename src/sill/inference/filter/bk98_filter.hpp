@@ -40,7 +40,7 @@ namespace sill {
     dynamic_bayesian_network<F> dbn;
 
     //! The approximation structure
-    cluster_graph<variable_type*> jt;
+    cluster_graph<variable_type> jt;
 
     //! If true, the clique marginals during advance() are computed individually
     bool individual_marginals;
@@ -49,7 +49,7 @@ namespace sill {
     decomposable<F> belief_;
 
     //! A map that translates time-t+1 to time-t variables
-    std::map<variable_type*, variable_type*> advance_var_map;
+    std::map<variable_type, variable_type> advance_var_map;
     
     // Public functions
     // =========================================================================
@@ -57,7 +57,7 @@ namespace sill {
     //! Creates a filter for the given DBN.
     //! A copy of the DBN is stored inside this filter.
     bk98_filter(const dynamic_bayesian_network<F>& dbn,
-                const cluster_graph<variable_type*>& jt,
+                const cluster_graph<variable_type>& jt,
                 bool individual_marginals)
       : dbn(dbn), jt(jt), individual_marginals(individual_marginals) {
       // the belief is simply the product of all factors at the first time step
@@ -96,7 +96,7 @@ namespace sill {
           ancestors_t1.insert(clique_t1.begin(), clique_t1.end());
           decomposable<F> prior; belief_.marginal(ancestors_t, prior);
           std::vector<F> factors(prior.factors().begin(),prior.factors().end());
-          for (variable_type* v : ancestors_t1) {
+          for (variable_type v : ancestors_t1) {
             factors.push_back(dbn[v]);
           }
           
@@ -117,7 +117,7 @@ namespace sill {
       } else {
         // Form the joint over the two time steps and extract the marginals
         std::list<F> factors;
-        for (process_type* p : dbn.processes()) {
+        for (process_type p : dbn.processes()) {
           factors.push_back(dbn[p]); // should be called dbn.transition(p);
         }
         belief_ *= factors;
@@ -141,7 +141,7 @@ namespace sill {
       belief_ *= likelihood;
     }
 
-    F belief(const std::set<process_type*>& processes) const {
+    F belief(const std::set<process_type>& processes) const {
       assert(is_subset(processes, dbn.processes()));
       return belief_.marginal(variables(processes, current_step));
     }
@@ -151,7 +151,7 @@ namespace sill {
       return belief_.marginal(variables);
     }
 
-    F belief(variable_type* v) const {
+    F belief(variable_type v) const {
       return belief(make_domain(v));
     }
 

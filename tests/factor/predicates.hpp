@@ -4,7 +4,6 @@
 #include <fstream>
 #include <cstdio>
 
-#include <sill/base/finite_variable.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 
 #include "../predicates.hpp"
@@ -59,10 +58,10 @@ are_close(const F& a, const F& b, typename F::result_type eps) {
   }
 }
 
-template <typename T>
+template <typename T, typename Var>
 boost::test_tools::predicate_result
-are_close(const sill::canonical_gaussian<T>& a,
-          const sill::canonical_gaussian<T>& b,
+are_close(const sill::canonical_gaussian<T, Var>& a,
+          const sill::canonical_gaussian<T, Var>& b,
           T eps) {
   T multa = a.log_multiplier();
   T multb = b.log_multiplier();

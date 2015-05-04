@@ -7,7 +7,7 @@
 #include <boost/array.hpp>
 #include <boost/random/mersenne_twister.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/table_factor.hpp>
 #include <sill/factor/random/uniform_factor_generator.hpp>
 #include <sill/model/factor_graph_model.hpp>

@@ -5,6 +5,7 @@
 
 #include <boost/functional/hash.hpp>
 
+#include <functional>
 #include <utility>
 
 namespace sill {

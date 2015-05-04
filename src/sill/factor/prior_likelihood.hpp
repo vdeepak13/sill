@@ -162,7 +162,7 @@ namespace sill
 
     //! implements Factor::subst_args
     prior_likelihood&
-    subst_args(const std::map<variable_type*, variable_type*>& map) {
+    subst_args(const std::map<variable_type, variable_type>& map) {
       prior_.subst_args(map);
       likelihood_.subst_args(map);
       return *this;

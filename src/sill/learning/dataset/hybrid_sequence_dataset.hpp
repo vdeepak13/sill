@@ -3,8 +3,7 @@
 
 #include <sill/argument/hybrid_assignment.hpp>
 #include <sill/argument/hybrid_domain.hpp>
-#include <sill/base/discrete_process.hpp>
-#include <sill/base/variable.hpp>
+#include <sill/argument/process.hpp>
 #include <sill/datastructure/hybrid_matrix.hpp>
 #include <sill/math/eigen/dynamic.hpp>
 #include <sill/math/eigen/matrix_index.hpp>
@@ -19,9 +18,9 @@ namespace sill {
    * discrete processes.
    * \tparam T the type representing the values and weights
    */
-  template <typename T>
+  template <typename T, typename Var>
   struct hybrid_sequence_traits {
-    typedef discrete_process<variable>  process_type;
+    typedef process<size_t, Var>        process_type;
     typedef variable                    variable_type;
     typedef hybrid_domain<process_type> proc_domain_type;
     typedef hybrid_domain<...>          var_domain_type;
@@ -31,8 +30,8 @@ namespace sill {
     typedef T                           weight_type;
     typedef std::pair<hybrid_matrix<T>, T> proc_value_type;
     typedef std::pair<hybrid_vector<T>, T> var_value_type;
-    typedef std::unordered_map<process_type*, size_t>  column_map_type;
-    typedef std::unordered_map<variable_type*, size_t> offset_map_type;
+    typedef std::unordered_map<process_type, size_t>  column_map_type;
+    typedef std::unordered_map<variable_type, size_t> offset_map_type;
     struct index_type {
       matrix_index finite;
       matrix_index vector;
@@ -41,12 +40,12 @@ namespace sill {
     //! Computes the column indices for the given domain.
     static void initialize(const proc_domain_type& args, col_map_type& cols) {
       size_t fcol = 0;
-      for (process_type* proc : args.finite()) {
+      for (process_type proc : args.finite()) {
         cols.emplace(proc, fcol);
         ++fcol;
       }
       size_t vcol = 0;
-      for (process_type* proc : arg.vector()) {
+      for (process_type proc : arg.vector()) {
         cols.emplace(proc, vcol);
         vol += proc->size();
       }
@@ -56,10 +55,10 @@ namespace sill {
     static index_type
     index(const proc_domain_type& procs, const column_map_type& columns) {
       index_type index;
-      for (process_type* proc : procs.finite()) {
+      for (process_type proc : procs.finite()) {
         index.finite.append(columns.at(proc), 1);
       }
-      for (process_type* proc : procs.vector()) {
+      for (process_type proc : procs.vector()) {
         index.vector.append(columns.at(proc), proc->size());
       }
       return index;
@@ -94,13 +93,13 @@ namespace sill {
       assignment_type& a = to.first;
       a.clear();
       a.reserve(args.size() * nsteps);
-      for (process_type* proc : procs.finite()) {
+      for (process_type proc : procs.finite()) {
         size_t row = colmap.at(proc);
         for (size_t t = 0; t < nsteps; ++t) {
           a[proc->at(t)] = from.first.finite()(row, t);
         }
       }
-      for (process_type* proc : procs.finite()) {
+      for (process_type proc : procs.finite()) {
         size_t row = colmap.at(proc);
         for (size_t t = 0; t < nsteps; ++t) {
           a[proc->at(t)] = from.first.vector().block(row, t, proc->size(), 1);
@@ -127,9 +126,9 @@ namespace sill {
    * \tparam T the type representing the weights
    * \see Dataset
    */
-  template <typename T>
+  template <typename T, typename Var>
   using hybrid_sequence_dataset =
-    basic_sequence_dataset<hybrid_sequence_traits<T> >;
+    basic_sequence_dataset<hybrid_sequence_traits<T, Var> >;
   
 } // namespace sill
 

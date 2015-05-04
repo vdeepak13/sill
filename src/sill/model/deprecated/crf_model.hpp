@@ -899,7 +899,7 @@ namespace sill {
     double
     log_pseudolikelihood(const record_type& r, double base = exp(1.)) const {
       double pl = 0;
-      foreach(output_variable_type* y, output_arguments())
+      foreach(output_variable_type y, output_arguments())
         pl += log_pseudolikelihood_component(y, r, base);
       return pl;
     }
@@ -908,7 +908,7 @@ namespace sill {
     double
     log_pseudolikelihood(const assignment_type& a, double base = exp(1.)) const{
       double pl = 0;
-      foreach(output_variable_type* y, output_arguments())
+      foreach(output_variable_type y, output_arguments())
         pl += log_pseudolikelihood_component(y, a, base);
       return pl;
     }
@@ -925,7 +925,7 @@ namespace sill {
     //! Computes the log pseudolikelihood component for Yi:
     //!  log P(Yi | neighbors of Yi in Y,X)
     double
-    log_pseudolikelihood_component(output_variable_type* Yi,
+    log_pseudolikelihood_component(output_variable_type Yi,
                                    const record_type& r,
                                    double base = exp(1.)) const {
       typename crf_factor::output_factor_type f(make_domain(Yi), 1);
@@ -945,7 +945,7 @@ namespace sill {
     //! Computes the log pseudolikelihood component for Yi:
     //!  log P(Yi | neighbors of Yi in Y,X)
     double
-    log_pseudolikelihood_component(output_variable_type* Yi,
+    log_pseudolikelihood_component(output_variable_type Yi,
                                    const assignment_type& a,
                                    double base = exp(1.)) const {
       typename crf_factor::output_factor_type f(make_domain(Yi), 1);
@@ -1044,7 +1044,7 @@ namespace sill {
      */
     void simplify_unary(const output_domain_type& vars) {
       std::set<vertex> removed_vertices;
-      foreach(output_variable_type* y, vars) {
+      foreach(output_variable_type y, vars) {
         foreach(const vertex& u, neighbors(y)) {
           if (output_arguments(u).size() == 1 &&
               output_arguments(u).count(y)) {

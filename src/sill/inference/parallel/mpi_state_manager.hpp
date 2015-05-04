@@ -181,7 +181,7 @@ namespace sill {
                      std::map<vertex_type, 
                      message_data_type> > message_map_type;
     
-    typedef std::map<const variable_type*, belief_type> belief_map_type;
+    typedef std::map<const variable_type, belief_type> belief_map_type;
     
 
 
@@ -235,8 +235,8 @@ namespace sill {
     std::vector<std::set<vertex_type> > owner2vertex_;
     
     // maps variables to a globally unique id and vice versa
-    std::map<variable_type*, uint32_t> var2id_;
-    std::vector<variable_type*> id2var_;    
+    std::map<variable_type, uint32_t> var2id_;
+    std::vector<variable_type> id2var_;    
     
     mpi_post_office &po_;
     // protocol handler 
@@ -434,7 +434,7 @@ namespace sill {
      * Returns all the unary factors associated with a particular
      * variable. If none is associated this will return a NULL pointer
      */
-    const factor_type* node_factor(variable_type* v) const {
+    const factor_type* node_factor(variable_type v) const {
       return model_->node_factor(v);
     }
 
@@ -626,7 +626,7 @@ namespace sill {
     }
   
     //! Gets the variable residual  
-    double residual(const variable_type* v) {
+    double residual(const variable_type v) {
       return residual(vertex_type(v));
     }
   

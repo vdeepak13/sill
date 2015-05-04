@@ -640,7 +640,7 @@ namespace sill {
         : v1_(v1), v2_(v2), forward_(true), property_(property) { }
       edge_type(Vertex2 v2, Vertex1 v1, EdgeProperty* property)
         : v1_(v1), v2_(v2), forward_(false), property_(property) { }
-      operator bool() const {
+      explicit operator bool() const {
         return v1_ != Vertex1() || v2_ != Vertex2();
       }
       Vertex1 v1() const {

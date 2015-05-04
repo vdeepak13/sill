@@ -29,17 +29,17 @@ namespace sill {
    * \ingroup factor_types
    * \see Factor
    */
-  template <typename T>
+  template <typename T, typename Var>
   class softmax : public factor {
   public:
     // Public types
     //==========================================================================
     // Factor member types
-    typedef T                    real_type;
-    typedef T                    result_type;
-    typedef variable             variable_type;
-    typedef hybrid_domain        domain_type;
-    typedef hybrid_assignment<T> assignment_type;
+    typedef T                         real_type;
+    typedef T                         result_type;
+    typedef Var                       variable_type;
+    typedef hybrid_domain<Var>        domain_type;
+    typedef hybrid_assignment<T, Var> assignment_type;
 
     // ParametricFactor member types
     typedef softmax_param<T> param_type;
@@ -75,7 +75,7 @@ namespace sill {
      * Constructs a factor with the given label variable and feature arguments.
      * Allocates the parameters but does not initialize their values.
      */
-    softmax(finite_variable* head, const domain<vector_variable*>& tail) {
+    softmax(Var head, const basic_domain<Var>& tail) {
       reset(head, tail);
     }
 
@@ -115,7 +115,7 @@ namespace sill {
       if (args_ != args) {
         assert(args.finite().size() == 1);
         args_ = args;
-        param_.resize(args.finite()[0]->size(), vector_size(args.vector()));
+        param_.resize(args.finite()[0].size(), vector_size(args.vector()));
       }
     }
 
@@ -123,11 +123,11 @@ namespace sill {
      * Resets the content of this factor to the given finite and vector
      * arguments. The parameter values may become invalidated.
      */
-    void reset(finite_variable* head, const domain<vector_variable*>& tail) {
+    void reset(Var head, const basic_domain<Var>& tail) {
       assert(head);
       args_.finite().assign(1, head);
       args_.vector() = tail;
-      param_.resize(head->size(), vector_size(tail));
+      param_.resize(head.size(), vector_size(tail));
     }
 
     // Accessors and comparison operators
@@ -138,13 +138,13 @@ namespace sill {
       return args_;
     }
 
-    //! Returns the label variable or NULL if this factor is empty.
-    finite_variable* head() const {
-      return args_.finite().empty() ? NULL : args_.finite()[0];
+    //! Returns the label variable or null if this factor is empty.
+    Var head() const {
+      return args_.finite().empty() ? Var() : args_.finite()[0];
     }
 
     //! Returns the feature arguments of this factor.
-    const domain<vector_variable*>& tail() const {
+    const basic_domain<Var>& tail() const {
       return args_.vector();
     }
 
@@ -261,18 +261,18 @@ namespace sill {
      * Extracts a dense feature vector from an assignment. All the tail
      * variables must be present in the assignment.
      */
-    void extract_features(const vector_assignment<T>& a,
+    void extract_features(const vector_assignment<T, Var>& a,
                           vec_type& result) const {
       result.resize(features());
       size_t row = 0;
-      for (vector_variable* v : tail()) {
+      for (Var v : tail()) {
         auto it = a.find(v);
         if (it != a.end()) {
-          result.segment(row, v->size()) = it->second;
-          row += v->size();
+          result.segment(row, v.size()) = it->second;
+          row += v.size();
         } else {
           throw std::invalid_argument(
-            "The assignment does not contain the variable " + v->str()
+            "The assignment does not contain the variable " + v.str()
           );
         }
       }
@@ -288,7 +288,7 @@ namespace sill {
       result.clear();
       result.reserve(vector_size(tail()));
       size_t id = 0;
-      for (vector_variable* v : tail()) {
+      for (Var v : tail()) {
         auto it = a.find(v);
         if (it != a.end()) {
           for (size_t i = 0; i < v->size(); ++i) {
@@ -310,7 +310,7 @@ namespace sill {
           throw std::runtime_error("The factor is empty but the parameters are not!");
         }
       } else {
-        if (param_.labels() != head()->size()) {
+        if (param_.labels() != head().size()) {
           throw std::runtime_error("Invalid number of labels");
         }
         if (param_.features() != vector_size(tail())) {
@@ -334,9 +334,9 @@ namespace sill {
      * Conditions the factor on the given features in the factor's internal
      * ordering of tail variables.
      */
-    probability_array<T, 1>
+    probability_array<T, 1, Var>
     condition(const vec_type& index) const {
-      return probability_array<T, 1>({head()}, param_(index));
+      return probability_array<T, 1, Var>({head()}, param_(index));
     }
 
 #if 0
@@ -345,16 +345,16 @@ namespace sill {
      * \param strict if true, requires that all the tail arguments are present
      *        in the assignment.
      */
-    probability_array<T, 1>
-    condition(const vector_assignment<T>& a, bool strict = true) const {
+    probability_array<T, 1, Var>
+    condition(const vector_assignment<T, Var>& a, bool strict = true) const {
       if (strict) {
         vec_type features;
         extract_features(a, features);
-        return probability_array<T, 1>({head()}, param_(features));
+        return probability_array<T, 1, Var>({head()}, param_(features));
       } else {
         sparse_index<T> features;
         extract_features(a, features);
-        return probability_array<T, 1>({head()}, param_(features));
+        return probability_array<T, 1, Var>({head()}, param_(features));
       }
     }
 
@@ -413,8 +413,8 @@ namespace sill {
    * Prints a human-readable representation of the CPD to a stream.
    * \relates softmax
    */
-  template <typename T>
-  std::ostream& operator<<(std::ostream& out, const softmax<T>& f) {
+  template <typename T, typename Var>
+  std::ostream& operator<<(std::ostream& out, const softmax<T, Var>& f) {
     out << "softmax(" << f.head() << "|" << f.tail() << ")" << std::endl
         << f.param();
     return out;
@@ -430,11 +430,11 @@ namespace sill {
    *
    * \tparam T the real type representing the parameters of softmax
    */
-  template <typename T>
-  class factor_mle<softmax<T> > {
+  template <typename T, typename Var>
+  class factor_mle<softmax<T, Var> > {
   public:
     //! The domain type of the factor.
-    typedef hybrid_domain domain_type;
+    typedef hybrid_domain<Var> domain_type;
 
     //! The maximum likelihoo estimator of factor parameters.
     typedef softmax_mle<T> mle_type;
@@ -454,8 +454,9 @@ namespace sill {
      * p(f | v), where f and v are components of a hybrid domain.
      */
     template <typename Dataset>
-    softmax<T> operator()(const Dataset& ds, const hybrid_domain& args) const {
-      softmax<T> f(args);
+    softmax<T, Var>
+    operator()(const Dataset& ds, const hybrid_domain<Var>& args) const {
+      softmax<T, Var> f(args);
       mle_.estimate(ds(args), f.param());
       return f;
     }
@@ -465,10 +466,10 @@ namespace sill {
      * p(finite | vector).
      */
     template <typename Dataset>
-    softmax<T> operator()(const Dataset& ds,
-                          finite_variable* head,
-                          const domain<vector_variable*>& tail) const {
-      softmax<T> f(head, tail);
+    softmax<T, Var>
+    operator()(const Dataset& ds,
+               Var head, const basic_domain<Var>& tail) const {
+      softmax<T, Var> f(head, tail);
       mle_.estimate(ds(f.arguments()), f.param());
       return f;
     }

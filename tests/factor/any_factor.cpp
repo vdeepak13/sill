@@ -38,7 +38,7 @@ int main(int argc, char** argv)
   size_t k = (m * n) / 2;
 
   universe u;
-  finite_var_vector v = u.new_finite_variables(k, 2);
+  domain v = u.new_finite_variables(k, 2);
   std::vector< tablef > factors(n);
 
   // Generate n random table factors, each with <=m variables

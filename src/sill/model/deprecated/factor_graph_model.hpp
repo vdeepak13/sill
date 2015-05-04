@@ -47,12 +47,12 @@ namespace sill {
     class vertex_type {
     private:
       const factor_type* factor_;
-      variable_type* variable_;
+      variable_type variable_;
       size_t id_;
 
       vertex_type(const factor_type* f, size_t id) :
                                         factor_(f), variable_(NULL), id_(id) { }
-      vertex_type(variable_type* v, size_t id) :
+      vertex_type(variable_type v, size_t id) :
                                         factor_(NULL), variable_(v), id_(id) { }
 
       friend class factor_graph_model<F>;
@@ -99,7 +99,7 @@ namespace sill {
     std::list<factor_type> factors_;
 
     std::map<const factor_type*, size_t> factor2id_;
-    std::map<variable_type*, size_t> variable2id_;
+    std::map<variable_type, size_t> variable2id_;
     
     //! A map to the neighbors of a vertex
     neighbors_map_type neighbors_;
@@ -200,7 +200,7 @@ public:
       size_t factorid = add_factor_vertex_and_neighbors(&factors_.back());
 
       // Add the arguments to the domain of this graphical model
-      foreach (variable_type* v, factor.arguments()) {
+      foreach (variable_type v, factor.arguments()) {
         args_.insert(v);
       }
 //      refill_vertex2id();
@@ -210,7 +210,7 @@ public:
 
     class VariablePtrComparator{
     public:
-      bool operator()(variable_type* v1, variable_type* v2) const {
+      bool operator()(variable_type v1, variable_type v2) const {
         return std::string(*v1) < std::string(*v2);
       }
     };
@@ -234,7 +234,7 @@ public:
 
        // this is essentially the neighbor map, but we need sets for
        // efficient intersections
-       std::map<variable_type*, std::set<factor_type*> > container_map;
+       std::map<variable_type, std::set<factor_type*> > container_map;
 
        // Here we populate the new container_map.  TODO: This can be
        // done more efficiently by looping over the variables and then
@@ -245,7 +245,7 @@ public:
        foreach(factor_type& factor, factors_) {
          factorpermute.push_back(&factor);
          factor.normalize();
-         foreach(variable_type* v, factor.arguments()) {
+         foreach(variable_type v, factor.arguments()) {
            container_map[v].insert(&factor);
          }
        }
@@ -265,7 +265,7 @@ public:
          typedef typename std::set<factor_type*>::iterator iterator;
          std::vector<iterator> candidate_iterators;
          std::vector<iterator> candidate_ends;
-         foreach(variable_type* v, factor.arguments()){
+         foreach(variable_type v, factor.arguments()){
            candidate_iterators.push_back(container_map[v].begin());
            candidate_ends.push_back(container_map[v].end());
          }
@@ -317,7 +317,7 @@ public:
            (*intersection_result) *= factor;
            intersection_result->normalize();
            redundant_factors.insert(&factor);
-           foreach(variable_type* vi, factor.arguments())
+           foreach(variable_type vi, factor.arguments())
              container_map[vi].erase(&factor);
          }
 
@@ -369,8 +369,8 @@ public:
 
       // this is essentially the neighbor map, but we need sets for
       // efficient intersections
-      std::map<variable_type*, std::set<int> > container_map;
-      std::map<factor_type*, std::vector<variable_type*> > 
+      std::map<variable_type, std::set<int> > container_map;
+      std::map<factor_type*, std::vector<variable_type> > 
         factor_args_ordering;
       std::map<factor_type*, int > factornum;
       std::vector<factor_type*> num2factor;
@@ -384,15 +384,15 @@ public:
         factornum[&factor] = count;
         num2factor.push_back(&factor);
         count++;
-        std::vector<variable_type*> ordering;
-        foreach(variable_type* v, factor.arguments()){ 
+        std::vector<variable_type> ordering;
+        foreach(variable_type v, factor.arguments()){ 
           ordering.push_back(v);
         }
         std::sort(ordering.begin(),ordering.end(),
                   VariablePtrComparator());
         factor_args_ordering[&factor] = ordering;
 
-        foreach(variable_type* v, factor_args_ordering[&factor]) {
+        foreach(variable_type v, factor_args_ordering[&factor]) {
           container_map[v].insert(factornum[&factor]);
         }
       }
@@ -409,7 +409,7 @@ public:
         typedef typename std::set<int>::iterator iterator;
         std::vector<iterator> candidate_iterators;
         std::vector<iterator> candidate_ends;
-        foreach(variable_type* v, factor_args_ordering[&factor]){
+        foreach(variable_type v, factor_args_ordering[&factor]){
           candidate_iterators.push_back(container_map[v].begin());
           candidate_ends.push_back(container_map[v].end());
         }
@@ -465,7 +465,7 @@ public:
           num2factor[intersection_result]->normalize();
           redundant_factors.insert(&factor);
 
-          foreach(variable_type* vi, factor_args_ordering[&factor]) {
+          foreach(variable_type vi, factor_args_ordering[&factor]) {
             container_map[vi].erase(factornum[&factor]);
           }
         }
@@ -610,7 +610,7 @@ public:
         return false;
 
       //make sure that the vertices contain every variable exacty once
-      foreach(variable_type* v, args_) {
+      foreach(variable_type v, args_) {
         if(!check_unique_vertex(v)) {
           return false;
         }
@@ -623,8 +623,8 @@ public:
         }
       }
 
-      std::map<variable_type*, size_t> variable_neighbors_num;
-      foreach(variable_type* v, args_) {
+      std::map<variable_type, size_t> variable_neighbors_num;
+      foreach(variable_type v, args_) {
         variable_neighbors_num[v]=0;
       }
 
@@ -635,7 +635,7 @@ public:
           return false;
         }
 
-        foreach(variable_type* v, f.arguments()){
+        foreach(variable_type v, f.arguments()){
           variable_neighbors_num[v]++;
           if(std::find(neighbors_[factor2id(&f)].begin(),
                        neighbors_[factor2id(&f)].end(),
@@ -647,7 +647,7 @@ public:
 
       //make sure every variable has its factors as neighbors
       //and nothing else
-      foreach(variable_type* v, args_){
+      foreach(variable_type v, args_){
         if(neighbors_[variable2id(v)].size() != variable_neighbors_num[v]) {
           return false;
         }
@@ -677,7 +677,7 @@ public:
       vertices_.clear();
       factor2id_.clear();
       variable2id_.clear();
-      std::set<variable_type*> asgkeys = keys(asg);
+      std::set<variable_type> asgkeys = keys(asg);
       args_ = set_difference(args_, asgkeys);
       foreach(factor_type& f, factors_) {
         if (is_subset(f.arguments(), asgkeys)) continue;
@@ -693,7 +693,7 @@ public:
       double result = 0;
       foreach(const F& factor, factors_) {
         assignment_type localassg;
-        foreach(variable_type* v, factor.arguments()) {
+        foreach(variable_type v, factor.arguments()) {
           localassg[v] = safe_get(a, v);
         }
         result += factor.logv(localassg);
@@ -728,9 +728,9 @@ public:
 //      * in this model
 //      * \todo implement this
 //      */
-//      sill::markov_graph<variable_type*> markov_graph() {
+//      sill::markov_graph<variable_type> markov_graph() {
 //       assert(false); // TODO
-//       return sill::markov_graph<variable_type*>();
+//       return sill::markov_graph<variable_type>();
 //     }
 
 //     /**
@@ -791,7 +791,7 @@ public:
         } else {
           const factor_type& factor(u.factor());
           domain_type args(factor.arguments());
-          foreach(variable_type* var, args) {
+          foreach(variable_type var, args) {
             out << ", " << var->size();
           }
           out << std::endl;
@@ -811,7 +811,7 @@ public:
       return safe_get(factor2id_, f);
     }
     
-    size_t variable2id(variable_type* f) const {
+    size_t variable2id(variable_type f) const {
       return safe_get(variable2id_, f);
     }
 
@@ -819,7 +819,7 @@ public:
       return vertices_[factor2id(f)];
     }
 
-    vertex_type to_vertex(variable_type* v) const {
+    vertex_type to_vertex(variable_type v) const {
       return vertices_[variable2id(v)];
     }
     
@@ -858,7 +858,7 @@ public:
       for (size_t i = 0; i< vertices_.size(); ++i) {
         vertices_[i].id_ = i;
         if (vertices_[i].is_factor()) {
-          foreach(variable_type* v, vertices_[i].factor().arguments()) {
+          foreach(variable_type v, vertices_[i].factor().arguments()) {
             neighbors_[i].push_back(variable2id_[v]);
             neighbors_[variable2id_[v]].push_back(i);
           }
@@ -901,7 +901,7 @@ public:
       vertices_.push_back(vertex_type(f, vertices_.size()));
       factor2id_[f] = factorid;
       if (neighbors_.size() < vertices_.size()) neighbors_.resize(vertices_.size());
-      foreach(variable_type* v, f->arguments()) {
+      foreach(variable_type v, f->arguments()) {
         if(variable2id_.find(v) == variable2id_.end()) {
           variable2id_[v] = vertices_.size();
           vertices_.push_back( vertex_type(v, vertices_.size()) );
@@ -952,7 +952,7 @@ public:
     vertex_type v_factor = v1;
     const F& factor = v_factor.factor();
     vertex_type v_variable = v2;
-    variable_type* variable = &(v_variable.variable());
+    variable_type variable = &(v_variable.variable());
 
     double mx = 0;
     foreach(vertex_type u, fg.neighbors(v_factor)) {

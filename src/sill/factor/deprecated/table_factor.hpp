@@ -673,7 +673,7 @@ namespace sill {
       // This should not really happen, so just return whatever.
       finite_assignment a;
       foreach(finite_variable* v, arg_seq) {
-        a[v] = v->size() - 1;
+        a[v] = v.size() - 1;
       }
       return a;
     }
@@ -783,7 +783,7 @@ namespace sill {
     //! mooij and kappen upper bound on message derivative between variables
     //! x and y
     //! \todo Stano: can we document this function more? Does it belong here?
-    double bp_msg_derivative_ub(variable_type* x, variable_type* y) const;
+    double bp_msg_derivative_ub(variable_type x, variable_type y) const;
 
     /**
      * Unrolls the factor to be over a single variable new_v (created within
@@ -1195,7 +1195,7 @@ namespace sill {
    */
   inline table_factor
   make_ising_factor(finite_variable* u, finite_variable* v, double alpha) {
-    assert(u->size() == 2 && v->size() == 2);
+    assert(u->size() == 2 && v.size() == 2);
     double a = std::exp(+alpha);
     double b = std::exp(-alpha);
     boost::array<double, 4> values = { a, b, b, a };
@@ -1211,7 +1211,7 @@ namespace sill {
   make_associative_factor(const finite_domain& args,
                           const std::vector<double>& values) {
     foreach(finite_variable* v, args) {
-      assert(v->size() == values.size());
+      assert(v.size() == values.size());
     }
     table_factor f(args, 1.0);
     std::vector<size_t> index;

@@ -3,7 +3,7 @@
 
 #include <sill/learning/dataset/sliding_view.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset/finite_sequence_dataset.hpp>
 #include <sill/learning/dataset/vector_sequence_dataset.hpp>
 #include <sill/learning/dataset/slice_view.hpp>
@@ -20,32 +20,32 @@ namespace sill {
 using namespace sill;
 
 BOOST_TEST_DONT_PRINT_LOG_VALUE(finite_index);
-BOOST_TEST_DONT_PRINT_LOG_VALUE(finite_assignment);
+BOOST_TEST_DONT_PRINT_LOG_VALUE(finite_assignment<>);
 BOOST_TEST_DONT_PRINT_LOG_VALUE(vector_assignment<>);
 
 // Finite fixed views
 //============================================================================
 
 struct finite_fixture {
-  finite_discrete_process* a;
-  finite_discrete_process* b;
-  finite_variable* a0;
-  finite_variable* a1;
-  finite_variable* b0;
-  finite_variable* b1;
-  finite_variable* b2;
+  universe u;
+  dprocess a;
+  dprocess b;
+  variable a0;
+  variable a1;
+  variable b0;
+  variable b1;
+  variable b2;
   finite_sequence_dataset<> ds;
   typedef sliding_view<finite_sequence_dataset<> > view_type;
-  typedef domain<finite_variable*> domain_type;
 
   finite_fixture() {
-    a = new finite_discrete_process("a", 5);
-    b = new finite_discrete_process("b", 5);
-    a0 = a->at(0);
-    a1 = a->at(1);
-    b0 = b->at(0);
-    b1 = b->at(1);
-    b2 = b->at(2);
+    a = u.new_finite_dprocess("a", 5);
+    b = u.new_finite_dprocess("b", 5);
+    a0 = a(0);
+    a1 = a(1);
+    b0 = b(0);
+    b1 = b(1);
+    b2 = b(2);
 
     ds.initialize({a, b});
 
@@ -70,7 +70,7 @@ struct finite_fixture {
 BOOST_FIXTURE_TEST_CASE(test_accessors, finite_fixture) {
   // view over a single step
   view_type view1(&ds, 1);
-  domain_type args = { a->at(0), b->at(0) };
+  domain args = { a(0), b(0) };
   BOOST_CHECK_EQUAL(view1.arguments(), args);
   BOOST_CHECK_EQUAL(view1.arity(), 2);
   BOOST_CHECK_EQUAL(view1.size(), 6);
@@ -79,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE(test_accessors, finite_fixture) {
 
   // view over two steps
   view_type view2(&ds, 2);
-  args.insert(args.end(), { a->at(1), b->at(1) });
+  args.insert(args.end(), { a(1), b(1) });
   BOOST_CHECK_EQUAL(view2.arguments(), args);
   BOOST_CHECK_EQUAL(view2.arity(), 4);
   BOOST_CHECK_EQUAL(view2.size(), 3);
@@ -87,7 +87,7 @@ BOOST_FIXTURE_TEST_CASE(test_accessors, finite_fixture) {
 
   // view over three steps
   view_type view3(&ds, 3);
-  args.insert(args.end(), { a->at(2), b->at(2) });
+  args.insert(args.end(), { a(2), b(2) });
   BOOST_CHECK_EQUAL(view3.arguments(), args);
   BOOST_CHECK_EQUAL(view3.arity(), 6);
   BOOST_CHECK_EQUAL(view3.size(), 1);
@@ -95,7 +95,7 @@ BOOST_FIXTURE_TEST_CASE(test_accessors, finite_fixture) {
 
   // view over four steps
   view_type view4(&ds, 4);
-  args.insert(args.end(), { a->at(3), b->at(3) });
+  args.insert(args.end(), { a(3), b(3) });
   BOOST_CHECK_EQUAL(view4.arguments(), args);
   BOOST_CHECK_EQUAL(view4.arity(), 8);
   BOOST_CHECK_EQUAL(view4.size(), 0);
@@ -150,21 +150,21 @@ BOOST_FIXTURE_TEST_CASE(test_assignment_iterator, finite_fixture) {
   std::tie(it, end) = view2.assignments();
   
   BOOST_CHECK_EQUAL(it->first,
-                    finite_assignment({{a0, 0}, {b0, 3}, {a1, 1}, {b1, 4}}));
+                    finite_assignment<>({{a0, 0}, {b0, 3}, {a1, 1}, {b1, 4}}));
   BOOST_CHECK_EQUAL(it->second, 1.0);
   BOOST_CHECK(!it.end());
   BOOST_CHECK(it != end);
   ++it;
 
   BOOST_CHECK_EQUAL(it->first,
-                    finite_assignment({{a0, 1}, {b0, 4}, {a1, 2}, {b1, 1}}));
+                    finite_assignment<>({{a0, 1}, {b0, 4}, {a1, 2}, {b1, 1}}));
   BOOST_CHECK_EQUAL(it->second, 1.0);
   BOOST_CHECK(!it.end());
   BOOST_CHECK(it != end);
   ++it;
 
   BOOST_CHECK_EQUAL(it->first,
-                    finite_assignment({{a0, 2}, {b0, 1}, {a1, 3}, {b1, 0}}));
+                    finite_assignment<>({{a0, 2}, {b0, 1}, {a1, 3}, {b1, 0}}));
   BOOST_CHECK_EQUAL(it->second, 3.0);
   BOOST_CHECK(!it.end());
   BOOST_CHECK(it != end);
@@ -178,7 +178,7 @@ BOOST_FIXTURE_TEST_CASE(test_assignment_iterator, finite_fixture) {
   std::tie(it, end) = view3.assignments({ a0, b1, b2 });
 
   BOOST_CHECK_EQUAL(it->first,
-                    finite_assignment({{a0, 0}, {b1, 4}, {b2, 1}}));
+                    finite_assignment<>({{a0, 0}, {b1, 4}, {b2, 1}}));
   BOOST_CHECK_EQUAL(it->second, 1.0);
   BOOST_CHECK(!it.end());
   BOOST_CHECK(it != end);
@@ -198,16 +198,16 @@ BOOST_FIXTURE_TEST_CASE(test_finite_access, finite_fixture) {
   BOOST_CHECK_EQUAL(view1[2].second, 1.0);
   BOOST_CHECK_EQUAL(view1[5].second, 3.0);
   BOOST_CHECK_EQUAL(view1.assignment(5).first,
-                    finite_assignment({{a0, 3}, {b0, 0}}));
+                    finite_assignment<>({{a0, 3}, {b0, 0}}));
   BOOST_CHECK_EQUAL(view1.assignment(5).second, 3.0);
 
   // view over two steps, access a subset of variables
   view_type view2(&ds, 2);
-  domain_type dom = {a1, b0};
+  domain dom = {a1, b0};
   BOOST_CHECK_EQUAL(view2(1, dom).first, finite_index({2, 4}));
   BOOST_CHECK_EQUAL(view2(1, dom).second, 1.0);
   BOOST_CHECK_EQUAL(view2.assignment(1, dom).first,
-                    finite_assignment({{a1, 2}, {b0, 4}}));
+                    finite_assignment<>({{a1, 2}, {b0, 4}}));
   BOOST_CHECK_EQUAL(view2.assignment(1, dom).second, 1.0);
 }
 
@@ -215,21 +215,21 @@ BOOST_FIXTURE_TEST_CASE(test_finite_access, finite_fixture) {
 //============================================================================
 
 struct vector_fixture {
-  vector_discrete_process* a;
-  vector_discrete_process* b;
-  vector_variable* a0;
-  vector_variable* a1;
-  vector_variable* b0;
+  universe u;
+  dprocess a;
+  dprocess b;
+  variable a0;
+  variable a1;
+  variable b0;
   vector_sequence_dataset<> ds;
   typedef sliding_view<vector_sequence_dataset<> > view_type;
-  typedef domain<vector_variable*> domain_type;
 
   vector_fixture() {
-    a = new vector_discrete_process("a", 1);
-    b = new vector_discrete_process("b", 2);
-    a0 = a->at(0);
-    a1 = a->at(1);
-    b0 = b->at(0);
+    a = u.new_vector_dprocess("a", 1);
+    b = u.new_vector_dprocess("b", 2);
+    a0 = a(0);
+    a1 = a(1);
+    b0 = b(0);
 
     ds.initialize({a, b});
 
@@ -264,7 +264,7 @@ BOOST_FIXTURE_TEST_CASE(test_vector_access, vector_fixture) {
 
   // view over two steps, access a subset of variables
   view_type view2(&ds, 2);
-  domain_type dom = {a1, b0};
+  domain dom = {a1, b0};
   BOOST_CHECK_EQUAL(view2(1, dom).first, vec3(2, 4, 7));
   BOOST_CHECK_EQUAL(view2(1, dom).second, 1.0);
   BOOST_CHECK_EQUAL(view2.assignment(1, dom).first,

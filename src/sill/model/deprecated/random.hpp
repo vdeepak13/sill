@@ -95,12 +95,12 @@ namespace sill {
 //   void random_ising_model(pairwise_markov_network<F>& mn, Engine& engine) {
 //     typedef typename F::variable_type variable_type;
 
-//     foreach(variable_type* v, mn.vertices()) {
+//     foreach(variable_type v, mn.vertices()) {
 //       finite_domain f; f.insert(v);
 //       mn[v] = random_discrete_factor<F>(f, engine);
 //     }
 
-//     foreach(undirected_edge<variable_type*> e, mn.edges()) {
+//     foreach(undirected_edge<variable_type> e, mn.edges()) {
 //       mn[e] = random_ising_factor<F>(e.source(), e.target(), engine);
 //     }
 //   }
@@ -138,25 +138,25 @@ namespace sill {
    *          Note there is 1 more hidden variable than there are emissions.
    */
   template <typename F, typename Engine>
-  std::pair<std::vector<typename F::variable_type*>,
-            std::vector<typename F::variable_type*> >
+  std::pair<std::vector<typename F::variable_type>,
+            std::vector<typename F::variable_type> >
   random_HMM(bayesian_network<F>& bn, Engine& rng, universe& u,
              size_t n, size_t n_states, size_t n_emissions,
              double alpha_tr = 1, double alpha_em = 1) {
     bn.clear();
     typedef typename F::domain_type domain_type;
     typedef typename F::variable_type variable_type;
-    std::vector<variable_type*> hidden_vars;
-    std::vector<variable_type*> emission_vars;
-    variable_type* prev_v = u.new_finite_variable(n_states);
+    std::vector<variable_type> hidden_vars;
+    std::vector<variable_type> emission_vars;
+    variable_type prev_v = u.new_finite_variable(n_states);
     hidden_vars.push_back(prev_v);
     discrete_factor_generator gen_tr(alpha_tr);
     discrete_factor_generator gen_em(alpha_em);
     bn.add_factor(prev_v, gen_tr(make_domain(prev_v), rng));
     for (size_t i = 0; i < n; ++i) {
-      variable_type* cur_v = u.new_finite_variable(n_states);
+      variable_type cur_v = u.new_finite_variable(n_states);
       bn.add_factor(cur_v, gen_tr(make_domain(cur_v), make_domain(prev_v), rng));
-      variable_type* emit_v = u.new_finite_variable(n_emissions);
+      variable_type emit_v = u.new_finite_variable(n_emissions);
       bn.add_factor(emit_v, gen_em(make_domain(emit_v), make_domain(cur_v), rng));
       prev_v = cur_v;
       hidden_vars.push_back(prev_v);
@@ -248,7 +248,7 @@ namespace sill {
    *          mapping from Y variables to their corresponding X variables>
    */
   template <typename CRFfactor, typename Factor, typename Engine>
-  std::map<typename CRFfactor::output_variable_type*,
+  std::map<typename CRFfactor::output_variable_type,
            copy_ptr<typename CRFfactor::input_domain_type> >
   create_random_crf(const std::string& model_structure,
                     bool tractable,
@@ -275,7 +275,7 @@ namespace sill {
 
     Xmodel.clear();
     YgivenXmodel.clear();
-    std::map<output_variable_type*, copy_ptr<input_domain_type> > Y2X_map;
+    std::map<output_variable_type, copy_ptr<input_domain_type> > Y2X_map;
     if (n == 0) {
       return Y2X_map;
     }
@@ -378,7 +378,7 @@ namespace sill {
   template <typename F>
   boost::tuple
   <typename F::var_vector_type, typename F::var_vector_type,
-   std::map<typename F::variable_type*, copy_ptr<typename F::domain_type> > >
+   std::map<typename F::variable_type, copy_ptr<typename F::domain_type> > >
   create_random_bayesian_network_crf
   (const std::string& model_structure, size_t n,
    bool tractable, bool add_cross_factors,
@@ -395,7 +395,7 @@ namespace sill {
     boost::mt11213b rng(random_seed);
     model.clear();
 
-    std::map<variable_type*, copy_ptr<domain_type> > Y2X_map;
+    std::map<variable_type, copy_ptr<domain_type> > Y2X_map;
     if (n == 0) {
       return boost::make_tuple(var_vector_type(), var_vector_type(), Y2X_map);
     }
@@ -720,18 +720,18 @@ namespace sill {
   void create_analogous_generative_structure
   (GenerativeGraphType& generative_structure,
    const CRFGraphType& crf_structure,
-   const std::map<typename CRFGraphType::output_variable_type*, copy_ptr<typename CRFGraphType::input_domain_type> >& Y2X_map) {
+   const std::map<typename CRFGraphType::output_variable_type, copy_ptr<typename CRFGraphType::input_domain_type> >& Y2X_map) {
 
     typedef typename CRFGraphType::output_variable_type output_variable_type;
     typedef typename CRFGraphType::variable_type variable_type;
 
     generative_structure.clear();
-    undirected_graph<variable_type*> tmp_structure;
+    undirected_graph<variable_type> tmp_structure;
     foreach(const typename CRFGraphType::vertex& v,
             crf_structure.factor_vertices()) {
       tmp_structure.make_clique(crf_structure.output_arguments(v));
     }
-    foreach(output_variable_type* var, crf_structure.output_arguments()) {
+    foreach(output_variable_type var, crf_structure.output_arguments()) {
       tmp_structure.make_clique
         (set_union(make_domain(var), *(safe_get(Y2X_map, var))));
     }

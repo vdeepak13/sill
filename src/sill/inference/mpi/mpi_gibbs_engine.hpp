@@ -48,7 +48,7 @@ namespace sill {
 
     typedef std::set<const factor_type*> factor_set_type;
 
-    typedef std::map<variable_type*, factor_set_type> var2factors_type;
+    typedef std::map<variable_type, factor_set_type> var2factors_type;
 
     typedef factor_norm_inf_log<message_type> norm_type;
 
@@ -137,7 +137,7 @@ namespace sill {
       }
       // Initialize the first assignment
       foreach(finite_variable* v, factor_graph_->arguments()) {
-        boost::uniform_int<size_t> unifint(0, v->size());
+        boost::uniform_int<size_t> unifint(0, v.size());
         size_t r = unifint(rng_);
         cur_sample_[v] = r;
       }
@@ -172,12 +172,12 @@ namespace sill {
     //! update the current sample
     void sample_once() {
       size_t var_count = 0;
-      foreach(variable_type* var, factor_graph_->arguments()) {
+      foreach(variable_type var, factor_graph_->arguments()) {
         factor_type conditional = 1.0;
         foreach(const factor_type* factor, var2factors[var]) {
           // Construct the conditional assignment to the other variables
           finite_assignment cond_asg;
-          foreach(variable_type* other_var, factor->arguments()) {
+          foreach(variable_type other_var, factor->arguments()) {
             if(other_var != var){
               cond_asg[other_var] = cur_sample_[other_var];
             }
@@ -224,7 +224,7 @@ namespace sill {
         // Construct the conditional assignment to the other variables
         belief_type& blf = pair.second;
         finite_assignment full_asg;
-        foreach(variable_type* var, blf.arguments()) {
+        foreach(variable_type var, blf.arguments()) {
           full_asg[var] = cur_sample_[var];
         }
         typename factor_type::result_type &f = blf(full_asg);
@@ -235,7 +235,7 @@ namespace sill {
     /**
      * Compute the belief for a vertex
      */
-    const belief_type& belief(variable_type* variable) {
+    const belief_type& belief(variable_type variable) {
       return beliefs_[vertex_type(variable)];
     } // end of send_message
 

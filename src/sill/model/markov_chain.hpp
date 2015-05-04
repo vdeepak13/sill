@@ -1,7 +1,7 @@
 #ifndef SILL_MARKOV_CHAIN_HPP
 #define SILL_MARKOV_CHAIN_HPP
 
-#include <sill/argument/domain.hpp>
+#include <sill/argument/basic_domain.hpp>
 #include <sill/base/discrete_process.hpp>
 #include <sill/math/logarithmic.hpp>
 
@@ -17,7 +17,7 @@ namespace sill {
     typedef typename F::variable_type       variable_type;
     typedef typename F::domain_type         var_domain_type;
     typedef discrete_process<variable_type> process_type;
-    typedef domain<process_type*>           domain_type;
+    typedef domain<process_type>           domain_type;
     typedef typename F::assignment_type     assignment_type;
     typedef typename F::index_type          var_index_type;
     typedef dynamic_matrix<real_type>       index_type; // for now

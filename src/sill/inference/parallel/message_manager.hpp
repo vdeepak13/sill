@@ -207,15 +207,15 @@ namespace sill {
   
   private:
 
-    typedef std::map<const variable_type*, 
+    typedef std::map<const variable_type, 
                      std::map<const factor_type*, 
                               MessageData<factor_type> > > var_to_factor_type;
     
     typedef std::map<const factor_type*, 
-                     std::map<const variable_type*, 
+                     std::map<const variable_type, 
                               MessageData<factor_type> > > factor_to_var_type;
 
-    typedef std::map<const variable_type*, 
+    typedef std::map<const variable_type, 
                      std::pair<factor_type,spinlock> > belief_map_type;
             
     //! The norm used to evaluate the change in messages
@@ -223,7 +223,7 @@ namespace sill {
 
     object_allocator<message_type> message_buffers_;
 
-    binned_scheduling_queue<const variable_type*> var_schedule_;
+    binned_scheduling_queue<const variable_type> var_schedule_;
     binned_scheduling_queue<const factor_type*> factor_schedule_;
   
     /** 
@@ -252,7 +252,7 @@ namespace sill {
         schedule_f.push_back(std::make_pair(&curfactor,100));
         // iterate over the edges of the factor
         if (curfactor.arguments().size() > 1) {
-          foreach(variable_type* v, curfactor.arguments()) {
+          foreach(variable_type v, curfactor.arguments()) {
             /*
              * TODO: little issue here. I will actually need a way to
              *  initialize messages. The current method only works
@@ -273,8 +273,8 @@ namespace sill {
       factor_schedule_.init(num_schedule_queues/2, schedule_f);
     
       // instantiate the beliefs
-      std::vector<std::pair<const variable_type* ,double> > schedule_v;
-      foreach(variable_type* v, model.arguments()) {
+      std::vector<std::pair<const variable_type ,double> > schedule_v;
+      foreach(variable_type v, model.arguments()) {
         domain_type tempdomain;
         tempdomain.insert(v);
         beliefs_[v].first = belief_type(tempdomain,1).normalize();
@@ -290,7 +290,7 @@ namespace sill {
      * checked in to the manager.  Returns NULL if the message is not
      * found
      */
-    factor_type* checkout_variable_to_factor(const variable_type* v,
+    factor_type* checkout_variable_to_factor(const variable_type v,
                                              const factor_type* f, 
                                              const ReadWrite rw){
       // find v in the map
@@ -313,7 +313,7 @@ namespace sill {
      * found
      */
     message_type* checkout_factor_to_variable(const factor_type* f,
-                                              const variable_type* v,
+                                              const variable_type v,
                                               const ReadWrite rw){
       // find f in the map
       typename factor_to_var_type::iterator i = factor_to_var_.find(f);
@@ -333,7 +333,7 @@ namespace sill {
      * and may not be checked out by any other thread.  Returns NULL
      * of the variable is not found.
      */
-    message_type* checkout_belief(const variable_type* v){
+    message_type* checkout_belief(const variable_type v){
       // search for the belief
       typename belief_map_type::iterator i = beliefs_.find(v);
       if (i==beliefs_.end()) return NULL;
@@ -349,7 +349,7 @@ namespace sill {
      * modified by any other thread.  It therefore must eventually be
      * checked in to the manager.
      */
-    void checkin_variable_to_factor(const variable_type* v, 
+    void checkin_variable_to_factor(const variable_type v, 
                                     const factor_type* f,
                                     const message_type* msg) {
       MessageData<message_type> *md = &(var_to_factor_[v][f]);
@@ -367,7 +367,7 @@ namespace sill {
      * checked in to the manager.
      */
     void checkin_factor_to_variable(const factor_type* f,
-                                    const variable_type* v,
+                                    const variable_type v,
                                     const message_type* msg) {
       MessageData<message_type> *md = &(factor_to_var_[f][v]);
       double residual = md->checkin(message_buffers_, msg, norm_, 
@@ -381,7 +381,7 @@ namespace sill {
      * This function checks in the belief of a variable v, allong
      * other threads to check it out.
      */
-    void checkin_belief(const variable_type* v, const belief_type* b){
+    void checkin_belief(const variable_type v, const belief_type* b){
       beliefs_[v].second.unlock();
     }
 
@@ -408,14 +408,14 @@ namespace sill {
      * be increased, but it will have no effect until it is
      * deactivated.
      */
-    void activate(const variable_type* v) {
+    void activate(const variable_type v) {
       var_schedule_.deschedule(v);
     }
   
     /** 
      * Deactivates a variable factor.  \see deactivate
      */  
-    void deactivate(const variable_type* v) {
+    void deactivate(const variable_type v) {
       var_schedule_.schedule(v);
     }
   
@@ -429,12 +429,12 @@ namespace sill {
     /**
      * Gets the top variable and activates it
      */
-    std::pair<const variable_type*,double> get_top_variable() {
+    std::pair<const variable_type,double> get_top_variable() {
       return var_schedule_.deschedule_top();
     }
   
     //! Gets the variable residual  
-    double residual(const variable_type* v) {
+    double residual(const variable_type v) {
       return var_schedule_[v];
     }
   

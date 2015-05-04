@@ -34,9 +34,9 @@ namespace sill {
            " assignment.");
       }
       const vec& tmpvec = it->second;
-      for (size_t j(0); j < v->size(); j++)
+      for (size_t j(0); j < v.size(); j++)
         vecdata[k + j] = tmpvec[j];
-      k += v->size();
+      k += v.size();
     }
   }
 

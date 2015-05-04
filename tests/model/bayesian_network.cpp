@@ -3,7 +3,7 @@
 
 #include <sill/model/bayesian_network.hpp>
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/factor/canonical_gaussian.hpp>
 #include <sill/factor/moment_gaussian.hpp>
 #include <sill/factor/probability_table.hpp>
@@ -23,7 +23,7 @@ using namespace sill;
 
 struct fixture {
   fixture()
-    : x(u.new_finite_variables(5, 2)) {
+    : x(u.new_finite_variables(5, "x", 2)) {
 
     /* Create factors for a Bayesian network with this structure:
      * 0, 1 (no parents)
@@ -46,28 +46,30 @@ struct fixture {
   }
 
   universe u;
-  finite_var_vector x;
+  domain x;
   ptable f0, f1, f21, f312, f403;
   bayesian_network<ptable> bn;
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE(test_serialization, fixture) {
   BOOST_CHECK(serialize_deserialize(bn, u));
 }
+*/
 
 BOOST_FIXTURE_TEST_CASE(test_markov_graph, fixture) {
-  typedef std::pair<finite_variable*, finite_variable*> vpair;
+  typedef std::pair<variable, variable> vpair;
   std::vector<vpair> vpairs =
     {vpair(x[1], x[2]), vpair(x[1], x[3]), vpair(x[2], x[3]),
      vpair(x[0], x[3]), vpair(x[0], x[4]), vpair(x[3], x[4])};
-  undirected_graph<finite_variable*> mg(vpairs);
-  undirected_graph<finite_variable*> mg2;
+  undirected_graph<variable> mg(vpairs);
+  undirected_graph<variable> mg2;
   bn.markov_graph(mg2);
   BOOST_CHECK_EQUAL(mg, mg2);
 }
 
 BOOST_FIXTURE_TEST_CASE(test_conditioning, fixture) {
-  finite_assignment a;
+  finite_assignment<> a;
   a[x[0]] = 0;
   a[x[1]] = 1;
   double likelihood(bn.condition(a));
@@ -84,7 +86,7 @@ BOOST_FIXTURE_TEST_CASE(test_conditioning, fixture) {
 
 BOOST_FIXTURE_TEST_CASE(test_sample, fixture) {
   finite_dataset<> ds(x);
-  finite_assignment a;
+  finite_assignment<> a;
   size_t nsamples = 5000;
   std::mt19937 rng;
   for (size_t i = 0; i < nsamples; ++i) {

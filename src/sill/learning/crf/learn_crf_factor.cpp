@@ -32,7 +32,7 @@
     copy_ptr<sub_input_domain_type>                                     \
       sub_X_ptr_(new sub_input_domain_type());                          \
     foreach(hybrid_crf_factor<F>::input_variable_type* v, *X_ptr_) {    \
-      if (v->type() == variable::FINITE_VARIABLE &&        \
+      if (v.type() == variable::FINITE_VARIABLE &&        \
           params.hcf_x2.count((finite_variable*)v) == 0)                \
         sub_X_ptr_->insert((F::input_variable_type*)v);                 \
     }                                                                   \
@@ -88,7 +88,7 @@
     copy_ptr<sub_input_domain_type>                                     \
       sub_X_ptr_(new sub_input_domain_type());                          \
     foreach(hybrid_crf_factor<F>::input_variable_type* v, *X_ptr_) {    \
-      if (v->type() == variable::FINITE_VARIABLE &&        \
+      if (v.type() == variable::FINITE_VARIABLE &&        \
           params.hcf_x2.count((finite_variable*)v) == 0)                \
         sub_X_ptr_->insert((F::input_variable_type*)v);                 \
     }                                                                   \

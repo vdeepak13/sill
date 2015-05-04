@@ -524,7 +524,7 @@ namespace sill {
       } // End of run
 
 
-      const F& belief(variable_type* variable) const {
+      const F& belief(variable_type variable) const {
         return belief(vertex_type(variable));
       } // end of send_message
 

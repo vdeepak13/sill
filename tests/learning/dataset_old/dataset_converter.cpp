@@ -7,7 +7,7 @@
  * @todo Make this support more types.
  */
 
-#include <sill/base/universe.hpp>
+#include <sill/argument/universe.hpp>
 #include <sill/learning/dataset_old/data_loader.hpp>
 #include <sill/learning/dataset_old/vector_dataset.hpp>
 

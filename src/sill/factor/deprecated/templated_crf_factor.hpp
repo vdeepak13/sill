@@ -65,9 +65,9 @@ namespace sill {
     typedef typename base::regularization_type  regularization_type;
 
 
-    typedef std::map<input_variable_type*, input_variable_type*> input_var_map_type;
-    typedef std::map<output_variable_type*, output_variable_type*> output_var_map_type;
-    typedef std::map<variable_type*, variable_type*> var_map_type;
+    typedef std::map<input_variable_type, input_variable_type> input_var_map_type;
+    typedef std::map<output_variable_type, output_variable_type> output_var_map_type;
+    typedef std::map<variable_type, variable_type> var_map_type;
 
     typedef typename F::la_type la_type;
 
@@ -248,9 +248,9 @@ namespace sill {
       // Pre-compute base factor's arguments.
       base_newY.clear();
       base_newX.clear();
-      foreach(output_variable_type* v, output_arguments())
+      foreach(output_variable_type v, output_arguments())
         base_newY.insert(safe_get(vmap_this2base,v));
-      foreach(input_variable_type* v, input_arguments())
+      foreach(input_variable_type v, input_arguments())
         base_newX.insert(safe_get(vmap_this2base,v));
       base_oldY = factor_ptr_->output_arguments();
       base_oldX = factor_ptr_->input_arguments();
@@ -660,12 +660,12 @@ namespace sill {
       assert(factor_ptr_);
       var_vector_type base_vars;
       input_var_vector_type base_input_vars;
-      foreach(output_variable_type* v, factor_ptr_->output_arguments()) {
+      foreach(output_variable_type v, factor_ptr_->output_arguments()) {
         base_vars.push_back(v);
         vmap_base2this[v] = v;
         vmap_this2base[v] = v;
       }
-      foreach(input_variable_type* v, factor_ptr_->input_arguments()) {
+      foreach(input_variable_type v, factor_ptr_->input_arguments()) {
         base_vars.push_back(v);
         base_input_vars.push_back(v);
         vmap_base2this[v] = v;
@@ -683,15 +683,15 @@ namespace sill {
       assert(factor_ptr_);
       var_vector_type base_vars;
       input_var_vector_type base_input_vars;
-      foreach(output_variable_type* v, factor_ptr_->output_arguments()) {
-        output_variable_type* my_v = safe_get(Yvarmap, v);
+      foreach(output_variable_type v, factor_ptr_->output_arguments()) {
+        output_variable_type my_v = safe_get(Yvarmap, v);
         Ydomain_.insert(my_v);
         base_vars.push_back(v);
         vmap_base2this[v] = my_v;
         vmap_this2base[my_v] = v;
       }
-      foreach(input_variable_type* v, factor_ptr_->input_arguments()) {
-        input_variable_type* my_v = safe_get(Xvarmap, v);
+      foreach(input_variable_type v, factor_ptr_->input_arguments()) {
+        input_variable_type my_v = safe_get(Xvarmap, v);
         Xdomain_ptr_->insert(my_v);
         base_vars.push_back(v);
         base_input_vars.push_back(v);

@@ -241,7 +241,7 @@ namespace sill {
     }
   
     //! Gets the variable residual  
-    double residual(const variable_type* v) {
+    double residual(const variable_type v) {
       return residual(vertex_type(v));
     }
   

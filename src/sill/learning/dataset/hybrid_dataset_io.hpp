@@ -19,7 +19,7 @@ namespace sill {
   void load(const std::string& filename,
             const symbolic_format& format,
             hybrid_dataset<T>& ds) {
-    hybrid_domain vars = format.vars();
+    hybrid_domain<> vars = format.vars();
     ds.initialize(vars);
 
     std::ifstream in(filename);
@@ -79,7 +79,7 @@ namespace sill {
   void save(const std::string& filename,
             const symbolic_format& format,
             const hybrid_dataset<T>& data) {
-    hybrid_domain vars = format.vars();
+    hybrid_domain<> vars = format.vars();
     
     std::ofstream out(filename);
     if (!out) {
@@ -127,7 +127,5 @@ namespace sill {
   }
 
 } // namespace sill
-
-#include <sill/macros_undef.hpp>
 
 #endif

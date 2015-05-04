@@ -155,7 +155,7 @@ namespace sill {
 
     //! Type of graph used for MST algorithm.
     //! Vertices correspond to Y variables; each edge stores the edge score.
-    typedef undirected_graph<output_variable_type*, void_, double> ig_type;
+    typedef undirected_graph<output_variable_type, void_, double> ig_type;
 
     //! Functor used by the MST algorithm.
     //! This returns the negation of the edge scores.
@@ -210,7 +210,7 @@ namespace sill {
         output_domain_type Yvars;
         Yvars.insert(e.source());
         Yvars.insert(e.target());
-        std::pair<output_variable_type*,output_variable_type*>
+        std::pair<output_variable_type,output_variable_type>
           Ypair(e.source() < e.target() ?
                 std::make_pair(e.source(), e.target()) :
                 std::make_pair(e.target(), e.source()));
@@ -279,7 +279,7 @@ namespace sill {
         // Construct a graph for the MST algorithm, with Y variables for
         // vertices and edges marked with their scores.
         ig_type mst_graph;
-        foreach(output_variable_type* v, Yvars)
+        foreach(output_variable_type v, Yvars)
           mst_graph.add_vertex(v);
         subset_iterator<output_domain_type> Yvars_end;
         for (subset_iterator<output_domain_type> Yvars_it(Yvars, 2);
@@ -288,10 +288,10 @@ namespace sill {
           typename output_domain_type::const_iterator
             twoYvars_it(twoYvars.begin());
           assert(twoYvars_it != twoYvars.end());
-          output_variable_type* Yvar1 = *twoYvars_it;
+          output_variable_type Yvar1 = *twoYvars_it;
           ++twoYvars_it;
           assert(twoYvars_it != twoYvars.end());
-          output_variable_type* Yvar2 = *twoYvars_it;
+          output_variable_type Yvar2 = *twoYvars_it;
           timer.restart();
           double score_(weight_functor_(Yvar1, Yvar2).first);
           total_time += timer.elapsed();
@@ -310,7 +310,7 @@ namespace sill {
           weight_functor_.clear_edge_part_map();
       } else {
         // Add a single-variable factor for each output variable.
-        foreach(output_variable_type* fv, Yvars) {
+        foreach(output_variable_type fv, Yvars) {
           output_domain_type tmpdom(make_domain<output_variable_type>(fv));
           crf_factor f;
           if (params.crf_factor_cv) {
@@ -340,10 +340,10 @@ namespace sill {
           typename output_domain_type::const_iterator
             twoYvars_it(twoYvars.begin());
           assert(twoYvars_it != twoYvars.end());
-          output_variable_type* Yvar1 = *twoYvars_it;
+          output_variable_type Yvar1 = *twoYvars_it;
           ++twoYvars_it;
           assert(twoYvars_it != twoYvars.end());
-          output_variable_type* Yvar2 = *twoYvars_it;
+          output_variable_type Yvar2 = *twoYvars_it;
           timer.restart();
           double score_(weight_functor_(Yvar1, Yvar2).first);
           total_time += timer.elapsed();
@@ -456,7 +456,7 @@ namespace sill {
       means.zeros(reg_params.size());
       stderrs.zeros(reg_params.size());
       boost::mt11213b rng(random_seed);
-      std::vector<output_variable_type*> Yvector(Yvars.begin(), Yvars.end());
+      std::vector<output_variable_type> Yvector(Yvars.begin(), Yvars.end());
       dataset_view<> permuted_view(ds);
       permuted_view.set_record_indices(randperm(ds.size(), rng));
       typename crf_factor::parameters tmp_params(params);

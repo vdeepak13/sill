@@ -51,12 +51,12 @@ namespace sill {
 
       typedef InputVariable input_variable_type;
 
-      typedef std::set<output_variable_type*> output_domain_type;
+      typedef std::set<output_variable_type> output_domain_type;
 
-      typedef std::set<input_variable_type*> input_domain_type;
+      typedef std::set<input_variable_type> input_domain_type;
 
       //! Variable in Y (if variable vertex).
-      output_variable_type* v;
+      output_variable_type v;
 
       //! Output variables Y for this factor (if factor vertex).
       output_domain_type* Y;
@@ -83,7 +83,7 @@ namespace sill {
       }
 
       //! Constructor for a variable vertex.
-      crf_graph_vertex_info(output_variable_type* v,
+      crf_graph_vertex_info(output_variable_type v,
                             const VertexProperty& property = VertexProperty())
         : v(v), Y(NULL), property(property) {
         assert(v != NULL);
@@ -217,13 +217,13 @@ namespace sill {
     typedef Variable variable_type;
 
     //! Type of output domain Y.
-    typedef std::set<output_variable_type*> output_domain_type;
+    typedef std::set<output_variable_type> output_domain_type;
 
     //! Type of input domain X.
-    typedef std::set<input_variable_type*> input_domain_type;
+    typedef std::set<input_variable_type> input_domain_type;
 
     //! Type of domain for both Y,X.
-    typedef std::set<variable_type*> domain_type;
+    typedef std::set<variable_type> domain_type;
 
   private:
 
@@ -246,7 +246,7 @@ namespace sill {
     typedef typename graph_type::edge_iterator      edge_iterator;
     typedef typename graph_type::in_edge_iterator   in_edge_iterator;
     typedef typename graph_type::out_edge_iterator  out_edge_iterator;
-    typedef map_value_iterator<std::map<output_variable_type*, vertex> >
+    typedef map_value_iterator<std::map<output_variable_type, vertex> >
       variable_vertex_iterator;
 
     /**
@@ -412,7 +412,7 @@ namespace sill {
 
     //! Returns the vertices adjacent to variable u.
     std::pair<neighbor_iterator, neighbor_iterator>
-    neighbors(output_variable_type* u) const {
+    neighbors(output_variable_type u) const {
       return graph.neighbors(variable2vertex(u));
     }
 
@@ -429,12 +429,12 @@ namespace sill {
     //! Returns the vertices at distance 2 from u's vertex.
     //! I.e., this returns the neighboring variables.
     std::pair<neighbor2_iterator, neighbor2_iterator>
-    neighbors2(output_variable_type* u) const {
+    neighbors2(output_variable_type u) const {
       return neighbors2(variable2vertex(u));
     }
 
     //! Returns true if u and v are neighbors.
-    bool are_neighbors(output_variable_type* u, output_variable_type* v) const {
+    bool are_neighbors(output_variable_type u, output_variable_type v) const {
       vertex v_vert(variable2vertex(v));
       foreach(const vertex& t, neighbors2(u))
         if (t == v_vert)
@@ -443,7 +443,7 @@ namespace sill {
     }
 
     //! Returns the Markov blanket of the given variable.
-    domain_type markov_blanket(output_variable_type* v) const {
+    domain_type markov_blanket(output_variable_type v) const {
       domain_type d;
       foreach(const vertex& u, neighbors(v)) {
         domain_type udom(arguments(u));
@@ -503,7 +503,7 @@ namespace sill {
     }
 
     //! Returns the number of edges adjacent to a variable's vertex
-    size_t degree(output_variable_type* u) const {
+    size_t degree(output_variable_type u) const {
       return graph.degree(variable2vertex(u));
     }
 
@@ -651,8 +651,8 @@ namespace sill {
 
     //! Given a variable, return its variable vertex.
     //! Returns null_vertex() if the variable is not present in the CRF.
-    vertex variable2vertex(output_variable_type* v) const {
-      typename std::map<output_variable_type*, vertex>::const_iterator
+    vertex variable2vertex(output_variable_type v) const {
+      typename std::map<output_variable_type, vertex>::const_iterator
         it(variable_index_.find(v));
       if (it == variable_index_.end())
         return null_vertex();
@@ -663,7 +663,7 @@ namespace sill {
     //! Given a variable vertex, return its variable.
     //! Returns NULL if the vertex is not a variable vertex.
     //! Fails if the vertex is not present in the graph.
-    output_variable_type* vertex2variable(vertex v) const {
+    output_variable_type vertex2variable(vertex v) const {
       return graph[v].v;
     }
 
@@ -699,14 +699,14 @@ namespace sill {
       // Add variable vertices as necessary.
       std::vector<vertex> newY(unsafe_add_Y(Yvars));
       // Connect factor vertex to variable vertices.
-      foreach(output_variable_type* yv, Yvars) {
+      foreach(output_variable_type yv, Yvars) {
         graph.add_edge(vert, variable_index_[yv]);
       }
       // Update metadata.
       factor_vertices_.push_back(vert);
       X_.insert(Xvars->begin(), Xvars->end());
-      foreach(input_variable_type* xv, *Xvars) {
-        typename std::map<input_variable_type*, size_t>::iterator
+      foreach(input_variable_type xv, *Xvars) {
+        typename std::map<input_variable_type, size_t>::iterator
           X_counts_it(X_counts.find(xv));
         if (X_counts_it == X_counts.end())
           X_counts[xv] = 1;
@@ -733,7 +733,7 @@ namespace sill {
       graph.remove_vertex(u);
       foreach(const vertex& v, u_arg_vertices) {
         if (degree(v) == 0) {
-          output_variable_type* vvar = vertex2variable(v);
+          output_variable_type vvar = vertex2variable(v);
           variable_index_.erase(vvar);
           Y_.erase(vvar);
         }
@@ -842,13 +842,13 @@ namespace sill {
       assert(fout.good());
       std::map<variable*, size_t> var_order_map(ds.variable_order_map());
       foreach(const vertex& v, factor_vertices()) {
-        foreach(output_variable_type* y, output_arguments(v)) {
+        foreach(output_variable_type y, output_arguments(v)) {
           fout << var_order_map[y] << "\t";
 //          fout << ds.var_order_index(y) << "\t";
         }
         if (save_x) {
           fout << ";\t";
-          foreach(input_variable_type* x, input_arguments(v)) {
+          foreach(input_variable_type x, input_arguments(v)) {
             fout << var_order_map[x] << "\t";
 //            fout << ds.var_order_index(x) << "\t";
           }
@@ -887,7 +887,7 @@ namespace sill {
         output_domain_type tmpY;
         while (is >> ind) { // Read in outputs Y
           assert(ind < var_order.size());
-          tmpY.insert(dynamic_cast<output_variable_type*>(var_order[ind]));
+          tmpY.insert(dynamic_cast<output_variable_type>(var_order[ind]));
         }
         // Assume the unreadable item was the semicolon.
         copy_ptr<input_domain_type> tmpX_ptr(new input_domain_type());
@@ -901,7 +901,7 @@ namespace sill {
           while (is >> ind) { // Read in inputs X
             assert(ind < var_order.size());
             tmpX_ptr->insert
-              (dynamic_cast<input_variable_type*>(var_order[ind]));
+              (dynamic_cast<input_variable_type>(var_order[ind]));
           }
         }
         assert(set_disjoint(tmpY, *tmpX_ptr));
@@ -952,7 +952,7 @@ namespace sill {
     unsafe_add_Y(const output_domain_type& Yvars,
                  const VertexProperty& property = VertexProperty()) {
       std::vector<vertex> new_vertices;
-      foreach(output_variable_type* yvar, Yvars) {
+      foreach(output_variable_type yvar, Yvars) {
         if (Y_.count(yvar) != 0)
           continue;
         vertex v(next_vertex++);
@@ -983,14 +983,14 @@ namespace sill {
       // Add variable vertices as necessary.
       std::vector<vertex> newY(unsafe_add_Y(Yvars));
       // Connect factor vertex to variable vertices.
-      foreach(output_variable_type* yv, Yvars) {
+      foreach(output_variable_type yv, Yvars) {
         graph.add_edge(vert, variable_index_[yv]);
       }
       // Update metadata.
       factor_vertices_.push_back(vert);
       X_.insert(Xvars->begin(), Xvars->end());
-      foreach(input_variable_type* xv, *Xvars) {
-        typename std::map<input_variable_type*, size_t>::iterator
+      foreach(input_variable_type xv, *Xvars) {
+        typename std::map<input_variable_type, size_t>::iterator
           X_counts_it(X_counts.find(xv));
         if (X_counts_it == X_counts.end())
           X_counts[xv] = 1;
@@ -1005,7 +1005,7 @@ namespace sill {
   protected:
 
     //! A map from output variables to their variable vertices.
-    std::map<output_variable_type*, vertex> variable_index_;
+    std::map<output_variable_type, vertex> variable_index_;
 
     //! List of factor vertices.
     std::list<vertex> factor_vertices_;
@@ -1025,11 +1025,11 @@ namespace sill {
 
     //! Mapping: input variable x --> number of factors using x
     //! This is needed to make remove_factor() efficient.
-    std::map<input_variable_type*, size_t> X_counts;
+    std::map<input_variable_type, size_t> X_counts;
 
     //! Update X_, X_counts as needed when removed a factor with these X args.
     void decrement_X_args(const input_domain_type& x_args) {
-      foreach(input_variable_type* var, x_args) {
+      foreach(input_variable_type var, x_args) {
         size_t& cnt = X_counts[var];
         if (cnt == 1) {
           X_counts.erase(var);

@@ -62,7 +62,7 @@ namespace sill {
     //! (If X_map_type_ == 2)
     //! Map from single variables in Y to sets of inputs in X.
     //! The inputs for sets of Y are the unions of the inputs for each Y.
-    std::map<output_variable_type*, copy_ptr<input_domain_type> > X_map2_;
+    std::map<output_variable_type, copy_ptr<input_domain_type> > X_map2_;
 
     // Public methods: Constructors
     //==========================================================================
@@ -112,7 +112,7 @@ namespace sill {
      *       union of the X variable sets of the Y variables in f.
      */
     crf_X_mapping
-    (const std::map<output_variable_type*,copy_ptr<input_domain_type> >&
+    (const std::map<output_variable_type,copy_ptr<input_domain_type> >&
      X_map2_)
       : X_map_type_(2), X_map2_(X_map2_) { }
 
@@ -139,7 +139,7 @@ namespace sill {
         {
           ar << X_map2_.size();
           typename
-            std::map<output_variable_type*, copy_ptr<input_domain_type> >
+            std::map<output_variable_type, copy_ptr<input_domain_type> >
             ::const_iterator it = X_map2_.begin();
           while (it != X_map2_.end()) {
             ar << it->first << *(it->second);
@@ -182,7 +182,7 @@ namespace sill {
         {
           size_t mapsize;
           ar >> mapsize;
-          output_variable_type* outvar;
+          output_variable_type outvar;
           input_domain_type indom;
           for (size_t i = 0; i < mapsize; ++i) {
             ar >> outvar >> indom;
@@ -218,7 +218,7 @@ namespace sill {
       case 2:
         if (Y.size() == 1) {
           typename output_domain_type::const_iterator Y_it(Y.begin());
-          typename std::map<output_variable_type*, copy_ptr<input_domain_type> >::const_iterator
+          typename std::map<output_variable_type, copy_ptr<input_domain_type> >::const_iterator
             it(X_map2_.find(*Y_it));
           if (it == X_map2_.end())
             return copy_ptr<input_domain_type>(new input_domain_type());
@@ -228,8 +228,8 @@ namespace sill {
           return copy_ptr<input_domain_type>(new input_domain_type());
         } else {
           copy_ptr<input_domain_type> mappedX(new input_domain_type());
-          foreach(output_variable_type* fv, Y) {
-            typename std::map<output_variable_type*, copy_ptr<input_domain_type> >::const_iterator
+          foreach(output_variable_type fv, Y) {
+            typename std::map<output_variable_type, copy_ptr<input_domain_type> >::const_iterator
               it(X_map2_.find(fv));
             if (it == X_map2_.end())
               continue;
@@ -268,7 +268,7 @@ namespace sill {
     //! (If X_map_type == 2)
     //! Map from single variables in Y to sets of inputs in X.
     //! The inputs for sets of Y are the unions of the inputs for each Y.
-    const std::map<output_variable_type*, copy_ptr<input_domain_type> >&
+    const std::map<output_variable_type, copy_ptr<input_domain_type> >&
     X_map2() const {
       return X_map2_;
     }

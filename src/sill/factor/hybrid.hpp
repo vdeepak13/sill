@@ -522,7 +522,7 @@ namespace sill {
           result[i] = it->second;
         } else if (strict) {
           throw std::invalid_argument(
-            "The assignment does not contain the variable " + v->name()
+            "The assignment does not contain the variable " + v.name()
           );
         }
       }
